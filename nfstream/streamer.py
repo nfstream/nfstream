@@ -254,9 +254,3 @@ class Streamer:
         self.exports = []
 
 
-if __name__ == "__main__":
-    device = "../tests/pcap/facebook.pcap"
-    fc = Streamer(source=device, capacity=512, inactive_timeout=9999999, active_timeout=9999999)
-    for flow in fc:
-        print(flow)
-

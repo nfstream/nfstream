@@ -83,10 +83,3 @@ class Observer:
             for timestamp, packet in self.packet_generator:
                 packet_information = process_packet(timestamp, packet)
                 yield packet_information
-
-
-if __name__ == "__main__":
-    source = "../tests/pcap/instagram.pcap"
-    pkt_info_gen = Observer(source=source)
-    for pkt_info in pkt_info_gen:
-        print(pkt_info)
