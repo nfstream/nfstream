@@ -1,7 +1,6 @@
 import unittest
-from nfstream.streamer import Streamer
+from nfstream.streamer import Streamer, FlowKey
 from colorama import Fore, Style
-from sys import maxsize
 import os
 
 
@@ -28,29 +27,44 @@ def flows_from_file(file):
 class TestMethods(unittest.TestCase):
     def test_protocols_without_timeouts(self):
         files = get_files_list("tests/csv/")
-        print("Testing on {} applications:".format(len(files)))
+        print("----------------------------------------------------------------------")
+        print(".Testing on {} applications:".format(len(files)))
         for file in files:
             file_path = file.replace('.csv', '').replace('/csv/', '/pcap/')
-            streamer = Streamer(source=file_path, capacity=128000, inactive_timeout=maxsize, active_timeout=maxsize)
+            streamertest = Streamer(source=file_path, capacity=64000, inactive_timeout=60000, active_timeout=60000)
             test_case_name = file_path.split('/')[-1].replace('.pcap', '')
-            print(test_case_name+ ': ' + Fore.BLUE + 'OK' + Style.RESET_ALL)
+            print(test_case_name + ': ' + Fore.BLUE + 'OK' + Style.RESET_ALL)
             exports = []
-            for export in streamer:
+            for export in streamertest:
                 exports.append(str(export))
             exports = sorted(exports)
             exports_ground_truth = flows_from_file(file)
-            del streamer
+            del streamertest
             self.assertEqual(exports, exports_ground_truth)
 
     def test_unsupported_packet(self):
-        streamer = Streamer(source='tests/pcap/future/quickplay.pcap',
-                            capacity=128000,
-                            inactive_timeout=maxsize,
-                            active_timeout=maxsize)
-        exports = list(streamer)
-        exports_ground_truth = []
-        del streamer
-        self.assertEqual(exports, exports_ground_truth)
+        print("\n----------------------------------------------------------------------")
+        print(".Testing on unsupported packet format:")
+        streamertest = Streamer(source='tests/pcap/future/quickplay.pcap',
+                                capacity=64000,
+                                inactive_timeout=60000,
+                                active_timeout=60000)
+        exports = list(streamertest)
+        del streamertest
+        self.assertEqual(exports, [])
+        print(Fore.BLUE + 'OK' + Style.RESET_ALL)
+
+    def test_streamer_capacity(self):
+        print("\n----------------------------------------------------------------------")
+        print(".Testing warning Streamer capacity reached:")
+        streamertest = Streamer(source='tests/pcap/ajp.pcap',
+                                capacity=1,
+                                inactive_timeout=60000,
+                                active_timeout=60000)
+        exports = list(streamertest)
+        self.assertEqual(exports[0].key,
+                         FlowKey(ip_src=2887584147, ip_dst=2887584146, src_port=8010, dst_port=38856, ip_protocol=6))
+        print(Fore.BLUE + 'OK' + Style.RESET_ALL)
 
 
 if __name__ == '__main__':

@@ -46,9 +46,7 @@ class UnsupportedProtocol(Exception):
 
 def emergency_callback(key, value):
     """ Callback used for Streamer eviction method """
-    raise StreamerCapacityException("Streamer capacity limit reached. "
-                                     "Please initialize your Streamer object with larger capacity "
-                                     "to avoid such behavior.")
+    print("WARNING: Streamer capacity limit reached: lru flow entry dropped.")
 
 
 def get_flow_key(pkt_info):
@@ -105,7 +103,7 @@ class Flow:
 
     def update(self, pkt_info, active_timeout, ndpi_info_mod):
         """ Update a flow from a packet and return status """
-        if pkt_info.ts - self.end_time > (active_timeout*1000):
+        if (pkt_info.ts - self.end_time) > (active_timeout*1000):
             return 2
         else:
             self.end_time = pkt_info.ts
@@ -227,16 +225,16 @@ class Streamer:
         """ consume a packet and update Streamer status """
         self.processed_packets += 1  # increment total processed packet counter
         flow = Flow(pkt_info)
-        try:
+        if flow.key in self.flows:
             flow_status = self.flows[flow.key].update(pkt_info, self.active_timeout, self.inspector)
             if flow_status == 2:
                 self.active_watcher(flow.key)
                 self.flows[flow.key] = flow
                 self.flows[flow.key].update(pkt_info, self.active_timeout, self.inspector)
-        except KeyError:  # flow creation
+        else:
             self.current_flows += 1
+            flow.update(pkt_info, self.active_timeout, self.inspector)
             self.flows[flow.key] = flow
-            self.flows[flow.key].update(pkt_info, self.active_timeout, self.inspector)
             self.current_tick = flow.start_time
             self.inactive_watcher()
 
