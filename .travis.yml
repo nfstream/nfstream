@@ -13,6 +13,6 @@ addons:
 
 install:
   - pip install -r requirements.txt
-  - pip install .
+  - python setup.py install
 
 script: python tests.py
