@@ -1,5 +1,6 @@
 import unittest
 from nfstream.streamer import Streamer
+from colorama import Fore, Style
 from sys import maxsize
 import os
 
@@ -27,13 +28,12 @@ def flows_from_file(file):
 class TestMethods(unittest.TestCase):
     def test_protocols_without_timeouts(self):
         files = get_files_list("tests/csv/")
-        print("test: functional on {} applications traffic capture".format(len(files)))
+        print("Testing on {} applications:".format(len(files)))
         for file in files:
-            streamer = Streamer(source=file.replace('.csv', '').replace('/csv/', '/pcap/'),
-                                capacity=128000,
-                                inactive_timeout=maxsize,
-                                active_timeout=maxsize)
-            print(file.replace('.csv', '').replace('/csv/', '/pcap/'))
+            file_path = file.replace('.csv', '').replace('/csv/', '/pcap/')
+            streamer = Streamer(source=file_path, capacity=128000, inactive_timeout=maxsize, active_timeout=maxsize)
+            test_case_name = file_path.split('/')[-1].replace('.pcap', '')
+            print(test_case_name+ ': ' + Fore.BLUE + 'OK' + Style.RESET_ALL)
             exports = []
             for export in streamer:
                 exports.append(str(export))
@@ -47,10 +47,7 @@ class TestMethods(unittest.TestCase):
                             capacity=128000,
                             inactive_timeout=maxsize,
                             active_timeout=maxsize)
-        exports = []
-        for export in streamer:
-            exports.append(str(export))
-        exports = sorted(exports)
+        exports = streamer.exports
         exports_ground_truth = []
         del streamer
         self.assertEqual(exports, exports_ground_truth)

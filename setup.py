@@ -58,7 +58,8 @@ install_requires = ['pypcap>=1.2.3',
                     'dpkt>=1.9.2',
                     'goto-statement>=1.2',
                     'numpydoc>=0.8',
-                    'guzzle_sphinx_theme>=0.7.11']
+                    'guzzle_sphinx_theme>=0.7.11',
+                    'colorama>=0.4.1']
 
 
 setup(
