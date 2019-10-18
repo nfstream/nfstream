@@ -47,7 +47,7 @@ class TestMethods(unittest.TestCase):
                             capacity=128000,
                             inactive_timeout=maxsize,
                             active_timeout=maxsize)
-        exports = streamer.exports
+        exports = list(streamer)
         exports_ground_truth = []
         del streamer
         self.assertEqual(exports, exports_ground_truth)
