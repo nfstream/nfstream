@@ -1,0 +1,262 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+from lru import LRU  # for LRU streamer management
+from collections import namedtuple
+from .observer import Observer
+from .dpi import *
+import socket
+
+max_num_udp_dissected_pkts = 16
+max_num_tcp_dissected_pkts = 10
+
+""" flow key structure """
+FlowKey = namedtuple('FlowKey', ['ip_src', 'ip_dst', 'src_port', 'dst_port', 'ip_protocol'])
+
+
+""" flow export str representation """
+flow_export_template = '''{ip_protocol},{ip_src},{src_port},{ip_dst},{dst_port},{ndpi_proto_num},\
+{src_to_dst_pkts},{src_to_dst_bytes},{dst_to_src_pkts},{dst_to_src_bytes}'''
+
+
+def inet_to_str(inet):
+    try:
+        return socket.inet_ntop(socket.AF_INET, inet)
+    except ValueError:
+        return socket.inet_ntop(socket.AF_INET6, inet)
+
+
+class StreamerCapacityException(Exception):
+    """ Exception raised when Streamer is full and eviction is triggered """
+    def __init__(self, msg):
+        super(StreamerCapacityException, self).__init__(msg)
+
+
+class InspectorError(Exception):
+    """ Exception raised we fail to parse packet """
+    def __init__(self, msg):
+        super(InspectorError, self).__init__(msg)
+
+
+class UnsupportedProtocol(Exception):
+    """ Exception raised we fail to parse protocol """
+    def __init__(self, msg):
+        super(UnsupportedProtocol, self).__init__(msg)
+
+
+def emergency_callback(key, value):
+    """ Callback used for Streamer eviction method """
+    raise StreamerCapacityException("Streamer capacity limit reached. "
+                                     "Please initialize your Streamer object with larger capacity "
+                                     "to avoid such behavior.")
+
+
+def get_flow_key(pkt_info):
+    """ Returns a flow key from packet 5-tuple """
+    if pkt_info.ip_src > pkt_info.ip_dst:
+        return FlowKey(ip_src=pkt_info.ip_src, ip_dst=pkt_info.ip_dst,
+                       src_port=pkt_info.src_port, dst_port=pkt_info.dst_port,
+                       ip_protocol=pkt_info.ip_protocol)
+    else:
+        return FlowKey(ip_src=pkt_info.ip_dst, ip_dst=pkt_info.ip_src,
+                       src_port=pkt_info.dst_port, dst_port=pkt_info.src_port,
+                       ip_protocol=pkt_info.ip_protocol)
+
+
+class Flow:
+    """ Flow entry structure """
+    def __init__(self, pkt_info):
+        self.start_time = pkt_info.ts
+        self.end_time = pkt_info.ts
+        self.export_type = -1
+        self.key = get_flow_key(pkt_info)
+        self.ip_src = pkt_info.ip_src
+        self.ip_dst = pkt_info.ip_dst
+        self.ip_src_b = pkt_info.ip_src_b
+        self.ip_dst_b = pkt_info.ip_dst_b
+        self.src_port = pkt_info.src_port
+        self.dst_port = pkt_info.dst_port
+        self.ip_protocol = pkt_info.ip_protocol
+        self.src_to_dst_pkts = 0
+        self.dst_to_src_pkts = 0
+        self.src_to_dst_bytes = 0
+        self.dst_to_src_bytes = 0
+        self.ndpi_flow = pointer(ndpi_flow_struct())
+        memset(self.ndpi_flow, 0, sizeof(ndpi_flow_struct))
+        self.detected_protocol = ndpi_protocol()
+        self.detection_completed = 0
+        self.id = 0
+        self.src_id = pointer(ndpi_id_struct())
+        self.dst_id = pointer(ndpi_id_struct())
+
+    def __str__(self):
+        return flow_export_template.format(
+            ip_src=inet_to_str(self.ip_src_b).replace(':0:', '::'),
+            src_port=self.src_port,
+            ip_dst=inet_to_str(self.ip_dst_b).replace(':0:', '::'),
+            dst_port=self.dst_port,
+            ip_protocol=self.ip_protocol,
+            src_to_dst_pkts=self.src_to_dst_pkts,
+            dst_to_src_pkts=self.dst_to_src_pkts,
+            src_to_dst_bytes=self.src_to_dst_bytes,
+            dst_to_src_bytes=self.dst_to_src_bytes,
+            ndpi_proto_num=str(self.detected_protocol.master_protocol) + '.' + str(self.detected_protocol.app_protocol)
+        )
+
+    def update(self, pkt_info, active_timeout, ndpi_info_mod):
+        """ Update a flow from a packet and return status """
+        if pkt_info.ts - self.end_time > (active_timeout*1000):
+            return 2
+        else:
+            self.end_time = pkt_info.ts
+            if (self.ip_src == pkt_info.ip_src and self.ip_dst == pkt_info.ip_dst and
+                    self.src_port == pkt_info.src_port and self.dst_port == pkt_info.dst_port):
+                self.src_to_dst_pkts += 1
+                self.src_to_dst_bytes += pkt_info.len
+            else:
+                self.dst_to_src_pkts += 1
+                self.dst_to_src_bytes += pkt_info.len
+            if self.detection_completed is 0:
+                self.detected_protocol = ndpi.ndpi_detection_process_packet(ndpi_info_mod,
+                                                                            self.ndpi_flow,
+                                                                            cast(cast(c_char_p(pkt_info.raw),
+                                                                                      c_void_p), POINTER(c_uint8)),
+                                                                            len(pkt_info.raw),
+                                                                            pkt_info.ts,
+                                                                            self.src_id,
+                                                                            self.dst_id)
+                valid = False
+                if self.ip_protocol == 6:
+                    valid = (self.src_to_dst_pkts + self.dst_to_src_pkts) > max_num_tcp_dissected_pkts
+                elif self.ip_protocol == 17:
+                    valid = (self.src_to_dst_pkts + self.dst_to_src_pkts) > max_num_udp_dissected_pkts
+                if valid or self.detected_protocol.app_protocol is not 0:
+                    if valid or self.detected_protocol.master_protocol is not 91:
+                        self.detection_completed = 1
+                        if self.detected_protocol.app_protocol is 0:
+                            self.detected_protocol = ndpi.ndpi_detection_giveup(ndpi_info_mod,
+                                                                                self.ndpi_flow,
+                                                                                1,
+                                                                                cast(addressof(c_uint8(0)),
+                                                                                     POINTER(c_uint8)))
+            return 0
+
+
+def initialize(ndpi_struct):
+    all = NDPI_PROTOCOL_BITMASK()
+    ndpi.ndpi_wrap_NDPI_BITMASK_SET_ALL(pointer(all))
+    ndpi.ndpi_set_protocol_detection_bitmask2(ndpi_struct, pointer(all))
+
+
+class Streamer:
+    """ streamer for flows management """
+    num_streamers = 0
+
+    def __init__(self, source=None, capacity=128000, active_timeout=120, inactive_timeout=60):
+        Streamer.num_streamers += 1
+        self.exports = []
+        self.source = source
+        self.flows = LRU(capacity, callback=emergency_callback)  # LRU cache
+        self._capacity = self.flows.get_size()  # Streamer capacity (default: 128000)
+        self.active_timeout = active_timeout  # expiration active timeout
+        self.inactive_timeout = inactive_timeout  # expiration inactive timeout
+        self.current_flows = 0  # counter for stored flows
+        self.current_tick = 0  # current timestamp
+        self.processed_packets = 0  # current timestamp
+        if ndpi.ndpi_get_api_version() != ndpi.ndpi_wrap_get_api_version():
+            raise InspectorError("dpi engine version mismatch.")
+        self.inspector = ndpi.ndpi_init_detection_module()
+        if self.inspector is None:
+            raise InspectorError("Inspector module failed to initialize.")
+        else:
+            initialize(self.inspector)
+
+    def _get_capacity(self):
+        """ getter for capacity attribute """
+        return self.flows.get_size()
+
+    def _set_capacity(self, new_size):
+        """ setter for capacity size attribute """
+        return self.flows.set_size(new_size)
+
+    capacity = property(_get_capacity, _set_capacity)
+
+    def terminate(self):
+        """ terminate all entries in Streamer """
+        remaining_flows = True
+        while remaining_flows:
+            try:
+                key, value = self.flows.peek_last_item()
+                self.exporter(value, 2)
+            except TypeError:
+                remaining_flows = False
+        ndpi.ndpi_exit_detection_module(self.inspector)
+
+    def exporter(self, flow, trigger_type):
+        """ export method for a flow trigger_type:0(inactive), 1(active), 2(termination) """
+        flow.export_type = trigger_type
+        if flow.detected_protocol.app_protocol is 0:  # short unidentified use caseflows
+            flow.detected_protocol = ndpi.ndpi_detection_giveup(self.inspector,
+                                                                flow.ndpi_flow,
+                                                                1,
+                                                                cast(addressof(c_uint8(0)),
+                                                                     POINTER(c_uint8)))
+            flow.detection_completed = 1
+        del self.flows[flow.key]
+        self.current_flows -= 1
+        self.exports.append(flow)
+
+    def inactive_watcher(self):
+        """ inactive expiration management """
+        remaining_inactives = True
+        while remaining_inactives:
+            try:
+                key, value = self.flows.peek_last_item()
+                if self.current_tick - value.end_time > (self.inactive_timeout*1000):
+                    self.exporter(value, 0)
+                else:
+                    remaining_inactives = False
+            except TypeError:
+                remaining_inactives = False
+
+    def active_watcher(self, key):
+        """ active expiration management """
+        self.exporter(self.flows[key], 1)
+
+    def consume(self, pkt_info):
+        """ consume a packet and update Streamer status """
+        self.processed_packets += 1  # increment total processed packet counter
+        flow = Flow(pkt_info)
+        try:
+            flow_status = self.flows[flow.key].update(pkt_info, self.active_timeout, self.inspector)
+            if flow_status == 2:
+                self.active_watcher(flow.key)
+                self.flows[flow.key] = flow
+                self.flows[flow.key].update(pkt_info, self.active_timeout, self.inspector)
+        except KeyError:  # flow creation
+            self.current_flows += 1
+            self.flows[flow.key] = flow
+            self.flows[flow.key].update(pkt_info, self.active_timeout, self.inspector)
+            self.current_tick = flow.start_time
+            self.inactive_watcher()
+
+    def __iter__(self):
+        pkt_info_gen = Observer(source=self.source)
+        for pkt_info in pkt_info_gen:
+            if pkt_info is not None:
+                self.consume(pkt_info)
+                for export in self.exports:
+                    yield export
+                self.exports = []
+        self.terminate()
+        for export in self.exports:
+            yield export
+        self.exports = []
+
+
+if __name__ == "__main__":
+    device = "../tests/pcap/facebook.pcap"
+    fc = Streamer(source=device, capacity=512, inactive_timeout=9999999, active_timeout=9999999)
+    for flow in fc:
+        print(flow)
+
