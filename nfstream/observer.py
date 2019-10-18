@@ -13,12 +13,6 @@ PacketInfo = namedtuple('PacketInfo', ['ts', 'len', 'raw',
                                        'src_port', 'dst_port'])
 
 
-class InvalidObserverInput(Exception):
-    """ Exception raised we fail to parse packet """
-    def __init__(self, msg):
-        super(InvalidObserverInput, self).__init__(msg)
-
-
 @with_goto
 def process_packet(ts, buf):
     """ process the contents of pcap packet """

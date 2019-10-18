@@ -42,6 +42,19 @@ class TestMethods(unittest.TestCase):
             del streamer
             self.assertEqual(exports, exports_ground_truth)
 
+    def test_unsupported_packet(self):
+        streamer = Streamer(source='tests/pcap/future/quickplay.pcap',
+                            capacity=128000,
+                            inactive_timeout=maxsize,
+                            active_timeout=maxsize)
+        exports = []
+        for export in streamer:
+            exports.append(str(export))
+        exports = sorted(exports)
+        exports_ground_truth = []
+        del streamer
+        self.assertEqual(exports, exports_ground_truth)
+
 
 if __name__ == '__main__':
     unittest.main()
