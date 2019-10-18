@@ -26,22 +26,10 @@ def inet_to_str(inet):
         return socket.inet_ntop(socket.AF_INET6, inet)
 
 
-class StreamerCapacityException(Exception):
-    """ Exception raised when Streamer is full and eviction is triggered """
-    def __init__(self, msg):
-        super(StreamerCapacityException, self).__init__(msg)
-
-
 class InspectorError(Exception):
     """ Exception raised we fail to parse packet """
     def __init__(self, msg):
         super(InspectorError, self).__init__(msg)
-
-
-class UnsupportedProtocol(Exception):
-    """ Exception raised we fail to parse protocol """
-    def __init__(self, msg):
-        super(UnsupportedProtocol, self).__init__(msg)
 
 
 def emergency_callback(key, value):

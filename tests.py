@@ -31,37 +31,44 @@ class TestMethods(unittest.TestCase):
         print(".Testing on {} applications:".format(len(files)))
         for file in files:
             file_path = file.replace('.csv', '').replace('/csv/', '/pcap/')
-            streamertest = Streamer(source=file_path, capacity=64000, inactive_timeout=60000, active_timeout=60000)
+            streamer_test = Streamer(source=file_path,
+                                     capacity=64000,
+                                     inactive_timeout=60000,
+                                     active_timeout=60000)
             test_case_name = file_path.split('/')[-1].replace('.pcap', '')
             print(test_case_name + ': ' + Fore.BLUE + 'OK' + Style.RESET_ALL)
             exports = []
-            for export in streamertest:
+            for export in streamer_test:
                 exports.append(str(export))
             exports = sorted(exports)
             exports_ground_truth = flows_from_file(file)
-            del streamertest
+            del streamer_test
             self.assertEqual(exports, exports_ground_truth)
 
     def test_unsupported_packet(self):
         print("\n----------------------------------------------------------------------")
         print(".Testing on unsupported packet format:")
-        streamertest = Streamer(source='tests/pcap/future/quickplay.pcap',
-                                capacity=64000,
-                                inactive_timeout=60000,
-                                active_timeout=60000)
-        exports = list(streamertest)
-        del streamertest
+        streamer_test = Streamer(source='tests/pcap/future/quickplay.pcap',
+                                 capacity=64000,
+                                 inactive_timeout=60000,
+                                 active_timeout=60000)
+        exports = list(streamer_test)
+        del streamer_test
         self.assertEqual(exports, [])
         print(Fore.BLUE + 'OK' + Style.RESET_ALL)
 
     def test_streamer_capacity(self):
         print("\n----------------------------------------------------------------------")
         print(".Testing warning Streamer capacity reached:")
-        streamertest = Streamer(source='tests/pcap/ajp.pcap',
-                                capacity=1,
-                                inactive_timeout=60000,
-                                active_timeout=60000)
-        exports = list(streamertest)
+        streamer_test = Streamer(source='tests/pcap/ajp.pcap',
+                                 capacity=1,
+                                 inactive_timeout=60000,
+                                 active_timeout=60000)
+        current_capacity = streamer_test.capacity
+        streamer_test.capacity = current_capacity + 1
+        current_capacity = streamer_test.capacity
+        streamer_test.capacity = current_capacity - 1
+        exports = list(streamer_test)
         self.assertEqual(exports[0].key,
                          FlowKey(ip_src=2887584147, ip_dst=2887584146, src_port=8010, dst_port=38856, ip_protocol=6))
         print(Fore.BLUE + 'OK' + Style.RESET_ALL)
