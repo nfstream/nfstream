@@ -6,6 +6,61 @@
 
 nfstream is a flexible and powerful network data analysis library.
 
+Getting Started
+===============
+
+Prerequisites
+-------------
+
+.. code-block:: bash
+
+    apt-get install python-dev libpcap-dev autogen
+
+Installation
+------------
+
+using pip |release|
+^^^^^^^^^^^^^^^^^^^
+
+Binary installers for the latest released version are available:
+
+.. code-block:: bash
+
+    pip3 install nfstream
+
+
+from source
+^^^^^^^^^^^
+
+If you want to build nfstream on your local machine:
+
+.. code-block:: bash
+
+    apt-get autogen
+    git clone https://github.com/aouinizied/nfstream.git
+    cd nfstream
+    python3 setup.py install
+
+
+Contributing
+============
+
+Please read Contributing_ for details on our code of conduct, and the process for submitting pull
+requests to us.
+
+
+Authors
+=======
+
+`Zied Aouini`_  (`aouinizied`_) created nfstream and `these fine people`_
+have contributed.
+
+
+License
+=======
+
+This project is licensed under the GPLv3 License - see the License_ file for details
+
 .. |release| image:: https://img.shields.io/pypi/v/nfstream.svg
               :target: https://pypi.python.org/pypi/nfstream
 .. |nfstream_logo| image:: https://github.com/aouinizied/nfstream/blob/master/docs/nfstream_logo.png
@@ -21,6 +76,12 @@ nfstream is a flexible and powerful network data analysis library.
                :target: https://nfstream.readthedocs.io/en/latest/?badge=latest
 .. |license| image:: https://img.shields.io/badge/license-LGPLv3-blue.svg
                :target: LICENSE
+
+.. _License: https://github.com/aouinizied/nfstream/blob/master/LICENSE
+.. _Contributing: https://github.com/aouinizied/nfstream/blob/master/CONTRIBUTING.rst
+.. _these fine people: https://github.com/aouinizied/nfstream/graphs/contributors
+.. _Zied Aouini: https://www.linkedin.com/in/dr-zied-aouini
+.. _aouinizied: https://github.com/aouinizied
 
 
 
