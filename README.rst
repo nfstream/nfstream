@@ -2,10 +2,12 @@
 |nfstream_logo| nfstream
 ========================
 
-|build| |coverage| |quality| |doc| |python| |license|
+|release| |build| |coverage| |quality| |doc| |python| |license|
 
 nfstream is a flexible and powerful network data analysis library.
 
+.. |release| image:: https://img.shields.io/pypi/v/nfstream.svg
+              :target: https://pypi.python.org/pypi/nfstream
 .. |nfstream_logo| image:: https://github.com/aouinizied/nfstream/blob/master/docs/nfstream_logo.png
 .. |build| image:: https://travis-ci.org/aouinizied/nfstream.svg?branch=master
                :target: https://travis-ci.org/aouinizied/nfstream
