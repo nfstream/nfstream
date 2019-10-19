@@ -2,7 +2,7 @@
 nfstream
 ========
 
-|build| |coverage| |quality| |python| |license|
+|build| |coverage| |quality| |python| |pypy| |license|
 
 nfstream is a flexible and powerful network data analysis library.
 
@@ -12,9 +12,11 @@ nfstream is a flexible and powerful network data analysis library.
                :target: https://codecov.io/gh/aouinizied/nfstream/
 .. |quality| image:: https://img.shields.io/lgtm/grade/python/github/aouinizied/nfstream.svg?logo=lgtm&logoWidth=18)
                :target: https://lgtm.com/projects/g/aouinizied/nfstream/context:python
-.. |python| image:: https://img.shields.io/badge/python-3.4%2C%203.5%2C%203.6%2C%203.7-green.svg
+.. |python| image:: https://img.shields.io/badge/python-3.x-blue.svg
                :target: https://travis-ci.org/aouinizied/nfstream
-.. |license| image:: https://img.shields.io/badge/license-LGPLv3-green.svg
+.. |pypy| image:: https://img.shields.io/badge/pypy3-blue.svg
+               :target: https://travis-ci.org/aouinizied/nfstream
+.. |license| image:: https://img.shields.io/badge/license-LGPLv3-yellow.svg
                :target: LICENSE
 
 
