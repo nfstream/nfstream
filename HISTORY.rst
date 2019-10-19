@@ -2,7 +2,7 @@
 History
 =======
 
-0.0.0 (2019-10-18)
+0.1.0 (2019-10-19)
 ------------------
 
-* nfstream creation.
+* First release on PyPI.
