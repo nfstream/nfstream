@@ -96,7 +96,7 @@ class Flow:
             else:
                 self.dst_to_src_pkts += 1
                 self.dst_to_src_bytes += pkt_info.len
-            if self.detection_completed is 0:
+            if self.detection_completed == 0:
                 self.detected_protocol = ndpi.ndpi_detection_process_packet(ndpi_info_mod,
                                                                             self.ndpi_flow,
                                                                             cast(cast(c_char_p(pkt_info.raw),
@@ -110,10 +110,10 @@ class Flow:
                     valid = (self.src_to_dst_pkts + self.dst_to_src_pkts) > max_num_tcp_dissected_pkts
                 elif self.ip_protocol == 17:
                     valid = (self.src_to_dst_pkts + self.dst_to_src_pkts) > max_num_udp_dissected_pkts
-                if valid or self.detected_protocol.app_protocol is not 0:
-                    if valid or self.detected_protocol.master_protocol is not 91:
+                if valid or self.detected_protocol.app_protocol != 0:
+                    if valid or self.detected_protocol.master_protocol != 91:
                         self.detection_completed = 1
-                        if self.detected_protocol.app_protocol is 0:
+                        if self.detected_protocol.app_protocol == 0:
                             self.detected_protocol = ndpi.ndpi_detection_giveup(ndpi_info_mod,
                                                                                 self.ndpi_flow,
                                                                                 1,
@@ -170,7 +170,7 @@ class Streamer:
     def exporter(self, flow, trigger_type):
         """ export method for a flow trigger_type:0(inactive), 1(active), 2(termination) """
         flow.export_type = trigger_type
-        if flow.detected_protocol.app_protocol is 0:  # short unidentified use caseflows
+        if flow.detected_protocol.app_protocol == 0:  # short unidentified use caseflows
             flow.detected_protocol = ndpi.ndpi_detection_giveup(self.__inspector,
                                                                 flow.ndpi_flow,
                                                                 1,
