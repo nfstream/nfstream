@@ -6,7 +6,7 @@
 
 nfstream is a flexible and powerful network data analysis library.
 
-.. |nfstream_logo| image:: docs/source/_static/nfstream_logo.png
+.. |nfstream_logo| image:: docs/nfstream_logo.png
 .. |build| image:: https://travis-ci.org/aouinizied/nfstream.svg?branch=master
                :target: https://travis-ci.org/aouinizied/nfstream
 .. |coverage| image:: https://codecov.io/gh/aouinizied/nfstream/branch/master/graph/badge.svg
