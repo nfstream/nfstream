@@ -34,6 +34,7 @@ class InspectorError(Exception):
 
 def emergency_callback(key, value):
     """ Callback used for Streamer eviction method """
+    value.ndpi_flow = None
     print("WARNING: Streamer capacity limit reached: lru flow entry dropped.")
 
 
@@ -58,8 +59,8 @@ class Flow:
         self.key = get_flow_key(pkt_info)
         self.ip_src = pkt_info.ip_src
         self.ip_dst = pkt_info.ip_dst
-        self.ip_src_b = pkt_info.ip_src_b
-        self.ip_dst_b = pkt_info.ip_dst_b
+        self.__ip_src_b = pkt_info.ip_src_b
+        self.__ip_dst_b = pkt_info.ip_dst_b
         self.src_port = pkt_info.src_port
         self.dst_port = pkt_info.dst_port
         self.ip_protocol = pkt_info.ip_protocol
@@ -71,15 +72,14 @@ class Flow:
         memset(self.ndpi_flow, 0, sizeof(ndpi_flow_struct))
         self.detected_protocol = ndpi_protocol()
         self.detection_completed = 0
-        self.id = 0
-        self.src_id = pointer(ndpi_id_struct())
-        self.dst_id = pointer(ndpi_id_struct())
+        self.__src_id = pointer(ndpi_id_struct())
+        self.__dst_id = pointer(ndpi_id_struct())
 
-    def __str__(self):
+    def debug(self):
         return flow_export_template.format(
-            ip_src=inet_to_str(self.ip_src_b).replace(':0:', '::'),
+            ip_src=inet_to_str(self.__ip_src_b).replace(':0:', '::'),
             src_port=self.src_port,
-            ip_dst=inet_to_str(self.ip_dst_b).replace(':0:', '::'),
+            ip_dst=inet_to_str(self.__ip_dst_b).replace(':0:', '::'),
             dst_port=self.dst_port,
             ip_protocol=self.ip_protocol,
             src_to_dst_pkts=self.src_to_dst_pkts,
@@ -109,8 +109,8 @@ class Flow:
                                                                                       c_void_p), POINTER(c_uint8)),
                                                                             len(pkt_info.raw),
                                                                             pkt_info.ts,
-                                                                            self.src_id,
-                                                                            self.dst_id)
+                                                                            self.__src_id,
+                                                                            self.__dst_id)
                 valid = False
                 if self.ip_protocol == 6:
                     valid = (self.src_to_dst_pkts + self.dst_to_src_pkts) > max_num_tcp_dissected_pkts
@@ -140,10 +140,10 @@ class Streamer:
 
     def __init__(self, source=None, capacity=128000, active_timeout=120, inactive_timeout=60):
         Streamer.num_streamers += 1
-        self.exports = []
+        self.__exports = []
         self.source = source
-        self.flows = LRU(capacity, callback=emergency_callback)  # LRU cache
-        self._capacity = self.flows.get_size()  # Streamer capacity (default: 128000)
+        self.__flows = LRU(capacity, callback=emergency_callback)  # LRU cache
+        self._capacity = self.__flows.get_size()  # Streamer capacity (default: 128000)
         self.active_timeout = active_timeout  # expiration active timeout
         self.inactive_timeout = inactive_timeout  # expiration inactive timeout
         self.current_flows = 0  # counter for stored flows
@@ -151,19 +151,19 @@ class Streamer:
         self.processed_packets = 0  # current timestamp
         if ndpi.ndpi_get_api_version() != ndpi.ndpi_wrap_get_api_version():
             raise InspectorError("dpi engine version mismatch.")
-        self.inspector = ndpi.ndpi_init_detection_module()
-        if self.inspector is None:
+        self.__inspector = ndpi.ndpi_init_detection_module()
+        if self.__inspector is None:
             raise InspectorError("Inspector module failed to initialize.")
         else:
-            initialize(self.inspector)
+            initialize(self.__inspector)
 
     def _get_capacity(self):
         """ getter for capacity attribute """
-        return self.flows.get_size()
+        return self.__flows.get_size()
 
     def _set_capacity(self, new_size):
         """ setter for capacity size attribute """
-        return self.flows.set_size(new_size)
+        return self.__flows.set_size(new_size)
 
     capacity = property(_get_capacity, _set_capacity)
 
@@ -172,32 +172,34 @@ class Streamer:
         remaining_flows = True
         while remaining_flows:
             try:
-                key, value = self.flows.peek_last_item()
+                key, value = self.__flows.peek_last_item()
                 self.exporter(value, 2)
             except TypeError:
                 remaining_flows = False
-        ndpi.ndpi_exit_detection_module(self.inspector)
+        ndpi.ndpi_exit_detection_module(self.__inspector)
 
     def exporter(self, flow, trigger_type):
         """ export method for a flow trigger_type:0(inactive), 1(active), 2(termination) """
         flow.export_type = trigger_type
         if flow.detected_protocol.app_protocol is 0:  # short unidentified use caseflows
-            flow.detected_protocol = ndpi.ndpi_detection_giveup(self.inspector,
+            flow.detected_protocol = ndpi.ndpi_detection_giveup(self.__inspector,
                                                                 flow.ndpi_flow,
                                                                 1,
                                                                 cast(addressof(c_uint8(0)),
                                                                      POINTER(c_uint8)))
             flow.detection_completed = 1
-        del self.flows[flow.key]
+
+        flow.ndpi_flow = None
+        del self.__flows[flow.key]
         self.current_flows -= 1
-        self.exports.append(flow)
+        self.__exports.append(flow)
 
     def inactive_watcher(self):
         """ inactive expiration management """
         remaining_inactives = True
         while remaining_inactives:
             try:
-                key, value = self.flows.peek_last_item()
+                key, value = self.__flows.peek_last_item()
                 if self.current_tick - value.end_time > (self.inactive_timeout*1000):
                     self.exporter(value, 0)
                 else:
@@ -207,22 +209,22 @@ class Streamer:
 
     def active_watcher(self, key):
         """ active expiration management """
-        self.exporter(self.flows[key], 1)
+        self.exporter(self.__flows[key], 1)
 
     def consume(self, pkt_info):
         """ consume a packet and update Streamer status """
         self.processed_packets += 1  # increment total processed packet counter
         flow = Flow(pkt_info)
-        if flow.key in self.flows:
-            flow_status = self.flows[flow.key].update(pkt_info, self.active_timeout, self.inspector)
+        if flow.key in self.__flows:
+            flow_status = self.__flows[flow.key].update(pkt_info, self.active_timeout, self.__inspector)
             if flow_status == 2:
                 self.active_watcher(flow.key)
-                self.flows[flow.key] = flow
-                self.flows[flow.key].update(pkt_info, self.active_timeout, self.inspector)
+                self.__flows[flow.key] = flow
+                self.__flows[flow.key].update(pkt_info, self.active_timeout, self.__inspector)
         else:
             self.current_flows += 1
-            flow.update(pkt_info, self.active_timeout, self.inspector)
-            self.flows[flow.key] = flow
+            flow.update(pkt_info, self.active_timeout, self.__inspector)
+            self.__flows[flow.key] = flow
             self.current_tick = flow.start_time
             self.inactive_watcher()
 
@@ -231,12 +233,12 @@ class Streamer:
         for pkt_info in pkt_info_gen:
             if pkt_info is not None:
                 self.consume(pkt_info)
-                for export in self.exports:
+                for export in self.__exports:
                     yield export
-                self.exports = []
+                self.__exports = []
         self.terminate()
-        for export in self.exports:
+        for export in self.__exports:
             yield export
-        self.exports = []
+        self.__exports = []
 
 

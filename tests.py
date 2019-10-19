@@ -36,14 +36,15 @@ class TestMethods(unittest.TestCase):
                                      inactive_timeout=60000,
                                      active_timeout=60000)
             test_case_name = file_path.split('/')[-1].replace('.pcap', '')
-            print(test_case_name + ': ' + Fore.BLUE + 'OK' + Style.RESET_ALL)
+            print(test_case_name + ': ')
             exports = []
             for export in streamer_test:
-                exports.append(str(export))
+                exports.append(export.debug())
             exports = sorted(exports)
             exports_ground_truth = flows_from_file(file)
             del streamer_test
             self.assertEqual(exports, exports_ground_truth)
+            print(Fore.BLUE + 'OK' + Style.RESET_ALL)
 
     def test_unsupported_packet(self):
         print("\n----------------------------------------------------------------------")
