@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from collections import namedtuple
-from goto import with_goto
 import dpkt
 import pcap
 
@@ -13,10 +12,8 @@ PacketInfo = namedtuple('PacketInfo', ['ts', 'len', 'raw',
                                        'src_port', 'dst_port'])
 
 
-@with_goto
 def process_packet(ts, buf):
     """ process the contents of pcap packet """
-    passed_from = 0
     try:
         eth = dpkt.ethernet.Ethernet(buf)
     except dpkt.dpkt.NeedData:
@@ -29,17 +26,18 @@ def process_packet(ts, buf):
     else:
         return
     ip = eth.data
-    label .transport_check
-    passed_from += 1
-    if isinstance(ip.data, dpkt.tcp.TCP):
-        transport = ip.data
-    elif isinstance(ip.data, dpkt.udp.UDP):
-        transport = ip.data
-    elif isinstance(ip.data, dpkt.ip6.IP6):
-        ip = ip.data
-        goto .transport_check
-    else:
-        pass
+    move_up = True
+    while move_up:
+        if isinstance(ip.data, dpkt.tcp.TCP):
+            transport = ip.data
+            move_up = False
+        elif isinstance(ip.data, dpkt.udp.UDP):
+            transport = ip.data
+            move_up = False
+        elif isinstance(ip.data, dpkt.ip6.IP6):
+            ip = ip.data
+        else:
+            move_up = False
     return PacketInfo(ts=int(ts*1000), len=len(buf), raw=bytes(ip),
                       mac_src=eth.src, mac_dst=eth.dst, ip_version=ip_version,
                       ip_src=int.from_bytes(ip.src, "big"), ip_dst=int.from_bytes(ip.dst, "big"),
