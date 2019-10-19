@@ -13,12 +13,11 @@ nfstream is a flexible and powerful network data analysis library.
                :target: https://codecov.io/gh/aouinizied/nfstream/
 .. |quality| image:: https://img.shields.io/lgtm/grade/python/github/aouinizied/nfstream.svg?logo=lgtm&logoWidth=18)
                :target: https://lgtm.com/projects/g/aouinizied/nfstream/context:python
-.. |python| image:: https://img.shields.io/badge/python-3.x-green.svg
+.. |python| image:: https://img.shields.io/badge/python-3.x-blue.svg
                :target: https://travis-ci.org/aouinizied/nfstream
 .. |doc| image:: https://readthedocs.org/projects/nfstream/badge/?version=latest
                :target: https://nfstream.readthedocs.io/en/latest/?badge=latest
-
-.. |license| image:: https://img.shields.io/badge/license-LGPLv3-green.svg
+.. |license| image:: https://img.shields.io/badge/license-LGPLv3-blue.svg
                :target: LICENSE
 
 
