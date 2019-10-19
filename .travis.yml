@@ -5,84 +5,13 @@ python:
   - "3.5"
   - "3.6"
   - "3.7"
+  - "3.8"
 
-matrix:
-  include:
-    - os: osx
-      compiler: clang
-
-    - os: linux
-      compiler: gcc
-      addons:
-        apt:
-          packages:
-            - libpcap-dev
-            - autogen
-
-    - os: linux
-      compiler: clang
-      addons:
-        apt:
-          packages:
-            - libpcap-dev
-            - autogen
-
-    - os: linux
-      compiler: gcc-8
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - libpcap-dev
-            - autogen
-      env:
-        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
-
-    - os: linux
-      compiler: gcc-9
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-9
-            - libpcap-dev
-            - autogen
-      env:
-        - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
-
-    - os: linux
-      compiler: clang-8
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-8
-          packages:
-            - clang-8
-            - libpcap-dev
-            - autogen
-      env:
-        - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
-
-    - os: linux
-      compiler: clang-7
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-7
-          packages:
-            - clang-7
-            - libpcap-dev
-            - autogen
-      env:
-        - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
-
-before_install:
-  - eval "${MATRIX_EVAL}"
+addons:
+  apt:
+    packages:
+      - libpcap-dev
+      - autogen
 
 install:
   - pip install -r requirements.txt
