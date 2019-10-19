@@ -59,6 +59,8 @@ install_requires = ['pypcap>=1.2.3',
                     'numpydoc>=0.8',
                     'sphinx_rtd_theme>=0.4.3',
                     'colorama>=0.4.1']
+if not os.getenv('READTHEDOCS'):
+    install_requires.append('pypcap')
 
 
 setup(
