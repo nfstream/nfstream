@@ -36,7 +36,7 @@ class TestMethods(unittest.TestCase):
                                      inactive_timeout=60000,
                                      active_timeout=60000)
             test_case_name = file_path.split('/')[-1].replace('.pcap', '')
-            print(test_case_name + ': ')
+            # print(test_case_name + ': ')
             exports = []
             for export in streamer_test:
                 exports.append(export.debug())
@@ -70,9 +70,31 @@ class TestMethods(unittest.TestCase):
         current_capacity = streamer_test.capacity
         streamer_test.capacity = current_capacity - 1
         exports = list(streamer_test)
+        del streamer_test
         self.assertEqual(exports[0].key,
                          FlowKey(ip_src=2887584147, ip_dst=2887584146, src_port=8010, dst_port=38856, ip_protocol=6))
         print(Fore.BLUE + 'OK' + Style.RESET_ALL)
+
+    def test_expiration_management(self):
+        print("\n----------------------------------------------------------------------")
+        print(".Testing Streamer expiration management:")
+        streamer_test = Streamer(source='tests/pcap/expiration/small_instagram.pcap',
+                                 capacity=100,
+                                 inactive_timeout=0,
+                                 active_timeout=60000)
+        exports = list(streamer_test)
+        del streamer_test
+        self.assertEqual(len(exports), 39)
+        print('Inactive expiration: ' + Fore.BLUE + 'OK' + Style.RESET_ALL)
+
+        streamer_test = Streamer(source='tests/pcap/expiration/small_instagram.pcap',
+                                 capacity=100,
+                                 inactive_timeout=60000,
+                                 active_timeout=0)
+        exports = list(streamer_test)
+        del streamer_test
+        self.assertEqual(len(exports), 39)
+        print('Active expiration: ' + Fore.BLUE + 'OK' + Style.RESET_ALL)
 
 
 if __name__ == '__main__':

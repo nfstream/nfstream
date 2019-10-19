@@ -26,12 +26,6 @@ def inet_to_str(inet):
         return socket.inet_ntop(socket.AF_INET6, inet)
 
 
-class InspectorError(Exception):
-    """ Exception raised we fail to parse packet """
-    def __init__(self, msg):
-        super(InspectorError, self).__init__(msg)
-
-
 def emergency_callback(key, value):
     """ Callback used for Streamer eviction method """
     value.ndpi_flow = None
@@ -91,7 +85,7 @@ class Flow:
 
     def update(self, pkt_info, active_timeout, ndpi_info_mod):
         """ Update a flow from a packet and return status """
-        if (pkt_info.ts - self.end_time) > (active_timeout*1000):
+        if (pkt_info.ts - self.end_time) >= (active_timeout*1000):
             return 2
         else:
             self.end_time = pkt_info.ts
@@ -149,13 +143,8 @@ class Streamer:
         self.current_flows = 0  # counter for stored flows
         self.current_tick = 0  # current timestamp
         self.processed_packets = 0  # current timestamp
-        if ndpi.ndpi_get_api_version() != ndpi.ndpi_wrap_get_api_version():
-            raise InspectorError("dpi engine version mismatch.")
         self.__inspector = ndpi.ndpi_init_detection_module()
-        if self.__inspector is None:
-            raise InspectorError("Inspector module failed to initialize.")
-        else:
-            initialize(self.__inspector)
+        initialize(self.__inspector)
 
     def _get_capacity(self):
         """ getter for capacity attribute """
@@ -200,7 +189,7 @@ class Streamer:
         while remaining_inactives:
             try:
                 key, value = self.__flows.peek_last_item()
-                if self.current_tick - value.end_time > (self.inactive_timeout*1000):
+                if (self.current_tick - value.end_time) >= (self.inactive_timeout*1000):
                     self.exporter(value, 0)
                 else:
                     remaining_inactives = False
