@@ -11,6 +11,7 @@ from os.path import abspath, dirname
 
 ndpi = CDLL(dirname(abspath(__file__)) + '/ndpi_wrap.so')
 
+
 class ndpi_detection_module_struct(Structure):
     pass
 
