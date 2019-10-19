@@ -4,7 +4,7 @@
 
 |release| |build| |coverage| |quality| |doc| |python| |license|
 
-nfstream is a flexible and powerful network data analysis library.
+nfstream is a flexible and lightweight network data analysis library.
 
 Getting Started
 ===============
@@ -19,8 +19,8 @@ Prerequisites
 Installation
 ------------
 
-using pip |release|
-^^^^^^^^^^^^^^^^^^^
+using pip
+^^^^^^^^^
 
 Binary installers for the latest released version are available:
 
@@ -38,7 +38,7 @@ If you want to build nfstream on your local machine:
 
     apt-get autogen
     git clone https://github.com/aouinizied/nfstream.git
-    cd nfstream
+    # move to nfstream directory and run
     python3 setup.py install
 
 
