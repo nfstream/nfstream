@@ -5,8 +5,10 @@
     we support several deep packet inspection engines.
 """
 
-from ctypes import *
+from ctypes import CDLL, Structure, c_uint16, c_int, c_ulong, c_uint32, CFUNCTYPE, c_void_p, POINTER, c_char_p, c_uint8
+from ctypes import c_char, c_uint, c_int16, c_longlong, c_size_t, Union, c_ubyte, c_uint64, c_int32, c_ushort
 from os.path import abspath
+
 ndpi = CDLL(abspath('nfstream/ndpi_wrap.so'))
 
 

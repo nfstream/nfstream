@@ -4,9 +4,9 @@
 from lru import LRU  # for LRU streamer management
 from collections import namedtuple
 from .observer import Observer
-from .dpi import *
 import socket
-
+from .dpi import ndpi, NDPI_PROTOCOL_BITMASK, ndpi_flow_struct, ndpi_protocol, ndpi_id_struct
+from ctypes import pointer, memset, sizeof, cast, c_char_p, c_void_p, POINTER, c_uint8, addressof
 max_num_udp_dissected_pkts = 16
 max_num_tcp_dissected_pkts = 10
 

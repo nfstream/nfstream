@@ -16,7 +16,6 @@ PacketInfo = namedtuple('PacketInfo', ['ts', 'len', 'raw',
 @with_goto
 def process_packet(ts, buf):
     """ process the contents of pcap packet """
-    ip_version = 0
     passed_from = 0
     try:
         eth = dpkt.ethernet.Ethernet(buf)
