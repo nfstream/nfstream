@@ -44,7 +44,7 @@ class TestMethods(unittest.TestCase):
             exports_ground_truth = flows_from_file(file)
             del streamer_test
             self.assertEqual(exports, exports_ground_truth)
-            print(Fore.BLUE + 'OK' + Style.RESET_ALL)
+        print(Fore.BLUE + 'OK' + Style.RESET_ALL)
 
     def test_unsupported_packet(self):
         print("\n----------------------------------------------------------------------")
