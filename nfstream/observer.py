@@ -61,16 +61,26 @@ class Observer:
         self.timestamp_in_ns = timestamp_in_ns
         self.rfmon = rfmon
         self.packet_generator = None
-        self.packet_generator = pcap.pcap(name=self.source,
-                                          snaplen=self.snaplen,
-                                          promisc=self.promisc,
-                                          timeout_ms=self.timeout_ms,
-                                          immediate=self.no_buffering,
-                                          timestamp_in_ns=self.timestamp_in_ns,
-                                          rfmon=self.rfmon)
+        try:
+            self.packet_generator = pcap.pcap(name=self.source,
+                                              snaplen=self.snaplen,
+                                              promisc=self.promisc,
+                                              timeout_ms=self.timeout_ms,
+                                              immediate=self.no_buffering,
+                                              timestamp_in_ns=self.timestamp_in_ns,
+                                              rfmon=self.rfmon)
+        except OSError:
+            print("ERROR: Streamer initialized on unfound device (root privilege needed for live capture \
+or pcap file path unfound).")
 
     def __iter__(self):
         if self.packet_generator is not None:
-            for timestamp, packet in self.packet_generator:
-                packet_information = process_packet(timestamp, packet)
-                yield packet_information
+            while True:
+                try:
+                    timestamp, packet = next(self.packet_generator)
+                    packet_information = process_packet(timestamp, packet)
+                    yield packet_information
+                except StopIteration:
+                    break
+                except KeyboardInterrupt:
+                    raise StopIteration
