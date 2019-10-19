@@ -9,4 +9,4 @@ from nfstream import streamer
 
 __author__ = """Zied Aouini"""
 __email__ = 'aouinizied@gmail.com'
-__version__ = '0.1.0'
+__version__ = '0.2.0'
