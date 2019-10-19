@@ -53,14 +53,13 @@ needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
 pytest_runner = ['pytest-runner'] if needs_pytest else []
 
 python_requires = '>=3.5'
-install_requires = ['pypcap>=1.2.3',
-                    'lru-dict>=1.1.6',
+install_requires = ['lru-dict>=1.1.6',
                     'dpkt>=1.9.2',
                     'numpydoc>=0.8',
                     'sphinx_rtd_theme>=0.4.3',
                     'colorama>=0.4.1']
 if not os.getenv('READTHEDOCS'):
-    install_requires.append('pypcap')
+    install_requires.append('pypcap>=1.2.3')
 
 
 setup(
