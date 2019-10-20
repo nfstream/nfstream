@@ -22,4 +22,9 @@ History
 * Json support for flow printing.
 * Add examples.
 
+0.3.1 (2019-10-20)
+------------------
+
+* Add category_name as flow feature.
+
 
