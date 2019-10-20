@@ -17,7 +17,7 @@ nfstream is a flexible and lightweight network data analysis library.
 Dealing with a big pcap file and just want to see flow informations stored in as a csv file or
 pandas Dataframe? nfstream make this path easier in few lines:
 
-.. image:: docs/source/streamer_example.png
+.. image:: https://github.com/aouinizied/nfstream/blob/master/docs/streamer_example.png
   :scale: 80%
   :align: center
 
