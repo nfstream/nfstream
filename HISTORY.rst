@@ -13,7 +13,7 @@ History
 * Add nDPI bindings as part of the released package
 * Documentation improvement
 
-0.3.0 (2019-10-19)
+0.3.0 (2019-10-20)
 ------------------
 
 * Add user defined callbacks feature.
