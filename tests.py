@@ -2,7 +2,7 @@ import unittest
 from nfstream.streamer import Streamer, FlowKey
 from colorama import Fore, Style
 import os
-
+import json
 
 def get_files_list(path):
     files = []
@@ -95,6 +95,18 @@ class TestMethods(unittest.TestCase):
         del streamer_test
         self.assertEqual(len(exports), 39)
         print('Active expiration: ' + Fore.BLUE + 'OK' + Style.RESET_ALL)
+
+    def test_flow_str_representation(self):
+        print("\n----------------------------------------------------------------------")
+        print(".Testing Flow json representation:")
+        streamer_test = Streamer(source='tests/pcap/expiration/small_instagram.pcap',
+                                 capacity=100,
+                                 inactive_timeout=60,
+                                 active_timeout=120)
+        exports = list(streamer_test)
+        del streamer_test
+        print(exports[0])
+        print('Flow to json: ' + Fore.BLUE + 'OK' + Style.RESET_ALL)
 
 
 if __name__ == '__main__':

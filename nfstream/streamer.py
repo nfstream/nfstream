@@ -7,6 +7,7 @@ from .observer import Observer
 import socket
 from .dpi import ndpi, NDPI_PROTOCOL_BITMASK, ndpi_flow_struct, ndpi_protocol, ndpi_id_struct
 from ctypes import pointer, memset, sizeof, cast, c_char_p, c_void_p, POINTER, c_uint8, addressof
+import json
 max_num_udp_dissected_pkts = 16
 max_num_tcp_dissected_pkts = 10
 
@@ -49,12 +50,14 @@ class Flow:
     def __init__(self, pkt_info):
         self.start_time = pkt_info.ts
         self.end_time = pkt_info.ts
-        self.export_type = -1
+        self.export_reason = -1
         self.key = get_flow_key(pkt_info)
-        self.ip_src = pkt_info.ip_src
-        self.ip_dst = pkt_info.ip_dst
+        self.__ip_src_int = pkt_info.ip_src
+        self.__ip_dst_int = pkt_info.ip_dst
         self.__ip_src_b = pkt_info.ip_src_b
         self.__ip_dst_b = pkt_info.ip_dst_b
+        self.ip_src = inet_to_str(self.__ip_src_b)
+        self.ip_dst = inet_to_str(self.__ip_dst_b)
         self.src_port = pkt_info.src_port
         self.dst_port = pkt_info.dst_port
         self.ip_protocol = pkt_info.ip_protocol
@@ -68,20 +71,7 @@ class Flow:
         self.detection_completed = 0
         self.__src_id = pointer(ndpi_id_struct())
         self.__dst_id = pointer(ndpi_id_struct())
-
-    def debug(self):
-        return flow_export_template.format(
-            ip_src=inet_to_str(self.__ip_src_b).replace(':0:', '::'),
-            src_port=self.src_port,
-            ip_dst=inet_to_str(self.__ip_dst_b).replace(':0:', '::'),
-            dst_port=self.dst_port,
-            ip_protocol=self.ip_protocol,
-            src_to_dst_pkts=self.src_to_dst_pkts,
-            dst_to_src_pkts=self.dst_to_src_pkts,
-            src_to_dst_bytes=self.src_to_dst_bytes,
-            dst_to_src_bytes=self.dst_to_src_bytes,
-            ndpi_proto_num=str(self.detected_protocol.master_protocol) + '.' + str(self.detected_protocol.app_protocol)
-        )
+        self.application_name = 'Unknown.Unknown'
 
     def update(self, pkt_info, active_timeout, ndpi_info_mod):
         """ Update a flow from a packet and return status """
@@ -89,7 +79,7 @@ class Flow:
             return 2
         else:
             self.end_time = pkt_info.ts
-            if (self.ip_src == pkt_info.ip_src and self.ip_dst == pkt_info.ip_dst and
+            if (self.__ip_src_int == pkt_info.ip_src and self.__ip_dst_int == pkt_info.ip_dst and
                     self.src_port == pkt_info.src_port and self.dst_port == pkt_info.dst_port):
                 self.src_to_dst_pkts += 1
                 self.src_to_dst_bytes += pkt_info.len
@@ -120,6 +110,36 @@ class Flow:
                                                                                 cast(addressof(c_uint8(0)),
                                                                                      POINTER(c_uint8)))
             return 0
+
+    def debug(self):
+        return flow_export_template.format(
+            ip_src=inet_to_str(self.__ip_src_b).replace(':0:', '::'),
+            src_port=self.src_port,
+            ip_dst=inet_to_str(self.__ip_dst_b).replace(':0:', '::'),
+            dst_port=self.dst_port,
+            ip_protocol=self.ip_protocol,
+            src_to_dst_pkts=self.src_to_dst_pkts,
+            dst_to_src_pkts=self.dst_to_src_pkts,
+            src_to_dst_bytes=self.src_to_dst_bytes,
+            dst_to_src_bytes=self.dst_to_src_bytes,
+            ndpi_proto_num=str(self.detected_protocol.master_protocol) + '.' + str(self.detected_protocol.app_protocol)
+        )
+
+    def __str__(self):
+        return json.dumps({'ip_src': self.ip_src,
+                           'src_port': self.src_port,
+                           'ip_dst': self.ip_dst,
+                           'dst_port': self.dst_port,
+                           'ip_protocol': self.ip_protocol,
+                           'src_to_dst_pkts': self.src_to_dst_pkts,
+                           'dst_to_src_pkts': self.dst_to_src_pkts,
+                           'src_to_dst_bytes': self.src_to_dst_bytes,
+                           'dst_to_src_bytes': self.dst_to_src_bytes,
+                           'application_name': self.application_name,
+                           'start_time': self.start_time,
+                           'end_time': self.end_time,
+                           'export_reason': self.export_reason
+                           })
 
 
 def initialize(ndpi_struct):
@@ -168,8 +188,8 @@ class Streamer:
         ndpi.ndpi_exit_detection_module(self.__inspector)
 
     def exporter(self, flow, trigger_type):
-        """ export method for a flow trigger_type:0(inactive), 1(active), 2(termination) """
-        flow.export_type = trigger_type
+        """ export method for a flow trigger_type:0(inactive), 1(active), 2(flush) """
+        flow.export_reason = trigger_type
         if flow.detected_protocol.app_protocol == 0:  # short unidentified use caseflows
             flow.detected_protocol = ndpi.ndpi_detection_giveup(self.__inspector,
                                                                 flow.ndpi_flow,
@@ -177,7 +197,11 @@ class Streamer:
                                                                 cast(addressof(c_uint8(0)),
                                                                      POINTER(c_uint8)))
             flow.detection_completed = 1
-
+        master_name = cast(ndpi.ndpi_get_proto_name(self.__inspector, flow.detected_protocol.master_protocol),
+                           c_char_p).value.decode('utf-8')
+        app_name = cast(ndpi.ndpi_get_proto_name(self.__inspector, flow.detected_protocol.app_protocol),
+                        c_char_p).value.decode('utf-8')
+        flow.application_name = master_name + '.' + app_name
         flow.ndpi_flow = None
         del self.__flows[flow.key]
         self.current_flows -= 1
@@ -203,15 +227,17 @@ class Streamer:
     def consume(self, pkt_info):
         """ consume a packet and update Streamer status """
         self.processed_packets += 1  # increment total processed packet counter
-        flow = Flow(pkt_info)
-        if flow.key in self.__flows:
-            flow_status = self.__flows[flow.key].update(pkt_info, self.active_timeout, self.__inspector)
+        key = get_flow_key(pkt_info)
+        if key in self.__flows:
+            flow_status = self.__flows[key].update(pkt_info, self.active_timeout, self.__inspector)
             if flow_status == 2:
-                self.active_watcher(flow.key)
+                self.active_watcher(key)
+                flow = Flow(pkt_info)
                 self.__flows[flow.key] = flow
                 self.__flows[flow.key].update(pkt_info, self.active_timeout, self.__inspector)
         else:
             self.current_flows += 1
+            flow = Flow(pkt_info)
             flow.update(pkt_info, self.active_timeout, self.__inspector)
             self.__flows[flow.key] = flow
             self.current_tick = flow.start_time
