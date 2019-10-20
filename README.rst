@@ -9,8 +9,8 @@ nfstream is a flexible and lightweight network data analysis library.
 **nfstream main features**
 
 * **Performance:** nfstream was designed to be fast, CPU savvy and small memory fingerprint.
-* **Layer-7 visibility:** (250+ applications including Tor, Messenger, WhatsApp, etc.).
-* **Flexibility:** Missing metric? You can add a metric in 2 lines of code using nfstream User Defined Metrics.
+* **Layer-7 visibility:** nfstream dissection is based on nDPI_ (~300 applications including Tor, Messenger, WhatsApp, etc.).
+* **Flexibility:** add a flow metric in 2 lines of code using nfstream plugins method.
 
 **examples of use**
 
@@ -108,5 +108,6 @@ This project is licensed under the GPLv3 License - see the License_ file for det
 .. _Zied Aouini: https://www.linkedin.com/in/dr-zied-aouini
 .. _aouinizied: https://github.com/aouinizied
 .. _Documentation: https://nfstream.readthedocs.io/en/latest/
+.. _nDPI: https://www.ntop.org/products/deep-packet-inspection/ndpi/
 
 
