@@ -14,7 +14,7 @@ nfstream is a flexible and lightweight network data analysis library.
 
 **examples of use**
 
-* Dealing with a big pcap file and just want to see flow informations stored in as a csv file or pandas Dataframe? nfstream make this path easier in few lines:
+* Dealing with a big pcap file and just want to see flow informations stored in as a csv file or pandas Dataframe? nfstream make this path easier in few lines.
 
 .. image:: https://github.com/aouinizied/nfstream/blob/master/docs/streamer_example.png
   :align: center
@@ -24,9 +24,9 @@ nfstream is a flexible and lightweight network data analysis library.
 
     {"ip_src": "192.168.43.18", "src_port": 52066, "ip_dst": "66.220.156.68", "dst_port": 443, "ip_protocol": 6, "src_to_dst_pkts": 9, "dst_to_src_pkts": 10, "src_to_dst_bytes": 1345, "dst_to_src_bytes": 4400, "application_name": "TLS.Facebook", "start_time": 1472393122365, "end_time": 1472393123665, "export_reason": 2}
 
-* Didn't find a specific flow feature? add it to Streamer as a plugin in few lines:
+* Didn't find a specific flow feature? add it to Streamer as a plugin in few lines.
 
-.. image:: docs/plugin_example.png
+.. image:: https://github.com/aouinizied/nfstream/blob/master/docs/plugin_example.png
   :align: center
 
 * More example and details are provided on the official Documentation_.
