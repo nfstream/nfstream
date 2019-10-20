@@ -47,7 +47,7 @@ def get_flow_key(pkt_info):
 
 class Flow:
     """ Flow entry structure """
-    def __init__(self, pkt_info):
+    def __init__(self, pkt_info, streamer_metrics):
         self.start_time = pkt_info.ts
         self.end_time = pkt_info.ts
         self.export_reason = -1
@@ -72,26 +72,31 @@ class Flow:
         self.__src_id = pointer(ndpi_id_struct())
         self.__dst_id = pointer(ndpi_id_struct())
         self.application_name = 'Unknown.Unknown'
+        self.metrics = {}
+        for name, metric in streamer_metrics.items():
+            self.metrics[name] = 0
 
-    def update(self, pkt_info, active_timeout, ndpi_info_mod):
+    def update(self, pkt_info, active_timeout, ndpi_info_mod, streamer_metrics):
         """ Update a flow from a packet and return status """
-        if (pkt_info.ts - self.end_time) >= (active_timeout*1000):
+        if (pkt_info.ts - self.end_time) >= (active_timeout*1000):  # Active Expiration
             return 2
-        else:
+        else:  # We start by core management
             self.end_time = pkt_info.ts
             if (self.__ip_src_int == pkt_info.ip_src and self.__ip_dst_int == pkt_info.ip_dst and
                     self.src_port == pkt_info.src_port and self.dst_port == pkt_info.dst_port):
                 self.src_to_dst_pkts += 1
-                self.src_to_dst_bytes += pkt_info.len
+                self.src_to_dst_bytes += pkt_info.size
+                pkt_info.direction = 0
             else:
                 self.dst_to_src_pkts += 1
-                self.dst_to_src_bytes += pkt_info.len
+                self.dst_to_src_bytes += pkt_info.size
+                pkt_info.direction = 1
             if self.detection_completed == 0:
                 self.detected_protocol = ndpi.ndpi_detection_process_packet(ndpi_info_mod,
                                                                             self.ndpi_flow,
-                                                                            cast(cast(c_char_p(pkt_info.raw),
+                                                                            cast(cast(c_char_p(pkt_info.content),
                                                                                       c_void_p), POINTER(c_uint8)),
-                                                                            len(pkt_info.raw),
+                                                                            len(pkt_info.content),
                                                                             pkt_info.ts,
                                                                             self.__src_id,
                                                                             self.__dst_id)
@@ -109,6 +114,8 @@ class Flow:
                                                                                 1,
                                                                                 cast(addressof(c_uint8(0)),
                                                                                      POINTER(c_uint8)))
+            for name, metric in self.metrics.items():
+                self = streamer_metrics[name](pkt_info, self)
             return 0
 
     def debug(self):
@@ -126,20 +133,21 @@ class Flow:
         )
 
     def __str__(self):
-        return json.dumps({'ip_src': self.ip_src,
-                           'src_port': self.src_port,
-                           'ip_dst': self.ip_dst,
-                           'dst_port': self.dst_port,
-                           'ip_protocol': self.ip_protocol,
-                           'src_to_dst_pkts': self.src_to_dst_pkts,
-                           'dst_to_src_pkts': self.dst_to_src_pkts,
-                           'src_to_dst_bytes': self.src_to_dst_bytes,
-                           'dst_to_src_bytes': self.dst_to_src_bytes,
-                           'application_name': self.application_name,
-                           'start_time': self.start_time,
-                           'end_time': self.end_time,
-                           'export_reason': self.export_reason
-                           })
+        metrics = {'ip_src': self.ip_src,
+                   'src_port': self.src_port,
+                   'ip_dst': self.ip_dst,
+                   'dst_port': self.dst_port,
+                   'ip_protocol': self.ip_protocol,
+                   'src_to_dst_pkts': self.src_to_dst_pkts,
+                   'dst_to_src_pkts': self.dst_to_src_pkts,
+                   'src_to_dst_bytes': self.src_to_dst_bytes,
+                   'dst_to_src_bytes': self.dst_to_src_bytes,
+                   'application_name': self.application_name,
+                   'start_time': self.start_time,
+                   'end_time': self.end_time,
+                   'export_reason': self.export_reason
+                   }
+        return json.dumps({**self.metrics, **metrics})
 
 
 def initialize(ndpi_struct):
@@ -152,7 +160,7 @@ class Streamer:
     """ streamer for flows management """
     num_streamers = 0
 
-    def __init__(self, source=None, capacity=128000, active_timeout=120, inactive_timeout=60):
+    def __init__(self, source=None, capacity=128000, active_timeout=120, inactive_timeout=60, user_metrics=None):
         Streamer.num_streamers += 1
         self.__exports = []
         self.source = source
@@ -165,6 +173,10 @@ class Streamer:
         self.processed_packets = 0  # current timestamp
         self.__inspector = ndpi.ndpi_init_detection_module()
         initialize(self.__inspector)
+        if user_metrics is None:
+            self.user_metrics = {}
+        else:
+            self.user_metrics = user_metrics
 
     def _get_capacity(self):
         """ getter for capacity attribute """
@@ -229,16 +241,16 @@ class Streamer:
         self.processed_packets += 1  # increment total processed packet counter
         key = get_flow_key(pkt_info)
         if key in self.__flows:
-            flow_status = self.__flows[key].update(pkt_info, self.active_timeout, self.__inspector)
+            flow_status = self.__flows[key].update(pkt_info, self.active_timeout, self.__inspector, self.user_metrics)
             if flow_status == 2:
                 self.active_watcher(key)
-                flow = Flow(pkt_info)
+                flow = Flow(pkt_info, self.user_metrics)
                 self.__flows[flow.key] = flow
-                self.__flows[flow.key].update(pkt_info, self.active_timeout, self.__inspector)
+                self.__flows[flow.key].update(pkt_info, self.active_timeout, self.__inspector, self.user_metrics)
         else:
             self.current_flows += 1
-            flow = Flow(pkt_info)
-            flow.update(pkt_info, self.active_timeout, self.__inspector)
+            flow = Flow(pkt_info, self.user_metrics)
+            flow.update(pkt_info, self.active_timeout, self.__inspector, self.user_metrics)
             self.__flows[flow.key] = flow
             self.current_tick = flow.start_time
             self.inactive_watcher()

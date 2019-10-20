@@ -2,7 +2,13 @@ import unittest
 from nfstream.streamer import Streamer, FlowKey
 from colorama import Fore, Style
 import os
-import json
+
+
+def test_src_to_dst_pkts(pkt_information, flow):
+    if pkt_information.direction == 0:
+        flow.metrics['test_src_to_dst_pkts'] += 1
+        return flow
+
 
 def get_files_list(path):
     files = []
@@ -107,6 +113,19 @@ class TestMethods(unittest.TestCase):
         del streamer_test
         print(exports[0])
         print('Flow to json: ' + Fore.BLUE + 'OK' + Style.RESET_ALL)
+
+    def test_adding_metric(self):
+        print("\n----------------------------------------------------------------------")
+        print(".Testing user defined metric addition:")
+        streamer_test = Streamer(source='tests/pcap/expiration/small_instagram.pcap',
+                                 capacity=100,
+                                 inactive_timeout=60,
+                                 active_timeout=120,
+                                 user_metrics={'test_src_to_dst_pkts': test_src_to_dst_pkts})
+        exports = list(streamer_test)
+        for export in exports:
+            self.assertEqual(export.src_to_dst_pkts, export.metrics['test_src_to_dst_pkts'])
+        print('user defined metric addition: ' + Fore.BLUE + 'OK' + Style.RESET_ALL)
 
 
 if __name__ == '__main__':

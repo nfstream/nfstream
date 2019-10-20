@@ -4,12 +4,25 @@ from collections import namedtuple
 import dpkt
 import pcap
 
-""" Abstraction structure for any packet input type."""
-PacketInfo = namedtuple('PacketInfo', ['ts', 'len', 'raw',
-                                       'mac_src', 'mac_dst', 'ip_version',
-                                       'ip_src', 'ip_dst', 'ip_protocol',
-                                       'ip_src_b', 'ip_dst_b',
-                                       'src_port', 'dst_port'])
+
+class PacketInformation:
+    """ Abstraction structure for any packet input type."""
+    def __init__(self, ts, size, content, mac_src, mac_dst, ip_version, ip_src, ip_dst,
+                 ip_protocol, ip_src_b, ip_dst_b, src_port, dst_port, direction):
+        self.ts = ts
+        self.size = size
+        self.content = content
+        self.mac_src = mac_src
+        self.mac_dst = mac_dst
+        self.ip_version = ip_version
+        self.ip_src = ip_src
+        self.ip_dst = ip_dst
+        self.ip_protocol = ip_protocol
+        self.ip_src_b = ip_src_b
+        self.ip_dst_b = ip_dst_b
+        self.src_port = src_port
+        self.dst_port = dst_port
+        self.direction = direction
 
 
 def process_packet(ts, buf):
@@ -38,11 +51,11 @@ def process_packet(ts, buf):
             ip = ip.data
         else:
             move_up = False
-    return PacketInfo(ts=int(ts*1000), len=len(buf), raw=bytes(ip),
-                      mac_src=eth.src, mac_dst=eth.dst, ip_version=ip_version,
-                      ip_src=int.from_bytes(ip.src, "big"), ip_dst=int.from_bytes(ip.dst, "big"),
-                      ip_src_b=ip.src, ip_dst_b=ip.dst,
-                      src_port=transport.sport, dst_port=transport.dport, ip_protocol=ip.p)
+    return PacketInformation(ts=int(ts*1000), size=len(buf), content=bytes(ip),
+                             mac_src=eth.src, mac_dst=eth.dst, ip_version=ip_version,
+                             ip_src=int.from_bytes(ip.src, "big"), ip_dst=int.from_bytes(ip.dst, "big"),
+                             ip_src_b=ip.src, ip_dst_b=ip.dst, src_port=transport.sport,
+                             dst_port=transport.dport, ip_protocol=ip.p, direction=-1)
 
 
 class Observer:
