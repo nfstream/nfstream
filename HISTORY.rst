@@ -27,4 +27,9 @@ History
 
 * Add category_name as flow feature.
 
+0.4.0 (2019-10-20)
+------------------
+
+* Pypi package description readable.
+
 
