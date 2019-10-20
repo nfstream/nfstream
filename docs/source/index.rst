@@ -3,12 +3,11 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+======================
+nfstream documentation
+======================
+
 |release| |build| |coverage| |quality| |python| |license|
-
-|nfstream_logo|
-
-.. |nfstream_logo| image:: asset/nfstream_logo.png
-
 
 **nfstream** is a flexible and lightweight network data analysis library.
 
@@ -31,7 +30,6 @@
 
 .. |release| image:: https://img.shields.io/pypi/v/nfstream.svg
               :target: https://pypi.python.org/pypi/nfstream
-.. |nfstream_logo| image:: https://github.com/aouinizied/nfstream/blob/master/docs/nfstream_logo.png
 .. |build| image:: https://travis-ci.org/aouinizied/nfstream.svg?branch=master
                :target: https://travis-ci.org/aouinizied/nfstream
 .. |coverage| image:: https://codecov.io/gh/aouinizied/nfstream/branch/master/graph/badge.svg
