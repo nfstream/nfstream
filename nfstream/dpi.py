@@ -729,6 +729,7 @@ ndpi.ndpi_tfind.restype = c_void_p
 ndpi.ndpi_tsearch.restype = c_void_p
 ndpi.ndpi_revision.restype = c_void_p
 ndpi.ndpi_get_proto_name.restype = c_void_p
+ndpi.ndpi_category_get_name.restype = c_void_p
 ndpi.ndpi_get_num_supported_protocols.restype = c_uint
 ndpi.ndpi_detection_process_packet.restype = ndpi_protocol
 ndpi.ndpi_init_detection_module.restype = POINTER(ndpi_detection_module_struct)

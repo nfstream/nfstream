@@ -71,7 +71,8 @@ class Flow:
         self.detection_completed = 0
         self.__src_id = pointer(ndpi_id_struct())
         self.__dst_id = pointer(ndpi_id_struct())
-        self.application_name = 'Unknown.Unknown'
+        self.application_name = ''
+        self.category_name = ''
         self.metrics = {}
         for name, metric in streamer_metrics.items():
             self.metrics[name] = 0
@@ -143,6 +144,7 @@ class Flow:
                    'src_to_dst_bytes': self.src_to_dst_bytes,
                    'dst_to_src_bytes': self.dst_to_src_bytes,
                    'application_name': self.application_name,
+                   'category_name': self.category_name,
                    'start_time': self.start_time,
                    'end_time': self.end_time,
                    'export_reason': self.export_reason
@@ -213,6 +215,10 @@ class Streamer:
                            c_char_p).value.decode('utf-8')
         app_name = cast(ndpi.ndpi_get_proto_name(self.__inspector, flow.detected_protocol.app_protocol),
                         c_char_p).value.decode('utf-8')
+
+        category_name = cast(ndpi.ndpi_category_get_name(self.__inspector, flow.detected_protocol.category),
+                             c_char_p).value.decode('utf-8')
+        flow.category_name = category_name
         flow.application_name = master_name + '.' + app_name
         flow.ndpi_flow = None
         del self.__flows[flow.key]

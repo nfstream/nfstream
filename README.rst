@@ -22,7 +22,20 @@ nfstream is a flexible and lightweight network data analysis library.
 
 .. code-block:: json
 
-    {"ip_src": "192.168.43.18", "src_port": 52066, "ip_dst": "66.220.156.68", "dst_port": 443, "ip_protocol": 6, "src_to_dst_pkts": 9, "dst_to_src_pkts": 10, "src_to_dst_bytes": 1345, "dst_to_src_bytes": 4400, "application_name": "TLS.Facebook", "start_time": 1472393122365, "end_time": 1472393123665, "export_reason": 2}
+ {"ip_src": "192.168.122.121",
+  "src_port": 43277,
+  "ip_dst": "186.102.189.33",
+  "dst_port": 443,
+  "ip_protocol": 6,
+  "src_to_dst_pkts": 6,
+  "dst_to_src_pkts": 5,
+  "src_to_dst_bytes": 1456,
+  "dst_to_src_bytes": 477,
+  "application_name": "TLS.Instagram",
+  "category_name": "SocialNetwork",
+  "start_time": 1555969081636,
+  "end_time": 1555969082020,
+  "export_reason": 2}
 
 * Didn't find a specific flow feature? add it to Streamer as a plugin in few lines.
 
