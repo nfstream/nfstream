@@ -18,7 +18,6 @@ Dealing with a big pcap file and just want to see flow informations stored in as
 pandas Dataframe? nfstream make this path easier in few lines:
 
 .. image:: https://github.com/aouinizied/nfstream/blob/master/docs/streamer_example.png
-  :scale: 80%
   :align: center
 
 
