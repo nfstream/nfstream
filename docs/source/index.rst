@@ -3,13 +3,14 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-======================
-nfstream documentation
-======================
-
 |release| |build| |coverage| |quality| |python| |license|
 
-nfstream is a flexible and lightweight network data analysis library.
+|nfstream_logo|
+
+.. |nfstream_logo| image:: asset/nfstream_logo.png
+
+
+**nfstream** is a flexible and lightweight network data analysis library.
 
 **nfstream main features**
 
