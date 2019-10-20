@@ -14,12 +14,18 @@ nfstream is a flexible and lightweight network data analysis library.
 
 **examples of use**
 
-* Dealing with a big pcap file and just want to see flow informations stored in as a csv file or pandas Dataframe? nfstream make this path easier in few lines.
+* Dealing with a big pcap file and just want to see flow informations stored in as a csv file or pandas Dataframe? nfstream make this path easier in few lines:
 
-.. image:: https://github.com/aouinizied/nfstream/blob/master/docs/streamer_example.png
-  :align: center
+.. code-block:: python
 
-
+   from nfstream.streamer import Streamer
+   my_capture_streamer = Streamer(source="instagram.pcap",
+                                  capacity=128000,
+                                  active_timeout=120,
+                                  inactive_timeout=60)
+   my_live_streamer = Streamer(source="eth1")  # or capture from a network interface
+   for flow in my_capture_streamer:  # or for flow in my_live_streamer
+       print(flow)  # print, append to pandas Dataframe or whatever you want :)!
 .. code-block:: json
 
  {"ip_src": "192.168.122.121",
@@ -37,10 +43,22 @@ nfstream is a flexible and lightweight network data analysis library.
   "end_time": 1555969082020,
   "export_reason": 2}
 
-* Didn't find a specific flow feature? add it to Streamer as a plugin in few lines.
+* Didn't find a specific flow feature? add it to Streamer as a plugin in few lines:
 
-.. image:: https://github.com/aouinizied/nfstream/blob/master/docs/plugin_example.png
-  :align: center
+.. code-block:: python
+
+   from nfstream.streamer import Streamer
+
+   def my_awesome_plugin(packet_information, flow):
+       if packet_information.size > 666:
+          flow.metrics['count_pkts_gt_666'] += 1
+       return flow
+
+   streamer_awesome = Streamer(source='devil.pcap',
+                               user_metrics={'count_pkts_gt_666': my_awesome_plugin})
+   for flow in streamer_awesome:
+      # now you will see your created metric in generated flows
+      print(flow.metrics['count_pkts_gt_666'])
 
 * More example and details are provided on the official Documentation_.
 
