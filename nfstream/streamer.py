@@ -26,7 +26,8 @@ def inet_to_str(inet):
 
 def emergency_callback(key, value):
     """ Callback used for Streamer eviction method """
-    value.ndpi_flow = None
+    if 'ndpi' in list(value.classifiers.keys()):
+        value.ndpi_flow = None
     print("WARNING: Streamer capacity limit reached: lru flow entry dropped.")
 
 
