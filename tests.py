@@ -6,8 +6,10 @@ import os
 
 def test_src_to_dst_pkts(pkt_information, flow):
     if pkt_information.direction == 0:
-        flow.metrics['test_src_to_dst_pkts'] += 1
-        return flow
+        new_value = flow.metrics['test_src_to_dst_pkts'] + 1
+        return new_value
+    else:
+        return flow.metrics['test_src_to_dst_pkts']
 
 
 def get_files_list(path):

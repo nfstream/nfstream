@@ -64,8 +64,8 @@ class Flow:
         self.dst_to_src_bytes = 0
         self.metrics = {}
         self.classifiers = {}
-        for name, metric in streamer_metrics.items():
-            self.metrics[name] = 0
+        for metric_name in list(streamer_metrics.keys()):
+            self.metrics[metric_name] = 0
         for name, classifier in streamer_classifiers.items():
             self.classifiers[classifier.name] = {}
             classifier.on_flow_init(self)
@@ -73,8 +73,7 @@ class Flow:
     def update(self, pkt_info, active_timeout, streamer_classifiers, streamer_metrics):
         """ Update a flow from a packet and return status """
         if (pkt_info.ts - self.end_time) >= (active_timeout*1000):  # Active Expiration
-
-            return 2
+            return 1
         else:  # We start by core management
             self.end_time = pkt_info.ts
             if (self.__ip_src_int == pkt_info.ip_src and self.__ip_dst_int == pkt_info.ip_dst and
@@ -90,9 +89,11 @@ class Flow:
             for name, classifier in streamer_classifiers.items():
                 classifier.on_flow_update(pkt_info, self)
 
-            for name, metric in self.metrics.items():
-                self = streamer_metrics[name](pkt_info, self)
-            return 0
+            metrics_names = list(streamer_metrics.keys())
+            for metric_name in metrics_names:
+                self.metrics[metric_name] = streamer_metrics[metric_name](pkt_info, self)
+
+            return self.export_reason
 
     def debug(self):
         return flow_export_template.format(
@@ -155,7 +156,6 @@ class Streamer:
         if enable_ndpi:
             ndpi_classifier = NDPIClassifier('ndpi')
             self.user_classifiers[ndpi_classifier.name] = ndpi_classifier
-
         if user_metrics is not None:
             self.user_metrics = user_metrics
 
@@ -175,16 +175,16 @@ class Streamer:
         while remaining_flows:
             try:
                 key, value = self.__flows.peek_last_item()
-                self.exporter(value, 2)
+                value.export_reason = 2
+                self.exporter(value)
             except TypeError:
                 remaining_flows = False
 
         for classifier_name, classifier in self.user_classifiers.items():
             self.user_classifiers[classifier_name].on_exit()
 
-    def exporter(self, flow, trigger_type):
+    def exporter(self, flow):
         """ export method for a flow trigger_type:0(inactive), 1(active), 2(flush) """
-        flow.export_reason = trigger_type
         for classifier_name, classifier in self.user_classifiers.items():
             self.user_classifiers[classifier_name].on_flow_terminate(flow)
         del self.__flows[flow.key]
@@ -198,15 +198,12 @@ class Streamer:
             try:
                 key, value = self.__flows.peek_last_item()
                 if (self.current_tick - value.end_time) >= (self.inactive_timeout*1000):
-                    self.exporter(value, 0)
+                    value.export_reason = 0
+                    self.exporter(value)
                 else:
                     remaining_inactives = False
             except TypeError:
                 remaining_inactives = False
-
-    def active_watcher(self, key):
-        """ active expiration management """
-        self.exporter(self.__flows[key], 1)
 
     def consume(self, pkt_info):
         """ consume a packet and update Streamer status """
@@ -215,11 +212,14 @@ class Streamer:
         if key in self.__flows:
             flow_status = self.__flows[key].update(pkt_info, self.active_timeout, self.user_classifiers,
                                                    self.user_metrics)
-            if flow_status == 2:
-                self.active_watcher(key)
+            if flow_status == 1:
+                self.exporter(self.__flows[key])
                 flow = Flow(pkt_info, self.user_classifiers, self.user_metrics)
                 self.__flows[flow.key] = flow
                 self.__flows[flow.key].update(pkt_info, self.active_timeout, self.user_classifiers, self.user_metrics)
+            if flow_status > 2:
+                self.exporter(self.__flows[key])
+
         else:
             self.current_flows += 1
             flow = Flow(pkt_info, self.user_classifiers, self.user_metrics)
@@ -240,5 +240,3 @@ class Streamer:
         for export in self.__exports:
             yield export
         self.__exports = []
-
-

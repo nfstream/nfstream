@@ -65,6 +65,7 @@ class NDPIClassifier(NFStreamClassifier):
                             1,
                             cast(addressof(c_uint8(0)), POINTER(c_uint8))
                         )
+        # HERE you can change flow.export_reason to a value > 2 and the flow will be terminated automatically
 
     def on_flow_terminate(self, flow):
         if flow.classifiers[self.name]['detected_protocol'].app_protocol == 0:
@@ -80,7 +81,8 @@ class NDPIClassifier(NFStreamClassifier):
         app_name = cast(ndpi.ndpi_get_proto_name(self.mod,
                                                  flow.classifiers[self.name]['detected_protocol'].app_protocol),
                         c_char_p).value.decode('utf-8')
-        category_name = cast(ndpi.ndpi_category_get_name(self.mod, flow.classifiers[self.name]['detected_protocol'].category),
+        category_name = cast(ndpi.ndpi_category_get_name(self.mod,
+                                                         flow.classifiers[self.name]['detected_protocol'].category),
                              c_char_p).value.decode('utf-8')
         flow.classifiers[self.name]['application_name'] = master_name + '.' + app_name
         flow.classifiers[self.name]['category_name'] = category_name
