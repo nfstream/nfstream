@@ -32,4 +32,10 @@ History
 
 * Pypi package description readable.
 
+0.5.0 (2019-10-21)
+------------------
 
+* Classifier mechanism introduced.
+* Custom export_reason.
+* Fix minor bugs.
+* Improve documentation.
