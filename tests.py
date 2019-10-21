@@ -40,9 +40,9 @@ class TestMethods(unittest.TestCase):
             streamer_test = Streamer(source=file_path,
                                      capacity=64000,
                                      inactive_timeout=60000,
-                                     active_timeout=60000)
+                                     active_timeout=60000, enable_ndpi=True)
             test_case_name = file_path.split('/')[-1].replace('.pcap', '')
-            # print(test_case_name + ': ')
+            print(test_case_name + ': ')
             exports = []
             for export in streamer_test:
                 exports.append(export.debug())
@@ -50,7 +50,7 @@ class TestMethods(unittest.TestCase):
             exports_ground_truth = flows_from_file(file)
             del streamer_test
             self.assertEqual(exports, exports_ground_truth)
-        print(Fore.BLUE + 'OK' + Style.RESET_ALL)
+            print(Fore.BLUE + 'OK' + Style.RESET_ALL)
 
     def test_unsupported_packet(self):
         print("\n----------------------------------------------------------------------")
@@ -123,6 +123,7 @@ class TestMethods(unittest.TestCase):
                                  active_timeout=120,
                                  user_metrics={'test_src_to_dst_pkts': test_src_to_dst_pkts})
         exports = list(streamer_test)
+        del streamer_test
         for export in exports:
             self.assertEqual(export.src_to_dst_pkts, export.metrics['test_src_to_dst_pkts'])
         print('user defined metric addition: ' + Fore.BLUE + 'OK' + Style.RESET_ALL)
