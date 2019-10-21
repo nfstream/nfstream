@@ -11,6 +11,7 @@ nfstream is a flexible and lightweight network data analysis library.
 * **Performance:** nfstream was designed to be fast, CPU savvy and small memory fingerprint.
 * **Layer-7 visibility:** nfstream dissection is based on nDPI_ (~300 applications including Tor, Messenger, WhatsApp, etc.).
 * **Flexibility:** add a flow metric in 2 lines of code using nfstream plugins method.
+* **Machine Learning oriented:** add your trained model as an NFStream Classifier.
 
 **examples of use**
 
@@ -22,10 +23,15 @@ nfstream is a flexible and lightweight network data analysis library.
    my_capture_streamer = Streamer(source="instagram.pcap",
                                   capacity=128000,
                                   active_timeout=120,
-                                  inactive_timeout=60)
+                                  inactive_timeout=60,
+                                  user_metrics=None,
+                                  user_classifiers=None,
+                                  enable_ndpi=True)
+
    my_live_streamer = Streamer(source="eth1")  # or capture from a network interface
    for flow in my_capture_streamer:  # or for flow in my_live_streamer
        print(flow)  # print, append to pandas Dataframe or whatever you want :)!
+
 .. code-block:: json
 
  {"ip_src": "192.168.122.121",
@@ -50,15 +56,19 @@ nfstream is a flexible and lightweight network data analysis library.
    from nfstream.streamer import Streamer
 
    def my_awesome_plugin(packet_information, flow):
-       if packet_information.size > 666:
-          flow.metrics['count_pkts_gt_666'] += 1
-       return flow
+    old_value = flow.metrics['count_pkts_gt_666']
+    if packet_information.size > 999:
+        old_value = flow.metrics['count_pkts_gt_666']
+        new_value =  old_value + 1
+        return new_value
+    else:
+        return old_value
 
    streamer_awesome = Streamer(source='devil.pcap',
                                user_metrics={'count_pkts_gt_666': my_awesome_plugin})
-   for flow in streamer_awesome:
+   for export in streamer_awesome:
       # now you will see your created metric in generated flows
-      print(flow.metrics['count_pkts_gt_666'])
+      print(export.metrics['count_pkts_gt_666'])
 
 * More example and details are provided on the official Documentation_.
 

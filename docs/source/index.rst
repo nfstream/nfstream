@@ -16,6 +16,7 @@ nfstream documentation
 * **Performance:** nfstream was designed to be fast, CPU savvy and small memory fingerprint.
 * **Layer-7 visibility:** nfstream dissection is based on nDPI_ (~300 applications including Tor, Messenger, WhatsApp, etc.).
 * **Flexibility:** add a flow metric in 2 lines of code using nfstream plugins method.
+* **Machine Learning oriented:** add your trained model as an NFStream Classifier.
 
 
 .. toctree::
