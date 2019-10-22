@@ -54,18 +54,6 @@ class TestMethods(unittest.TestCase):
             self.assertEqual(exports, exports_ground_truth)
             print(Fore.BLUE + 'OK' + Style.RESET_ALL)
 
-    def test_unsupported_packet(self):
-        print("\n----------------------------------------------------------------------")
-        print(".Testing on unsupported packet format:")
-        streamer_test = Streamer(source='tests/pcap/future/quickplay.pcap',
-                                 capacity=64000,
-                                 inactive_timeout=60000,
-                                 active_timeout=60000)
-        exports = list(streamer_test)
-        del streamer_test
-        self.assertEqual(exports, [])
-        print(Fore.BLUE + 'OK' + Style.RESET_ALL)
-
     def test_streamer_capacity(self):
         print("\n----------------------------------------------------------------------")
         print(".Testing warning Streamer capacity reached:")
