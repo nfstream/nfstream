@@ -110,29 +110,3 @@ or pcap file path unfound).")
                     break
                 except KeyboardInterrupt:
                     raise StopIteration
-"""
-Ethernet(dst=b'\xc5\x00\x00\x00\x82\xc4',
-         src=b'\x00\x12\x1e\xf2a=',
-         type=33024,
-         vlan_tags=[VLANtag8021Q(type=34525,
-                                 pri=0,
-                                 cfi=0,id=100)],
-         vlanid=100,
-         priority=0,
-         cfi=0,
-         data=IP6(plen=139,
-                  nxt=4,
-                  hlim=246,
-                  src=b'$\x02\xf0\x00\x00\x01\x8e\x01\x00\x00\x00\x00\x00\x00UU',
-                  dst=b'&\x07\xfc\xd0\x01\x00#\x00\x00\x00\x00\x00\xb1\x08*k',
-                  extension_hdrs={}, all_extension_headers=[],
-                  p=4,
-                  data=IP(len=139, id=36015, p=47, sum=30206, src=b'\x10\x00\x00\xc8', dst=b'\xc04\xa6\x9a', opts=b'',
-                          data=GRE(flags=12417, p=34827, len=103, callid=6016, seq=430001, ack=539254,
-                                   data=PPP(data=IP(len=99, off=16384, ttl=60, p=17, sum=22119,
-                                                    src=b'\xac\x10,\x03',
-                                                    dst=b'\x08\x08\x08\x08',
-                                                    opts=b'',
-                                                    data=UDP(sport=40768, dport=53, ulen=79, sum=11555,
-                                                             data=b'\xa6,\x01\x00\x00\x01\x00\x00\x00\x00\x00\x005xqt-detect-mode2-97712e88-167a-45b9-93ee-913140e76678\x00\x00\x1c\x00\x01')))))))
-"""
