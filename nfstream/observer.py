@@ -44,8 +44,10 @@ def process_packet(ts, buf, dloff):
         except dpkt.dpkt.UnpackError:
             ip = dpkt.ip6.IP6(buf[dloff:])
             ip_version = 6
+
     if ip_version == 0:
         return  # we failed to move to ip
+
     transport = dpkt.udp.UDP(sport=0, dport=0)  # Fake layer for non UPD/TCP packets
     move_up = True
     while move_up:
@@ -55,20 +57,32 @@ def process_packet(ts, buf, dloff):
         elif isinstance(ip.data, dpkt.udp.UDP):
             transport = ip.data
             move_up = False
+        elif isinstance(ip.data, dpkt.igmp.IGMP):
+            move_up = False
+        elif isinstance(ip.data, dpkt.icmp.ICMP):
+            move_up = False
+        elif isinstance(ip.data, dpkt.icmp6.ICMP6):
+            move_up = False
         elif isinstance(ip.data, dpkt.ip6.IP6):
             ip = ip.data
+            ip_version = 6
         elif isinstance(ip.data, dpkt.ip.IP):
             ip = ip.data
+            ip_version = 4
         elif isinstance(ip.data, dpkt.gre.GRE):
             ip.data = ip.data.data
         elif isinstance(ip.data, dpkt.ppp.PPP):
             ip.data = ip.data.data
         else:
-            move_up = False
-    return PacketInformation(ts=int(ts*1000), size=len(buf), content=bytes(ip), ip_version=ip_version,
-                             ip_src=int.from_bytes(ip.src, "big"), ip_dst=int.from_bytes(ip.dst, "big"),
-                             ip_src_b=ip.src, ip_dst_b=ip.dst, src_port=transport.sport,
-                             dst_port=transport.dport, ip_protocol=ip.p, direction=-1)
+            return
+
+    if ip_version == 4 or ip_version == 6:
+        return PacketInformation(ts=int(ts * 1000), size=len(buf), content=bytes(ip), ip_version=ip_version,
+                                 ip_src=int.from_bytes(ip.src, "big"), ip_dst=int.from_bytes(ip.dst, "big"),
+                                 ip_src_b=ip.src, ip_dst_b=ip.dst, src_port=transport.sport,
+                                 dst_port=transport.dport, ip_protocol=ip.p, direction=-1)
+    else:
+        return
 
 
 class Observer:
