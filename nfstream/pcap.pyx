@@ -1,3 +1,9 @@
+# cython: language_level=3
+#
+# pcap.pyx
+#
+# $Id$
+
 import sys
 import struct
 
