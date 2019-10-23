@@ -1,1 +1,2 @@
 include nfstream/ndpi_wrap.so
+include nfstream/ppcap_ex.h

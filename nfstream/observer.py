@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import dpkt
-import pcap
+import ppcap
 
 
 class PacketInformation:
@@ -102,7 +102,7 @@ class Observer:
         self.rfmon = rfmon
         self.packet_generator = None
         try:
-            self.packet_generator = pcap.pcap(name=self.source,
+            self.packet_generator = ppcap.pcap(name=self.source,
                                               snaplen=self.snaplen,
                                               promisc=self.promisc,
                                               timeout_ms=self.timeout_ms,
