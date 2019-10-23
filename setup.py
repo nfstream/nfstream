@@ -59,7 +59,8 @@ install_requires = ['lru-dict>=1.1.6',
                     'dpkt>=1.9.2',
                     'numpydoc>=0.8',
                     'sphinx_rtd_theme>=0.4.3',
-                    'colorama>=0.4.1']
+                    'colorama>=0.4.1',
+                    'cython>=0.29.13']
 
 
 def recursive_search_dirs(dirs, target_files):
