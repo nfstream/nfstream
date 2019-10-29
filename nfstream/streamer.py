@@ -207,12 +207,3 @@ class Streamer:
         for export in self.__exports:
             yield export
         self.__exports = []
-
-
-if __name__ == '__main__':
-    streamer_test = Streamer(source='../tests/pcap/facebook.pcap',
-                             capacity=128000,
-                             inactive_timeout=60,
-                             active_timeout=120)
-    for i in streamer_test:
-        print(i)

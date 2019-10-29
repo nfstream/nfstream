@@ -5,7 +5,6 @@ from enum import Enum, IntEnum
 from time import time, sleep
 from select import select
 from threading import Lock
-from goto import with_goto
 from socket import ntohs, ntohl
 from .observer_cc import cc
 import os.path
@@ -198,7 +197,6 @@ class _PcapFfi(object):
     def ffi(self):
         return self._ffi
 
-    @with_goto
     def _process_packet(self, xdev, header, packet, decode_tunnels=True):
         # Declare pointers to packets headers
         # Ethernet header
@@ -234,169 +232,172 @@ class _PcapFfi(object):
         time = (header.tv_sec * TICK_RESOLUTION) + (header.tv_usec / (1000000 / TICK_RESOLUTION))
 
         datalink_type = self._libpcap.pcap_datalink(xdev)
-        label .datalink_check
-        if Dlt(datalink_type) == Dlt.DLT_NULL:
-            tmp_dlt_null = self._ffi.cast('struct pp_32 *', packet + eth_offset)
-            if int(ntohs(tmp_dlt_null.value)) == 2:
-                type = 0x0800
-            else:
-                type = 0x86dd
-            ip_offset = 4 + eth_offset
-        elif Dlt(datalink_type) == Dlt.DLT_PPP_SERIAL:  # Cisco PPP in HDLC - like framing - 50
-            chdlc = self._ffi.cast('struct nfstream_chdlc *', packet + eth_offset)
-            ip_offset = self._ffi.sizeof('struct nfstream_chdlc')  # CHDLC_OFF = 4
-            type = ntohs(chdlc.proto_code)
-        elif (Dlt(datalink_type) == Dlt.DLT_C_HDLC) or (Dlt(datalink_type) == Dlt.DLT_PPP):  # Cisco PPP - 9 or 104
-            chdlc = self._ffi.cast('struct nfstream_chdlc *', packet + eth_offset)  # CHDLC_OFF = 4
-            ip_offset = self._ffi.sizeof('struct nfstream_chdlc')  # CHDLC_OFF = 4
-            type = ntohs(chdlc.proto_code)
-        elif Dlt(datalink_type) == Dlt.DLT_EN10MB:  # IEEE 802.3 Ethernet - 1 */
-            ethernet = self._ffi.cast('struct nfstream_ethhdr *', packet + eth_offset)
-            ip_offset = self._ffi.sizeof('struct nfstream_ethhdr') + eth_offset
-            check = ntohs(ethernet.h_proto)
-            if check <= 1500:
-                pyld_eth_len = check
-            elif check >= 1536:
-                type = check
+        datalink_check = True
+        while datalink_check:
+            datalink_check = False
+            if Dlt(datalink_type) == Dlt.DLT_NULL:
+                tmp_dlt_null = self._ffi.cast('struct pp_32 *', packet + eth_offset)
+                if int(ntohs(tmp_dlt_null.value)) == 2:
+                    type = 0x0800
+                else:
+                    type = 0x86dd
+                ip_offset = 4 + eth_offset
+            elif Dlt(datalink_type) == Dlt.DLT_PPP_SERIAL:  # Cisco PPP in HDLC - like framing - 50
+                chdlc = self._ffi.cast('struct nfstream_chdlc *', packet + eth_offset)
+                ip_offset = self._ffi.sizeof('struct nfstream_chdlc')  # CHDLC_OFF = 4
+                type = ntohs(chdlc.proto_code)
+            elif (Dlt(datalink_type) == Dlt.DLT_C_HDLC) or (Dlt(datalink_type) == Dlt.DLT_PPP):  # Cisco PPP - 9 or 104
+                chdlc = self._ffi.cast('struct nfstream_chdlc *', packet + eth_offset)  # CHDLC_OFF = 4
+                ip_offset = self._ffi.sizeof('struct nfstream_chdlc')  # CHDLC_OFF = 4
+                type = ntohs(chdlc.proto_code)
+            elif Dlt(datalink_type) == Dlt.DLT_EN10MB:  # IEEE 802.3 Ethernet - 1 */
+                ethernet = self._ffi.cast('struct nfstream_ethhdr *', packet + eth_offset)
+                ip_offset = self._ffi.sizeof('struct nfstream_ethhdr') + eth_offset
+                check = ntohs(ethernet.h_proto)
+                if check <= 1500:
+                    pyld_eth_len = check
+                elif check >= 1536:
+                    type = check
 
-            if pyld_eth_len != 0:
-                llc = self._ffi.cast('struct nfstream_llc_header_snap *', packet + ip_offset)
-                if (llc.dsap == 0xaa) or (llc.ssap == 0xaa):  # check for LLC layer with SNAP ext
-                    type = llc.snap.proto_ID
-                    ip_offset += 8
-                elif (llc.dsap == 0x42) or (llc.ssap == 0x42):  # No SNAP ext
-                    goto .v4_warning
-        elif Dlt(datalink_type) == Dlt.DLT_LINUX_SLL:  # Linux Cooked Capture - 113
-            type = (packet[eth_offset+14] << 8) + packet[eth_offset+15]
-            ip_offset = 16 + eth_offset
-        elif Dlt(datalink_type) == Dlt.DLT_IEEE802_11_RADIO:  # Radiotap link - layer - 127
-            radiotap = self._ffi.cast('struct nfstream_radiotap_header *', packet + eth_offset)
-            radio_len = radiotap.len
-            if (radiotap.flags & self._ffi.BAD_FCS) == self._ffi.BAD_FCS:  # Check Bad FCS presence
+                if pyld_eth_len != 0:
+                    llc = self._ffi.cast('struct nfstream_llc_header_snap *', packet + ip_offset)
+                    if (llc.dsap == 0xaa) or (llc.ssap == 0xaa):  # check for LLC layer with SNAP ext
+                        type = llc.snap.proto_ID
+                        ip_offset += 8
+                    elif (llc.dsap == 0x42) or (llc.ssap == 0x42):  # No SNAP ext
+                        return None
+            elif Dlt(datalink_type) == Dlt.DLT_LINUX_SLL:  # Linux Cooked Capture - 113
+                type = (packet[eth_offset+14] << 8) + packet[eth_offset+15]
+                ip_offset = 16 + eth_offset
+            elif Dlt(datalink_type) == Dlt.DLT_IEEE802_11_RADIO:  # Radiotap link - layer - 127
+                radiotap = self._ffi.cast('struct nfstream_radiotap_header *', packet + eth_offset)
+                radio_len = radiotap.len
+                if (radiotap.flags & self._ffi.BAD_FCS) == self._ffi.BAD_FCS:  # Check Bad FCS presence
+                    return None
+                # Calculate 802.11 header length(variable)
+                wifi = self._ffi.cast('struct nfstream_wifi_header *', packet + eth_offset + radio_len)
+                fc = wifi.fc
+                # Check wifi data presence
+                if fcf_type(fc) == 0x2:
+                    if (fcf_to_ds(fc) and fcf_from_ds(fc) == 0x0) or\
+                            (fcf_to_ds(fc) == 0x0 and fcf_from_ds(fc)):
+                        wifi_len = 26  # + 4 byte fcs
+                else:
+                    pass
+                # Check ether_type from LLC
+                llc = self._ffi.cast('struct nfstream_llc_header_snap *', packet + (eth_offset + wifi_len + radio_len))
+                if llc.dsap == self._ffi.SNAP:
+                    type = ntohs(llc.snap.proto_ID)
+                # Set IP header offset
+                ip_offset = wifi_len + radio_len + self._ffi.sizeof('struct nfstream_llc_header_snap') + eth_offset
+            elif Dlt(datalink_type) == Dlt.DLT_RAW:
+                ip_offset = 0
+                eth_offset = 0
+            else:
                 return None
-            # Calculate 802.11 header length(variable)
-            wifi = self._ffi.cast('struct nfstream_wifi_header *', packet + eth_offset + radio_len)
-            fc = wifi.fc
-            # Check wifi data presence
-            if fcf_type(fc) == 0x2:
-                if (fcf_to_ds(fc) and fcf_from_ds(fc) == 0x0) or\
-                        (fcf_to_ds(fc) == 0x0 and fcf_from_ds(fc)):
-                    wifi_len = 26  # + 4 byte fcs
-            else:
-                pass
-            # Check ether_type from LLC
-            llc = self._ffi.cast('struct nfstream_llc_header_snap *', packet + (eth_offset + wifi_len + radio_len))
-            if llc.dsap == self._ffi.SNAP:
-                type = ntohs(llc.snap.proto_ID)
-            # Set IP header offset
-            ip_offset = wifi_len + radio_len + self._ffi.sizeof('struct nfstream_llc_header_snap') + eth_offset
-        elif Dlt(datalink_type) == Dlt.DLT_RAW:
-            ip_offset = 0
-            eth_offset = 0
-        else:
-            return None
 
-        if type == 0x8100:
-            vlan_id = ((packet[ip_offset] << 8) + packet[ip_offset + 1]) & 0xFFF
-            type = (packet[ip_offset + 2] << 8) + packet[ip_offset + 3]
-            ip_offset += 4
-            if type == 0x8100:  # Double tagging for 802.1Q
+            if type == 0x8100:
                 vlan_id = ((packet[ip_offset] << 8) + packet[ip_offset + 1]) & 0xFFF
                 type = (packet[ip_offset + 2] << 8) + packet[ip_offset + 3]
                 ip_offset += 4
-        elif (type == 0x8847) or (type == 0x8848):
-            tmp_u32 = self._ffi.cast('struct pp_32 *', packet + ip_offset)
-            mpls.u32 = int(ntohl(tmp_u32.value))
-            type = 0x0800
-            ip_offset += 4
-            while not mpls.mpls.s:
-                tmp_u32_loop = self._ffi.cast('struct pp_32 *', packet + ip_offset)
-                mpls.u32 = int(ntohl(tmp_u32_loop.value))
+                if type == 0x8100:  # Double tagging for 802.1Q
+                    vlan_id = ((packet[ip_offset] << 8) + packet[ip_offset + 1]) & 0xFFF
+                    type = (packet[ip_offset + 2] << 8) + packet[ip_offset + 3]
+                    ip_offset += 4
+            elif (type == 0x8847) or (type == 0x8848):
+                tmp_u32 = self._ffi.cast('struct pp_32 *', packet + ip_offset)
+                mpls.u32 = int(ntohl(tmp_u32.value))
+                type = 0x0800
                 ip_offset += 4
-        elif type == 0x8864:
-            type = 0x0800
-            ip_offset += 8
-        else:
-            pass
-
-        label .ip_check
-        # Check and set IP header size and total packet length
-        iph = self._ffi.cast('struct nfstream_iphdr *', packet + ip_offset)
-        # Just work on Ethernet packets that contain IP
-        if (type == 0x0800) and (header.caplen >= ip_offset):
-            frag_off = ntohs(iph.frag_off)
-            proto = iph.protocol
-            if header.caplen < header.len:
+                while not mpls.mpls.s:
+                    tmp_u32_loop = self._ffi.cast('struct pp_32 *', packet + ip_offset)
+                    mpls.u32 = int(ntohl(tmp_u32_loop.value))
+                    ip_offset += 4
+            elif type == 0x8864:
+                type = 0x0800
+                ip_offset += 8
+            else:
                 pass
-        if iph.version == 4:
-            ip_len = iph.ihl * 4
-            iph6 = self._ffi.NULL
-            if iph.protocol == 41:  # IPPROTO_IPV6
-                ip_offset += ip_len
-                goto .ip_check
-            if (frag_off & 0x1FFF) != 0:
-                return None
-        elif iph.version == 6:
-            iph6 = self._ffi.cast('struct nfstream_ipv6hdr *', packet + ip_offset)
-            proto = iph6.ip6_hdr.ip6_un1_nxt
-            ip_len = self._ffi.sizeof('struct nfstream_ipv6hdr')
-            if proto == 60:  # IPv6 destination option
-                # options = self._ffi.new("uint8_t *")
-                options = self._ffi.cast('uint8_t *', packet + (ip_offset + ip_len))
-                proto = options[0]
-                ip_len += 8 * (options[1] + 1)
-            iph = self._ffi.NULL
-        else:
-            label .v4_warning
-            return None
-        if decode_tunnels and proto == 17:
-            udp = self._ffi.new("struct nfstream_udphdr *")
-            udp = self._ffi.cast('struct nfstream_udphdr *', packet + (ip_offset + ip_len))
-            sport = self._ffi.new("uint16_t *")
-            sport = int(ntohs(udp.source))
-            dport = self._ffi.new("uint16_t *")
-            dport = int(ntohs(udp.dest))
-            if (sport == 2152) or (dport == 2152):
-                # Check if it's GTPv1
-                offset = ip_offset + ip_len + self._ffi.sizeof('struct nfstream_udphdr')
-                flags = packet[offset]
-                message_type = packet[offset + 1]
-                if (((flags & 0xE0) >> 5) == 1) and (message_type == 0xFF):
-                    ip_offset = ip_offset + ip_len + self._ffi.sizeof('struct nfstream_udphdr') + 8  # GTPv1 header len
-                    if flags & 0x04:
-                        ip_offset += 1  # next_ext_header is present
-                    if flags & 0x02:
-                        ip_offset += 4  # sequence_number is present (it also includes next_ext_header and pdu_number)
-                    if flags & 0x01:
-                        ip_offset += 1 # pdu_number is present
-                    iph = self._ffi.cast('struct nfstream_iphdr *', packet + ip_offset)
-                    if iph.version == 4:
-                        goto .v4_warning
-            elif (sport == 37008) or (dport == 37008):
-                offset = ip_offset + ip_len + self._ffi.sizeof('struct nfstream_udphdr')
-                tzsp = self._ffi.cast('struct tzsp_header *', packet + offset)
-                version = int(ntohs(tzsp.version))
-                ts_type = int(ntohs(tzsp.type))
-                encapsulated_protocol = int(ntohs(tzsp.encapsulated_protocol))
-                if (version == 1) and (ts_type == 0) and (encapsulated_protocol == 1):
-                    stop = 0
-                    offset += 4
-                    while (not stop) and (offset < header.caplen):
-                        tag_type = packet[offset]
-                        tag_len= 0
-                        if tag_type == 0: # Padding tag
-                            tag_len = 1
-                        elif tag_type == 1: # End tag
-                            tag_len = 1
-                            stop = 1
+            ip_check = True
+            while ip_check:
+                ip_check = False
+                # Check and set IP header size and total packet length
+                iph = self._ffi.cast('struct nfstream_iphdr *', packet + ip_offset)
+                # Just work on Ethernet packets that contain IP
+                if (type == 0x0800) and (header.caplen >= ip_offset):
+                    frag_off = ntohs(iph.frag_off)
+                    proto = iph.protocol
+                    if header.caplen < header.len:
+                        pass
+                if iph.version == 4:
+                    ip_len = iph.ihl * 4
+                    iph6 = self._ffi.NULL
+                    if iph.protocol == 41:  # IPPROTO_IPV6
+                        ip_offset += ip_len
+                        ip_check = True
+                    if (frag_off & 0x1FFF) != 0:
+                        return None
+                elif iph.version == 6:
+                    iph6 = self._ffi.cast('struct nfstream_ipv6hdr *', packet + ip_offset)
+                    proto = iph6.ip6_hdr.ip6_un1_nxt
+                    ip_len = self._ffi.sizeof('struct nfstream_ipv6hdr')
+                    if proto == 60:  # IPv6 destination option
+                        # options = self._ffi.new("uint8_t *")
+                        options = self._ffi.cast('uint8_t *', packet + (ip_offset + ip_len))
+                        proto = options[0]
+                        ip_len += 8 * (options[1] + 1)
+                    iph = self._ffi.NULL
+                else:
+                    return None
+
+            if decode_tunnels and proto == 17:
+                udp = self._ffi.new("struct nfstream_udphdr *")
+                udp = self._ffi.cast('struct nfstream_udphdr *', packet + (ip_offset + ip_len))
+                sport = self._ffi.new("uint16_t *")
+                sport = int(ntohs(udp.source))
+                dport = self._ffi.new("uint16_t *")
+                dport = int(ntohs(udp.dest))
+                if (sport == 2152) or (dport == 2152):
+                    # Check if it's GTPv1
+                    offset = ip_offset + ip_len + self._ffi.sizeof('struct nfstream_udphdr')
+                    flags = packet[offset]
+                    message_type = packet[offset + 1]
+                    if (((flags & 0xE0) >> 5) == 1) and (message_type == 0xFF):
+                        ip_offset = ip_offset + ip_len + self._ffi.sizeof('struct nfstream_udphdr') + 8  # GTPv1 header len
+                        if flags & 0x04:
+                            ip_offset += 1  # next_ext_header is present
+                        if flags & 0x02:
+                            ip_offset += 4  # sequence_number is present (it also includes next_ext_header and pdu_number)
+                        if flags & 0x01:
+                            ip_offset += 1 # pdu_number is present
+                        iph = self._ffi.cast('struct nfstream_iphdr *', packet + ip_offset)
+                        if iph.version == 4:
+                            return None
+                elif (sport == 37008) or (dport == 37008):
+                    offset = ip_offset + ip_len + self._ffi.sizeof('struct nfstream_udphdr')
+                    tzsp = self._ffi.cast('struct tzsp_header *', packet + offset)
+                    version = int(ntohs(tzsp.version))
+                    ts_type = int(ntohs(tzsp.type))
+                    encapsulated_protocol = int(ntohs(tzsp.encapsulated_protocol))
+                    if (version == 1) and (ts_type == 0) and (encapsulated_protocol == 1):
+                        stop = 0
+                        offset += 4
+                        while (not stop) and (offset < header.caplen):
+                            tag_type = packet[offset]
+                            tag_len= 0
+                            if tag_type == 0: # Padding tag
+                                tag_len = 1
+                            elif tag_type == 1: # End tag
+                                tag_len = 1
+                                stop = 1
+                            else:
+                                tag_len = packet[offset + 1]
+                        offset += tag_len
+                        if offset >= header.caplen:
+                            return None  # Invalid packet
                         else:
-                            tag_len = packet[offset + 1]
-                    offset += tag_len
-                    if offset >= header.caplen:
-                        return None  # Invalid packet
-                    else:
-                        eth_offset = offset
-                        goto .datalink_check
+                            eth_offset = offset
+                            datalink_check = True
 
         l3 = self._ffi.new("uint8_t *")
         l4_offset = 0
@@ -967,6 +968,3 @@ class Observer:
                         pass
             except KeyboardInterrupt:
                 return
-
-
-
