@@ -49,7 +49,7 @@ class Flow:
     def update(self, pkt_info, active_timeout, streamer_classifiers, streamer_metrics):
         """ Update a flow from a packet and return status """
         if (pkt_info.timestamp - self.end_time) >= (active_timeout*1000):  # Active Expiration
-            return 1
+            return 1, self
         else:  # We start by core management
             self.end_time = pkt_info.timestamp
             if (self.ip_src_int == pkt_info.ip_src_int and self.ip_dst_int == pkt_info.ip_dst_int and
@@ -70,7 +70,7 @@ class Flow:
             for metric_name in metrics_names:
                 self.metrics[metric_name] = streamer_metrics[metric_name](pkt_info, self, direction)
 
-            return self.export_reason
+            return self.export_reason, self
 
     def __str__(self):
 
@@ -104,8 +104,13 @@ class Streamer:
         self._capacity = self.__flows.get_size()  # Streamer capacity (default: 128000)
         self.active_timeout = active_timeout  # expiration active timeout
         self.inactive_timeout = inactive_timeout  # expiration inactive timeout
+        if self.inactive_timeout < 1:
+            self.scan_period = 0
+        else:
+            self.scan_period = 1000
         self.current_flows = 0  # counter for stored flows
         self.current_tick = 0  # current timestamp
+        self.last_inactive_watch_tick = 0
         self.processed_packets = 0  # current timestamp
         self.user_classifiers = {}
         if user_classifiers is not None:
@@ -157,44 +162,50 @@ class Streamer:
 
     def inactive_watcher(self):
         """ inactive expiration management """
-        remaining_inactives = True
-        while remaining_inactives:
-            try:
-                key, value = self.__flows.peek_last_item()
-                if (self.current_tick - value.end_time) >= (self.inactive_timeout*1000):
-                    value.export_reason = 0
-                    self.exporter(value)
-                else:
+        if self.current_tick - self.last_inactive_watch_tick >= self.scan_period:
+            remaining_inactives = True
+            while remaining_inactives:
+                try:
+                    key, value = self.__flows.peek_last_item()
+                    if (self.current_tick - value.end_time) >= (self.inactive_timeout*1000):
+                        value.export_reason = 0
+                        self.exporter(value)
+                    else:
+                        remaining_inactives = False
+                except TypeError:
                     remaining_inactives = False
-            except TypeError:
-                remaining_inactives = False
+            self.last_inactive_watch_tick = self.current_tick
+        else:
+            return
 
     def consume(self, pkt_info):
         """ consume a packet and update Streamer status """
         self.processed_packets += 1  # increment total processed packet counter
+        if pkt_info.timestamp > self.current_tick:
+            self.current_tick = pkt_info.timestamp
         if pkt_info.hash in self.__flows:
             flow_status = self.__flows[pkt_info.hash].update(pkt_info,
                                                              self.active_timeout,
                                                              self.user_classifiers,
                                                              self.user_metrics)
-            if flow_status == 1:
-                self.exporter(self.__flows[pkt_info.hash])
+            if flow_status[0] == 1:
+                self.exporter(flow_status[1])
                 flow = Flow(pkt_info, self.user_classifiers, self.user_metrics)
+                flow.update(pkt_info,
+                            self.active_timeout,
+                            self.user_classifiers,
+                            self.user_metrics)
                 self.__flows[pkt_info.hash] = flow
-                self.__flows[pkt_info.hash].update(pkt_info,
-                                                   self.active_timeout,
-                                                   self.user_classifiers,
-                                                   self.user_metrics)
-            if flow_status > 2:
-                self.exporter(self.__flows[pkt_info.hash])
+            if flow_status[0] > 2:
+                self.exporter(flow_status[1])
 
         else:
             self.current_flows += 1
             flow = Flow(pkt_info, self.user_classifiers, self.user_metrics)
             flow.update(pkt_info, self.active_timeout, self.user_classifiers, self.user_metrics)
             self.__flows[pkt_info.hash] = flow
-            self.current_tick = flow.start_time
-            self.inactive_watcher()
+
+        self.inactive_watcher()
 
     def __iter__(self):
         pkt_info_gen = Observer(source=self.source)
