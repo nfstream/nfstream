@@ -103,8 +103,8 @@ class Streamer:
         self.__flows = LRU(capacity, callback=emergency_callback)  # LRU cache
         self._capacity = self.__flows.get_size()  # Streamer capacity (default: 128000)
         self.active_timeout = active_timeout  # expiration active timeout
-        self.inactive_timeout = inactive_timeout  # expiration inactive timeout
-        if self.inactive_timeout < 1:
+        self.inactive_timeout = inactive_timeout * 1000  # expiration inactive timeout
+        if self.inactive_timeout < 1000:
             self.scan_period = 0
         else:
             self.scan_period = 1000
@@ -167,7 +167,7 @@ class Streamer:
             while remaining_inactives:
                 try:
                     key, value = self.__flows.peek_last_item()
-                    if (self.current_tick - value.end_time) >= (self.inactive_timeout*1000):
+                    if (self.current_tick - value.end_time) >= self.inactive_timeout:
                         value.export_reason = 0
                         self.exporter(value)
                     else:
