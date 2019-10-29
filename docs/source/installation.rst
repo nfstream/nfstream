@@ -6,7 +6,7 @@ Prerequisites
 
 .. code-block:: bash
 
-    apt-get install python-dev libpcap-dev autogen
+    apt-get install python-dev pypy3-dev libpcap-dev
 
 Installation
 ------------
@@ -28,7 +28,7 @@ If you want to build nfstream on your local machine:
 
 .. code-block:: bash
 
-    apt-get autogen
+    apt-get install autogen
     git clone https://github.com/aouinizied/nfstream.git
     # move to nfstream directory and run
     python3 setup.py install

@@ -8,14 +8,14 @@ nfstream is a flexible and lightweight network data analysis library.
 
 **nfstream main features**
 
-* **Performance:** nfstream was designed to be fast, CPU savvy and small memory fingerprint.
+* **Performance:** nfstream was designed to be fast with a small CPU and memory footprint.
 * **Layer-7 visibility:** nfstream dissection is based on nDPI_ (~300 applications including Tor, Messenger, WhatsApp, etc.).
 * **Flexibility:** add a flow metric in 2 lines of code using nfstream plugins method.
 * **Machine Learning oriented:** add your trained model as an NFStreamClassifier_.
 
-**examples of use**
+**Use**
 
-* Dealing with a big pcap file and just want to see flow informations stored in as a csv file or pandas Dataframe? nfstream make this path easier in few lines:
+* Dealing with a big pcap file and just want to aggregate it as network flows? nfstream make this path easier in few lines:
 
 .. code-block:: python
 
@@ -49,15 +49,15 @@ nfstream is a flexible and lightweight network data analysis library.
   "end_time": 1555969082020,
   "export_reason": 2}
 
-* Didn't find a specific flow feature? add it to Streamer as a plugin in few lines:
+* Didn't find a specific flow feature? add a plugin to the Streamer in few lines:
 
 .. code-block:: python
 
    from nfstream.streamer import Streamer
 
-   def my_awesome_plugin(packet_information, flow):
+   def my_awesome_plugin(packet_information, flow, direction):
     old_value = flow.metrics['count_pkts_gt_666']
-    if packet_information.size > 999:
+    if packet_information.length > 999:
         old_value = flow.metrics['count_pkts_gt_666']
         new_value =  old_value + 1
         return new_value
@@ -80,7 +80,7 @@ Prerequisites
 
 .. code-block:: bash
 
-    apt-get install python-dev libpcap-dev autogen
+    apt-get install python-dev install pypy3-dev libpcap-dev
 
 Installation
 ------------
@@ -102,7 +102,7 @@ If you want to build nfstream on your local machine:
 
 .. code-block:: bash
 
-    apt-get autogen
+    apt-get install autogen
     git clone https://github.com/aouinizied/nfstream.git
     # move to nfstream directory and run
     python3 setup.py install
@@ -132,8 +132,6 @@ This project is licensed under the GPLv3 License - see the License_ file for det
 .. |nfstream_logo| image:: https://github.com/aouinizied/nfstream/blob/master/docs/nfstream_logo.png
 .. |build| image:: https://travis-ci.org/aouinizied/nfstream.svg?branch=master
                :target: https://travis-ci.org/aouinizied/nfstream
-.. |coverage| image:: https://codecov.io/gh/aouinizied/nfstream/branch/master/graph/badge.svg
-               :target: https://codecov.io/gh/aouinizied/nfstream/
 .. |quality| image:: https://img.shields.io/lgtm/grade/python/github/aouinizied/nfstream.svg?logo=lgtm&logoWidth=18)
                :target: https://lgtm.com/projects/g/aouinizied/nfstream/context:python
 .. |python| image:: https://img.shields.io/badge/python-3.x-blue.svg

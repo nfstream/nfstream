@@ -13,10 +13,10 @@ nfstream documentation
 
 **nfstream main features**
 
-* **Performance:** nfstream was designed to be fast, CPU savvy and small memory fingerprint.
+* **Performance:** nfstream was designed to be fast with a small CPU and memory footprint.
 * **Layer-7 visibility:** nfstream dissection is based on nDPI_ (~300 applications including Tor, Messenger, WhatsApp, etc.).
 * **Flexibility:** add a flow metric in 2 lines of code using nfstream plugins method.
-* **Machine Learning oriented:** add your trained model as an NFStream Classifier.
+* **Machine Learning oriented:** add your trained model as an NFStreamClassifier.
 
 
 .. toctree::
@@ -33,8 +33,6 @@ nfstream documentation
               :target: https://pypi.python.org/pypi/nfstream
 .. |build| image:: https://travis-ci.org/aouinizied/nfstream.svg?branch=master
                :target: https://travis-ci.org/aouinizied/nfstream
-.. |coverage| image:: https://codecov.io/gh/aouinizied/nfstream/branch/master/graph/badge.svg
-               :target: https://codecov.io/gh/aouinizied/nfstream/
 .. |quality| image:: https://img.shields.io/lgtm/grade/python/github/aouinizied/nfstream.svg?logo=lgtm&logoWidth=18)
                :target: https://lgtm.com/projects/g/aouinizied/nfstream/context:python
 .. |python| image:: https://img.shields.io/badge/python-3.x-blue.svg

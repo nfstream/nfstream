@@ -5,8 +5,7 @@ Reading a pcap file ot network interface
 ----------------------------------------
 
 
-Dealing with a big pcap file and just want to see flow informations stored in as a csv file or pandas Dataframe?
-nfstream make this path easier in few lines:
+Dealing with a big pcap file and just want to aggregate it as network flows? nfstream make this path easier in few lines:
 
 .. code-block:: python
 
@@ -41,7 +40,7 @@ nfstream make this path easier in few lines:
 
 
 
-This will print a json representation of nfstream flow object:
+This will print a dict representation of nfstream flow object:
 
 .. code-block:: json
 
@@ -80,15 +79,15 @@ This will print a json representation of nfstream flow object:
 Create your own flow metric
 ---------------------------
 
-Didn't find a specific flow feature? add it to Streamer as a plugin in few lines:
+Didn't find a specific flow feature? add a plugin to the Streamer in few lines:
 
 .. code-block:: python
 
    from nfstream.streamer import Streamer
 
-   def my_awesome_plugin(packet_information, flow):
+   def my_awesome_plugin(packet_information, flow, direction):
     old_value = flow.metrics['count_pkts_gt_666']
-    if packet_information.size > 999:
+    if packet_information.length > 999:
         old_value = flow.metrics['count_pkts_gt_666']
         new_value =  old_value + 1
         return new_value
@@ -113,9 +112,9 @@ How if I want to log the size of the fourth packet from src -> dst ?
 
    from nfstream.streamer import Streamer
 
-   def my_awesome_plugin(packet_information, flow):
-    if flow.src_to_dst_pkts == 4 and packet_information.direction == 0:
-        return packet_information.size
+   def my_awesome_plugin(packet_information, flow, direction):
+    if flow.src_to_dst_pkts == 4 and direction == 0:
+        return packet_information.length
     else:
         return 0
 
@@ -145,14 +144,14 @@ We suppose that your model takes as features the packet size of 3 first packets 
             flow.classifiers[self.name]['2'] = 0
             flow.classifiers[self.name]['3'] = 0
 
-        def on_flow_update(self, packet_information, flow):
+        def on_flow_update(self, packet_information, flow, direction):
             number_packets = flow.src_to_dst_pkts + flow.dst_to_src_pkts
             if number_packets == 1:
-                flow.classifiers[self.name]['1'] = packet_information.size
+                flow.classifiers[self.name]['1'] = packet_information.length
             elif number_packets == 2:
-                flow.classifiers[self.name]['2'] = packet_information.size
+                flow.classifiers[self.name]['2'] = packet_information.length
             elif number_packets == 3:
-                flow.classifiers[self.name]['3'] = packet_information.size
+                flow.classifiers[self.name]['3'] = packet_information.length
                 flow.metrics[self.name]['prediction'] = self.dummy_classifier.predict(flow.classifiers[self.name]['1'],
                                                                                       flow.classifiers[self.name]['2'],
                                                                                       flow.classifiers[self.name]['3'])
