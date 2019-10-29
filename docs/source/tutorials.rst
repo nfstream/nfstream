@@ -127,7 +127,7 @@ How if I want to log the size of the fourth packet from src -> dst ?
 Create your own Classifier
 --------------------------
 
-If you wan to add one or many classifiers to nfstream, you must create your classifier inheriting from
+If you want to add one or many classifiers to nfstream, you must create your classifier inheriting from
 NFStreamClassifier.
 Example, let's say that you have a trained Machine Learning Model and you want to use it to classify real traffic.
 We suppose that your model takes as features the packet size of 3 first packets of a flow.
