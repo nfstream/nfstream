@@ -54,13 +54,12 @@ pytest_runner = ['pytest-runner'] if needs_pytest else []
 
 python_requires = '>=3.5'
 install_requires = ['lru-dict>=1.1.6',
-                    'dpkt>=1.9.2',
-                    'numpydoc>=0.8',
-                    'sphinx_rtd_theme>=0.4.3',
-                    'colorama>=0.4.1']
-if not os.getenv('READTHEDOCS'):
-    install_requires.append('pypcap>=1.2.3')
+                    'cffi>=1.13.1',
+                    'goto-statement>=1.2']
 
+if os.getenv('READTHEDOCS'):
+    install_requires.append('numpydoc>=0.8')
+    install_requires.append('sphinx_rtd_theme>=0.4.3')
 
 setup(
     name="nfstream",

@@ -1,5 +1,5 @@
 from .ndpi_bindings import ndpi, NDPI_PROTOCOL_BITMASK, ndpi_flow_struct, ndpi_protocol, ndpi_id_struct
-from ctypes import pointer, memset, sizeof, cast, c_char_p, c_void_p, POINTER, c_uint8, addressof
+from ctypes import pointer, memset, sizeof, cast, c_char_p, c_void_p, POINTER, c_uint8, addressof, c_ubyte
 
 
 class NFStreamClassifier:
@@ -9,7 +9,7 @@ class NFStreamClassifier:
     def on_flow_init(self, flow):
         return
 
-    def on_flow_update(self, packet_information, flow):
+    def on_flow_update(self, packet_information, flow, direction):
         return
 
     def on_flow_terminate(self, flow):
@@ -39,17 +39,18 @@ class NDPIClassifier(NFStreamClassifier):
         flow.classifiers[self.name]['application_name'] = ''
         flow.classifiers[self.name]['category_name'] = ''
 
-    def on_flow_update(self, packet_information, flow):
+    def on_flow_update(self, packet_information, flow, direction):
         if flow.classifiers[self.name]['detection_completed'] == 0:
             flow.classifiers[self.name]['detected_protocol'] = ndpi.ndpi_detection_process_packet(
                 self.mod,
                 flow.classifiers[self.name]['ndpi_flow'],
-                cast(cast(c_char_p(packet_information.content), c_void_p), POINTER(c_uint8)),
-                len(packet_information.content),
-                packet_information.ts,
+                cast(cast(c_char_p(packet_information.raw), c_void_p), POINTER(c_uint8)),
+                len(packet_information.raw),
+                int(packet_information.timestamp),
                 flow.classifiers[self.name]['src_id'],
                 flow.classifiers[self.name]['dst_id']
             )
+
             valid = False
             if flow.ip_protocol == 6:
                 valid = (flow.src_to_dst_pkts + flow.dst_to_src_pkts) > self.max_num_tcp_dissected_pkts
