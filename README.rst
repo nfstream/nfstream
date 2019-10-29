@@ -20,55 +20,22 @@ nfstream is a flexible and lightweight network data analysis library.
 .. code-block:: python
 
    from nfstream.streamer import Streamer
-   my_capture_streamer = Streamer(source="instagram.pcap",
-                                  capacity=128000,
-                                  active_timeout=120,
-                                  inactive_timeout=60,
-                                  user_metrics=None,
-                                  user_classifiers=None,
-                                  enable_ndpi=True)
-
-   my_live_streamer = Streamer(source="eth1")  # or capture from a network interface
+   my_capture_streamer = Streamer(source="instagram.pcap") # or capture from a network interface
    for flow in my_capture_streamer:  # or for flow in my_live_streamer
        print(flow)  # print, append to pandas Dataframe or whatever you want :)!
-
-.. code-block:: json
-
- {"ip_src": "192.168.122.121",
-  "src_port": 43277,
-  "ip_dst": "186.102.189.33",
-  "dst_port": 443,
-  "ip_protocol": 6,
-  "src_to_dst_pkts": 6,
-  "dst_to_src_pkts": 5,
-  "src_to_dst_bytes": 1456,
-  "dst_to_src_bytes": 477,
-  "application_name": "TLS.Instagram",
-  "category_name": "SocialNetwork",
-  "start_time": 1555969081636,
-  "end_time": 1555969082020,
-  "export_reason": 2}
 
 * Didn't find a specific flow feature? add a plugin to the Streamer in few lines:
 
 .. code-block:: python
 
-   from nfstream.streamer import Streamer
-
    def my_awesome_plugin(packet_information, flow, direction):
-    old_value = flow.metrics['count_pkts_gt_666']
-    if packet_information.length > 999:
-        old_value = flow.metrics['count_pkts_gt_666']
-        new_value =  old_value + 1
-        return new_value
-    else:
-        return old_value
+    if packet_information.length > 666:
+        return flow.metrics['count_pkts_gt_666'] + 1
 
-   streamer_awesome = Streamer(source='devil.pcap',
-                               user_metrics={'count_pkts_gt_666': my_awesome_plugin})
+   streamer_awesome = Streamer(source='devil.pcap', user_metrics={'count_pkts_gt_666': my_awesome_plugin})
    for export in streamer_awesome:
-      # now you will see your created metric in generated flows
-      print(export.metrics['count_pkts_gt_666'])
+      print(export.metrics['count_pkts_gt_666']) # now you will see your created metric in generated flows
+
 
 * More example and details are provided on the official Documentation_.
 
