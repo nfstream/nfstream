@@ -836,7 +836,7 @@ class PcapLiveDevice(object):
     def breakloop(self):
         self._libpcap.pcap_breakloop(self._pcapdev.pcap)
 
-    def recv_packet(self, timeout):
+    def recv_packet(self, timeout=None):
         # FIXME: ugly and long
         if timeout is None or timeout < 0:
             timeout = None
