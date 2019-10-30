@@ -39,3 +39,11 @@ History
 * Custom export_reason.
 * Fix minor bugs.
 * Improve documentation.
+
+1.0.0 (2019-10-30)
+------------------
+
+* cffi based packet capture.
+* fast parsing mechanism.
+* Minor bug fixes.
+* auto-generate binaries.
