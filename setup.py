@@ -62,7 +62,7 @@ if os.getenv('READTHEDOCS'):
 
 setup(
     name="nfstream",
-    version='0.5.0',
+    version='1.0.0',
     url='https://github.com/aouinizied/nfstream.git',
     license='LGPLv3',
     description="A flexible and powerful network data analysis library",
