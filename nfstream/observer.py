@@ -198,17 +198,6 @@ class _PcapFfi(object):
         return self._ffi
 
     def _process_packet(self, xdev, header, packet, decode_tunnels=True):
-        # Declare pointers to packets headers
-        # Ethernet header
-        ethernet = self._ffi.new("const struct nfstream_ethhdr *")
-        # LLC header
-        llc = self._ffi.new("const struct nfstream_llc_header_snap *")
-        # Cisco HDLC header
-        chdlc = self._ffi.new("const struct nfstream_chdlc *")
-        # Radio tap header
-        radiotap = self._ffi.new("const struct nfstream_radiotap_header *")
-        # Wifi header
-        wifi = self._ffi.new("const struct nfstream_wifi_header *")
         # MPLS header
         mpls = self._ffi.new("union mpls *")
         # IP header
@@ -399,7 +388,6 @@ class _PcapFfi(object):
                             eth_offset = offset
                             datalink_check = True
 
-        l3 = self._ffi.new("uint8_t *")
         l4_offset = 0
         ipsize = 0
         src_addr = 0
@@ -422,7 +410,6 @@ class _PcapFfi(object):
                 options = self._ffi.cast('uint8_t *', iph6) + self._ffi.sizeof('struct nfstream_ipv6hdr')
                 proto = options[0]
             l4_packet_len = ntohs(iph6.ip6_hdr.ip6_un1_plen)
-            ipsize = self._ffi.sizeof('struct nfstream_ipv6hdr')
 
         if version == 4:
             if ipsize < 20:
@@ -593,6 +580,7 @@ class PcapReader(object):
         self._user_callback = callback
         handle = self._ffi.new_handle(self)
         rv = self._libpcap.pcap_loop(self._pcapdev.pcap, count, _pcap_callback, handle)
+        return rv
 
     def _callback(self, pkt):
         self._user_callback(pkt)
@@ -829,6 +817,7 @@ class PcapLiveDevice(object):
         self._user_callback = callback
         handle = self._ffi.new_handle(self)
         rv = self._libpcap.pcap_loop(self._pcapdev.pcap, count, _pcap_callback, handle)
+        return rv
 
     def _callback(self, pkt):
         self._user_callback(pkt)
@@ -837,14 +826,12 @@ class PcapLiveDevice(object):
         self._libpcap.pcap_breakloop(self._pcapdev.pcap)
 
     def recv_packet(self, timeout=None):
-        # FIXME: ugly and long
         if timeout is None or timeout < 0:
             timeout = None
-
         if self._fd >= 0:
             try:
                 xread, xwrite, xerr = select([self._fd], [], [self._fd], timeout)
-            except:
+            except PcapException:
                 return None
             if xread:
                 return self._base._recv_packet(self._pcapdev.pcap)
@@ -951,14 +938,12 @@ class Observer:
     def __iter__(self):
         if self.packet_generator is not None:
             try:
-                continue_reading = True
-                while continue_reading:
+                while True:
                     try:
                         r = self.packet_generator.recv_packet()
                         if r is None:
                             pass
                         elif r == -2:
-                            continue_reading = False
                             return
                         elif r == 0:
                             pass
