@@ -41,3 +41,7 @@ Changelog
 * Minor bug fixes.
 * auto-generate binaries.
 
+**1.0.1 (2019-10-31)**
+
+* Fix deployment CI
+
