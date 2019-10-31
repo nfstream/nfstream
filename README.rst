@@ -2,7 +2,7 @@
 |nfstream_logo| nfstream
 ========================
 
-|release| |build| |quality| |doc| |python| |license|
+|build| |doc| |quality| |release| |python| |license|
 
 nfstream is a flexible and lightweight network data analysis library.
 
