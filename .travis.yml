@@ -46,9 +46,11 @@ matrix:
             - autogen
 
 install:
-  - pip install -r requirements.txt
-  - pip install codecov
-  - python setup.py bdist_wheel
+  - git clone --depth 1 git://github.com/astropy/ci-helpers.git
+  - source ci-helpers/travis/setup_conda.sh
+  - pip3 install -r requirements.txt
+  - pip3 install codecov
+  - python3 setup.py bdist_wheel
   - ls dist/
 
 script:

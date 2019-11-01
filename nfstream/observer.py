@@ -49,7 +49,6 @@ class Dlt(Enum):
     DLT_C_HDLC = 104
     DLT_LINUX_SLL = 113
     DLT_IEEE802_11_RADIO = 127
-    DLT_UNSUPPORTED = 12
 
 
 class PcapDirection(IntEnum):
