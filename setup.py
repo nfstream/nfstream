@@ -65,15 +65,24 @@ try:
     from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
     class bdist_wheel(_bdist_wheel):
+        def get_tag(self):
+            tag = _bdist_wheel.get_tag(self)
+            pypi_compliant_tag = list(tag)
+            if 'linux' == pypi_compliant_tag[2][0:5]:
+                pypi_compliant_tag[2] = pypi_compliant_tag[2].replace("linux", "manylinux1")
+            pypi_compliant_tag = tuple(pypi_compliant_tag)
+            return pypi_compliant_tag
+
         def finalize_options(self):
             _bdist_wheel.finalize_options(self)
             self.root_is_pure = False
+
 except ImportError:
     bdist_wheel = None
 
 setup(
     name="nfstream",
-    version='1.1.0',
+    version='1.0.3',
     url='https://github.com/aouinizied/nfstream.git',
     license='LGPLv3',
     description="A flexible and powerful network data analysis library",
