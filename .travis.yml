@@ -5,19 +5,27 @@ matrix:
       env: TRAVIS_PYTHON_VERSION="3.5"
       python: '3.5'
       compiler: clang
+      addons:
+        homebrew:
+          - https://raw.githubusercontent.com/Homebrew/homebrew-core/ec545d45d4512ace3570782283df4ecda6bb0044/Formula/python3.rb
 
     - os: osx
       language: generic
       env: TRAVIS_PYTHON_VERSION="3.6"
       python: '3.6'
       compiler: clang
+      addons:
+        homebrew:
+          - https://raw.githubusercontent.com/Homebrew/homebrew-core/788b65e645bb342e82946b52173997cd00c322ac/Formula/python.rb
 
     - os: osx
       language: generic
       env: TRAVIS_PYTHON_VERSION="3.7"
-      osx_image: xcode11.2
       python: '3.7'
       compiler: clang
+      addons:
+        homebrew:
+          - https://raw.githubusercontent.com/Homebrew/homebrew-core/5895674b58e0b9b5f0e638b460f43f5511709ffb/Formula/python.rb
 
     - os: linux
       language: python
@@ -52,7 +60,7 @@ matrix:
 install:
   - pip3 install -r requirements.txt
   - pip3 install codecov
-  - python3 setup.py bdist_wheel
+  - python$TRAVIS_PYTHON_VERSION setup.py bdist_wheel
   - ls dist/
 
 script:
