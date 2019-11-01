@@ -75,12 +75,15 @@ setup(
     setup_requires=pytest_runner,
     tests_require=['pytest>=5.0.1'],
     include_package_data=True,
-    platforms='any',
+    platforms=["Linux", "Mac OS-X", "Unix"],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
         'Intended Audience :: Developers',
-        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3 :: Only',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Topic :: Scientific/Engineering :: Artificial Intelligence'
     ]
 )
