@@ -3,16 +3,19 @@ matrix:
     - os: osx
       language: generic
       env: TRAVIS_PYTHON_VERSION="3.5"
+      python: '3.5'
       compiler: clang
 
     - os: osx
       language: generic
       env: TRAVIS_PYTHON_VERSION="3.6"
+      python: '3.6'
       compiler: clang
 
     - os: osx
       language: generic
       env: TRAVIS_PYTHON_VERSION="3.7"
+      python: '3.7'
       compiler: clang
 
     - os: linux
@@ -48,7 +51,7 @@ matrix:
 install:
   - pip3 install -r requirements.txt
   - pip3 install codecov
-  - python3 setup.py bdist_wheel
+  - python$TRAVIS_PYTHON_VERSION setup.py bdist_wheel
   - ls dist/
 
 script:
