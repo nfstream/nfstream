@@ -52,3 +52,8 @@ History
 ------------------
 
 * Fix deployment CI
+
+1.1.0 (2019-11-01)
+------------------
+
+* Add OSX support.
