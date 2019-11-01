@@ -6,6 +6,16 @@ matrix:
       env: TRAVIS_PYTHON_VERSION="3.6"
       compiler: clang
 
+    - os: osx
+      language: generic
+      env: TRAVIS_PYTHON_VERSION="3.7"
+      compiler: clang
+
+    - os: osx
+      language: generic
+      env: TRAVIS_PYTHON_VERSION="3.8"
+      compiler: clang
+
     - os: linux
       language: python
       python: '3.6'
@@ -48,7 +58,7 @@ install:
   - source ci-helpers/travis/setup_conda.sh
   - pip install -r requirements.txt
   - pip install codecov
-  - python setup.py bdist_wheel
+  - python setup.py install
   - ls dist/
 
 script:
