@@ -2,30 +2,21 @@ matrix:
   include:
     - os: osx
       language: generic
-      env: TRAVIS_PYTHON_VERSION="3.5"
+      env: TOXENV=py35
       python: '3.5'
       compiler: clang
-      addons:
-        homebrew:
-          - https://raw.githubusercontent.com/Homebrew/homebrew-core/ec545d45d4512ace3570782283df4ecda6bb0044/Formula/python3.rb
 
     - os: osx
       language: generic
-      env: TRAVIS_PYTHON_VERSION="3.6"
+      env: TOXENV=py36
       python: '3.6'
       compiler: clang
-      addons:
-        homebrew:
-          - https://raw.githubusercontent.com/Homebrew/homebrew-core/788b65e645bb342e82946b52173997cd00c322ac/Formula/python.rb
 
     - os: osx
       language: generic
-      env: TRAVIS_PYTHON_VERSION="3.7"
+      env: TOXENV=py37
       python: '3.7'
       compiler: clang
-      addons:
-        homebrew:
-          - https://raw.githubusercontent.com/Homebrew/homebrew-core/5895674b58e0b9b5f0e638b460f43f5511709ffb/Formula/python.rb
 
     - os: linux
       language: python
@@ -56,12 +47,51 @@ matrix:
           packages:
             - libpcap-dev
             - autogen
+before_install:
+  - |
+    if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
+      brew update
+      brew cask uninstall oclint
+      brew install gcc@5 --without-multilib
+      brew outdated pyenv || brew upgrade pyenv
+      eval "$(pyenv init -)"
+      case "${TOXENV}" in
+        py34)
+          PYVER=3.5
+          # Install the latest release of the specified Python version using pyenv.
+          PYVER="$(pyenv install --list | grep -E "^\\s*$PYVER" | sort -n -t. -k3 | tail -n1)"
+          pyenv install $PYVER
+          pyenv global $PYVER
+          echo "Selected Python $PYVER"
+          python --version
+          ;;
+        py35)
+          PYVER=3.6
+          # Install the latest release of the specified Python version using pyenv.
+          PYVER="$(pyenv install --list | grep -E "^\\s*$PYVER" | sort -n -t. -k3 | tail -n1)"
+          pyenv install $PYVER
+          pyenv global $PYVER
+          echo "Selected Python $PYVER"
+          python --version
+          ;;
+        py36)
+          PYVER=3.7
+          # Install the latest release of the specified Python version using pyenv.
+          PYVER="$(pyenv install --list | grep -E "^\\s*$PYVER" | sort -n -t. -k3 | tail -n1)"
+          pyenv install $PYVER
+          pyenv global $PYVER
+          echo "Selected Python $PYVER"
+          python --version
+          ;;
+      esac
+    fi
 
 install:
-  - pip3 install -r requirements.txt
-  - pip3 install codecov
-  - python$TRAVIS_PYTHON_VERSION setup.py bdist_wheel
+  - pip install -r requirements.txt
+  - pip install codecov
+  - python setup.py bdist_wheel
   - ls dist/
+  - ls
 
 script:
   - coverage run tests.py
