@@ -73,7 +73,6 @@ class Flow:
             return self.export_reason, self
 
     def __str__(self):
-
         metrics = {'ip_src': self.ip_src_str,
                    'src_port': self.src_port,
                    'ip_dst': self.ip_dst_str,
@@ -85,9 +84,10 @@ class Flow:
                    'dst_to_src_bytes': self.dst_to_src_bytes,
                    'start_time': self.start_time,
                    'end_time': self.end_time,
-                   'export_reason': self.export_reason
+                   'export_reason': self.export_reason,
+                   'metrics': self.metrics
                    }
-        return str({**self.metrics, **metrics})
+        return str(metrics)
 
 
 class Streamer:
