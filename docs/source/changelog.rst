@@ -41,11 +41,16 @@ Changelog
 * Minor bug fixes.
 * auto-generate binaries.
 
-**1.0.1 (2019-10-31)**
+**1.0.1-2-3 (2019-10-31)**
 
 * Fix deployment CI
 
 **1.1.0 (2019-11-01)**
 
 * Add OSX support.
+
+**1.1.1 (2019-11-01)**
+
+* Fix broken linux wheels on pypi.
+* Py38 compatibility.
 
