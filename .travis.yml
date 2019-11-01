@@ -1,5 +1,9 @@
 matrix:
   include:
+    - os: osx
+      language: generic
+      env: TRAVIS_PYTHON_VERSION="3.5"
+      compiler: clang
 
     - os: osx
       language: generic
@@ -11,10 +15,14 @@ matrix:
       env: TRAVIS_PYTHON_VERSION="3.7"
       compiler: clang
 
-    - os: osx
-      language: generic
-      env: TRAVIS_PYTHON_VERSION="3.8"
-      compiler: clang
+    - os: linux
+      language: python
+      python: '3.5'
+      addons:
+        apt:
+          packages:
+            - libpcap-dev
+            - autogen
 
     - os: linux
       language: python
@@ -37,16 +45,6 @@ matrix:
     - os: linux
       language: python
       python: '3.7'
-      addons:
-        apt:
-          packages:
-            - libpcap-dev
-            - autogen
-
-
-    - os: linux
-      language: python
-      python: '3.8'
       addons:
         apt:
           packages:
