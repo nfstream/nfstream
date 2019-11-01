@@ -73,7 +73,7 @@ except ImportError:
 
 setup(
     name="nfstream",
-    version='1.0.3',
+    version='1.1.0',
     url='https://github.com/aouinizied/nfstream.git',
     license='LGPLv3',
     description="A flexible and powerful network data analysis library",
