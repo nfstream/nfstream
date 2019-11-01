@@ -54,11 +54,23 @@ pytest_runner = ['pytest-runner'] if needs_pytest else []
 
 python_requires = '>=3.5'
 install_requires = ['lru-dict>=1.1.6',
-                    'cffi>=1.13.1']
+                    'cffi>=1.13.1',
+                    'wheel>=0.33.6']
 
 if os.getenv('READTHEDOCS'):
     install_requires.append('numpydoc>=0.8')
     install_requires.append('sphinx_rtd_theme>=0.4.3')
+
+try:
+    from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+
+    class bdist_wheel(_bdist_wheel):
+        def finalize_options(self):
+            _bdist_wheel.finalize_options(self)
+            self.root_is_pure = False
+
+except ImportError:
+    bdist_wheel = None
 
 setup(
     name="nfstream",
@@ -71,7 +83,7 @@ setup(
     author_email='aouinizied@gmail.com',
     packages=['nfstream'],
     install_requires=install_requires,
-    cmdclass={'nDPI': BuildNdpiCommand, 'build_py': BuildPyCommand},
+    cmdclass={'nDPI': BuildNdpiCommand, 'build_py': BuildPyCommand, 'bdist_wheel': bdist_wheel},
     setup_requires=pytest_runner,
     tests_require=['pytest>=5.0.1'],
     include_package_data=True,
