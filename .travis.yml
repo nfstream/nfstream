@@ -44,7 +44,7 @@ matrix:
 install:
   - pip install -r requirements.txt
   - pip install codecov
-  - python setup.py install
+  - python setup.py bdist_wheel
   - ls dist/
 
 script:
