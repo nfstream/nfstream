@@ -56,7 +56,7 @@ before_install:
       brew outdated pyenv || brew upgrade pyenv
       eval "$(pyenv init -)"
       case "${TOXENV}" in
-        py34)
+        py35)
           PYVER=3.5
           # Install the latest release of the specified Python version using pyenv.
           PYVER="$(pyenv install --list | grep -E "^\\s*$PYVER" | sort -n -t. -k3 | tail -n1)"
@@ -65,7 +65,7 @@ before_install:
           echo "Selected Python $PYVER"
           python --version
           ;;
-        py35)
+        py36)
           PYVER=3.6
           # Install the latest release of the specified Python version using pyenv.
           PYVER="$(pyenv install --list | grep -E "^\\s*$PYVER" | sort -n -t. -k3 | tail -n1)"
@@ -74,7 +74,7 @@ before_install:
           echo "Selected Python $PYVER"
           python --version
           ;;
-        py36)
+        py37)
           PYVER=3.7
           # Install the latest release of the specified Python version using pyenv.
           PYVER="$(pyenv install --list | grep -E "^\\s*$PYVER" | sort -n -t. -k3 | tail -n1)"
