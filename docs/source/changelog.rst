@@ -54,3 +54,6 @@ Changelog
 * Fix broken linux wheels on pypi.
 * Py38 compatibility.
 
+**1.1.2 (2019-11-01)**
+
+* Fix broken macos wheels on pypi.
