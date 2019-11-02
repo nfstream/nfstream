@@ -7,6 +7,9 @@ import shutil
 if os.name != 'posix':
     sys.exit("Sorry, Windows is not supported by nfstream.")
 
+if (not sys.version_info[0] == 3) and (not sys.version_info[1] >= 6):  # avoid py27 wheels generation on macos runners
+    sys.exit("Sorry, nfstream requires Python3.6+ versions.")
+
 try:
     from setuptools import setup
     from setuptools.command.build_ext import build_ext

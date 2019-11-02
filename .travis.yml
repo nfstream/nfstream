@@ -54,8 +54,7 @@ install:
   - pip3 install -r requirements.txt
   - pip3 install codecov
   - python3 setup.py bdist_wheel
-  - cp -a dist/. dist_pypi/
-  - ls dist_pypi/
+  - ls dist/
 
 script:
   - coverage run tests.py
@@ -68,7 +67,7 @@ deploy:
     distributions: bdist_wheel
     file_glob: true
     file:
-      - dist_pypi/*.whl
+      - dist/*.whl
     user: aouinizied
     skip_cleanup: true
     skip_existing: true
