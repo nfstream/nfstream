@@ -134,6 +134,18 @@ class TestMethods(unittest.TestCase):
             self.assertEqual(export.src_to_dst_pkts, export.metrics['test_src_to_dst_pkts'])
         print('user defined metric addition:  PASS.')
 
+    def test_live_capture_no_root(self):
+        print("\n----------------------------------------------------------------------")
+        print(".Testing live capture mechanism:")
+        with self.assertRaises(OSError) as context:
+            streamer_test = Streamer(source='lo')
+            run = 0
+            for export in streamer_test:
+                run = run + 1
+                break
+        self.assertEqual(type(context.exception), OSError)
+        print('live capture mechanism:  PASS.')
+
 
 if __name__ == '__main__':
     unittest.main()

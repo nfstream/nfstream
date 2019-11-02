@@ -174,11 +174,6 @@ struct nfstream_udphdr
   uint16_t len;
   uint16_t check;
 };
-struct tzsp_header {
-    uint8_t	version;
-    uint8_t	type;
-    uint16_t encapsulated_protocol;
-};
 struct pp_32 {
     uint32_t value;
 };

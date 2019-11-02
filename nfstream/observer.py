@@ -338,55 +338,6 @@ class _PcapFfi(object):
                 else:
                     return None
 
-            if decode_tunnels and proto == 17:
-                udp = self._ffi.new("struct nfstream_udphdr *")
-                udp = self._ffi.cast('struct nfstream_udphdr *', packet + (ip_offset + ip_len))
-                sport = self._ffi.new("uint16_t *")
-                sport = int(ntohs(udp.source))
-                dport = self._ffi.new("uint16_t *")
-                dport = int(ntohs(udp.dest))
-                if (sport == 2152) or (dport == 2152):
-                    # Check if it's GTPv1
-                    offset = ip_offset + ip_len + self._ffi.sizeof('struct nfstream_udphdr')
-                    flags = packet[offset]
-                    message_type = packet[offset + 1]
-                    if (((flags & 0xE0) >> 5) == 1) and (message_type == 0xFF):
-                        ip_offset = ip_offset + ip_len + self._ffi.sizeof('struct nfstream_udphdr') + 8  # GTPv1 header len
-                        if flags & 0x04:
-                            ip_offset += 1  # next_ext_header is present
-                        if flags & 0x02:
-                            ip_offset += 4  # sequence_number is present (it also includes next_ext_header and pdu_number)
-                        if flags & 0x01:
-                            ip_offset += 1 # pdu_number is present
-                        iph = self._ffi.cast('struct nfstream_iphdr *', packet + ip_offset)
-                        if iph.version == 4:
-                            return None
-                elif (sport == 37008) or (dport == 37008):
-                    offset = ip_offset + ip_len + self._ffi.sizeof('struct nfstream_udphdr')
-                    tzsp = self._ffi.cast('struct tzsp_header *', packet + offset)
-                    version = int(ntohs(tzsp.version))
-                    ts_type = int(ntohs(tzsp.type))
-                    encapsulated_protocol = int(ntohs(tzsp.encapsulated_protocol))
-                    if (version == 1) and (ts_type == 0) and (encapsulated_protocol == 1):
-                        stop = 0
-                        offset += 4
-                        while (not stop) and (offset < header.caplen):
-                            tag_type = packet[offset]
-                            tag_len= 0
-                            if tag_type == 0: # Padding tag
-                                tag_len = 1
-                            elif tag_type == 1: # End tag
-                                tag_len = 1
-                                stop = 1
-                            else:
-                                tag_len = packet[offset + 1]
-                        offset += tag_len
-                        if offset >= header.caplen:
-                            return None  # Invalid packet
-                        else:
-                            eth_offset = offset
-                            datalink_check = True
-
         l4_offset = 0
         ipsize = 0
         src_addr = 0
@@ -497,39 +448,6 @@ class _PcapFfi(object):
 
 def pcap_devices():
     return _PcapFfi.instance().devices
-
-
-class PcapDumper(object):
-    __slots__ = ['_ffi', '_libpcap', '_base', '_dumper']
-
-    def __init__(self, outfile, dltype=Dlt.DLT_EN10MB, snaplen=65535):
-        self._base = _PcapFfi.instance()
-        self._ffi = self._base.ffi
-        self._libpcap = self._base.lib
-        pcap = self._libpcap.pcap_open_dead(dltype.value, snaplen)
-        xoutfile = self._ffi.new("char []", bytes(outfile, 'ascii'))
-        pcapdump = self._libpcap.pcap_dump_open(pcap, xoutfile)
-        dl = self._libpcap.pcap_datalink(pcap)
-        snaplen = self._libpcap.pcap_snapshot(pcap)
-        self._dumper = PcapDev(Dlt(dl), 0, snaplen, _PcapFfi.instance().version, pcapdump)
-
-    def write_packet(self, pkt, ts=None):
-        if not isinstance(pkt, bytes):
-            raise PcapException("Packet to be written needs to be a Python bytes object")
-        pkthdr = self._ffi.new("struct pcap_pkthdr *")
-        if not ts:
-            ts = time()
-
-        pkthdr.tv_sec = int(ts)
-        pkthdr.tv_usec = int(1000000 * (ts - int(ts)))
-
-        pkthdr.caplen = len(pkt)
-        pkthdr.len = len(pkt)
-        xpkt = self._ffi.new("unsigned char []", pkt)
-        self._libpcap.pcap_dump(self._dumper.pcap, pkthdr, xpkt)
-
-    def close(self):
-        self._libpcap.pcap_dump_close(self._dumper.pcap)
 
 
 class PcapReader(object):
