@@ -67,9 +67,10 @@ deploy:
     distributions: bdist_wheel
     file_glob: true
     file:
-      - dist/*cp3*.whl
+      - dist/*.whl
     user: aouinizied
     skip_cleanup: true
+    skip_existing: true
     password:
       secure: W+ApjHVG6W1RgXwbXgC+Ucg/+ReoZDvUubQk4238iu78phjJuIpum/EMXa0pw6/eVMzuT1RSr8rGLZS81NyqLySiDQ13zXso+cjEcAq33DthAbOgIb3/q5M1HNHSzMZgF3E509QWumMtmcR4dO6ddxRYWWEk2ElLEUcYiLi2THmSDJi2w0V3Mh7CAHv24XCuyWKAXyVKbJ3ZxM5tq7HetkOT+8IAc9KxNQOp8sbIWRulpgz4LXwiLFqQBQqQ7caoubDaqzLdzIK7Yp6qtnnTBQRrVNAjNO1JDGMZduIqxnye3DyLJ/j4qQuafMaRRFyd+wZHTw3BD/AUfZ2s/aT2Yajp5mq1JJU1qd35qq+OdkiDLYYTtSPrgbr2K9639lGwP75/apGmyInasBuExdktzFHU74uE4s8aMK2xmlCNP71kJpQtp7dsPH0TdkA1eEyJWvx45K9QS2+acNnQMOIv/vtPjina7thBfTyetFVtY7/A3/Bt9PhP79qijVtgZMW4zI+8mBJSE8Gsw9QJ2RR6ztvgDqBuIanNrZA4B8Vii+6tUUm6FY0Ak3A+olxs/75hQygdbNiSsvijEsa4pSNvsJZnvh8aQhkpCm7l2Xn2eXrdJj9o6a+OjdBuracFU279mV3xqsdf22PBjnx/+klPpJFnlOlsxwZ8T5Ok7IdDtqU=
     on:
