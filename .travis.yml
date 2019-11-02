@@ -31,21 +31,6 @@ matrix:
             - autogen
 
     - os: linux
-      arch: arm64
-      language: python
-      python: '3.6'
-      env: TRAVIS_PYTHON_VERSION="3.6"
-      addons:
-        apt:
-          packages:
-            - libpcap-dev
-            - autogen
-            - libffi-dev
-            - autoconf
-            - automake
-            - libtool
-
-    - os: linux
       language: python
       python: '3.7'
       env: TRAVIS_PYTHON_VERSION="3.7"
