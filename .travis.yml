@@ -42,6 +42,7 @@ matrix:
             - autogen
             - libffi-dev
             - autoconf
+            - automake
 
     - os: linux
       language: python
