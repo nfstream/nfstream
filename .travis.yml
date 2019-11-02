@@ -20,15 +20,13 @@ matrix:
       python: '3.7'
       compiler: clang
 
-    - os: linux
-      language: python
-      python: '3.5'
-      env: TRAVIS_PYTHON_VERSION="3.5"
-      addons:
-        apt:
-          packages:
-            - libpcap-dev
-            - autogen
+    - os: osx
+      language: generic
+      env: TRAVIS_PYTHON_VERSION="3.6"
+      osx_image: xcode8.3
+      python: '3.6'
+      compiler: clang
+
 
     - os: linux
       language: python
@@ -65,10 +63,13 @@ install:
   - pip3 install codecov
   - python3 setup.py bdist_wheel
   - ls dist/
+
 script:
   - coverage run tests.py
+
 after_success:
   - codecov
+
 deploy:
     provider: pypi
     distributions: bdist_wheel

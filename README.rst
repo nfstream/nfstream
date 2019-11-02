@@ -101,7 +101,7 @@ This project is licensed under the GPLv3 License - see the License_ file for det
                :target: https://travis-ci.org/aouinizied/nfstream
 .. |quality| image:: https://img.shields.io/lgtm/grade/python/github/aouinizied/nfstream.svg?logo=lgtm&logoWidth=18)
                :target: https://lgtm.com/projects/g/aouinizied/nfstream/context:python
-.. |python| image:: https://img.shields.io/badge/python-3.x-blue.svg
+.. |python| image:: https://img.shields.io/badge/python-3.6+-blue.svg
                :target: https://travis-ci.org/aouinizied/nfstream
 .. |doc| image:: https://readthedocs.org/projects/nfstream/badge/?version=latest
                :target: https://nfstream.readthedocs.io/en/latest/?badge=latest

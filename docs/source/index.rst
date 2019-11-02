@@ -7,16 +7,16 @@
 nfstream documentation
 ======================
 
-|build| |quality| |release| |python| |license|
+|build| |quality| |release| |python| |platform| |license|
 
-**nfstream** is a flexible and lightweight network data analysis library.
+nfstream is a flexible and lightweight network data analysis library.
 
 **nfstream main features**
 
 * **Performance:** nfstream was designed to be fast with a small CPU and memory footprint.
 * **Layer-7 visibility:** nfstream dissection is based on nDPI_ (~300 applications including Tor, Messenger, WhatsApp, etc.).
 * **Flexibility:** add a flow metric in 2 lines of code using nfstream plugins method.
-* **Machine Learning oriented:** add your trained model as an NFStreamClassifier.
+* **Machine Learning oriented:** add your trained model as an NFStreamClassifier_.
 
 
 .. toctree::
@@ -35,9 +35,12 @@ nfstream documentation
                :target: https://travis-ci.org/aouinizied/nfstream
 .. |quality| image:: https://img.shields.io/lgtm/grade/python/github/aouinizied/nfstream.svg?logo=lgtm&logoWidth=18)
                :target: https://lgtm.com/projects/g/aouinizied/nfstream/context:python
-.. |python| image:: https://img.shields.io/badge/python-3.x-blue.svg
+.. |python| image:: https://img.shields.io/badge/python-3.6+-blue.svg
                :target: https://travis-ci.org/aouinizied/nfstream
 .. |license| image:: https://img.shields.io/badge/license-LGPLv3-blue.svg
                :target: LICENSE
+.. |platform| image:: https://img.shields.io/badge/platform-linux%20%7C%20macos-blue
+               :target: https://travis-ci.org/aouinizied/nfstream
 
 .. _nDPI: https://www.ntop.org/products/deep-packet-inspection/ndpi/
+.. _NFStreamClassifier: https://nfstream.readthedocs.io/en/latest/tutorials.html#create-your-own-classifier
