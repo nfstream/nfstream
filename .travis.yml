@@ -68,7 +68,7 @@ deploy:
     distributions: bdist_wheel
     file_glob: true
     file:
-      - dist/*.whl
+      - dist_pypi/*.whl
     user: aouinizied
     skip_cleanup: true
     skip_existing: true
