@@ -43,6 +43,7 @@ matrix:
             - libffi-dev
             - autoconf
             - automake
+            - libtool
 
     - os: linux
       language: python
