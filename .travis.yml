@@ -40,6 +40,7 @@ matrix:
           packages:
             - libpcap-dev
             - autogen
+            - libffi-dev
 
     - os: linux
       language: python
