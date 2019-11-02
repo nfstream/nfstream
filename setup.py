@@ -55,7 +55,8 @@ pytest_runner = ['pytest-runner'] if needs_pytest else []
 python_requires = '>=3.5'
 install_requires = ['lru-dict>=1.1.6',
                     'cffi>=1.13.1',
-                    'wheel>=0.33.6']
+                    'wheel>=0.33.6',
+                    'twine>=2.0.0']
 
 if os.getenv('READTHEDOCS'):
     install_requires.append('numpydoc>=0.8')
