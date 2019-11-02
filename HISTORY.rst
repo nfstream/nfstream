@@ -64,7 +64,14 @@ History
 * Fix broken linux wheels on pypi.
 * Py38 compatibility.
 
-1.1.2 (2019-11-01)
+1.1.2-3-4 (2019-11-01)
 ------------------
 
 * Fix broken macos wheels on pypi.
+
+
+1.1.5 (2019-11-02)
+------------------
+
+* Add BPF filtering feature.
+* Fix radiotap parsing.
