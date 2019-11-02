@@ -263,21 +263,20 @@ class _PcapFfi(object):
                 if (radiotap.flags & 0x50) == 0x50:  # Check Bad FCS presence
                     return None
                 # Calculate 802.11 header length(variable)
-                wifi = self._ffi.cast('struct nfstream_wifi_header *', packet + eth_offset + radio_len)
+                wifi = self._ffi.cast('struct nfstream_wifi_header *', packet + (eth_offset + radio_len))
                 fc = wifi.fc
                 # Check wifi data presence
                 if fcf_type(fc) == 0x2:
-                    if (fcf_to_ds(fc) and fcf_from_ds(fc) == 0x0) or\
-                            (fcf_to_ds(fc) == 0x0 and fcf_from_ds(fc)):
+                    if (fcf_to_ds(fc) and fcf_from_ds(fc) == 0x0) or (fcf_to_ds(fc) == 0x0 and fcf_from_ds(fc)):
                         wifi_len = 26  # + 4 byte fcs
                 else:
                     pass
                 # Check ether_type from LLC
                 llc = self._ffi.cast('struct nfstream_llc_header_snap *', packet + (eth_offset + wifi_len + radio_len))
                 if llc.dsap == 0xaa:
-                    type = ntohs(llc.snap.proto_ID)
+                    type = ntohs(llc.snap.oui2)
                 # Set IP header offset
-                ip_offset = wifi_len + radio_len + self._ffi.sizeof('struct nfstream_llc_header_snap') + eth_offset
+                ip_offset = wifi_len + radio_len + self._ffi.sizeof('struct nfstream_llc_header_snap') + eth_offset - 2
             elif Dlt(datalink_type) == Dlt.DLT_RAW:
                 ip_offset = 0
                 eth_offset = 0
