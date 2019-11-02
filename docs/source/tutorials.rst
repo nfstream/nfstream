@@ -16,7 +16,8 @@ Dealing with a big pcap file and just want to aggregate it as network flows? nfs
                                   inactive_timeout=60,
                                   user_metrics=None,
                                   user_classifiers=None,
-                                  enable_ndpi=True)
+                                  enable_ndpi=True,
+                                  bpf_filter=None)
 
    my_live_streamer = Streamer(source="eth1")  # or capture from a network interface
    for flow in my_capture_streamer:  # or for flow in my_live_streamer
@@ -38,6 +39,7 @@ Dealing with a big pcap file and just want to aggregate it as network flows? nfs
 
    **enable_ndpi** enable nDPI classifier a Layer 7 visibility. (Default True)
 
+   **bpf_filter** BPF filter string. Example: "tcp src port 44614". (Default None)
 
 
 This will print a dict representation of nfstream flow object:

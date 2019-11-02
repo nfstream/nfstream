@@ -95,11 +95,12 @@ class Streamer:
     num_streamers = 0
 
     def __init__(self, source=None, capacity=128000, active_timeout=120, inactive_timeout=60,
-                 user_metrics=None, user_classifiers=None, enable_ndpi=True):
+                 user_metrics=None, user_classifiers=None, enable_ndpi=True, bpf_filter=None):
 
         Streamer.num_streamers += 1
         self.__exports = []
         self.source = source
+        self.bpf_filter = bpf_filter
         self.__flows = LRU(capacity, callback=emergency_callback)  # LRU cache
         self._capacity = self.__flows.get_size()  # Streamer capacity (default: 128000)
         self.active_timeout = active_timeout  # expiration active timeout
@@ -208,7 +209,7 @@ class Streamer:
         self.inactive_watcher()
 
     def __iter__(self):
-        pkt_info_gen = Observer(source=self.source)
+        pkt_info_gen = Observer(source=self.source, filter_str=self.bpf_filter)
         for pkt_info in pkt_info_gen:
             self.consume(pkt_info)
             for export in self.__exports:

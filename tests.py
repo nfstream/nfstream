@@ -136,15 +136,25 @@ class TestMethods(unittest.TestCase):
 
     def test_live_capture_no_root(self):
         print("\n----------------------------------------------------------------------")
-        print(".Testing live capture mechanism:")
+        print(".Testing live capture no root:")
         with self.assertRaises(OSError) as context:
             streamer_test = Streamer(source='lo')
-            run = 0
-            for export in streamer_test:
-                run = run + 1
-                break
+            list(streamer_test)
         self.assertEqual(type(context.exception), OSError)
-        print('live capture mechanism:  PASS.')
+        print('live capture no root: PASS.')
+
+    def test_bpf_filter(self):
+        print("\n----------------------------------------------------------------------")
+        print(".Testing bpf filtering:")
+        bpf_filter = "tcp src port 44614"
+        streamer_test = Streamer(source='tests/pcap/facebook.pcap',
+                                 capacity=100,
+                                 inactive_timeout=60,
+                                 active_timeout=120,
+                                 bpf_filter=bpf_filter)
+        exports = list(streamer_test)
+        self.assertEqual(len(exports), 1)
+        print('bpf filteringt: PASS.')
 
 
 if __name__ == '__main__':
