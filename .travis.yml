@@ -65,8 +65,9 @@ after_success:
 deploy:
     provider: pypi
     distributions: bdist_wheel
+    file_glob: true
     file:
-      - dist/*.whl
+      - dist/*cp3*.whl
     user: aouinizied
     skip_cleanup: true
     password:
