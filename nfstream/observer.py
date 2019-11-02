@@ -260,7 +260,7 @@ class _PcapFfi(object):
             elif Dlt(datalink_type) == Dlt.DLT_IEEE802_11_RADIO:  # Radiotap link - layer - 127
                 radiotap = self._ffi.cast('struct nfstream_radiotap_header *', packet + eth_offset)
                 radio_len = radiotap.len
-                if (radiotap.flags & self._ffi.BAD_FCS) == self._ffi.BAD_FCS:  # Check Bad FCS presence
+                if (radiotap.flags & 0x50) == 0x50:  # Check Bad FCS presence
                     return None
                 # Calculate 802.11 header length(variable)
                 wifi = self._ffi.cast('struct nfstream_wifi_header *', packet + eth_offset + radio_len)
@@ -274,7 +274,7 @@ class _PcapFfi(object):
                     pass
                 # Check ether_type from LLC
                 llc = self._ffi.cast('struct nfstream_llc_header_snap *', packet + (eth_offset + wifi_len + radio_len))
-                if llc.dsap == self._ffi.SNAP:
+                if llc.dsap == 0xaa:
                     type = ntohs(llc.snap.proto_ID)
                 # Set IP header offset
                 ip_offset = wifi_len + radio_len + self._ffi.sizeof('struct nfstream_llc_header_snap') + eth_offset
