@@ -41,6 +41,7 @@ matrix:
             - libpcap-dev
             - autogen
             - libffi-dev
+            - autoconf
 
     - os: linux
       language: python
