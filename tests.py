@@ -167,6 +167,7 @@ class TestMethods(unittest.TestCase):
                                  active_timeout=120,
                                  bpf_filter=bpf_filter)
         exports = list(streamer_test)
+        print(exports[0])
         self.assertEqual(len(exports), 1)
         print('PASS.')
 

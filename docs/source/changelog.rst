@@ -62,3 +62,8 @@ Changelog
 
 * Add BPF filtering feature.
 * Fix radiotap parsing.
+
+**1.1.6 (2019-11-03)**
+
+* TCP flags extraction.
+* Minor bug fixes.
