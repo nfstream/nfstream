@@ -150,7 +150,7 @@ class TestMethods(unittest.TestCase):
 
     def test_unfound_device(self):
         print("\n----------------------------------------------------------------------")
-        print(".Testing unfoud device".format(uid))
+        print(".Testing unfoud device")
         try:
             streamer_test = Streamer(source="inexisting_file.pcap")
         except SystemExit:
