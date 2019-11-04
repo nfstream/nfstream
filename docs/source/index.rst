@@ -7,7 +7,7 @@
 nfstream documentation
 ======================
 
-|build| |quality| |release| |python| |platform| |license|
+|build| |coverage| |quality| |release| |python| |platform| |license|
 
 nfstream is a flexible and lightweight network data analysis library.
 
@@ -28,7 +28,8 @@ nfstream is a flexible and lightweight network data analysis library.
    contributing
    changelog
 
-
+.. |coverage| image:: https://codecov.io/gh/aouinizied/nfstream/branch/master/graph/badge.svg
+               :target: https://codecov.io/gh/aouinizied/nfstream/
 .. |release| image:: https://img.shields.io/pypi/v/nfstream.svg
               :target: https://pypi.python.org/pypi/nfstream
 .. |build| image:: https://travis-ci.org/aouinizied/nfstream.svg?branch=master

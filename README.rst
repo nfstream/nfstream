@@ -2,7 +2,7 @@
 |nfstream_logo| nfstream
 ========================
 
-|build| |doc| |quality| |release| |python| |platform| |license|
+|build| |coverage| |quality| |doc| |release| |python| |platform| |license|
 
 nfstream is a flexible and lightweight network data analysis library.
 
@@ -94,6 +94,8 @@ License
 
 This project is licensed under the GPLv3 License - see the License_ file for details
 
+.. |coverage| image:: https://codecov.io/gh/aouinizied/nfstream/branch/master/graph/badge.svg
+               :target: https://codecov.io/gh/aouinizied/nfstream/
 .. |release| image:: https://img.shields.io/pypi/v/nfstream.svg
               :target: https://pypi.python.org/pypi/nfstream
 .. |nfstream_logo| image:: https://github.com/aouinizied/nfstream/blob/master/docs/nfstream_logo.png
