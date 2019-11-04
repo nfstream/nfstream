@@ -196,7 +196,7 @@ class TestMethods(unittest.TestCase):
                     str(export.classifiers['ndpi']['master_id']) + '.' + str(export.classifiers['ndpi']['app_id'])
                 ))
         exports = sorted(exports)
-        exports_ground_truth = flows_from_file("/home/sah0312/PycharmProjects/nfstream/tests/out/facebook.pcap.out")
+        exports_ground_truth = flows_from_file("tests/out/facebook.pcap.out")
         del streamer_test
         self.assertEqual(exports, exports_ground_truth)
 
