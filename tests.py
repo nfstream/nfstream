@@ -97,7 +97,7 @@ class TestMethods(unittest.TestCase):
         exports = list(streamer_test)
         del streamer_test
         self.assertEqual(len(exports), 39)
-        print('Inactive expiration: PASS.')
+        print('PASS.')
 
         streamer_test = Streamer(source='tests/pcap/expiration/small_instagram.pcap',
                                  capacity=100,
@@ -106,7 +106,7 @@ class TestMethods(unittest.TestCase):
         exports = list(streamer_test)
         del streamer_test
         self.assertEqual(len(exports), 39)
-        print('Active expiration: PASS.')
+        print('PASS.')
 
     def test_flow_str_representation(self):
         print("\n----------------------------------------------------------------------")
@@ -118,7 +118,7 @@ class TestMethods(unittest.TestCase):
         exports = list(streamer_test)
         del streamer_test
         print(exports[0])
-        print('Flow to json: PASS.')
+        print('PASS.')
 
     def test_adding_metric(self):
         print("\n----------------------------------------------------------------------")
@@ -132,7 +132,7 @@ class TestMethods(unittest.TestCase):
         del streamer_test
         for export in exports:
             self.assertEqual(export.src_to_dst_pkts, export.metrics['test_src_to_dst_pkts'])
-        print('user defined metric addition:  PASS.')
+        print('PASS.')
 
     def test_live_capture(self):
         print("\n----------------------------------------------------------------------")
@@ -142,16 +142,26 @@ class TestMethods(unittest.TestCase):
             with self.assertRaises(SystemExit) as context:
                 streamer_test = Streamer()
             self.assertEqual(type(context.exception), SystemExit)
-            print("live capture (uid={}): PASS.".format(uid))
+            print("PASS.".format(uid))
         else:
-            streamer_test = Streamer(inactive_timeout=0)
+            streamer_test = Streamer(inactive_timeout=0, bpf_filter='ip')
             passed = 0
             for export in streamer_test:
                 if passed > 0:
+                    streamer_test.terminate()
                     break
                 print(export)
                 passed += 1
-            print("live capture (uid={}): PASS.".format(uid))
+            print("PASS.".format(uid))
+
+    def test_unfound_device(self):
+        print("\n----------------------------------------------------------------------")
+        uid = os.getuid()
+        print(".Testing unfoud device".format(uid))
+        with self.assertRaises(SystemExit) as context:
+            streamer_test = Streamer(source="inexisting_file.pcap")
+            self.assertEqual(type(context.exception), SystemExit)
+        print("PASS.".format(uid))
 
     def test_bpf_filter(self):
         print("\n----------------------------------------------------------------------")
@@ -164,7 +174,7 @@ class TestMethods(unittest.TestCase):
                                  bpf_filter=bpf_filter)
         exports = list(streamer_test)
         self.assertEqual(len(exports), 1)
-        print('bpf filteringt: PASS.')
+        print('PASS.')
 
 
 if __name__ == '__main__':
