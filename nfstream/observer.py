@@ -486,24 +486,6 @@ class PcapReader(object):
     def set_filter(self, filterstr):
         self._base._set_filter(self._pcapdev.pcap, filterstr)
 
-    def dispatch(self, callback, count=-1):
-        self._user_callback = callback
-        handle = self._ffi.new_handle(self)
-        rv = self._libpcap.pcap_dispatch(self._pcapdev.pcap, count, _pcap_callback, handle)
-        return rv
-
-    def loop(self, callback, count=-1):
-        self._user_callback = callback
-        handle = self._ffi.new_handle(self)
-        rv = self._libpcap.pcap_loop(self._pcapdev.pcap, count, _pcap_callback, handle)
-        return rv
-
-    def _callback(self, pkt):
-        self._user_callback(pkt)
-
-    def breakloop(self):
-        self._libpcap.pcap_breakloop(self._pcapdev.pcap)
-
 
 class PcapLiveDevice(object):
     '''
@@ -723,24 +705,6 @@ class PcapLiveDevice(object):
     def recv_packet_or_none(self):
         return self._base._recv_packet(self._pcapdev.pcap)
 
-    def dispatch(self, callback, count=-1):
-        self._user_callback = callback
-        handle = self._ffi.new_handle(self)
-        rv = self._libpcap.pcap_dispatch(self._pcapdev.pcap, count, _pcap_callback, handle)
-        return rv
-
-    def loop(self, callback, count=-1):
-        self._user_callback = callback
-        handle = self._ffi.new_handle(self)
-        rv = self._libpcap.pcap_loop(self._pcapdev.pcap, count, _pcap_callback, handle)
-        return rv
-
-    def _callback(self, pkt):
-        self._user_callback(pkt)
-
-    def breakloop(self):
-        self._libpcap.pcap_breakloop(self._pcapdev.pcap)
-
     def recv_packet(self, timeout=None):
         if timeout is None or timeout < 0:
             timeout = None
@@ -805,19 +769,6 @@ _PcapFfi()  # instantiate singleton
 xffi = _PcapFfi.instance().ffi
 
 
-@xffi.callback("void(*)(unsigned char *, const struct pcap_pkthdr *, const unsigned char *)")
-def _pcap_callback(handle, phdr, pdata):
-    xhandle = xffi.cast("void *", handle)
-    pcapobj = xffi.from_handle(xhandle)
-    rawpkt = bytes(xffi.buffer(pdata, phdr[0].caplen))
-    # dt = datetime.fromtimestamp(phdr[0].tv_sec)
-    usec = int(xffi.cast("int", phdr[0].tv_usec))
-    # ts = dt.replace(microsecond=usec)
-    ts = float("{}.{:06d}".format(phdr[0].tv_sec, usec))
-    pkt = PcapPacket(ts, phdr[0].caplen, phdr[0].len, rawpkt)
-    pcapobj._callback(pkt)
-
-
 def check_source_type(source):
     if source is None:  # start on first up device
         for dev in pcap_devices():
@@ -837,6 +788,7 @@ def check_source_type(source):
 class Observer:
     def __init__(self, source=None, snaplen=65535, promisc=1, to_ms=0, filter_str=None, non_block=True):
         source_type = check_source_type(source)
+        source = source_type[0]
         if source_type[1] == 1:  # Live interface
             try:
                 self.packet_generator = PcapLiveDevice(device=source, snaplen=snaplen, promisc=promisc, to_ms=to_ms,

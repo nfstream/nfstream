@@ -137,10 +137,9 @@ class TestMethods(unittest.TestCase):
     def test_live_capture_no_root(self):
         print("\n----------------------------------------------------------------------")
         print(".Testing live capture no root:")
-        with self.assertRaises(OSError) as context:
-            streamer_test = Streamer(source='lo')
-            list(streamer_test)
-        self.assertEqual(type(context.exception), OSError)
+        with self.assertRaises(SystemExit) as context:
+            streamer_test = Streamer()
+        self.assertEqual(type(context.exception), SystemExit)
         print('live capture no root: PASS.')
 
     def test_bpf_filter(self):

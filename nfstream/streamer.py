@@ -96,11 +96,12 @@ class Streamer:
 
     def __init__(self, source=None, capacity=128000, active_timeout=120, inactive_timeout=60,
                  user_metrics=None, user_classifiers=None, enable_ndpi=True, bpf_filter=None):
-
         Streamer.num_streamers += 1
+        try:
+            self.__pkt_info_gen = Observer(source=source, filter_str=bpf_filter)
+        except OSError as e:
+            exit(e)
         self.__exports = []
-        self.source = source
-        self.bpf_filter = bpf_filter
         self.__flows = LRU(capacity, callback=emergency_callback)  # LRU cache
         self._capacity = self.__flows.get_size()  # Streamer capacity (default: 128000)
         self.active_timeout = active_timeout  # expiration active timeout
@@ -152,6 +153,8 @@ class Streamer:
 
         for classifier_name, classifier in self.user_classifiers.items():
             self.user_classifiers[classifier_name].on_exit()
+
+        self.__pkt_info_gen.packet_generator.close()
 
     def exporter(self, flow):
         """ export method for a flow trigger_type:0(inactive), 1(active), 2(flush) """
@@ -209,8 +212,7 @@ class Streamer:
         self.inactive_watcher()
 
     def __iter__(self):
-        pkt_info_gen = Observer(source=self.source, filter_str=self.bpf_filter)
-        for pkt_info in pkt_info_gen:
+        for pkt_info in self.__pkt_info_gen:
             self.consume(pkt_info)
             for export in self.__exports:
                 yield export
