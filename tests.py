@@ -134,16 +134,24 @@ class TestMethods(unittest.TestCase):
             self.assertEqual(export.src_to_dst_pkts, export.metrics['test_src_to_dst_pkts'])
         print('user defined metric addition:  PASS.')
 
-    def test_live_capture_no_root(self):
+    def test_live_capture(self):
         print("\n----------------------------------------------------------------------")
-        print(".Testing live capture no root:")
-        with self.assertRaises(SystemExit) as context:
-            streamer_test = Streamer()
-        self.assertEqual(type(context.exception), SystemExit)
-        print('live capture no root: PASS.')
+        uid = os.getuid()
+        print(".Testing live capture (uid={})".format(uid))
+        if uid > 0:
+            with self.assertRaises(SystemExit) as context:
+                streamer_test = Streamer()
+            self.assertEqual(type(context.exception), SystemExit)
+            print("live capture (uid={}): PASS.".format(uid))
+        else:
+            streamer_test = Streamer(inactive_timeout=0)
+            for export in streamer_test:
+                break
+            print("live capture (uid={}): PASS.".format(uid))
 
     def test_bpf_filter(self):
         print("\n----------------------------------------------------------------------")
+        print(os.getuid())
         print(".Testing bpf filtering:")
         bpf_filter = "tcp src port 44614"
         streamer_test = Streamer(source='tests/pcap/facebook.pcap',
