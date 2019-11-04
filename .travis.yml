@@ -52,13 +52,13 @@ matrix:
             - autogen
 
 install:
-  - sudo pip3 install -r requirements.txt
-  - sudo pip3 install codecov
-  - sudo python3 setup.py bdist_wheel
-  - sudo ls dist/
+  - if ["$TRAVIS_OS_NAME" == "linux"]; then pip3 install -r requirements.txt; else sudo pip3 install -r requirements.txt; fi
+  - if ["$TRAVIS_OS_NAME" == "linux"]; then pip3 install codecov; else sudo pip3 install codecov; fi
+  - if ["$TRAVIS_OS_NAME" == "linux"]; then python3 setup.py bdist_wheel; else sudo python3 setup.py bdist_wheel; fi
+  - if ["$TRAVIS_OS_NAME" == "linux"]; then ls dist/; else sudo ls dist/; fi
 
 script:
-  - sudo coverage run tests.py
+  - if ["$TRAVIS_OS_NAME" == "linux"]; then coverage run tests.py; else sudo coverage run tests.py; fi
 
 after_success:
   - codecov
