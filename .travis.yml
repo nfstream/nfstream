@@ -52,13 +52,13 @@ matrix:
             - autogen
 
 install:
-  - pip3 install -r requirements.txt
-  - pip3 install codecov
-  - python3 setup.py bdist_wheel
-  - ls dist/
+  - sudo pip3 install -r requirements.txt
+  - sudo pip3 install codecov
+  - sudo python3 setup.py bdist_wheel
+  - sudo ls dist/
 
 script:
-  - coverage run tests.py
+  - sudo coverage run tests.py
 
 after_success:
   - codecov
