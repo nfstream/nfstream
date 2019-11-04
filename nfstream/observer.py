@@ -313,7 +313,6 @@ class _PcapFfi(object):
                 # Just work on Ethernet packets that contain IP
                 if (type == 0x0800) and (header.caplen >= ip_offset):
                     frag_off = ntohs(iph.frag_off)
-                    proto = iph.protocol
                     if header.caplen < header.len:
                         pass
                 if iph.version == 4:
@@ -326,12 +325,9 @@ class _PcapFfi(object):
                         return None
                 elif iph.version == 6:
                     iph6 = self._ffi.cast('struct nfstream_ipv6hdr *', packet + ip_offset)
-                    proto = iph6.ip6_hdr.ip6_un1_nxt
                     ip_len = self._ffi.sizeof('struct nfstream_ipv6hdr')
                     if proto == 60:  # IPv6 destination option
-                        # options = self._ffi.new("uint8_t *")
                         options = self._ffi.cast('uint8_t *', packet + (ip_offset + ip_len))
-                        proto = options[0]
                         ip_len += 8 * (options[1] + 1)
                     iph = self._ffi.NULL
                 else:
