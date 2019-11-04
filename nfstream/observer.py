@@ -16,7 +16,8 @@ PcapDev = namedtuple('PcapDev', ['dlt', 'nonblock', 'snaplen', 'version', 'pcap'
 
 PacketInformation = namedtuple('PacketInformation', ['timestamp', 'capture_length', 'length', 'hash', 'ip_src_int',
                                                      'ip_dst_int', 'src_port', 'dst_port', 'ip_protocol', 'vlan_id',
-                                                     'version', 'raw'])
+                                                     'version', 'syn', 'cwr', 'ece', 'urg', 'ack', 'psh',
+                                                     'rst', 'fin', 'raw'])
 
 
 class PcapException(Exception):
@@ -361,11 +362,19 @@ class _PcapFfi(object):
             l3 = self._ffi.cast('uint8_t *', iph6)
 
         l4 = self._ffi.cast('uint8_t *', l3) + l4_offset
-
+        syn, cwr, ece, urg, ack, psh, rst, fin = 0, 0, 0, 0, 0, 0, 0, 0
         if (proto == 6) and l4_packet_len >= self._ffi.sizeof('struct nfstream_tcphdr'):
             tcph = self._ffi.cast('struct nfstream_tcphdr *', l4)
             sport = int(ntohs(tcph.source))
             dport = int(ntohs(tcph.dest))
+            syn = int(ntohs(tcph.syn))
+            cwr = int(ntohs(tcph.cwr))
+            ece = int(ntohs(tcph.ece))
+            urg = int(ntohs(tcph.urg))
+            ack = int(ntohs(tcph.ack))
+            psh = int(ntohs(tcph.psh))
+            rst = int(ntohs(tcph.rst))
+            fin = int(ntohs(tcph.fin))
         elif (proto == 17) and l4_packet_len >= self._ffi.sizeof('struct nfstream_udphdr'):
             udph = self._ffi.cast('struct nfstream_udphdr *', l4)
             sport = int(ntohs(udph.source))
@@ -385,6 +394,14 @@ class _PcapFfi(object):
                                      ip_protocol=proto,
                                      vlan_id=vlan_id,
                                      version=version,
+                                     syn=syn,
+                                     cwr=cwr,
+                                     ece=ece,
+                                     urg=urg,
+                                     ack=ack,
+                                     psh=psh,
+                                     rst=rst,
+                                     fin=fin,
                                      raw=bytes(xffi.buffer(iph, ipsize)))
         else:
             return PacketInformation(timestamp=time,
@@ -398,6 +415,14 @@ class _PcapFfi(object):
                                      ip_protocol=proto,
                                      vlan_id=vlan_id,
                                      version=version,
+                                     syn=syn,
+                                     cwr=cwr,
+                                     ece=ece,
+                                     urg=urg,
+                                     ack=ack,
+                                     psh=psh,
+                                     rst=rst,
+                                     fin=fin,
                                      raw=bytes(xffi.buffer(iph6, header.len - ip_offset)))
 
     def _recv_packet(self, xdev):
