@@ -145,8 +145,12 @@ class TestMethods(unittest.TestCase):
             print("live capture (uid={}): PASS.".format(uid))
         else:
             streamer_test = Streamer(inactive_timeout=0)
+            passed = 0
             for export in streamer_test:
-                break
+                if passed > 0:
+                    break
+                print(export)
+                passed += 1
             print("live capture (uid={}): PASS.".format(uid))
 
     def test_bpf_filter(self):
