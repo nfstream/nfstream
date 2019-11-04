@@ -2,7 +2,6 @@ import sys
 from cffi import FFI
 from collections import namedtuple
 from enum import Enum, IntEnum
-from time import time, sleep
 from select import select
 from threading import Lock
 from socket import ntohs, ntohl
@@ -11,7 +10,6 @@ import os.path
 TICK_RESOLUTION = 1000
 
 PcapInterface = namedtuple('PcapInterface', ['name', 'internal_name', 'description', 'isloop', 'isup', 'isrunning'])
-PcapStats = namedtuple('PcapStats', ['ps_recv', 'ps_drop', 'ps_ifdrop'])
 PcapPacket = namedtuple('PcapPacket', ['timestamp', 'capture_length', 'length', 'raw'])
 PcapDev = namedtuple('PcapDev', ['dlt', 'nonblock', 'snaplen', 'version', 'pcap'])
 
@@ -80,10 +78,6 @@ def fcf_type(fc):
     return (fc >> 2) & 0x3
 
 
-def fcf_subtype(fc):
-    return (fc >> 4) & 0xF
-
-
 def fcf_to_ds(fc):
     return fc & 0x0100
 
@@ -124,7 +118,6 @@ class _PcapFfi(object):
             # if not macOS (darwin) or windows, assume we're on
             # some unix-based system and try for libpcap.so
             libname = 'libpcap.so'
-
         try:
             self._libpcap = self._ffi.dlopen(libname)
         except Exception as e:
@@ -491,8 +484,7 @@ class PcapLiveDevice(object):
     _lock = Lock()
     __slots__ = ['_ffi', '_libpcap', '_base', '_pcapdev', '_devname', '_fd', '_user_callback']
 
-    def __init__(self, device, snaplen=65535, promisc=1, to_ms=100,
-                 filterstr=None, nonblock=True, only_create=False):
+    def __init__(self, device, snaplen=65535, promisc=1, to_ms=100, filterstr=None, nonblock=True):
         self._base = _PcapFfi.instance()
         self._ffi = self._base.ffi
         self._libpcap = self._base.lib
@@ -509,15 +501,6 @@ class PcapLiveDevice(object):
             raise Exception("No such device {} exists.".format(device))
         self._devname = device
         self._pcapdev = None
-
-        if only_create:
-            pcap = self._libpcap.pcap_create(bytes(internal_name, 'ascii'), errbuf)
-            self._pcapdev = PcapDev(0, 0, 0, _PcapFfi.instance().version, pcap)
-            with PcapLiveDevice._lock:
-                PcapLiveDevice._OpenDevices[id(self)] = pcap
-            if pcap == self._ffi.NULL:
-                raise PcapException("Failed to open live device {}: {}".format(internal_name, self._ffi.string(errbuf)))
-            return
 
         pcap = self._libpcap.pcap_open_live(bytes(internal_name, 'ascii'), snaplen, promisc, to_ms, errbuf)
         if pcap == self._ffi.NULL:
@@ -546,39 +529,6 @@ class PcapLiveDevice(object):
 
         if filterstr is not None:
             self.set_filter(filterstr)
-
-    @staticmethod
-    def create(device):
-        return PcapLiveDevice(device, only_create=True)
-
-    def activate(self):
-        rv = self._libpcap.pcap_activate(self._pcapdev.pcap)
-        if rv < 0:
-            s = self._ffi.string(self._libpcap.pcap_geterr(self._pcapdev.pcap))
-            raise PcapException("Error activating: {} {}".format(rv, s))
-
-        warning = 0
-        if rv > 0:
-            warning = PcapWarning(rv)
-
-        self._pcapdev = PcapDev(self.dlt, self.blocking, self.snaplen,
-                                _PcapFfi.instance().version, self._pcapdev.pcap)
-        return warning
-
-    @property
-    def blocking(self):
-        errbuf = self._ffi.new("char []", 128)
-        rv = self._libpcap.pcap_getnonblock(self._pcapdev.pcap, errbuf)
-        if rv != 0:
-            raise PcapException("Error getting nonblock state: {}".format(self._ffi.string(errbuf)))
-        return bool(rv)
-
-    @blocking.setter
-    def blocking(self, value):
-        errbuf = self._ffi.new("char []", 128)
-        rv = self._libpcap.pcap_setnonblock(self._pcapdev.pcap, int(value), errbuf)
-        if rv != 0:
-            raise PcapException("Error setting nonblock state: {}".format(self._ffi.string(errbuf)))
 
     @property
     def snaplen(self):
