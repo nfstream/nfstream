@@ -24,7 +24,7 @@ matrix:
     - os: linux
       language: python
       python: '3.6'
-      env: PIP=/home/travis/virtualenv/python3.6.7/lib/python3.6/site-packages/pip, PYTHON=/home/travis/virtualenv/python3.6.7/bin
+      env: PIP=/home/travis/virtualenv/python3.6.7/lib/python3.6/site-packages/pip PYTHON=/home/travis/virtualenv/python3.6.7/bin
       addons:
         apt:
           packages:
@@ -34,7 +34,7 @@ matrix:
     - os: linux
       language: python
       python: '3.7'
-      env: PIP=/home/travis/virtualenv/python3.7.1/lib/python3.7/site-packages/pip, PYTHON=/home/travis/virtualenv/python3.7.1/bin
+      env: PIP=/home/travis/virtualenv/python3.7.1/lib/python3.7/site-packages/pip PYTHON=/home/travis/virtualenv/python3.7.1/bin
       addons:
         apt:
           packages:
@@ -44,7 +44,7 @@ matrix:
     - os: linux
       language: python
       python: '3.8'
-      env: PIP=/home/travis/virtualenv/python3.8.0/lib/python3.8/site-packages/pip, PYTHON=/home/travis/virtualenv/python3.8.0/bin
+      env: PIP=/home/travis/virtualenv/python3.8.0/lib/python3.8/site-packages/pip PYTHON=/home/travis/virtualenv/python3.8.0/bin
       addons:
         apt:
           packages:
