@@ -1,5 +1,6 @@
 import unittest
 from nfstream.streamer import Streamer
+from nfstream.classifier import NDPIClassifier
 import os
 
 """ flow export str representation """
@@ -168,6 +169,56 @@ class TestMethods(unittest.TestCase):
         exports = list(streamer_test)
         self.assertEqual(len(exports), 1)
         print('PASS.')
+
+    def test_user_classifier(self):
+        print("\n----------------------------------------------------------------------")
+        print(".Testing adding user classifier:")
+        streamer_test = Streamer(source='tests/pcap/facebook.pcap',
+                                 capacity=100,
+                                 inactive_timeout=60,
+                                 active_timeout=120,
+                                 enable_ndpi=False,
+                                 user_classifiers=NDPIClassifier(name='ndpi'))
+        exports = []
+        for export in streamer_test:
+            if export.metrics["application_name"] != "Unknown.Unknown":
+                exports.append(flow_export_template.format(
+                    ip_src=export.ip_src_str,
+                    src_port=export.src_port,
+                    ip_dst=export.ip_dst_str,
+                    dst_port=export.dst_port,
+                    ip_protocol=export.ip_protocol,
+                    src_to_dst_pkts=export.src_to_dst_pkts,
+                    dst_to_src_pkts=export.dst_to_src_pkts,
+                    src_to_dst_bytes=export.src_to_dst_bytes,
+                    dst_to_src_bytes=export.dst_to_src_bytes,
+                    ndpi_proto_num=
+                    str(export.classifiers['ndpi']['master_id']) + '.' + str(export.classifiers['ndpi']['app_id'])
+                ))
+        exports = sorted(exports)
+        exports_ground_truth = flows_from_file("/home/sah0312/PycharmProjects/nfstream/tests/out/facebook.pcap.out")
+        del streamer_test
+        self.assertEqual(exports, exports_ground_truth)
+
+        # Now try with non classifier add
+        try:
+            streamer_test = Streamer(source='tests/pcap/facebook.pcap',
+                                     capacity=100,
+                                     inactive_timeout=60,
+                                     active_timeout=120,
+                                     enable_ndpi=False,
+                                     user_classifiers="classifier_boom")
+        except SystemExit:
+            pass
+        try:
+            streamer_test = Streamer(source='tests/pcap/facebook.pcap',
+                                     capacity=100,
+                                     inactive_timeout=60,
+                                     active_timeout=120,
+                                     enable_ndpi=False,
+                                     user_classifiers=666)
+        except SystemExit:
+            print('PASS.')
 
 
 if __name__ == '__main__':

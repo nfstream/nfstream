@@ -121,8 +121,15 @@ class Streamer:
                 for classifier in classifier_iterator:
                     if isinstance(classifier, NFStreamClassifier):
                         self.user_classifiers[classifier.name] = classifier
+                    else:
+                        raise ValueError
+            except ValueError:
+                exit("User Classifier type must be NFStreamClassifier.")
             except TypeError:
-                self.user_classifiers[user_classifiers.name] = user_classifiers
+                if isinstance(user_classifiers, NFStreamClassifier):
+                    self.user_classifiers[user_classifiers.name] = user_classifiers
+                else:
+                    exit("User Classifier type must be NFStreamClassifier.")
         self.user_metrics = {}
         if enable_ndpi:
             ndpi_classifier = NDPIClassifier('ndpi')

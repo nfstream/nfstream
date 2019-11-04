@@ -30,6 +30,7 @@ class NDPIClassifier(NFStreamClassifier):
         self.max_num_tcp_dissected_pkts = 10
 
     def on_flow_init(self, flow):
+        NFStreamClassifier.on_flow_init(self, flow)
         flow.classifiers[self.name]['ndpi_flow'] = pointer(ndpi_flow_struct())
         memset(flow.classifiers[self.name]['ndpi_flow'], 0, sizeof(ndpi_flow_struct))
         flow.classifiers[self.name]['detected_protocol'] = ndpi_protocol()
@@ -40,6 +41,7 @@ class NDPIClassifier(NFStreamClassifier):
         flow.classifiers[self.name]['category_name'] = ''
 
     def on_flow_update(self, packet_information, flow, direction):
+        NFStreamClassifier.on_flow_update(self, packet_information, flow, direction)
         if flow.classifiers[self.name]['detection_completed'] == 0:
             flow.classifiers[self.name]['detected_protocol'] = ndpi.ndpi_detection_process_packet(
                 self.mod,
@@ -69,6 +71,7 @@ class NDPIClassifier(NFStreamClassifier):
         # HERE you can change flow.export_reason to a value > 2 and the flow will be terminated automatically
 
     def on_flow_terminate(self, flow):
+        NFStreamClassifier.on_flow_terminate(self, flow)
         if flow.classifiers[self.name]['detected_protocol'].app_protocol == 0:
             flow.classifiers[self.name]['detected_protocol'] = ndpi.ndpi_detection_giveup(
                 self.mod,
@@ -97,4 +100,5 @@ class NDPIClassifier(NFStreamClassifier):
         flow.metrics['category_name'] = flow.classifiers[self.name]['category_name']
 
     def on_exit(self):
+        NFStreamClassifier.on_exit(self)
         ndpi.ndpi_exit_detection_module(self.mod)
