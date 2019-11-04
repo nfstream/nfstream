@@ -53,6 +53,7 @@ matrix:
 
 
 install:
+  - ls
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo pip3 install -r requirements.txt ; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo pip3 install codecov ; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo python3 setup.py bdist_wheel ; fi
