@@ -58,7 +58,8 @@ install:
 
 script:
   - coverage run tests.py
-  - sudo converage run tests.py TestMethods.test_live_capture
+  sudo: required
+  - converage run tests.py TestMethods.test_live_capture
 
 after_success:
   - codecov
