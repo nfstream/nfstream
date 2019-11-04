@@ -1,4 +1,3 @@
-sudo: required
 matrix:
   include:
     - os: osx
@@ -52,6 +51,7 @@ matrix:
             - autogen
 
 install:
+  - $TRAVIS_OS_NAME
   - if ["$TRAVIS_OS_NAME" == "linux"]; then pip3 install -r requirements.txt; else sudo pip3 install -r requirements.txt; fi
   - if ["$TRAVIS_OS_NAME" == "linux"]; then pip3 install codecov; else sudo pip3 install codecov; fi
   - if ["$TRAVIS_OS_NAME" == "linux"]; then python3 setup.py bdist_wheel; else sudo python3 setup.py bdist_wheel; fi
