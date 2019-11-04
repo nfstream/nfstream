@@ -24,7 +24,7 @@ matrix:
     - os: linux
       language: python
       python: '3.6'
-      env: TRAVIS_PYTHON_VERSION="3.6"
+      env: TRAVIS_PYTHON_VERSION=3.6
       addons:
         apt:
           packages:
@@ -34,7 +34,7 @@ matrix:
     - os: linux
       language: python
       python: '3.7'
-      env: TRAVIS_PYTHON_VERSION="3.7"
+      env: TRAVIS_PYTHON_VERSION=3.7
       addons:
         apt:
           packages:
@@ -44,7 +44,7 @@ matrix:
     - os: linux
       language: python
       python: '3.8'
-      env: TRAVIS_PYTHON_VERSION="3.8"
+      env: TRAVIS_PYTHON_VERSION=3.8
       addons:
         apt:
           packages:
