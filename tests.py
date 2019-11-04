@@ -142,7 +142,7 @@ class TestMethods(unittest.TestCase):
             with self.assertRaises(SystemExit) as context:
                 streamer_test = Streamer()
             self.assertEqual(type(context.exception), SystemExit)
-            print("PASS.".format(uid))
+            print("PASS.")
         else:
             streamer_test = Streamer(inactive_timeout=0, bpf_filter='ip')
             passed = 0
@@ -152,16 +152,16 @@ class TestMethods(unittest.TestCase):
                     break
                 print(export)
                 passed += 1
-            print("PASS.".format(uid))
+            print("PASS.")
 
     def test_unfound_device(self):
         print("\n----------------------------------------------------------------------")
         uid = os.getuid()
         print(".Testing unfoud device".format(uid))
-        with self.assertRaises(SystemExit) as context:
+        try:
             streamer_test = Streamer(source="inexisting_file.pcap")
-            self.assertEqual(type(context.exception), SystemExit)
-        print("PASS.".format(uid))
+        except SystemExit:
+            print("PASS.")
 
     def test_bpf_filter(self):
         print("\n----------------------------------------------------------------------")
