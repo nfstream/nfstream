@@ -1,3 +1,4 @@
+sudo: required
 matrix:
   include:
     - os: osx
@@ -58,8 +59,6 @@ install:
 
 script:
   - coverage run tests.py
-  sudo: required
-  - converage run tests.py TestMethods.test_live_capture
 
 after_success:
   - codecov
