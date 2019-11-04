@@ -95,10 +95,10 @@ class Streamer:
     num_streamers = 0
 
     def __init__(self, source=None, capacity=128000, active_timeout=120, inactive_timeout=60,
-                 user_metrics=None, user_classifiers=None, enable_ndpi=True, bpf_filter=None):
+                 user_metrics=None, user_classifiers=None, enable_ndpi=True, bpf_filter=None, snaplen=65535):
         Streamer.num_streamers += 1
         try:
-            self.__pkt_info_gen = Observer(source=source, filter_str=bpf_filter)
+            self.__pkt_info_gen = Observer(source=source, filter_str=bpf_filter, snaplen=snaplen)
         except OSError as e:
             exit(e)
         self.__exports = []

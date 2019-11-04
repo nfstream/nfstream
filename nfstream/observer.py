@@ -484,7 +484,7 @@ class PcapLiveDevice(object):
     _lock = Lock()
     __slots__ = ['_ffi', '_libpcap', '_base', '_pcapdev', '_devname', '_fd', '_user_callback']
 
-    def __init__(self, device, snaplen=65535, promisc=1, to_ms=100, filterstr=None, nonblock=True):
+    def __init__(self, device, snaplen, filterstr, promisc, to_ms, nonblock):
         self._base = _PcapFfi.instance()
         self._ffi = self._base.ffi
         self._libpcap = self._base.lib
@@ -529,62 +529,6 @@ class PcapLiveDevice(object):
 
         if filterstr is not None:
             self.set_filter(filterstr)
-
-    @property
-    def snaplen(self):
-        return self._libpcap.pcap_snapshot(self._pcapdev.pcap)
-
-    @snaplen.setter
-    def snaplen(self, value):
-        rv = self._libpcap.pcap_set_snaplen(self._pcapdev.pcap, int(value))
-        if rv != 0:
-            s = self._ffi.string(self._libpcap.pcap_geterr(self._pcapdev.pcap))
-            raise PcapException("Error setting snaplen: {}".format(s))
-
-    def set_promiscuous(self, value):
-        rv = self._libpcap.pcap_set_promisc(self._pcapdev.pcap, int(value))
-        if rv != 0:
-            s = self._ffi.string(self._libpcap.pcap_geterr(self._pcapdev.pcap))
-            raise PcapException("Error setting promiscuous mode: {}".format(s))
-
-    def set_timeout(self, value):
-        rv = self._libpcap.pcap_set_timeout(self._pcapdev.pcap, int(value))
-        if rv != 0:
-            s = self._ffi.string(self._libpcap.pcap_geterr(self._pcapdev.pcap))
-            raise PcapException("Error setting timeout value: {}".format(s))
-
-    def set_buffer_size(self, value):
-        rv = self._libpcap.pcap_set_buffer_size(self._pcapdev.pcap, int(value))
-        if rv != 0:
-            s = self._ffi.string(self._libpcap.pcap_geterr(self._pcapdev.pcap))
-            raise PcapException("Error setting buffer size: {}".format(s))
-
-    def set_immediate_mode(self, value):
-        rv = self._libpcap.pcap_set_immediate_mode(self._pcapdev.pcap, int(value))
-        if rv != 0:
-            s = self._ffi.string(self._libpcap.pcap_geterr(self._pcapdev.pcap))
-            raise PcapException("Error setting immediate mode: {}".format(s))
-
-    @property
-    def dlt(self):
-        dl = self._libpcap.pcap_datalink(self._pcapdev.pcap)
-        try:
-            rv = Dlt(dl)
-            return rv
-        except:
-            raise PcapException("Don't know how to handle datalink type {}".format(dl))
-
-    @property
-    def fd(self):
-        if self._fd is not None:
-            return self._fd
-        try:
-            fd = self._libpcap.pcap_get_selectable_fd(self._pcapdev.pcap)
-            self._fd = fd
-            return fd
-        except:
-            s = self._ffi.string(self._libpcap.pcap_geterr(xpcap))
-            raise PcapException("Error getting select fd: {}".format(s))
 
     def recv_packet(self,  timeout=None):
         if timeout is None or timeout < 0:
