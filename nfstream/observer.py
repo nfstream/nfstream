@@ -615,54 +615,6 @@ class PcapLiveDevice(object):
             s = self._ffi.string(self._libpcap.pcap_geterr(self._pcapdev.pcap))
             raise PcapException("Error setting immediate mode: {}".format(s))
 
-    def list_tstamp_types(self):
-        errbuf = self._ffi.new("char []", 128)
-        ppint = self._ffi.new("int * *")
-        rv = self._libpcap.pcap_list_tstamp_types(self._pcapdev.pcap, ppint)
-        if rv < 0:
-            raise PcapException("Error getting tstamp type list: {}".format(self._ffi.string(errbuf)))
-
-        xints = ppint[0]
-        tstamptypes = []
-        for i in range(rv):
-            tstamptypes.append(PcapTstampType(xints[i]))
-
-        self._libpcap.pcap_free_tstamp_types(xints)
-        return tstamptypes
-
-    def set_tstamp_type(self, value):
-        value = PcapTstampType(value)
-        valid_types = self.list_tstamp_types()
-        if value not in valid_types:
-            raise PcapException("Not a valid tstamp type for this device (see list_tstamp_types)")
-        rv = self._libpcap.pcap_set_tstamp_type(self._pcapdev.pcap, int(value))
-        if rv != 0:
-            s = self._ffi.string(self._libpcap.pcap_geterr(self._pcapdev.pcap))
-            raise PcapException("Error setting timestamp type: {}".format(s))
-
-    @property
-    def tstamp_precision(self):
-        val = self._libpcap.pcap_get_tstamp_precision(self._pcapdev.pcap)
-        return PcapTstampPrecision(val)
-
-    @tstamp_precision.setter
-    def tstamp_precision(self, value):
-        value = PcapTstampPrecision(value)
-        rv = self._libpcap.pcap_set_tstamp_precision(self._pcapdev.pcap, int(value))
-        if rv != 0:
-            s = self._ffi.string(self._libpcap.pcap_geterr(self._pcapdev.pcap))
-            raise PcapException("Error setting timestamp precision: {}".format(s))
-
-    @staticmethod
-    def set_bpf_filter_on_all_devices(filterstr):
-        '''
-        Long method name, but self-explanatory.  Set the bpf
-        filter on all devices that have been opened.
-        '''
-        with PcapLiveDevice._lock:
-            for dev in PcapLiveDevice._OpenDevices.values():
-                _PcapFfi.instance()._set_filter(dev, filterstr)
-
     @property
     def dlt(self):
         dl = self._libpcap.pcap_datalink(self._pcapdev.pcap)
@@ -684,24 +636,7 @@ class PcapLiveDevice(object):
             s = self._ffi.string(self._libpcap.pcap_geterr(xpcap))
             raise PcapException("Error getting select fd: {}".format(s))
 
-    @property
-    def name(self):
-        return self._devname
-
-    def send_packet(self, xbuffer):
-        if not isinstance(xbuffer, bytes):
-            raise PcapException("Packets to be sent via libpcap must be serialized as a bytes object")
-        xlen = len(xbuffer)
-        rv = self._libpcap.pcap_sendpacket(self._pcapdev.pcap, xbuffer, xlen)
-        if rv == 0:
-            return True
-        s = self._ffi.string(self._libpcap.pcap_geterr(self._pcapdev.pcap))
-        raise PcapException("Error sending packet: {}".format(s))
-
-    def recv_packet_or_none(self):
-        return self._base._recv_packet(self._pcapdev.pcap)
-
-    def recv_packet(self, timeout=None):
+    def recv_packet(self,  timeout=None):
         if timeout is None or timeout < 0:
             timeout = None
         if self._fd >= 0:
@@ -713,23 +648,6 @@ class PcapLiveDevice(object):
                 return self._base._recv_packet(self._pcapdev.pcap)
             # timeout; return nothing
             return None
-        elif self._pcapdev.nonblock:
-            # can't do select, but we're in nonblocking mode so sleep
-            # up to 10 times before giving up, all while respecting the
-            # timeout value
-            if timeout:
-                now = time()
-                expiry = now + timeout
-                while now < expiry:
-                    sleep(timeout / 10)
-                    pkt = self._base._recv_packet(self._pcapdev.pcap)
-                    if pkt:
-                        return pkt
-                    now = time()
-                # after all that, still got nothing.
-                return None
-            else:
-                return self._base._recv_packet(self._pcapdev.pcap)
         else:
             # no select, no non-blocking mode.  block away, my friend.
             return self._base._recv_packet(self._pcapdev.pcap)
@@ -740,25 +658,8 @@ class PcapLiveDevice(object):
             del PcapLiveDevice._OpenDevices[xid]
         self._libpcap.pcap_close(self._pcapdev.pcap)
 
-    def stats(self):
-        pstat = self._ffi.new("struct pcap_stat *")
-        rv = self._libpcap.pcap_stats(self._pcapdev.pcap, pstat)
-        if rv == 0:
-            return PcapStats(pstat.recv, pstat.drop, pstat.ifdrop)
-        else:
-            s = self._ffi.string(self._libpcap.pcap_geterr(xpcap))
-            raise PcapException("Error getting stats: {}".format(s))
-
     def set_filter(self, filterstr):
         self._base._set_filter(self._pcapdev.pcap, filterstr)
-
-    def set_direction(self, direction):
-        rv = self._libpcap.pcap_setdirection(self._pcapdev.pcap, int(direction))
-        if rv == 0:
-            return
-        else:
-            s = self._ffi.string(self._libpcap.pcap_geterr(self._pcapdev.pcap))
-            raise PcapException("Error setting direction: {}".format(s))
 
 
 _PcapFfi()  # instantiate singleton

@@ -151,7 +151,6 @@ class TestMethods(unittest.TestCase):
 
     def test_bpf_filter(self):
         print("\n----------------------------------------------------------------------")
-        print(os.getuid())
         print(".Testing bpf filtering:")
         bpf_filter = "tcp src port 44614"
         streamer_test = Streamer(source='tests/pcap/facebook.pcap',
