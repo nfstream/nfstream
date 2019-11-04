@@ -38,6 +38,14 @@ class Flow:
         self.dst_to_src_pkts = 0
         self.src_to_dst_bytes = 0
         self.dst_to_src_bytes = 0
+        self.syn_count = [0, 0]
+        self.cwr_count = [0, 0]
+        self.ece_count = [0, 0]
+        self.urg_count = [0, 0]
+        self.ack_count = [0, 0]
+        self.psh_count = [0, 0]
+        self.rst_count = [0, 0]
+        self.fin_count = [0, 0]
         self.metrics = {}
         self.classifiers = {}
         for metric_name in list(streamer_metrics.keys()):
@@ -63,6 +71,15 @@ class Flow:
                 self.dst_to_src_bytes += pkt_info.length
                 direction = 1
 
+            self.syn_count[direction] += pkt_info.syn
+            self.cwr_count[direction] += pkt_info.cwr
+            self.ece_count[direction] += pkt_info.ece
+            self.urg_count[direction] += pkt_info.urg
+            self.ack_count[direction] += pkt_info.ack
+            self.psh_count[direction] += pkt_info.psh
+            self.rst_count[direction] += pkt_info.rst
+            self.fin_count[direction] += pkt_info.fin
+
             for name, classifier in streamer_classifiers.items():
                 classifier.on_flow_update(pkt_info, self, direction)
 
@@ -82,6 +99,14 @@ class Flow:
                    'dst_to_src_pkts': self.dst_to_src_pkts,
                    'src_to_dst_bytes': self.src_to_dst_bytes,
                    'dst_to_src_bytes': self.dst_to_src_bytes,
+                   'syn_count': self.syn_count,
+                   'cwr_count': self.cwr_count,
+                   'ece_count': self.ece_count,
+                   'urg_count': self.urg_count,
+                   'ack_count': self.ack_count,
+                   'psh_count': self.psh_count,
+                   'rst_count': self.rst_count,
+                   'fin_count': self.fin_count,
                    'start_time': self.start_time,
                    'end_time': self.end_time,
                    'export_reason': self.export_reason,
