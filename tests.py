@@ -138,25 +138,18 @@ class TestMethods(unittest.TestCase):
         print("\n----------------------------------------------------------------------")
         uid = os.getuid()
         print(".Testing live capture (uid={})".format(uid))
-        if uid > 0:
-            with self.assertRaises(SystemExit) as context:
-                streamer_test = Streamer()
-            self.assertEqual(type(context.exception), SystemExit)
-            print("PASS.")
-        else:
-            streamer_test = Streamer(inactive_timeout=0, bpf_filter='ip')
-            passed = 0
-            for export in streamer_test:
-                if passed > 0:
-                    streamer_test.terminate()
-                    break
-                print(export)
-                passed += 1
+        streamer_test = Streamer(inactive_timeout=0, bpf_filter='ip')
+        passed = 0
+        for export in streamer_test:
+            if passed > 0:
+                streamer_test.terminate()
+                break
+            print(export)
+            passed += 1
             print("PASS.")
 
     def test_unfound_device(self):
         print("\n----------------------------------------------------------------------")
-        uid = os.getuid()
         print(".Testing unfoud device".format(uid))
         try:
             streamer_test = Streamer(source="inexisting_file.pcap")
