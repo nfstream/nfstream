@@ -1,3 +1,4 @@
+sudo: required
 matrix:
   include:
     - os: osx
@@ -52,11 +53,17 @@ matrix:
 
 
 install:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; sudo pip3 install -r requirements.txt; sudo pip3 install codecov; sudo python3 setup.py bdist_wheel; sudo ls dist/; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; pip3 install -r requirements.txt; pip3 install codecov; python3 setup.py bdist_wheel; ls dist/; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo pip3 install -r requirements.txt ; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo pip3 install codecov ; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo python3 setup.py bdist_wheel ; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo ls dist/ ; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip3 install -r requirements.txt ; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip3 install codecov ; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then python3 setup.py bdist_wheel ; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ls dist/ ; fi
 script:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; coverage run tests.py; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; sudo coverage run tests.py; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo coverage run tests.py ; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then coverage run tests.py ; fi
 
 after_success:
   - codecov
