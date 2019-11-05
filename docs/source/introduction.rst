@@ -11,7 +11,7 @@ developed in this section. Our aim is to provide you with a reminder about how
 things works in theory. Consequently, an easier understanding of nfstream features
 and implementation is possible.
 
-Packet observation
+Packet Observation
 ------------------
 Packet observation is a key stage in a flow monitoring architecture as it is the
 starting point. Consequently, we detail in the following each step involved at this
@@ -83,4 +83,10 @@ reduce the amount of records exported.
 
 **Flow Sampling and Filtering:** Flow sampling and filtering processes are quite like packet sampling and filtering
 process explained above. The major differences are the processed unit; while packet sampling and filtering process
-packets, flow sampling and filtering process flow records coming from the metering process
+packets, flow sampling and filtering process flow records coming from the metering process.
+
+Export
+------
+Export involves two steps which are mainly **formatting** and **export protocol**. While the first decide how an export is
+formatted (number of flow per export, json or other, etc.), the latter determine the used
+export protocol (file, mqtt, zmq, etc.).
