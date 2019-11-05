@@ -20,7 +20,7 @@ nfstream is a flexible and lightweight network data analysis library.
 
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
    :caption: Contents:
 
    installation
