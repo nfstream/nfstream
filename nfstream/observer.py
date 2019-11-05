@@ -299,6 +299,7 @@ class _PcapFfi(object):
                 ip_offset += 8
             else:
                 pass
+
             ip_check = True
             while ip_check:
                 ip_check = False
@@ -320,7 +321,7 @@ class _PcapFfi(object):
                 elif iph.version == 6:
                     iph6 = self._ffi.cast('struct nfstream_ipv6hdr *', packet + ip_offset)
                     ip_len = self._ffi.sizeof('struct nfstream_ipv6hdr')
-                    if proto == 60:  # IPv6 destination option
+                    if iph6.ip6_hdr.ip6_un1_nxt == 60:  # IPv6 destination option
                         options = self._ffi.cast('uint8_t *', packet + (ip_offset + ip_len))
                         ip_len += 8 * (options[1] + 1)
                     iph = self._ffi.NULL
