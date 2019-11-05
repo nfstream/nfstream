@@ -24,6 +24,7 @@ nfstream is a flexible and lightweight network data analysis library.
    :caption: Contents:
 
    installation
+   introduction
    tutorials
    contributing
    changelog
