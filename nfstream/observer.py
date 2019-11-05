@@ -629,7 +629,7 @@ class Observer:
                         if r is None:
                             pass
                         elif r == -2:
-                            return
+                            raise KeyboardInterrupt
                         elif r == 0:
                             pass
                         else:
