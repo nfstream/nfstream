@@ -4,5 +4,5 @@ Introduction
 simplified architecture:
 
 .. image:: asset/simplified_architecture.png
-  :scale: 60%
+  :scale: 90%
   :align: center
