@@ -11,8 +11,7 @@ Prerequisites
 Installation
 ------------
 
-using pip
-^^^^^^^^^
+**using pip**
 
 Binary installers for the latest released version are available:
 
@@ -21,8 +20,7 @@ Binary installers for the latest released version are available:
     pip3 install nfstream
 
 
-from source
-^^^^^^^^^^^
+**from source**
 
 If you want to build nfstream on your local machine:
 
