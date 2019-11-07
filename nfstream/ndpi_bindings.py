@@ -368,10 +368,17 @@ class ndpi_flow_tcp_struct(Structure):
         ('ssh_stage', c_uint32, 3),
         ('vnc_stage', c_uint32, 2),
         ('telnet_stage', c_uint32, 2),
+        ('tls_srv_cert_fingerprint_ctx', c_void_p),
         ('ssl_seen_client_cert', c_uint8, 1),
         ('ssl_seen_server_cert', c_uint8, 1),
         ('ssl_seen_certificate', c_uint8, 1),
-        ('ssl_stage', c_uint8, 2),
+        ('tls_srv_cert_fingerprint_found', c_uint8, 1),
+        ('tls_srv_cert_fingerprint_processed', c_uint8, 1),
+        ('tls_stage', c_uint8, 2),
+        ('_pad', c_uint8, 1),
+        ('tls_record_offset', c_uint16),
+        ('tls_fingerprint_len', c_uint16),
+        ('tls_sha1_certificate_fingerprint', c_uint8 * 20),
         ('postgres_stage', c_uint32, 3),
         ('ddlink_server_direction', c_uint32, 1),
         ('seen_syn', c_uint32, 1),
@@ -418,12 +425,14 @@ class ndpi_flow_udp_struct(Structure):
         ('rx_conn_epoch', c_uint32),
         ('rx_conn_id', c_uint32),
         ('memcached_matches', c_uint8),
+        ('wireguard_stage', c_uint8),
+        ('wireguard_peer_index', c_uint32 * 2)
     ]
 
 
 # the tcp / udp / other l4 value union used to reduce the number of bytes for tcp or udp protocol states
 class l4(Union):
-    _fields_ = [("tcp", ndpi_flow_tcp_struct),("udp", ndpi_flow_udp_struct)]
+    _fields_ = [("tcp", ndpi_flow_tcp_struct), ("udp", ndpi_flow_udp_struct)]
 
 
 class http(Structure):
@@ -432,14 +441,14 @@ class http(Structure):
         ("url", c_char_p),
         ("content_type", c_char_p),
         ("num_request_headers", c_uint8), ("num_response_headers", c_uint8),
-        ("request_version", c_uint8), # 0=1.0 and 1=1.1. Create an enum for this?
-        ("response_status_code", c_uint16), # 200, 404, etc.
+        ("request_version", c_uint8),
+        ("response_status_code", c_uint16),
     ]
 
 
 class dns(Structure): # the only fields useful for nDPI and ntopng
     _fields_ = [
-        ("num_queries", c_uint8), ("num_answers", c_uint8), ("reply_code", c_uint8),
+        ("num_queries", c_uint8), ("num_answers", c_uint8), ("reply_code", c_uint8), ("is_query", c_uint8),
         ("query_type", c_uint16), ("query_class", c_uint16), ("rsp_type", c_uint16),
         ("rsp_addr", ndpi_ip_addr_t) # The first address in a DNS response packet
     ]
@@ -449,10 +458,15 @@ class ntp(Structure):
     _fields_ = [("request_code", c_uint8), ("version", c_uint8)]
 
 
+class kerberos(Structure):
+    _fields_ = [("cname", c_char * 24), ("realm", c_char * 24)]
+
+
 class ssl(Structure):
     _fields_ = [
         ("ssl_version", c_uint8),
         ("client_certificate", c_char * 64), ("server_certificate", c_char * 64), ("server_organization",  c_char * 64),
+        ('notBefore', c_uint32), ('notAfter', c_uint32),
         ("ja3_client", c_char * 33), ("ja3_server", c_char * 33),
         ("server_cipher", c_uint16),
         ("server_unsafe_cipher", c_int)
@@ -464,16 +478,23 @@ class stun(Structure):
         ("num_udp_pkts", c_uint8),
         ("num_processed_pkts", c_uint8),
         ("num_binding_requests", c_uint8),
-        ("is_skype", c_uint8)
     ]
 
 
-class stun_ssl(Union): # We can have STUN over SSL thus they need to live together
-    _fields_ = [("ssl", ssl),("stun",stun)]
+class stun_ssl(Union):  # We can have STUN over SSL thus they need to live together
+    _fields_ = [("ssl", ssl), ("stun", stun)]
 
 
 class ssh(Structure):
-    _fields_ = [("client_signature", c_char * 48), ("server_signature", c_char * 48)]
+    _fields_ = [("client_signature", c_char * 48), ("server_signature", c_char * 48),
+                ("hassh_client", c_char * 33), ("hassh_server", c_char * 33)]
+
+
+class imo(Structure):
+    _fields_ = [
+        ("last_one_byte_pkt", c_uint8),
+        ("last_byte", c_uint8)
+    ]
 
 
 class mdns(Structure):
@@ -481,24 +502,24 @@ class mdns(Structure):
 
 
 class ubntac2(Structure):
-    _fields_ = [("version", c_char * 96)]
+    _fields_ = [("version", c_char * 32)]
 
 
 class http2(Structure):
     _fields_ = [
-        ("detected_os", c_ubyte * 32), #Via HTTP User-Agent
+        ("detected_os", c_ubyte * 32),  # Via HTTP User-Agent
         ("nat_ip", c_ubyte * 24)
     ]
 
 
-class bittorrent(Structure): # Bittorrent hash
-    _fields_ = [ ("hash", c_ubyte * 20) ]
+class bittorrent(Structure):  # Bittorrent hash
+    _fields_ = [("hash", c_ubyte * 20)]
 
 
 class dhcp(Structure):
     _fields_ = [
         ("fingerprint", c_char * 48),
-        ("nat_ip", c_char * 48)
+        ("class_ident", c_char * 48)
     ]
 
 
@@ -506,8 +527,10 @@ class protos(Union):
     _fields_ = [
         ("dns", dns),
         ("ntp", ntp),
+        ("kerberos", kerberos),
         ("stun_ssl", stun_ssl),
         ("ssh", ssh),
+        ("imo", imo),
         ("mdns", mdns),
         ("ubntac2", ubntac2),
         ("http", http2),
@@ -650,6 +673,7 @@ ndpi_flow_struct._fields_ = [
     ("guessed_host_protocol_id", c_uint16),
     ("guessed_category", c_uint16),
     ("guessed_header_category", c_uint16),
+    ("l4_proto", c_uint8),
     ("protocol_id_already_guessed", c_uint8, 1),
     ("host_already_guessed", c_uint8, 1),
     ("init_finished", c_uint8, 1),
@@ -660,10 +684,10 @@ ndpi_flow_struct._fields_ = [
     ("max_extra_packets_to_check", c_uint8),
     ("num_extra_packets_checked", c_uint8),
     ("num_processed_pkts", c_uint8),  # <= WARNING it can wrap but we do expect people to giveup earlier
-    ("extra_packets_func", CFUNCTYPE(c_int,POINTER(ndpi_detection_module_struct),POINTER(ndpi_flow_struct))),
+    ("extra_packets_func", CFUNCTYPE(c_int, POINTER(ndpi_detection_module_struct), POINTER(ndpi_flow_struct))),
     ("l4", l4),
     ("server_id", ndpi_id_struct),
-    ("host_server_name", c_ubyte * 256),
+    ("host_server_name", c_uint8 * 256),
     ("http", http),
     ("protos", protos),
     ("excluded_protocol_bitmask", NDPI_PROTOCOL_BITMASK),

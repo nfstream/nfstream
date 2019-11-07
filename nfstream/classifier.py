@@ -1,5 +1,21 @@
 from .ndpi_bindings import ndpi, NDPI_PROTOCOL_BITMASK, ndpi_flow_struct, ndpi_protocol, ndpi_id_struct
-from ctypes import pointer, memset, sizeof, cast, c_char_p, c_void_p, POINTER, c_uint8, addressof
+from ctypes import pointer, memset, sizeof, cast, c_char_p, c_void_p, POINTER, c_uint8, addressof, byref
+
+
+def parse_ubytes_array(to_parse):
+    started = False
+    parsed = []
+    for i in to_parse:
+        if i == 0 or i == 3 or i == 1:
+            if started:
+                break
+        else:
+            if not started:
+                started = True
+                parsed.append(i)
+            else:
+                parsed.append(i)
+    return ''.join([chr(i) for i in parsed])
 
 
 class NFStreamClassifier:
@@ -31,8 +47,8 @@ class NDPIClassifier(NFStreamClassifier):
 
     def on_flow_init(self, flow):
         NFStreamClassifier.on_flow_init(self, flow)
-        flow.classifiers[self.name]['ndpi_flow'] = pointer(ndpi_flow_struct())
-        memset(flow.classifiers[self.name]['ndpi_flow'], 0, sizeof(ndpi_flow_struct))
+        flow.classifiers[self.name]['ndpi_flow'] = ndpi_flow_struct()
+        memset(byref(flow.classifiers[self.name]['ndpi_flow']), 0, sizeof(ndpi_flow_struct))
         flow.classifiers[self.name]['detected_protocol'] = ndpi_protocol()
         flow.classifiers[self.name]['detection_completed'] = 0
         flow.classifiers[self.name]['src_id'] = pointer(ndpi_id_struct())
@@ -46,7 +62,7 @@ class NDPIClassifier(NFStreamClassifier):
         if flow.classifiers[self.name]['detection_completed'] == 0:
             flow.classifiers[self.name]['detected_protocol'] = ndpi.ndpi_detection_process_packet(
                 self.mod,
-                flow.classifiers[self.name]['ndpi_flow'],
+                byref(flow.classifiers[self.name]['ndpi_flow']),
                 cast(cast(c_char_p(packet_information.raw), c_void_p), POINTER(c_uint8)),
                 len(packet_information.raw),
                 int(packet_information.timestamp),
@@ -65,7 +81,7 @@ class NDPIClassifier(NFStreamClassifier):
                     if flow.classifiers[self.name]['detected_protocol'].app_protocol == 0:
                         flow.classifiers[self.name]['detected_protocol'] = ndpi.ndpi_detection_giveup(
                             self.mod,
-                            flow.classifiers[self.name]['ndpi_flow'],
+                            byref(flow.classifiers[self.name]['ndpi_flow']),
                             1,
                             cast(addressof(c_uint8(0)), POINTER(c_uint8))
                         )
@@ -77,7 +93,7 @@ class NDPIClassifier(NFStreamClassifier):
         if flow.classifiers[self.name]['detected_protocol'].app_protocol == 0:
             flow.classifiers[self.name]['detected_protocol'] = ndpi.ndpi_detection_giveup(
                 self.mod,
-                flow.classifiers[self.name]['ndpi_flow'],
+                byref(flow.classifiers[self.name]['ndpi_flow']),
                 1,
                 cast(addressof(c_uint8(0)), POINTER(c_uint8))
             )
@@ -94,12 +110,13 @@ class NDPIClassifier(NFStreamClassifier):
         flow.classifiers[self.name]['category_name'] = category_name
         flow.classifiers[self.name]['app_id'] = flow.classifiers[self.name]['detected_protocol'].app_protocol
         flow.classifiers[self.name]['master_id'] = flow.classifiers[self.name]['detected_protocol'].master_protocol
-        flow.classifiers[self.name]['ndpi_flow'] = None
         # Now we do move some values to flow.metrics just to print purpose. If you are implementing your magic
         # classifier, just do flow.classifiers['name_of_your_classifier]['name_of_your_feature']
         # if we move it before, it will trigger metrics callback.
         flow.metrics['application_name'] = flow.classifiers[self.name]['application_name']
         flow.metrics['category_name'] = flow.classifiers[self.name]['category_name']
+        flow.metrics['host_server_name'] = parse_ubytes_array(flow.classifiers[self.name]['ndpi_flow'].host_server_name)
+        flow.classifiers[self.name]['ndpi_flow'] = None
 
     def on_exit(self):
         NFStreamClassifier.on_exit(self)

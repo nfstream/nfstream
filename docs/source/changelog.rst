@@ -71,3 +71,9 @@ Changelog
 **1.1.7 (2019-11-07)**
 
 * Fix minor bugs.
+
+**1.1.8 (2019-11-07)**
+
+* Fix ndpi wrap missing fields.
+* Add host_server_name metric.
+* Update doc.

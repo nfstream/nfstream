@@ -49,7 +49,32 @@ This will print a dict representation of nfstream flow object:
 
 .. code-block:: json
 
-   {"ip_src": "192.168.122.121", "src_port": 43277, "ip_dst": "186.102.189.33", "dst_port": 443, "ip_protocol": 6, "src_to_dst_pkts": 6, "dst_to_src_pkts": 5, "src_to_dst_bytes": 1456, "dst_to_src_bytes": 477, "application_name": "TLS.Instagram", "category_name": "SocialNetwork", "start_time": 1555969081636, "end_time": 1555969082020, "export_reason": 2}
+   {"ip_src": "192.168.122.121",
+   "src_port": 43277,
+   "ip_dst": "186.102.189.33",
+   "dst_port": 443,
+   "ip_protocol": 6,
+   "vlan_id": 0,
+   "src_to_dst_pkts": 6,
+   "dst_to_src_pkts": 5,
+   "src_to_dst_bytes": 1456,
+   "dst_to_src_bytes": 477,
+   "syn_count": [0, 0],
+   "cwr_count": [0, 0],
+   "ece_count": [0, 0],
+   "urg_count": [0, 0],
+   "ack_count": [6, 5],
+   "psh_count": [2, 1],
+   "rst_count": [0, 0],
+   "fin_count": [1, 1],
+   "start_time": 1555969081636.177,
+   "end_time": 1555969082020.133,
+   "export_reason": 2,
+   "metrics": {"application_name": "TLS.Instagram",
+               "category_name": "SocialNetwork",
+               "host_server_name": "instagram.fbga1-4.fna.fbcdn.net"}
+   }
+
 
 .. note:: **Streamer arguments**
 
@@ -63,6 +88,8 @@ This will print a dict representation of nfstream flow object:
 
    **ip_protocol** Transport protocol (TCP, UDP, etc.).
 
+   **vlan_id** VLAN identifier.
+
    **src_to_dst_pkts** Count of packets sent src -> dst direction.
 
    **dst_to_src_pkts** Count of packets sent dst -> src direction.
@@ -71,15 +98,20 @@ This will print a dict representation of nfstream flow object:
 
    **dst_to_src_bytes** Bytes sent dst -> src direction.
 
-   **application_name** Detected application name (master.app).
-
-   **category_name** Detected application category name.
+   **tcpflag_count** Per TCP flag (syn,cwr,ece,urg,ack,psh,rst,fin) count in each direction [src_to_dst, dst_to_src]
 
    **start_time** Flow start time in ms.
 
    **end_time** Flow end time in ms.
 
    **export_reason** Flow export reason: 0 for inactive, 1 for active and 2 for termination.
+
+   **metrics.application_name** Detected application name (master.app).
+
+   **metrics.category_name** Detected application category name.
+
+   **metrics.host_server_name** Detected host server name (HTTP/DNS and TLS/noTLS).
+
 
 Create your own flow metric
 ---------------------------
