@@ -5,6 +5,7 @@ from lru import LRU  # for LRU streamer management
 from .observer import Observer
 from .classifier import NDPIClassifier, NFStreamClassifier
 import ipaddress
+import sys
 
 
 def emergency_callback(key, value):
@@ -125,7 +126,7 @@ class Streamer:
         try:
             self.__pkt_info_gen = Observer(source=source, filter_str=bpf_filter, snaplen=snaplen)
         except OSError as e:
-            exit(e)
+            sys.exit(e)
         self.__exports = []
         self.__flows = LRU(capacity, callback=emergency_callback)  # LRU cache
         self._capacity = self.__flows.get_size()  # Streamer capacity (default: 128000)
@@ -149,12 +150,12 @@ class Streamer:
                     else:
                         raise ValueError
             except ValueError:
-                exit("User Classifier type must be NFStreamClassifier.")
+                sys.exit("User Classifier type must be NFStreamClassifier.")
             except TypeError:
                 if isinstance(user_classifiers, NFStreamClassifier):
                     self.user_classifiers[user_classifiers.name] = user_classifiers
                 else:
-                    exit("User Classifier type must be NFStreamClassifier.")
+                    sys.exit("User Classifier type must be NFStreamClassifier.")
         self.user_metrics = {}
         if enable_ndpi:
             ndpi_classifier = NDPIClassifier('ndpi')
