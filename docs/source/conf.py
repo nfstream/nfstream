@@ -22,7 +22,7 @@ copyright = '2019, Zied Aouini'
 author = 'Zied Aouini'
 
 # The full version, including alpha/beta/rc tags
-release = '1.1.6'
+release = '1.1.7'
 
 # -- General configuration ---------------------------------------------------
 
