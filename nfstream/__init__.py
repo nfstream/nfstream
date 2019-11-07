@@ -8,4 +8,4 @@ from nfstream import streamer
 
 __author__ = """Zied Aouini"""
 __email__ = 'aouinizied@gmail.com'
-__version__ = '1.1.7'
+__version__ = '1.1.8'
