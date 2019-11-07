@@ -67,3 +67,7 @@ Changelog
 
 * TCP flags extraction.
 * Minor bug fixes.
+
+**1.1.7 (2019-11-07)**
+
+* Fix minor bugs.
