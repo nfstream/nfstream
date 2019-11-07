@@ -17,7 +17,7 @@ Packet observation is a key stage in a flow monitoring architecture as it is the
 starting point. Consequently, we detail in the following each step involved at this
 phase:
 
-**Packet capture:**: This step is performed on the Network Interface Card (NIC) level.
+**Packet capture:** This step is performed on the Network Interface Card (NIC) level.
 After passing various checks such as checksum error, packets stored in on-card
 reception buffers are moved to the hosting device memory. Several libraries are
 available to capture network traffic such as libpcap for UNIX based operating systems

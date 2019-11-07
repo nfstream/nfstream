@@ -6,7 +6,7 @@ Prerequisites
 
 .. code-block:: bash
 
-    apt-get install python-dev pypy3-dev libpcap-dev
+    apt-get install libpcap-dev
 
 Installation
 ------------
