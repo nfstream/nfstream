@@ -162,12 +162,12 @@ We suppose that your model takes as features the packet size of 3 first packets 
                                                                                       flow.classifiers[self.name]['3'])
                 # Optionally, you can force the flow export by nfstream
                 # flow.export_reason = 3
-    def on_flow_terminate(self, flow):
-        # Will be called when flow is expired by nfstream
-        return
+        def on_flow_terminate(self, flow):
+            # Will be called when flow is expired by nfstream
+            return
 
-    def on_exit(self):
-        # Will be called when nfstream is cleaning up.
-        return
+        def on_exit(self):
+            # Will be called when nfstream is cleaning up.
+            return
 
     my_capture_streamer = Streamer(source="instagram.pcap", user_classifiers=DummyClassifier("my_dummy_classifier"))
