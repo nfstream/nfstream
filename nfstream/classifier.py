@@ -39,6 +39,7 @@ class NDPIClassifier(NFStreamClassifier):
         flow.classifiers[self.name]['dst_id'] = pointer(ndpi_id_struct())
         flow.classifiers[self.name]['application_name'] = ''
         flow.classifiers[self.name]['category_name'] = ''
+        flow.classifiers[self.name]['guessed'] = 0
 
     def on_flow_update(self, packet_information, flow, direction):
         NFStreamClassifier.on_flow_update(self, packet_information, flow, direction)
@@ -68,6 +69,7 @@ class NDPIClassifier(NFStreamClassifier):
                             1,
                             cast(addressof(c_uint8(0)), POINTER(c_uint8))
                         )
+                        flow.classifiers[self.name]['guessed'] = 1
         # HERE you can change flow.export_reason to a value > 2 and the flow will be terminated automatically
 
     def on_flow_terminate(self, flow):

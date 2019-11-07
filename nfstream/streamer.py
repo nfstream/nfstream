@@ -96,6 +96,7 @@ class Flow:
                    'ip_dst': self.ip_dst_str,
                    'dst_port': self.dst_port,
                    'ip_protocol': self.ip_protocol,
+                   'vlan_id': self.vlan_id,
                    'src_to_dst_pkts': self.src_to_dst_pkts,
                    'dst_to_src_pkts': self.dst_to_src_pkts,
                    'src_to_dst_bytes': self.src_to_dst_bytes,
