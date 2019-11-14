@@ -117,17 +117,17 @@ This will print a dict representation of nfstream flow object:
 
    **metrics.category_name** Detected application category name.
 
-   **metrics.http_dns_server_host_name** server host name (HTTP/DNS).
+   **metrics.http_dns_server_name** HTTP/DNS server name.
 
-   **metrics.tls_client_certificate** TLS client information.
+   **metrics.tls_client_server_name** TLS client hello server name indication (SNI).
 
-   **metrics.tls_server_certificate** TLS server information.
+   **metrics.tls_server_server_name** TLS server hello server name indication (SNI).
 
    **metrics.tls_version** TLS version.
 
-   **metrics.tls_not_before** TLS certification expiration start date.
+   **metrics.tls_not_before** TLS certificate expiration start date.
 
-   **metrics.tls_not_after** TLS certification expiration end date.
+   **metrics.tls_not_after** TLS certificate expiration end date.
 
 
 Create your own flow metric
