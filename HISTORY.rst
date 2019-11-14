@@ -93,3 +93,10 @@ History
 * Fix ndpi wrap missing fields.
 * Add host_server_name metric.
 * Update doc.
+
+1.2.0 (2019-11-14)
+------------------
+
+* Fix ndpi bindings.
+* Add TLS dissection features (server sni, client sni, version, organization, expiration dates)
+* Improve documentation.
