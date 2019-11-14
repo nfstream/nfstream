@@ -477,7 +477,7 @@ class PcapReader(object):
         self._user_callback = None
 
         errbuf = self._ffi.new("char []", 128)
-        pcap = self._libpcap.pcap_open_offline(bytes(filename, 'ascii'), errbuf)
+        pcap = self._libpcap.pcap_open_offline(bytes(filename, 'utf-8'), errbuf)
         if pcap == self._ffi.NULL:
             raise PcapException(
                 "Failed to open pcap file for reading: {}: {}".format(filename, self._ffi.string(errbuf)))

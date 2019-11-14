@@ -27,31 +27,37 @@ nfstream is a flexible and lightweight network data analysis library.
 
 .. code-block:: json
 
-   {"ip_src": "192.168.122.121",
-   "src_port": 43277,
-   "ip_dst": "186.102.189.33",
-   "dst_port": 443,
-   "ip_protocol": 6,
-   "vlan_id": 0,
-   "src_to_dst_pkts": 6,
-   "dst_to_src_pkts": 5,
-   "src_to_dst_bytes": 1456,
-   "dst_to_src_bytes": 477,
-   "syn_count": [0, 0],
-   "cwr_count": [0, 0],
-   "ece_count": [0, 0],
-   "urg_count": [0, 0],
-   "ack_count": [6, 5],
-   "psh_count": [2, 1],
-   "rst_count": [0, 0],
-   "fin_count": [1, 1],
-   "start_time": 1555969081636.177,
-   "end_time": 1555969082020.133,
-   "export_reason": 2,
-   "metrics": {"application_name": "TLS.Instagram",
-               "category_name": "SocialNetwork",
-               "host_server_name": "instagram.fbga1-4.fna.fbcdn.net"}
-   }
+    {"ip_src": "192.168.43.18",
+     "src_port": 52066,
+     "ip_dst": "66.220.156.68",
+     "dst_port": 443,
+     "ip_protocol": 6,
+     "vlan_id": 0,
+     "src_to_dst_pkts": 9,
+     "dst_to_src_pkts": 10,
+     "src_to_dst_bytes": 1345,
+     "dst_to_src_bytes": 4400,
+     "syn_count": [1, 1],
+     "cwr_count": [0, 0],
+     "ece_count": [0, 0],
+     "urg_count": [0, 0],
+     "ack_count": [8, 10],
+     "psh_count": [4, 5],
+     "rst_count": [0, 0],
+     "fin_count": [0, 0],
+     "start_time": 1472393122365.661,
+     "end_time": 1472393123665.163,
+     "export_reason": 2,
+     "metrics": {"application_name": "TLS.Facebook",
+                 "category_name": "SocialNetwork",
+                 "http_dns_server_host_name": "",
+                 "tls_client_certificate": "facebook.com",
+                 "tls_server_certificate": "*.facebook.com",
+                 "tls_version": "TLSv1.2",
+                 "tls_not_before": "2014-08-28 00:00:00+00:00",
+                 "tls_not_after": "2016-12-30 12:00:00+00:00"
+                 }
+     }
 
 * Didn't find a specific flow feature? add a plugin to the Streamer in few lines:
 

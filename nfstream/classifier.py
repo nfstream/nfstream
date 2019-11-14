@@ -1,21 +1,6 @@
 from .ndpi_bindings import ndpi, NDPI_PROTOCOL_BITMASK, ndpi_flow_struct, ndpi_protocol, ndpi_id_struct
 from ctypes import pointer, memset, sizeof, cast, c_char_p, c_void_p, POINTER, c_uint8, addressof, byref
-
-
-def parse_ubytes_array(to_parse):
-    started = False
-    parsed = []
-    for i in to_parse:
-        if i == 0 or i == 3 or i == 1:
-            if started:
-                break
-        else:
-            if not started:
-                started = True
-                parsed.append(i)
-            else:
-                parsed.append(i)
-    return ''.join([chr(i) for i in parsed])
+from datetime import datetime, timezone
 
 
 class NFStreamClassifier:
@@ -45,6 +30,10 @@ class NDPIClassifier(NFStreamClassifier):
         self.max_num_udp_dissected_pkts = 16
         self.max_num_tcp_dissected_pkts = 10
 
+    @staticmethod
+    def str(field):
+        return cast(field, c_char_p).value.decode('utf-8', errors='ignore')
+
     def on_flow_init(self, flow):
         NFStreamClassifier.on_flow_init(self, flow)
         flow.classifiers[self.name]['ndpi_flow'] = ndpi_flow_struct()
@@ -72,9 +61,9 @@ class NDPIClassifier(NFStreamClassifier):
 
             valid = False
             if flow.ip_protocol == 6:
-                valid = (flow.src_to_dst_pkts + flow.dst_to_src_pkts) > self.max_num_tcp_dissected_pkts
+                valid = (flow.src_to_dst_pkts + flow.dst_to_src_pkts) >= self.max_num_tcp_dissected_pkts
             elif flow.ip_protocol == 17:
-                valid = (flow.src_to_dst_pkts + flow.dst_to_src_pkts) > self.max_num_udp_dissected_pkts
+                valid = (flow.src_to_dst_pkts + flow.dst_to_src_pkts) >= self.max_num_udp_dissected_pkts
             if valid or flow.classifiers[self.name]['detected_protocol'].app_protocol != 0:
                 if valid or flow.classifiers[self.name]['detected_protocol'].master_protocol != 91:
                     flow.classifiers[self.name]['detection_completed'] = 1
@@ -97,15 +86,17 @@ class NDPIClassifier(NFStreamClassifier):
                 1,
                 cast(addressof(c_uint8(0)), POINTER(c_uint8))
             )
-        master_name = cast(ndpi.ndpi_get_proto_name(self.mod,
-                                                    flow.classifiers[self.name]['detected_protocol'].master_protocol),
-                           c_char_p).value.decode('utf-8')
-        app_name = cast(ndpi.ndpi_get_proto_name(self.mod,
-                                                 flow.classifiers[self.name]['detected_protocol'].app_protocol),
-                        c_char_p).value.decode('utf-8')
-        category_name = cast(ndpi.ndpi_category_get_name(self.mod,
-                                                         flow.classifiers[self.name]['detected_protocol'].category),
-                             c_char_p).value.decode('utf-8')
+
+        master_name = self.str(
+            ndpi.ndpi_get_proto_name(self.mod, flow.classifiers[self.name]['detected_protocol'].master_protocol)
+        )
+        app_name = self.str(
+            ndpi.ndpi_get_proto_name(self.mod, flow.classifiers[self.name]['detected_protocol'].app_protocol)
+        )
+        category_name = self.str(
+            ndpi.ndpi_category_get_name(self.mod, flow.classifiers[self.name]['detected_protocol'].category)
+        )
+
         flow.classifiers[self.name]['application_name'] = master_name + '.' + app_name
         flow.classifiers[self.name]['category_name'] = category_name
         flow.classifiers[self.name]['app_id'] = flow.classifiers[self.name]['detected_protocol'].app_protocol
@@ -115,7 +106,23 @@ class NDPIClassifier(NFStreamClassifier):
         # if we move it before, it will trigger metrics callback.
         flow.metrics['application_name'] = flow.classifiers[self.name]['application_name']
         flow.metrics['category_name'] = flow.classifiers[self.name]['category_name']
-        flow.metrics['host_server_name'] = parse_ubytes_array(flow.classifiers[self.name]['ndpi_flow'].host_server_name)
+        flow.metrics['http_dns_server_host_name'] = self.str(
+            flow.classifiers[self.name]['ndpi_flow'].host_server_name
+        )
+        flow.metrics['tls_version'] = self.str(ndpi.ndpi_ssl_version2str(
+            flow.classifiers[self.name]['ndpi_flow'].protos.stun_ssl.ssl.ssl_version, byref(c_uint8(0)))
+        )
+        flow.metrics['tls_client_certificate'] = self.str(
+            flow.classifiers[self.name]['ndpi_flow'].protos.stun_ssl.ssl.client_certificate
+        )
+        flow.metrics['tls_server_certificate'] = self.str(
+            flow.classifiers[self.name]['ndpi_flow'].protos.stun_ssl.ssl.server_certificate
+        )
+        flow.metrics['tls_not_before'] = str(datetime.fromtimestamp(
+            flow.classifiers[self.name]['ndpi_flow'].protos.stun_ssl.ssl.notBefore, timezone.utc))
+        flow.metrics['tls_not_after'] = str(datetime.fromtimestamp(
+            flow.classifiers[self.name]['ndpi_flow'].protos.stun_ssl.ssl.notAfter, timezone.utc))
+
         flow.classifiers[self.name]['ndpi_flow'] = None
 
     def on_exit(self):
