@@ -48,7 +48,7 @@ class NDPIClassifier(NFStreamClassifier):
 
     def on_flow_update(self, packet_information, flow, direction):
         NFStreamClassifier.on_flow_update(self, packet_information, flow, direction)
-        if flow.classifiers[self.name]['detection_completed'] == 0:
+        if flow.classifiers[self.name]['detection_completed'] == 0:  # process till not completed
             flow.classifiers[self.name]['detected_protocol'] = ndpi.ndpi_detection_process_packet(
                 self.mod,
                 byref(flow.classifiers[self.name]['ndpi_flow']),
@@ -59,33 +59,34 @@ class NDPIClassifier(NFStreamClassifier):
                 flow.classifiers[self.name]['dst_id']
             )
 
-            valid = False
-            if flow.ip_protocol == 6:
-                valid = (flow.src_to_dst_pkts + flow.dst_to_src_pkts) >= self.max_num_tcp_dissected_pkts
-            elif flow.ip_protocol == 17:
-                valid = (flow.src_to_dst_pkts + flow.dst_to_src_pkts) >= self.max_num_udp_dissected_pkts
-            if valid or flow.classifiers[self.name]['detected_protocol'].app_protocol != 0:
-                if valid or flow.classifiers[self.name]['detected_protocol'].master_protocol != 91:
-                    flow.classifiers[self.name]['detection_completed'] = 1
-                    if flow.classifiers[self.name]['detected_protocol'].app_protocol == 0:
-                        flow.classifiers[self.name]['detected_protocol'] = ndpi.ndpi_detection_giveup(
-                            self.mod,
-                            byref(flow.classifiers[self.name]['ndpi_flow']),
-                            1,
-                            cast(addressof(c_uint8(0)), POINTER(c_uint8))
-                        )
-                        flow.classifiers[self.name]['guessed'] = 1
-        # HERE you can change flow.export_reason to a value > 2 and the flow will be terminated automatically
+            enough_packets = ((flow.ip_protocol == 6) and ((flow.src_to_dst_pkts + flow.dst_to_src_pkts) >
+                                                           self.max_num_tcp_dissected_pkts)) or \
+                             ((flow.ip_protocol == 17) and ((flow.src_to_dst_pkts + flow.dst_to_src_pkts) >
+                                                            self.max_num_udp_dissected_pkts))
+
+            if enough_packets and flow.classifiers[self.name]['detected_protocol'].app_protocol == 0:
+                # we reach max and still unknown, so give up!
+                flow.classifiers[self.name]['detection_completed'] = 1
+                flow.classifiers[self.name]['detected_protocol'] = ndpi.ndpi_detection_giveup(
+                    self.mod,
+                    byref(flow.classifiers[self.name]['ndpi_flow']),
+                    1,
+                    cast(addressof(c_uint8(0)), POINTER(c_uint8))
+                )
+                flow.classifiers[self.name]['guessed'] = 1
+            # you can change flow.export_reason to a value > 2 and the flow will be terminated automatically
 
     def on_flow_terminate(self, flow):
         NFStreamClassifier.on_flow_terminate(self, flow)
-        if flow.classifiers[self.name]['detected_protocol'].app_protocol == 0:
+        if flow.classifiers[self.name]['detected_protocol'].app_protocol == 0 and \
+                flow.classifiers[self.name]['guessed'] == 0:  # didn't reach max and still unknown, so give up!
             flow.classifiers[self.name]['detected_protocol'] = ndpi.ndpi_detection_giveup(
                 self.mod,
                 byref(flow.classifiers[self.name]['ndpi_flow']),
                 1,
                 cast(addressof(c_uint8(0)), POINTER(c_uint8))
             )
+            flow.classifiers[self.name]['guessed'] = 1
 
         master_name = self.str(
             ndpi.ndpi_get_proto_name(self.mod, flow.classifiers[self.name]['detected_protocol'].master_protocol)
@@ -125,8 +126,7 @@ class NDPIClassifier(NFStreamClassifier):
             flow.classifiers[self.name]['ndpi_flow'].protos.stun_ssl.ssl.notBefore, timezone.utc))
         flow.metrics['tls_not_after'] = str(datetime.fromtimestamp(
             flow.classifiers[self.name]['ndpi_flow'].protos.stun_ssl.ssl.notAfter, timezone.utc))
-
-        flow.classifiers[self.name]['ndpi_flow'] = None
+        del(flow.classifiers[self.name]['ndpi_flow'])
 
     def on_exit(self):
         NFStreamClassifier.on_exit(self)
