@@ -72,9 +72,10 @@ This will print a dict representation of nfstream flow object:
      "export_reason": 2,
      "metrics": {"application_name": "TLS.Facebook",
                  "category_name": "SocialNetwork",
-                 "http_dns_server_host_name": "",
-                 "tls_client_certificate": "facebook.com",
-                 "tls_server_certificate": "*.facebook.com",
+                 "http_dns_server_name": "",
+                 "tls_client_server_name": "facebook.com",
+                 "tls_server_server_name": "*.facebook.com",
+                 "tls_server_organization": "Facebook, Inc.",
                  "tls_version": "TLSv1.2",
                  "tls_not_before": "2014-08-28 00:00:00+00:00",
                  "tls_not_after": "2016-12-30 12:00:00+00:00"

@@ -106,17 +106,20 @@ class NDPIClassifier(NFStreamClassifier):
         # if we move it before, it will trigger metrics callback.
         flow.metrics['application_name'] = flow.classifiers[self.name]['application_name']
         flow.metrics['category_name'] = flow.classifiers[self.name]['category_name']
-        flow.metrics['http_dns_server_host_name'] = self.str(
+        flow.metrics['http_dns_server_name'] = self.str(
             flow.classifiers[self.name]['ndpi_flow'].host_server_name
         )
         flow.metrics['tls_version'] = self.str(ndpi.ndpi_ssl_version2str(
             flow.classifiers[self.name]['ndpi_flow'].protos.stun_ssl.ssl.ssl_version, byref(c_uint8(0)))
         )
-        flow.metrics['tls_client_certificate'] = self.str(
+        flow.metrics['tls_client_server_name'] = self.str(
             flow.classifiers[self.name]['ndpi_flow'].protos.stun_ssl.ssl.client_certificate
         )
-        flow.metrics['tls_server_certificate'] = self.str(
+        flow.metrics['tls_server_server_name'] = self.str(
             flow.classifiers[self.name]['ndpi_flow'].protos.stun_ssl.ssl.server_certificate
+        )
+        flow.metrics['tls_server_organization'] = self.str(
+            flow.classifiers[self.name]['ndpi_flow'].protos.stun_ssl.ssl.server_organization
         )
         flow.metrics['tls_not_before'] = str(datetime.fromtimestamp(
             flow.classifiers[self.name]['ndpi_flow'].protos.stun_ssl.ssl.notBefore, timezone.utc))
