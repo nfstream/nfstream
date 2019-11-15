@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License along with nfs
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from .ndpi_bindings import ndpi, NDPI_PROTOCOL_BITMASK, ndpi_flow_struct, ndpi_protocol, ndpi_id_struct
+from .ndpi_bindings import ndpi, NDPIProtocolBitMask, NDPIFlowStruct, NDPIProtocol, NDPIIdStruct
 from ctypes import pointer, memset, sizeof, cast, c_char_p, c_void_p, POINTER, c_uint8, addressof, byref
 from datetime import datetime, timezone
 
@@ -43,7 +43,7 @@ class NDPIClassifier(NFStreamClassifier):
     def __init__(self, name):
         NFStreamClassifier.__init__(self, name)
         self.mod = ndpi.ndpi_init_detection_module()
-        all = NDPI_PROTOCOL_BITMASK()
+        all = NDPIProtocolBitMask()
         ndpi.ndpi_wrap_NDPI_BITMASK_SET_ALL(pointer(all))
         ndpi.ndpi_set_protocol_detection_bitmask2(self.mod, pointer(all))
         self.max_num_udp_dissected_pkts = 16
@@ -55,12 +55,12 @@ class NDPIClassifier(NFStreamClassifier):
 
     def on_flow_init(self, flow):
         NFStreamClassifier.on_flow_init(self, flow)
-        flow.classifiers[self.name]['ndpi_flow'] = ndpi_flow_struct()
-        memset(byref(flow.classifiers[self.name]['ndpi_flow']), 0, sizeof(ndpi_flow_struct))
-        flow.classifiers[self.name]['detected_protocol'] = ndpi_protocol()
+        flow.classifiers[self.name]['ndpi_flow'] = NDPIFlowStruct()
+        memset(byref(flow.classifiers[self.name]['ndpi_flow']), 0, sizeof(NDPIFlowStruct))
+        flow.classifiers[self.name]['detected_protocol'] = NDPIProtocol()
         flow.classifiers[self.name]['detection_completed'] = 0
-        flow.classifiers[self.name]['src_id'] = pointer(ndpi_id_struct())
-        flow.classifiers[self.name]['dst_id'] = pointer(ndpi_id_struct())
+        flow.classifiers[self.name]['src_id'] = pointer(NDPIIdStruct())
+        flow.classifiers[self.name]['dst_id'] = pointer(NDPIIdStruct())
         flow.classifiers[self.name]['application_name'] = ''
         flow.classifiers[self.name]['category_name'] = ''
         flow.classifiers[self.name]['guessed'] = 0
