@@ -1,3 +1,23 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+file: ndpi_bindings.py
+This file is part of nDPI.
+
+Copyright (C) 2019 - ntop.org
+Copyright (C) 2019 - Zied Aouini <aouinizied@gmail.com> (Incremental improvements)
+
+nDPI is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+nDPI is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with nDPI.
+If not, see <http://www.gnu.org/licenses/>.
+"""
+
 from ctypes import CDLL, Structure, c_uint16, c_int, c_ulong, c_uint32, CFUNCTYPE, c_void_p, POINTER, c_char_p, c_uint8
 from ctypes import c_char, c_uint, c_int16, c_longlong, c_size_t, Union, c_ubyte, c_uint64, c_int32, c_ushort
 from os.path import abspath, dirname
