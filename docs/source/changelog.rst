@@ -83,3 +83,8 @@ Changelog
 * Fix ndpi bindings.
 * Add TLS dissection features (server sni, client sni, version, organization, expiration dates)
 * Improve documentation.
+
+**1.2.1 (2019-11-15)**
+
+* Fix ndpi padding and alignement issues.
+* nDPI3.1 compatibility.
