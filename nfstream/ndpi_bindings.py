@@ -9,7 +9,6 @@ class ndpi_detection_module_struct(Structure):
 
 
 class ndpi_flow_struct(Structure):
-    _pack_ = 1
     pass
 
 
@@ -267,7 +266,6 @@ ndpi_detection_module_struct._fields_ = [
 
 
 class u6_addr(Union):
-    _pack_ = 1
     _fields_ = [
         ("u6_addr8", c_uint8 * 16),
         ("u6_addr16", c_uint16 * 8),
@@ -277,6 +275,7 @@ class u6_addr(Union):
 
 
 class ndpi_in6_addr(Structure):
+    _pack_ = 1
     _fields_ = [("u6_addr", u6_addr)]
 
 
@@ -545,6 +544,7 @@ class protos(Union):
 
 
 class tinc_cache_entry(Structure):
+    _pack_ = 1
     _fields_ = [
         ('src_address', c_uint32),
         ('dst_address', c_uint32),
@@ -552,14 +552,14 @@ class tinc_cache_entry(Structure):
     ]
 
 
-class struct_ndpi_int_one_line_struct(Structure):
+class ndpi_int_one_line_struct(Structure):
     _fields_ = [
         ('ptr', POINTER(c_uint8)),
         ('len', c_uint16),
     ]
 
 
-class struct_ndpi_iphdr(Structure):
+class ndpi_iphdr(Structure):
     _pack_ = 1
     _fields_ = [
         ('ihl', c_uint8, 4),
@@ -575,7 +575,7 @@ class struct_ndpi_iphdr(Structure):
         ('daddr', c_uint32)]
 
 
-class struct_ndpi_ip6_hdrctl(Structure):
+class ndpi_ip6_hdrctl(Structure):
     _pack_ = 1
     _fields_ = [
         ('ip6_un1_flow', c_uint32),
@@ -585,16 +585,16 @@ class struct_ndpi_ip6_hdrctl(Structure):
     ]
 
 
-class struct_ndpi_ipv6hdr(Structure):
+class ndpi_ipv6hdr(Structure):
     _pack_ = 1
     _fields_ = [
-        ('ip6_hdr', struct_ndpi_ip6_hdrctl),
+        ('ip6_hdr', ndpi_ip6_hdrctl),
         ('ip6_src', ndpi_in6_addr),
         ('ip6_dst', ndpi_in6_addr),
     ]
 
 
-class struct_ndpi_tcphdr(Structure):
+class ndpi_tcphdr(Structure):
     _pack_ = 1
     _fields_ = [
         ('source', c_uint16),
@@ -617,7 +617,8 @@ class struct_ndpi_tcphdr(Structure):
     ]
 
 
-class struct_ndpi_udphdr(Structure):
+class ndpi_udphdr(Structure):
+    _pack_ = 1
     _fields_ = [
         ('source', c_uint16),
         ('dest', c_uint16),
@@ -626,36 +627,43 @@ class struct_ndpi_udphdr(Structure):
     ]
 
 
+class ndpi_packet_struct_stack(Structure):
+    _pack_ = 1
+    _fields_ = [
+        ('detected_subprotocol_stack', c_uint8 * ndpi.ndpi_wrap_ndpi_procol_size()),
+        ('protocol_stack_info', c_uint16)
+    ]
+
+
 class ndpi_packet_struct(Structure):
     _fields_ = [
-        ('iph', POINTER(struct_ndpi_iphdr)),
-        ('iphv6', POINTER(struct_ndpi_ipv6hdr)),
-        ('tcp', POINTER(struct_ndpi_tcphdr)),
-        ('udp', POINTER(struct_ndpi_udphdr)),
+        ('iph', POINTER(ndpi_iphdr)),
+        ('iphv6', POINTER(ndpi_ipv6hdr)),
+        ('tcp', POINTER(ndpi_tcphdr)),
+        ('udp', POINTER(ndpi_udphdr)),
         ('generic_l4_ptr', POINTER(c_uint8)),
         ('payload', POINTER(c_uint8)),
         ('tick_timestamp', c_uint32),
         ('tick_timestamp_l', c_uint64),
         ('detected_protocol_stack', c_uint16 * ndpi.ndpi_wrap_ndpi_procol_size()),
-        ('detected_subprotocol_stack', c_uint8 * ndpi.ndpi_wrap_ndpi_procol_size()),
-        ('protocol_stack_info', c_uint16),
-        ('line', struct_ndpi_int_one_line_struct * 64),
-        ('host_line', struct_ndpi_int_one_line_struct),
-        ('forwarded_line', struct_ndpi_int_one_line_struct),
-        ('referer_line', struct_ndpi_int_one_line_struct),
-        ('content_line', struct_ndpi_int_one_line_struct),
-        ('accept_line', struct_ndpi_int_one_line_struct),
-        ('user_agent_line', struct_ndpi_int_one_line_struct),
-        ('http_url_name', struct_ndpi_int_one_line_struct),
-        ('http_encoding', struct_ndpi_int_one_line_struct),
-        ('http_transfer_encoding', struct_ndpi_int_one_line_struct),
-        ('http_contentlen', struct_ndpi_int_one_line_struct),
-        ('http_cookie', struct_ndpi_int_one_line_struct),
-        ('http_origin', struct_ndpi_int_one_line_struct),
-        ('http_x_session_type', struct_ndpi_int_one_line_struct),
-        ('server_line', struct_ndpi_int_one_line_struct),
-        ('http_method', struct_ndpi_int_one_line_struct),
-        ('http_response', struct_ndpi_int_one_line_struct),
+        ('ndpi_packet_stack', ndpi_packet_struct_stack),
+        ('line', ndpi_int_one_line_struct * 64),
+        ('host_line', ndpi_int_one_line_struct),
+        ('forwarded_line', ndpi_int_one_line_struct),
+        ('referer_line', ndpi_int_one_line_struct),
+        ('content_line', ndpi_int_one_line_struct),
+        ('accept_line', ndpi_int_one_line_struct),
+        ('user_agent_line', ndpi_int_one_line_struct),
+        ('http_url_name', ndpi_int_one_line_struct),
+        ('http_encoding', ndpi_int_one_line_struct),
+        ('http_transfer_encoding', ndpi_int_one_line_struct),
+        ('http_contentlen', ndpi_int_one_line_struct),
+        ('http_cookie', ndpi_int_one_line_struct),
+        ('http_origin', ndpi_int_one_line_struct),
+        ('http_x_session_type', ndpi_int_one_line_struct),
+        ('server_line', ndpi_int_one_line_struct),
+        ('http_method', ndpi_int_one_line_struct),
+        ('http_response', ndpi_int_one_line_struct),
         ('http_num_headers', c_uint8),
         ('l3_packet_len', c_uint16),
         ('l4_packet_len', c_uint16),
@@ -676,9 +684,16 @@ class ndpi_packet_struct(Structure):
     ]
 
 
+class ndpi_flow_struct_stack(Structure):
+    _pack_ = 1
+    _fields_ = [
+        ("detected_protocol_stack", c_uint16 * ndpi.ndpi_wrap_ndpi_procol_size()),
+        ("protocol_stack_info", c_uint16)
+    ]
+
+
 ndpi_flow_struct._fields_ = [
-    ("detected_protocol_stack", c_uint16 * ndpi.ndpi_wrap_ndpi_procol_size()),
-    ("protocol_stack_info", c_uint16),
+    ("ndpi_flow_stack", ndpi_flow_struct_stack),
     ("guessed_protocol_id", c_uint16),
     ("guessed_host_protocol_id", c_uint16),
     ("guessed_category", c_uint16),
@@ -695,7 +710,6 @@ ndpi_flow_struct._fields_ = [
     ("num_extra_packets_checked", c_uint8),
     ("num_processed_pkts", c_uint8),
     ("extra_packets_func", CFUNCTYPE(c_int, POINTER(ndpi_detection_module_struct), POINTER(ndpi_flow_struct))),
-    ("pad", c_uint8 * 5),  # XXX: must be removed once l4 struct? alignment issue fixed.
     ("l4", l4),
     ("server_id", POINTER(ndpi_id_struct)),
     ("host_server_name", c_ubyte * 256),
