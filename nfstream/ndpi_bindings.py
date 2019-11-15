@@ -19,7 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from ctypes import CDLL, Structure, c_uint16, c_int, c_ulong, c_uint32, CFUNCTYPE, c_void_p, POINTER, c_char_p, c_uint8
-from ctypes import c_char, c_uint, c_int16, c_longlong, c_size_t, Union, c_ubyte, c_uint64, c_int32, c_ushort
+from ctypes import c_char, c_uint, c_int16, c_longlong, c_size_t, Union, c_ubyte, c_uint64, c_int32, c_ushort, cast
 from os.path import abspath, dirname
 ndpi = CDLL(dirname(abspath(__file__)) + '/ndpi_wrap.so')
 
@@ -278,7 +278,7 @@ NDPIDetectionModuleStruct._fields_ = [
     ("bt_ann_len", c_int),
     ("ookla_cache", POINTER(NDPILruCache)),
     ("tinc_cache", POINTER(Cache)),
-    ("proto_defaults", NDPIProtoDefaultsT * (ndpi.ndpi_wrap_ndpi_max_supported_protocols() + 
+    ("proto_defaults", NDPIProtoDefaultsT * (ndpi.ndpi_wrap_ndpi_max_supported_protocols() +
                                              ndpi.ndpi_wrap_ndpi_max_num_custom_protocols())),
     ("http_dont_dissect_response", c_uint8, 1),
     ("dns_dont_dissect_response", c_uint8, 1),
@@ -817,6 +817,18 @@ ndpi.ndpi_ssl_version2str.argtypes = [c_int16, POINTER(c_uint8)]
     Note that before you can use it you can still load hosts and do other things. As soon as you are ready to use 
     it do not forget to call first ndpi_finalize_initalization() """
 ndpi.ndpi_init_detection_module.restype = POINTER(NDPIDetectionModuleStruct)
+
+
+def ndpi_ndpi_finalize_initalization(detection_module):
+    """ ndpi_finalize_initalization: Completes the initialization (ndpi_revision >= 3.1)"""
+    if cast(ndpi.ndpi_revision(), c_char_p).value.decode("utf-8")[:3] >= '3.1':
+        ndpi.ndpi_finalize_initalization.restype = c_void_p
+        ndpi.ndpi_finalize_initalization.argtypes = [POINTER(NDPIDetectionModuleStruct)]
+        return ndpi.ndpi_finalize_initalization(detection_module)
+    else:
+        # ignore it
+        return None
+
 
 """ ndpi_tfind: find a node, or return 0. """
 ndpi.ndpi_tfind.restype = c_void_p

@@ -18,6 +18,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from .ndpi_bindings import ndpi, NDPIProtocolBitMask, NDPIFlowStruct, NDPIProtocol, NDPIIdStruct
+from .ndpi_bindings import ndpi_ndpi_finalize_initalization
 from ctypes import pointer, memset, sizeof, cast, c_char_p, c_void_p, POINTER, c_uint8, addressof, byref
 from datetime import datetime, timezone
 import sys
@@ -48,6 +49,7 @@ class NDPIClassifier(NFStreamClassifier):
         self.ndpi_revision = cast(ndpi.ndpi_revision(), c_char_p).value.decode('utf-8')
         # print('NDPIClassifier.ndpi_revision: {}'.format(self.ndpi_revision))
         self.mod = ndpi.ndpi_init_detection_module()
+        ndpi_ndpi_finalize_initalization(self.mod)
         all = NDPIProtocolBitMask()
         ndpi.ndpi_wrap_NDPI_BITMASK_SET_ALL(pointer(all))
         ndpi.ndpi_set_protocol_detection_bitmask2(self.mod, pointer(all))
