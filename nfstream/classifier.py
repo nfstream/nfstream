@@ -20,6 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 from .ndpi_bindings import ndpi, NDPIProtocolBitMask, NDPIFlowStruct, NDPIProtocol, NDPIIdStruct
 from ctypes import pointer, memset, sizeof, cast, c_char_p, c_void_p, POINTER, c_uint8, addressof, byref
 from datetime import datetime, timezone
+import sys
 
 
 class NFStreamClassifier:
@@ -42,6 +43,10 @@ class NFStreamClassifier:
 class NDPIClassifier(NFStreamClassifier):
     def __init__(self, name):
         NFStreamClassifier.__init__(self, name)
+        if ndpi.ndpi_get_api_version() != ndpi.ndpi_wrap_get_api_version():
+            sys.exit("nDPI Library version mismatch. Please make sure this code and the nDPI library are in sync.")
+        self.ndpi_revision = cast(ndpi.ndpi_revision(), c_char_p).value.decode('utf-8')
+        # print('NDPIClassifier.ndpi_revision: {}'.format(self.ndpi_revision))
         self.mod = ndpi.ndpi_init_detection_module()
         all = NDPIProtocolBitMask()
         ndpi.ndpi_wrap_NDPI_BITMASK_SET_ALL(pointer(all))
