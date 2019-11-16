@@ -137,7 +137,7 @@ class Streamer:
     """ streamer for flows management """
     num_streamers = 0
 
-    def __init__(self, source=None, capacity=128000, active_timeout=120, inactive_timeout=60,
+    def __init__(self, source=None, capacity=524288, active_timeout=60, inactive_timeout=30,
                  user_metrics=None, user_classifiers=None, enable_ndpi=True, bpf_filter=None, snaplen=65535):
         Streamer.num_streamers += 1
         try:

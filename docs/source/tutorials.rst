@@ -12,8 +12,8 @@ Dealing with a big pcap file and just want to aggregate it as network flows? nfs
    from nfstream.streamer import Streamer
    my_capture_streamer = Streamer(source="instagram.pcap",
                                   capacity=128000,
-                                  active_timeout=120,
-                                  inactive_timeout=60,
+                                  active_timeout=60,
+                                  inactive_timeout=30,
                                   user_metrics=None,
                                   user_classifiers=None,
                                   enable_ndpi=True,
@@ -28,11 +28,11 @@ Dealing with a big pcap file and just want to aggregate it as network flows? nfs
 
    **source** source od packets. Network interface or pcap file path.
 
-   **capacity** maximum streamer real-time capacity. When this capacity is reached, least recently used flows will be dropped. (Default: 128000)
+   **capacity** maximum streamer real-time capacity. When this capacity is reached, least recently used flows will be dropped. (Default: 524288)
 
-   **active_timeout** flows that are active for more than this value in seconds will be exported. (Default: 120)
+   **active_timeout** flows that are active for more than this value in seconds will be exported. (Default: 60)
 
-   **inactive_timeout** flows that are inactive for more than this value in seconds will be exported. (Default: 120)
+   **inactive_timeout** flows that are inactive for more than this value in seconds will be exported. (Default: 30)
 
    **user_metrics** dict with metric_name as key ans callback as value. (Default None)
 
