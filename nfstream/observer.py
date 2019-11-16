@@ -107,33 +107,33 @@ def fcf_from_ds(fc):
 
 
 class _PcapFfi(object):
-    '''
+    """
     This class represents the low-level interface to the libpcap library.
     It encapsulates all the cffi calls and C/Python conversions, as well
     as translation of errors and error codes to PcapExceptions.  It is
     intended to be used as a singleton class through the PcapDumper
     and PcapLiveDevice classes, below.
-    '''
+    """
     _instance = None
-    __slots__ = ['_ffi', '_libpcap', '_interfaces', '_windoze']
+    __slots__ = ['_ffi', '_libpcap', '_interfaces', '_windows']
 
     def __init__(self):
-        '''
+        """
         Assumption: this class is instantiated once in the main thread before
         any other threads have a chance to try instantiating it.
-        '''
+        """
         if _PcapFfi._instance:
             raise Exception("Can't initialize this class more than once!")
 
         _PcapFfi._instance = self
-        self._windoze = False
+        self._windows = False
         self._ffi = FFI()
         self._ffi.cdef(cc, override=True)
         if sys.platform == 'darwin':
             libname = 'libpcap.dylib'
         elif sys.platform == 'win32':
             libname = 'wpcap.dll'  # winpcap
-            self._windoze = True
+            self._windows = True
         else:
             # if not macOS (darwin) or windows, assume we're on
             # some unix-based system and try for libpcap.so
@@ -157,9 +157,9 @@ class _PcapFfi(object):
         return self._ffi.string(self._libpcap.pcap_lib_version())
 
     def discoverdevs(self):
-        '''
+        """
         Find all the pcap-eligible devices on the local system.
-        '''
+        """
         if len(self._interfaces):
             raise PcapException("Device discovery should only be done once.")
 
@@ -175,7 +175,7 @@ class _PcapFfi(object):
             xname = self._ffi.string(tmp.name)  # "internal name"; still stored as bytes object
             xname = xname.decode('ascii', 'ignore')
 
-            if self._windoze:
+            if self._windows:
                 ext_name = "port{}".format(pindex)
             else:
                 ext_name = xname
@@ -362,8 +362,24 @@ class _PcapFfi(object):
             dst_addr = ntohl(iph.daddr)
         else:
             version = 6
-            src_addr = ntohl(iph6.ip6_src.u6_addr.u6_addr32[0]) << 96 | ntohl(iph6.ip6_src.u6_addr.u6_addr32[1]) << 64 | ntohl(iph6.ip6_src.u6_addr.u6_addr32[2]) << 32 | ntohl(iph6.ip6_src.u6_addr.u6_addr32[3])
-            dst_addr = ntohl(iph6.ip6_dst.u6_addr.u6_addr32[0]) << 96 | ntohl(iph6.ip6_dst.u6_addr.u6_addr32[1]) << 64 | ntohl(iph6.ip6_dst.u6_addr.u6_addr32[2]) << 32 | ntohl(iph6.ip6_dst.u6_addr.u6_addr32[3])
+            src_addr = ntohl(
+                iph6.ip6_src.u6_addr.u6_addr32[0]
+            ) << 96 | ntohl(
+                iph6.ip6_src.u6_addr.u6_addr32[1]
+            ) << 64 | ntohl(
+                iph6.ip6_src.u6_addr.u6_addr32[2]
+            ) << 32 | ntohl(
+                iph6.ip6_src.u6_addr.u6_addr32[3]
+            )
+            dst_addr = ntohl(
+                iph6.ip6_dst.u6_addr.u6_addr32[0]
+            ) << 96 | ntohl(
+                iph6.ip6_dst.u6_addr.u6_addr32[1]
+            ) << 64 | ntohl(
+                iph6.ip6_dst.u6_addr.u6_addr32[2]
+            ) << 32 | ntohl(
+                iph6.ip6_dst.u6_addr.u6_addr32[3]
+            )
             proto = iph6.ip6_hdr.ip6_un1_nxt
             if proto == 60:
                 options = self._ffi.cast('uint8_t *', iph6) + self._ffi.sizeof('struct nfstream_ipv6hdr')
@@ -484,9 +500,9 @@ def pcap_devices():
 
 
 class PcapReader(object):
-    '''
+    """
     Class the represents a reader of an existing pcap capture file.
-    '''
+    """
     __slots__ = ['_ffi', '_libpcap', '_base', '_pcapdev', '_user_callback']
 
     def __init__(self, filename, filterstr=None):
@@ -522,9 +538,9 @@ class PcapReader(object):
 
 
 class PcapLiveDevice(object):
-    '''
+    """
     Class the represents a live pcap capture/injection device.
-    '''
+    """
     _OpenDevices = {}  # objectid -> low-level pcap dev
     _lock = Lock()
     __slots__ = ['_ffi', '_libpcap', '_base', '_pcapdev', '_devname', '_fd', '_user_callback']
