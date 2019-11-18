@@ -210,7 +210,7 @@ class _PcapFfi(object):
     def ffi(self):
         return self._ffi
 
-    def _process_packet(self, xdev, header, packet, decode_tunnels=True):
+    def _process_packet(self, xdev, header, packet):
         # MPLS header
         mpls = self._ffi.new("union mpls *")
         # IP header
@@ -467,7 +467,7 @@ class _PcapFfi(object):
         pdata = self._ffi.new("unsigned char **")
         rv = self._libpcap.pcap_next_ex(xdev, phdr, pdata)
         if rv == 1:
-            return self._process_packet(xdev, phdr[0], pdata[0], True)
+            return self._process_packet(xdev, phdr[0], pdata[0])
         elif rv == 0:
             # timeout; nothing to return
             return 0
