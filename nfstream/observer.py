@@ -24,7 +24,7 @@ from enum import Enum, IntEnum
 from select import select
 from threading import Lock
 from socket import ntohs, ntohl
-from .observer_cc import cc
+from .observer_cc import cc, cc_packed
 import os.path
 TICK_RESOLUTION = 1000
 
@@ -129,6 +129,7 @@ class _PcapFfi(object):
         self._windows = False
         self._ffi = FFI()
         self._ffi.cdef(cc, override=True)
+        self._ffi.cdef(cc_packed, override=True, packed=1)
         if sys.platform == 'darwin':
             libname = 'libpcap.dylib'
         elif sys.platform == 'win32':
@@ -287,9 +288,9 @@ class _PcapFfi(object):
                 # Check ether_type from LLC
                 llc = self._ffi.cast('struct nfstream_llc_header_snap *', packet + (eth_offset + wifi_len + radio_len))
                 if llc.dsap == 0xaa:
-                    type = ntohs(llc.snap.oui2)
+                    type = ntohs(llc.snap.proto_ID)
                 # Set IP header offset
-                ip_offset = wifi_len + radio_len + self._ffi.sizeof('struct nfstream_llc_header_snap') + eth_offset - 2
+                ip_offset = wifi_len + radio_len + self._ffi.sizeof('struct nfstream_llc_header_snap') + eth_offset
             elif Dlt(datalink_type) == Dlt.DLT_RAW:
                 ip_offset = 0
                 eth_offset = 0

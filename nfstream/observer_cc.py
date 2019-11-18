@@ -103,7 +103,9 @@ struct bpf_program {
 int pcap_setfilter(pcap_t *, struct bpf_program *);
 int pcap_compile(pcap_t *, struct bpf_program *, const char *, int, unsigned int);
 void pcap_freecode(struct bpf_program *);
+"""
 
+cc_packed = """
 struct nfstream_ethhdr
 {
   u_char h_dest[6];
