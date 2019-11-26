@@ -45,10 +45,6 @@ NFPlugin methods
   - Method called at flow expiration.
 
 
-###########
-Get Started
-###########
-
 In the following, we want to run an early classification of flows based on a trained machine learning model than takes
 as features the 3 first packets size of a flow.
 
