@@ -1,6 +1,6 @@
-############################
-FLow monitoring architecture
-############################
+############
+Architecture
+############
 
 .. image:: asset/arch.png
   :scale: 100%
@@ -13,7 +13,7 @@ things works in theory. Consequently, an easier understanding of nfstream featur
 and implementation is possible.
 
 ******************
-Packet Observation
+Packet observation
 ******************
 
 Packet observation is a key stage in a flow monitoring architecture as it is the
@@ -51,7 +51,7 @@ a hash based filtering, applying a hash function on a portion of the packet,
 the result is compared to a value or a range of values.
 
 *************
-Flow Metering
+Flow metering
 *************
 It includes packets aggregation into flows and flow entry expiration management.
 Second, the metering process associates a packet to a flow entry using a defined key.

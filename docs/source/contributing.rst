@@ -8,10 +8,10 @@ helps, and credit will always be given.
 You can contribute in many ways:
 
 *********************
-Types of Contribution
+Types of contribution
 *********************
 
-**Report Bugs**
+**Report bugs**
 
 Report bugs at https://github.com/aouinizied/nfstream/issues.
 
@@ -22,23 +22,23 @@ If you are reporting a bug, please include:
 * Detailed steps to reproduce the bug.
 * pcap file if you are reporting a bug on offline mode
 
-**Fix Bugs**
+**Fix bugs**
 
 Look through the GitHub issues for bugs. Anything tagged with "bug" and "help
 wanted" is open to whoever wants to implement it.
 
-**Implement Features**
+**Implement features**
 
 Look through the GitHub issues for features. Anything tagged with "enhancement"
 and "help wanted" is open to whoever wants to implement it.
 
-**Write Documentation**
+**Write documentation**
 
 nfstream could always use more documentation, whether as part of the
 official nfstream docs, in docstrings, or even on the web in blog posts,
 articles, and such.
 
-**Submit Feedback**
+**Submit feedback**
 
 The best way to send feedback is to file an issue at https://github.com/aouinizied/nfstream/issues.
 
@@ -50,7 +50,7 @@ If you are proposing a feature:
   are welcome.
 
 ***********
-Get Started
+Get started
 ***********
 
 Ready to contribute? Here's how to set up nfstream for local development.
@@ -85,7 +85,7 @@ Ready to contribute? Here's how to set up nfstream for local development.
 7. Submit a pull request through the GitHub website.
 
 ***********************
-Pull Request Guidelines
+Pull request guidelines
 ***********************
 
 Before you submit a pull request, check that it meets these guidelines:
