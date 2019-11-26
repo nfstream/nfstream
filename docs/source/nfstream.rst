@@ -70,7 +70,6 @@ NFStreamer returns an iterator of **NFFlow** object.
 NFFlow
 ******
 
-
 .. list-table:: NFFlow object
    :widths: 25 25 50
    :header-rows: 1
@@ -168,8 +167,6 @@ NFFlow
    * - j3a_server
      - str
      - J3A_ server fingerprint.
-
-
 
 **NFFlow** is an aggregation of **NFPacket** objects.
 
