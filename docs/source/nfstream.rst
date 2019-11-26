@@ -1,5 +1,5 @@
 ########
-NFStream
+nfstream
 ########
 
 
@@ -150,21 +150,6 @@ NFFlow
    * - app_protocol
      - int
      - nDPI app protocol identifier.
-   * - application_name
-     - str
-     - nDPI application name.
-   * - application_name
-     - str
-     - nDPI application name.
-   * - application_name
-     - str
-     - nDPI application name.
-   * - application_name
-     - str
-     - nDPI application name.
-   * - application_name
-     - str
-     - nDPI application name.
    * - application_name
      - str
      - nDPI application name.
