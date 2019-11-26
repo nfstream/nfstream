@@ -1,16 +1,6 @@
-.. nfstream documentation master file, created by
-   sphinx-quickstart on Sat Oct 19 16:26:59 2019.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-
-.. image:: docs/nfstream_logo.png
-  :scale: 100%
-  :align: left
-
-NFStream
-########
-
+========================
+|nfstream_logo| NFStream
+========================
 
 |release| |python| |pypy| |platform| |license|
 
@@ -198,6 +188,7 @@ This project is licensed under the GPLv3 License - see the License_ file for det
                :target: https://codecov.io/gh/aouinizied/nfstream/
 .. |quality| image:: https://img.shields.io/lgtm/grade/python/github/aouinizied/nfstream.svg?logo=lgtm&logoWidth=18)
                :target: https://lgtm.com/projects/g/aouinizied/nfstream/context:python
+.. |nfstream_logo| image:: /docs/nfstream_logo.png
 
 .. _License: https://github.com/aouinizied/nfstream/blob/master/LICENSE
 .. _Contributing: https://github.com/aouinizied/nfstream/blob/master/CONTRIBUTING.rst
