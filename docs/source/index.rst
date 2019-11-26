@@ -46,4 +46,5 @@ nfstream is a flexible and lightweight network data analysis framework.
 
 
 .. _nDPI: https://www.ntop.org/products/deep-packet-inspection/ndpi/
-.. _NFPlugin_: https://nfstream.readthedocs.io/en/latest/plugins.html
+.. _NFPlugin: https://nfstream.readthedocs.io/en/latest/plugins.html
+
