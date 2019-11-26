@@ -31,5 +31,5 @@ If you want to build nfstream on your local machine:
 
     apt-get install autogen
     git clone https://github.com/aouinizied/nfstream.git
-    # move to nfstream directory and run
+    cd nfstream
     python3 setup.py install

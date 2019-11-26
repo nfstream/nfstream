@@ -22,6 +22,9 @@ import sys
 
 
 path = sys.argv[1]
-flow_streamer = NFStreamer(source=path, idle_timeout=30)
-for flow in flow_streamer:
-    print(flow)
+flow_streamer = NFStreamer(source=path)
+try:
+    for flow in flow_streamer:
+        print(flow)
+except KeyboardInterrupt:
+    print("Terminated.")

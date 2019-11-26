@@ -20,7 +20,7 @@ nfstream is a flexible and lightweight network data analysis framework.
 .. code-block:: python
 
    from nfstream import NFStreamer
-   my_awesome_streamer = Streamer(source="instagram.pcap") # or capture from a network interface (source="eth0")
+   my_awesome_streamer = NFStreamer(source="instagram.pcap") # or capture from a network interface (source="eth0")
    for flow in my_awesome_streamer:
        print(flow)  # print, append to pandas Dataframe or whatever you want :)!
 
@@ -107,7 +107,7 @@ If you want to build nfstream on your local machine:
 
     apt-get install autogen
     git clone https://github.com/aouinizied/nfstream.git
-    # move to nfstream directory and run
+    cd nfstream
     python3 setup.py install
 
 

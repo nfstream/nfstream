@@ -19,7 +19,7 @@ nfstream make this path easier in few lines:
                                     max_tcp_dissections=10,
                                     max_udp_dissections=16)
 
-   my_live_streamer = Streamer(source="eth1")  # or capture from a network interface
+   my_live_streamer = NFStreamer(source="eth1")  # or capture from a network interface
    for flow in my_capture_streamer:  # or for flow in my_live_streamer
        print(flow)  # print, append to pandas Dataframe or whatever you want :)!
 

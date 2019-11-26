@@ -20,12 +20,9 @@ If not, see <http://www.gnu.org/licenses/>.
 from .plugin import valid_plugins, nfstream_core_plugins, ndpi_plugins, NFPlugin
 from collections import OrderedDict
 from .flow import NFFlow
-
 import time as tm
 import threading
 import zmq
-import sys
-
 
 
 class LRU(OrderedDict):
@@ -55,18 +52,15 @@ class LRU(OrderedDict):
 
 class NFCache(object):
     """ NFCache for flows management """
-    instances = 0
-
     def __init__(self, observer=None, idle_timeout=30, active_timeout=300, nroots=512,
                  core_plugins=nfstream_core_plugins, user_plugins=(),
                  dissect=True, max_tcp_dissections=10, max_udp_dissections=16):
-        NFCache.instances += 1  # class instances counter
-        try:  # packet generator
-            self.observer = observer
-        except OSError as e:
-            sys.exit(e)
-        self.producer = zmq.Context().socket(zmq.PUSH)
-        self.producer.bind('ipc:///tmp/nfstream.pipe')
+        self.observer = observer
+        try:
+            self.producer = zmq.Context().socket(zmq.PUSH)
+            self.producer.bind('ipc:///tmp/nfstream.pipe')
+        except zmq.error.ZMQError:
+            raise OSError("NFStreamer failed to bind socket (producer).")
         self._roots = []  # root structure for flow caching: dict of LRUs
         self.nroots = nroots
         self.idle_timeout = idle_timeout * 1000
