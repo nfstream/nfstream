@@ -124,11 +124,20 @@ Authors
 `Zied Aouini`_  (`aouinizied`_) created nfstream and `these fine people`_
 have contributed.
 
+Ethics
+=======
+
+nfstream is intended for network data research and forensics.
+Researchers and network data scientists can use these framework to build reliable datasets, train and evaluate
+network applied machine learning models.
+As with any packet monitoring tool, nfstream could potentially be misused.
+**Do not run it on any network of which you are not the owner or the administrator**.
 
 License
 =======
 
 This project is licensed under the GPLv3 License - see the License_ file for details
+
 
 .. |release| image:: https://img.shields.io/pypi/v/nfstream.svg
               :target: https://pypi.python.org/pypi/nfstream
@@ -155,6 +164,6 @@ This project is licensed under the GPLv3 License - see the License_ file for det
 .. _aouinizied: https://github.com/aouinizied
 .. _Documentation: https://nfstream.readthedocs.io/en/latest/
 .. _nDPI: https://www.ntop.org/products/deep-packet-inspection/ndpi/
-.. _NFPlugin_: https://nfstream.readthedocs.io/en/latest/plugins.html
+.. _NFPlugin: https://nfstream.readthedocs.io/en/latest/plugins.html
 
 
