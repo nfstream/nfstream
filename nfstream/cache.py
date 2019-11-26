@@ -46,6 +46,9 @@ class LRU(OrderedDict):
         super().__setitem__(key, value)
         self.move_to_end(key)  # now this item is the most recently updated
 
+    def __eq__(self, other):
+        return super().__eq__(o)
+
     def get_idle_item(self, current_tick, core, user):
         return self[next(iter(self))].idle(self._idle_timeout, current_tick, core, user)
 
