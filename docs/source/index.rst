@@ -6,8 +6,13 @@
 ######################
 nfstream Documentation
 ######################
+.. image:: asset/nfstream_logo.png
+  :scale: 100%
+  :align: left
 
-|download| |release| |python| |pypy| |platform| |license|
+**nfstream**
+
+|release| |python| |pypy| |platform| |license|
 
 nfstream is a flexible and lightweight network data analysis framework.
 
@@ -41,9 +46,6 @@ nfstream is a flexible and lightweight network data analysis framework.
                :target: LICENSE
 .. |platform| image:: https://img.shields.io/badge/platform-linux%20%7C%20macos-blue
                :target: https://travis-ci.org/aouinizied/nfstream
-.. |download| image:: https://img.shields.io/pypi/dm/nfstream.svg
-               :target: https://pypistats.org/packages/nfstream
-
 
 .. _nDPI: https://www.ntop.org/products/deep-packet-inspection/ndpi/
 .. _NFPlugin: https://nfstream.readthedocs.io/en/latest/plugins.html
