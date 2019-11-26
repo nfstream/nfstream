@@ -128,5 +128,8 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Topic :: Scientific/Engineering :: Artificial Intelligence'
-    ]
+    ],
+    project_urls={
+        'Documentation': 'https://nfstream.readthedocs.io',
+    }
 )
