@@ -4,45 +4,31 @@
 
 |release| |python| |pypy| |platform| |license|
 
-NFStream is a flexible and lightweight network data analysis framework.
-
-
-
+**NFStream** is a flexible and lightweight network data analysis framework.
 
 .. list-table::
    :widths: 25 25
    :header-rows: 0
 
-   * - Build Status
+   * - **Build Status**
      - |build|
-   * - Documentation Status
+   * - **Documentation Status**
      - |doc|
-   * - Coverage
+   * - **Coverage**
      - |coverage|
-   * - Code Quality
+   * - **Code Quality**
      - |quality|
-   * - Downloads
+   * - **Downloads**
      - |download|
 
-
-**NFStream main features**
-
-* **Performance:** NFStream was designed to be fast with a small CPU and memory footprint.
-* **Layer-7 visibility:** NFStream dissection is based on nDPI_ (~300 applications including Tor, Messenger, WhatsApp, etc.).
-* **Flexibility:** add a flow feature in 2 lines as an NFPlugin_.
-* **Machine Learning oriented:** add your trained model as an NFPlugin_.
-
-
-NFStream is a flexible and lightweight network data analysis framework.
-
-**NFStream main features**
+**Main Features**
 
 * **Performance:** NFStream was designed to be fast with a small CPU and memory footprint.
 * **Layer-7 visibility:** NFStream dissection is based on nDPI_ (~300 applications including Tor, Messenger, WhatsApp, etc.).
 * **Flexibility:** add a flow feature in 2 lines as an NFPlugin_.
 * **Machine Learning oriented:** add your trained model as an NFPlugin_.
 
-**Use**
+**When to use it?**
 
 * Dealing with a big pcap file and just want to aggregate it as network flows? NFStream make this path easier in few lines:
 
