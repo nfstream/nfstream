@@ -1,5 +1,6 @@
-Introduction
-============
+########################################
+Overview of FLow Monitoring Architecture
+########################################
 
 .. image:: asset/arch.png
   :scale: 100%
@@ -11,8 +12,10 @@ developed in this section. Our aim is to provide you with a reminder about how
 things works in theory. Consequently, an easier understanding of nfstream features
 and implementation is possible.
 
+******************
 Packet Observation
-------------------
+******************
+
 Packet observation is a key stage in a flow monitoring architecture as it is the
 starting point. Consequently, we detail in the following each step involved at this
 phase:
@@ -47,8 +50,9 @@ some specific fields are equal or in the range of given values. Another techniqu
 a hash based filtering, applying a hash function on a portion of the packet,
 the result is compared to a value or a range of values.
 
+*************
 Flow Metering
--------------
+*************
 It includes packets aggregation into flows and flow entry expiration management.
 Second, the metering process associates a packet to a flow entry using a defined key.
 Third, it performs the aggregation of packets into flow entry based on a set of metrics.
@@ -85,8 +89,9 @@ reduce the amount of records exported.
 process explained above. The major differences are the processed unit; while packet sampling and filtering process
 packets, flow sampling and filtering process flow records coming from the metering process.
 
+******
 Export
-------
+******
 Export involves two steps which are mainly **formatting** and **export protocol**. While the first decide how an export is
 formatted (number of flow per export, json or other, etc.), the latter determine the used
 export protocol (file, mqtt, zmq, etc.).

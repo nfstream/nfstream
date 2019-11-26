@@ -62,9 +62,10 @@ class BuildNdpiCommand(build_ext):
         subprocess.check_call(['./autogen.sh'])
         subprocess.check_call(['./configure'])
         subprocess.check_call(['make'])
-        os.chdir('python/')
-        subprocess.check_call(['make'])
-        shutil.copy2('ndpi_wrap.so', '../../nfstream/')
+        os.chdir('src/')
+        os.chdir('lib/')
+        shutil.copy2('libndpi.so', '../../../nfstream/libs/')
+        os.chdir('..')
         os.chdir('..')
         os.chdir('..')
         shutil.rmtree('nDPI/', ignore_errors=True)
@@ -74,11 +75,9 @@ class BuildNdpiCommand(build_ext):
 needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
 pytest_runner = ['pytest-runner'] if needs_pytest else []
 
-python_requires = '>=3.5'
-install_requires = ['lru-dict>=1.1.6',
-                    'cffi>=1.13.1',
-                    'wheel>=0.33.6',
-                    'twine>=2.0.0']
+python_requires = '>=3.6'
+install_requires = ['cffi>=1.13.1',
+                    'pyzmq>=18.1.1']
 
 if os.getenv('READTHEDOCS'):
     install_requires.append('numpydoc>=0.8')
@@ -99,6 +98,7 @@ try:
         def finalize_options(self):
             _bdist_wheel.finalize_options(self)
             self.root_is_pure = False
+
 
 except ImportError:
     bdist_wheel = None

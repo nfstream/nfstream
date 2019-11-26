@@ -18,7 +18,8 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-from nfstream import streamer
+from nfstream.streamer import NFStreamer
+from nfstream.plugin import NFPlugin
 
 """
     streamer module is the core module of nfstream package.

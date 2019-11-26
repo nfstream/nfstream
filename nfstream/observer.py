@@ -16,38 +16,254 @@ of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Pub
 You should have received a copy of the GNU General Public License along with nfstream.
 If not, see <http://www.gnu.org/licenses/>.
 """
-
-import sys
-from cffi import FFI
 from collections import namedtuple
-from enum import Enum, IntEnum
-from select import select
-from threading import Lock
 from socket import ntohs, ntohl
-from .observer_cc import cc, cc_packed
+from enum import Enum, IntEnum
+from threading import Lock
+from select import select
+from cffi import FFI
 import os.path
+import sys
+
+
 TICK_RESOLUTION = 1000
+
+cc = """
+typedef uint8_t u_char;
+struct pcap;
+typedef struct pcap pcap_t;
+struct pcap_dumper;
+typedef struct pcap_dumper pcap_dumper_t;
+struct pcap_addr {
+    struct pcap_addr *next;
+    struct sockaddr *addr;
+    struct sockaddr *netmask;
+    struct sockaddr *broadaddr;
+    struct sockaddr *dstaddr;
+};
+typedef struct pcap_addr pcap_addr_t;
+struct pcap_if {
+    struct pcap_if *next;
+    char *name;
+    char *description;
+    pcap_addr_t *addresses;
+    int flags;
+};
+typedef struct pcap_if pcap_if_t;
+int pcap_findalldevs(pcap_if_t **, char *);
+void pcap_freealldevs(pcap_if_t *);
+struct pcap_pkthdr {
+    long tv_sec;
+    long tv_usec;
+    unsigned int caplen;
+    unsigned int len;
+};
+
+struct pcap_stat {
+    unsigned int recv;
+    unsigned int drop;
+    unsigned int ifdrop;
+};
+
+typedef void (*pcap_handler)(unsigned char *, const struct pcap_pkthdr *, const unsigned char *);
+
+pcap_t *pcap_open_dead(int, int);
+pcap_dumper_t *pcap_dump_open(pcap_t *, const char *);
+void pcap_dump_close(pcap_dumper_t *);
+void pcap_dump(pcap_dumper_t *, struct pcap_pkthdr *, unsigned char *);
+
+// live capture
+pcap_t *pcap_create(const char *, char *); 
+pcap_t *pcap_open_live(const char *, int, int, int, char *);
+pcap_t *pcap_open_offline(const char *fname, char *errbuf);
+int pcap_set_snaplen(pcap_t *, int);
+int pcap_snapshot(pcap_t *);
+int pcap_set_promisc(pcap_t *, int);
+
+int pcap_set_timeout(pcap_t *, int);
+int pcap_set_buffer_size(pcap_t *, int);
+
+int pcap_set_tstamp_precision(pcap_t *, int);
+int pcap_get_tstamp_precision(pcap_t *);
+int pcap_set_tstamp_type(pcap_t *, int);
+int pcap_list_tstamp_types(pcap_t *, int **);
+void pcap_free_tstamp_types(int *);
+
+int pcap_setdirection(pcap_t *, int); 
+int pcap_datalink(pcap_t *);
+int pcap_setnonblock(pcap_t *, int, char *); 
+int pcap_getnonblock(pcap_t *, char *); 
+int pcap_set_immediate_mode(pcap_t *, int);
+int pcap_next_ex(pcap_t *, struct pcap_pkthdr **, const unsigned char **);
+int pcap_dispatch(pcap_t *, int, pcap_handler, unsigned char *);
+int pcap_loop(pcap_t *, int, pcap_handler, unsigned char *);
+void pcap_breakloop(pcap_t *);
+int pcap_activate(pcap_t *);
+void pcap_close(pcap_t *);
+int pcap_get_selectable_fd(pcap_t *);
+int pcap_sendpacket(pcap_t *, const unsigned char *, int);
+char *pcap_geterr(pcap_t *);
+char *pcap_lib_version();
+int pcap_stats(pcap_t *, struct pcap_stat *);
+
+struct bpf_insn;
+struct bpf_program {
+    unsigned int bf_len;
+    struct bpf_insn *bf_insns;
+};
+int pcap_setfilter(pcap_t *, struct bpf_program *);
+int pcap_compile(pcap_t *, struct bpf_program *, const char *, int, unsigned int);
+void pcap_freecode(struct bpf_program *);
+"""
+
+cc_packed = """
+struct nfstream_ethhdr
+{
+  u_char h_dest[6];
+  u_char h_source[6];
+  uint16_t h_proto;
+};
+
+struct nfstream_snap_extension
+{
+  uint16_t oui;
+  uint8_t oui2;
+  uint16_t proto_ID;
+};
+struct nfstream_llc_header_snap
+{
+  uint8_t dsap;
+  uint8_t ssap;
+  uint8_t ctrl;
+  struct nfstream_snap_extension snap;
+};
+struct nfstream_chdlc
+{
+  uint8_t addr;
+  uint8_t ctrl;
+  uint16_t proto_code;
+};
+struct nfstream_radiotap_header
+{
+  uint8_t version;
+  uint8_t pad;
+  uint16_t len;
+  uint32_t present;
+  uint64_t MAC_timestamp;
+  uint8_t flags;
+};
+struct nfstream_wifi_header
+{
+  uint16_t fc;
+  uint16_t duration;
+  u_char rcvr[6];
+  u_char trsm[6];
+  u_char dest[6];
+  uint16_t seq_ctrl;
+};
+struct nfstream_mpls_header
+{
+  uint32_t ttl:8, s:1, exp:3, label:20;
+};
+extern union mpls {
+  uint32_t u32;
+  struct nfstream_mpls_header mpls;
+} mpls;
+struct nfstream_iphdr {
+  uint8_t ihl:4, version:4;
+  uint8_t tos;
+  uint16_t tot_len;
+  uint16_t id;
+  uint16_t frag_off;
+  uint8_t ttl;
+  uint8_t protocol;
+  uint16_t check;
+  uint32_t saddr;
+  uint32_t daddr;
+};
+struct nfstream_in6_addr {
+  union {
+    uint8_t u6_addr8[16];
+    uint16_t u6_addr16[8];
+    uint32_t u6_addr32[4];
+  } u6_addr;
+};
+struct nfstream_ip6_hdrctl {
+  uint32_t ip6_un1_flow;
+  uint16_t ip6_un1_plen;
+  uint8_t ip6_un1_nxt;
+  uint8_t ip6_un1_hlim;
+};
+struct nfstream_ipv6hdr {
+  struct nfstream_ip6_hdrctl ip6_hdr;
+  struct nfstream_in6_addr ip6_src;
+  struct nfstream_in6_addr ip6_dst;
+};
+struct nfstream_udphdr
+{
+  uint16_t source;
+  uint16_t dest;
+  uint16_t len;
+  uint16_t check;
+};
+struct pp_32 {
+    uint32_t value;
+};
+struct nfstream_tcphdr
+{
+  uint16_t source;
+  uint16_t dest;
+  uint32_t seq;
+  uint32_t ack_seq;
+  uint16_t res1:4, doff:4, fin:1, syn:1, rst:1, psh:1, ack:1, urg:1, ece:1, cwr:1;
+  uint16_t window;
+  uint16_t check;
+  uint16_t urg_ptr;
+};
+"""
+
 
 PcapInterface = namedtuple('PcapInterface', ['name', 'internal_name', 'description', 'isloop', 'isup', 'isrunning'])
 PcapPacket = namedtuple('PcapPacket', ['timestamp', 'capture_length', 'length', 'raw'])
 PcapDev = namedtuple('PcapDev', ['dlt', 'nonblock', 'snaplen', 'version', 'pcap'])
+tcpflags = namedtuple('tcpflags', ['syn', 'cwr', 'ece', 'urg', 'ack', 'psh', 'rst', 'fin'])
 
 
-PacketInformation = namedtuple('PacketInformation', ['timestamp', 'capture_length', 'length', 'hash', 'ip_src_int',
-                                                     'ip_dst_int', 'src_port', 'dst_port', 'ip_protocol', 'vlan_id',
-                                                     'version', 'syn', 'cwr', 'ece', 'urg', 'ack', 'psh',
-                                                     'rst', 'fin', 'raw'])
+class NFPacket(object):
+    def __init__(self, time, capture_length, length,
+                 nfhash, ip_src, ip_dst, src_port, dst_port, protocol, vlan_id,
+                 version, tcpflags, raw, root_idx):
+        object.__setattr__(self, "time", time)
+        object.__setattr__(self, "capture_length", capture_length)
+        object.__setattr__(self, "length", length)
+        object.__setattr__(self, "nfhash", nfhash)
+        object.__setattr__(self, "ip_src", ip_src)
+        object.__setattr__(self, "ip_dst", ip_dst)
+        object.__setattr__(self, "src_port", src_port)
+        object.__setattr__(self, "dst_port", dst_port)
+        object.__setattr__(self, "protocol", protocol)
+        object.__setattr__(self, "vlan_id", vlan_id)
+        object.__setattr__(self, "version", version)
+        object.__setattr__(self, "tcpflags", tcpflags)
+        object.__setattr__(self, "raw", raw)
+        object.__setattr__(self, "root_idx", root_idx)
+        object.__setattr__(self, "direction", 0)
+        object.__setattr__(self, "closed", False)
+
+    def __setattr__(self, *args):
+        if self.closed:
+            raise TypeError
+
+    def __delattr__(self, *args):
+        raise TypeError
+
+    def close(self, direction):
+        object.__setattr__(self, "direction", direction)
+        object.__setattr__(self, "closed", True)
 
 
 class PcapException(Exception):
     pass
-
-
-def nfstream_hash(ip_src, ip_dst, sport, dport, vlan_id, proto):
-    if ip_src < ip_dst:
-        return ip_src, ip_dst, sport, dport, vlan_id, proto
-    else:
-        return ip_dst, ip_src, dport, sport, vlan_id, proto
 
 
 class Dlt(Enum):
@@ -210,7 +426,7 @@ class _PcapFfi(object):
     def ffi(self):
         return self._ffi
 
-    def _process_packet(self, xdev, header, packet):
+    def _process_packet(self, xdev, header, packet, nroots):
         # MPLS header
         mpls = self._ffi.new("union mpls *")
         # IP header
@@ -354,6 +570,8 @@ class _PcapFfi(object):
         dst_addr = 0
         l4_packet_len = 0
         version = 0
+
+        nfstream_hash = 0
         if iph6 == self._ffi.NULL:
             version = 4
             l4_packet_len = ntohs(iph.tot_len) - (iph.ihl * 4)
@@ -361,6 +579,7 @@ class _PcapFfi(object):
             proto = iph.protocol
             src_addr = ntohl(iph.saddr)
             dst_addr = ntohl(iph.daddr)
+            nfstream_hash += iph.saddr + iph.daddr + proto + vlan_id
         else:
             version = 6
             src_addr = ntohl(
@@ -386,6 +605,11 @@ class _PcapFfi(object):
                 options = self._ffi.cast('uint8_t *', iph6) + self._ffi.sizeof('struct nfstream_ipv6hdr')
                 proto = options[0]
             l4_packet_len = ntohs(iph6.ip6_hdr.ip6_un1_plen)
+            nfstream_hash += (
+                                     iph6.ip6_src.u6_addr.u6_addr32[2] + iph6.ip6_src.u6_addr.u6_addr32[3]
+                             ) + (
+                    iph6.ip6_dst.u6_addr.u6_addr32[2] + iph6.ip6_dst.u6_addr.u6_addr32[3]
+            ) + proto + vlan_id
 
         if version == 4:
             if ipsize < 20:
@@ -419,55 +643,44 @@ class _PcapFfi(object):
         else:
             sport = 0
             dport = 0
+        nfstream_hash += sport + dport
         if version == 4:
-            return PacketInformation(timestamp=time,
-                                     capture_length=header.caplen,
-                                     length=header.len,
-                                     hash = nfstream_hash(src_addr, dst_addr, sport, dport, vlan_id, proto),
-                                     ip_src_int=src_addr,
-                                     ip_dst_int=dst_addr,
-                                     src_port=sport,
-                                     dst_port=dport,
-                                     ip_protocol=proto,
-                                     vlan_id=vlan_id,
-                                     version=version,
-                                     syn=syn,
-                                     cwr=cwr,
-                                     ece=ece,
-                                     urg=urg,
-                                     ack=ack,
-                                     psh=psh,
-                                     rst=rst,
-                                     fin=fin,
-                                     raw=bytes(xffi.buffer(iph, ipsize)))
+            return NFPacket(time=int(time),
+                            capture_length=header.caplen,
+                            length=header.len,
+                            nfhash=nfstream_hash,
+                            ip_src=src_addr,
+                            ip_dst=dst_addr,
+                            src_port=sport,
+                            dst_port=dport,
+                            protocol=proto,
+                            vlan_id=vlan_id,
+                            version=version,
+                            tcpflags=tcpflags(syn=syn, cwr=cwr, ece=ece, urg=urg, ack=ack, psh=psh, rst=rst, fin=fin),
+                            raw=bytes(xffi.buffer(iph, ipsize)),
+                            root_idx=nfstream_hash % nroots)
         else:
-            return PacketInformation(timestamp=time,
-                                     capture_length=header.caplen,
-                                     length=header.len,
-                                     hash = nfstream_hash(src_addr, dst_addr, sport, dport, vlan_id, proto),
-                                     ip_src_int=src_addr,
-                                     ip_dst_int=dst_addr,
-                                     src_port=sport,
-                                     dst_port=dport,
-                                     ip_protocol=proto,
-                                     vlan_id=vlan_id,
-                                     version=version,
-                                     syn=syn,
-                                     cwr=cwr,
-                                     ece=ece,
-                                     urg=urg,
-                                     ack=ack,
-                                     psh=psh,
-                                     rst=rst,
-                                     fin=fin,
-                                     raw=bytes(xffi.buffer(iph6, header.len - ip_offset)))
+            return NFPacket(time=int(time),
+                            capture_length=header.caplen,
+                            length=header.len,
+                            nfhash=nfstream_hash,
+                            ip_src=src_addr,
+                            ip_dst=dst_addr,
+                            src_port=sport,
+                            dst_port=dport,
+                            protocol=proto,
+                            vlan_id=vlan_id,
+                            version=version,
+                            tcpflags=tcpflags(syn=syn, cwr=cwr, ece=ece, urg=urg, ack=ack, psh=psh, rst=rst, fin=fin),
+                            raw=bytes(xffi.buffer(iph6, header.len - ip_offset)),
+                            root_idx=nfstream_hash % nroots)
 
-    def _recv_packet(self, xdev):
+    def _recv_packet(self, xdev, nroots=1):
         phdr = self._ffi.new("struct pcap_pkthdr **")
         pdata = self._ffi.new("unsigned char **")
         rv = self._libpcap.pcap_next_ex(xdev, phdr, pdata)
         if rv == 1:
-            return self._process_packet(xdev, phdr[0], pdata[0])
+            return self._process_packet(xdev, phdr[0], pdata[0], nroots)
         elif rv == 0:
             # timeout; nothing to return
             return 0
@@ -531,8 +744,8 @@ class PcapReader(object):
     def close(self):
         self._libpcap.pcap_close(self._pcapdev.pcap)
 
-    def recv_packet(self):
-        return self._base._recv_packet(self._pcapdev.pcap)
+    def recv_packet(self, nroots=1):
+        return self._base._recv_packet(self._pcapdev.pcap, nroots)
 
     def set_filter(self, filterstr):
         self._base._set_filter(self._pcapdev.pcap, filterstr)
@@ -544,7 +757,7 @@ class PcapLiveDevice(object):
     """
     _OpenDevices = {}  # objectid -> low-level pcap dev
     _lock = Lock()
-    __slots__ = ['_ffi', '_libpcap', '_base', '_pcapdev', '_devname', '_fd', '_user_callback']
+    __slots__ = ['_ffi', '_libpcap', '_base', '_pcapdev', '_devname', '_fd', '_user_callback', '_nroots']
 
     def __init__(self, device, snaplen, filterstr, promisc, to_ms, nonblock):
         self._base = _PcapFfi.instance()
@@ -592,7 +805,7 @@ class PcapLiveDevice(object):
         if filterstr is not None:
             self.set_filter(filterstr)
 
-    def recv_packet(self,  timeout=None):
+    def recv_packet(self,  timeout=None, nroots=1):
         if timeout is None or timeout < 0:
             timeout = None
         if self._fd >= 0:
@@ -601,12 +814,12 @@ class PcapLiveDevice(object):
             except PcapException:
                 return None
             if xread:
-                return self._base._recv_packet(self._pcapdev.pcap)
+                return self._base._recv_packet(self._pcapdev.pcap, nroots)
             # timeout; return nothing
             return None
         else:
             # no select, no non-blocking mode.  block away, my friend.
-            return self._base._recv_packet(self._pcapdev.pcap)
+            return self._base._recv_packet(self._pcapdev.pcap, nroots)
 
     def close(self):
         with PcapLiveDevice._lock:
@@ -638,8 +851,8 @@ def check_source_type(source):
     raise OSError("Streamer initialized on unfound source: {}".format(str(source)))
 
 
-class Observer:
-    def __init__(self, source=None, snaplen=65535, promisc=1, to_ms=0, filter_str=None, non_block=True):
+class NFObserver:
+    def __init__(self, source=None, snaplen=65535, promisc=1, to_ms=0, filter_str=None, non_block=True, nroots=1):
         source_type = check_source_type(source)
         source = source_type[0]
         if source_type[1] == 1:  # Live interface
@@ -655,13 +868,16 @@ class Observer:
                 raise OSError('Unable to read pcap format of: {}'.format(source))
         else:
             self.packet_generator = None
+        self.nroots = nroots
+        self.processed_pkts = 0
 
     def __iter__(self):
         if self.packet_generator is not None:
             try:
                 while True:
                     try:
-                        r = self.packet_generator.recv_packet()
+                        r = self.packet_generator.recv_packet(nroots=self.nroots)
+                        self.processed_pkts += 1  # increment total processed packet counter
                         if r is None:
                             pass
                         elif r == -2:

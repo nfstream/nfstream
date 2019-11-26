@@ -1,15 +1,18 @@
+###################
 Installing nfstream
-===================
+###################
 
+*************
 Prerequisites
--------------
+*************
 
 .. code-block:: bash
 
     apt-get install libpcap-dev
 
+************
 Installation
-------------
+************
 
 **using pip**
 

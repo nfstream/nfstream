@@ -3,11 +3,11 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-======================
-nfstream documentation
-======================
+######################
+NFStream Documentation
+######################
 
-|build| |coverage| |quality| |download| |release| |python| |platform| |license|
+|download| |release| |python| |pypy| |platform| |license|
 
 nfstream is a flexible and lightweight network data analysis library.
 
@@ -15,8 +15,8 @@ nfstream is a flexible and lightweight network data analysis library.
 
 * **Performance:** nfstream was designed to be fast with a small CPU and memory footprint.
 * **Layer-7 visibility:** nfstream dissection is based on nDPI_ (~300 applications including Tor, Messenger, WhatsApp, etc.).
-* **Flexibility:** add a flow metric in 2 lines of code using nfstream plugins method.
-* **Machine Learning oriented:** add your trained model as an NFStreamClassifier_.
+* **Flexibility:** add a flow feature in 2 lines as an NFPlugin_.
+* **Machine Learning oriented:** add your trained model as an NFPlugin_.
 
 
 .. toctree::
@@ -24,21 +24,19 @@ nfstream is a flexible and lightweight network data analysis library.
    :caption: Contents:
 
    installation
-   introduction
-   tutorials
+   architecture
+   nfstream
+   plugins
    contributing
    changelog
 
-.. |coverage| image:: https://codecov.io/gh/aouinizied/nfstream/branch/master/graph/badge.svg
-               :target: https://codecov.io/gh/aouinizied/nfstream/
+
 .. |release| image:: https://img.shields.io/pypi/v/nfstream.svg
               :target: https://pypi.python.org/pypi/nfstream
-.. |build| image:: https://travis-ci.org/aouinizied/nfstream.svg?branch=master
-               :target: https://travis-ci.org/aouinizied/nfstream
-.. |quality| image:: https://img.shields.io/lgtm/grade/python/github/aouinizied/nfstream.svg?logo=lgtm&logoWidth=18)
-               :target: https://lgtm.com/projects/g/aouinizied/nfstream/context:python
 .. |python| image:: https://img.shields.io/badge/python-3.6+-blue.svg
                :target: https://travis-ci.org/aouinizied/nfstream
+.. |pypy| image:: https://img.shields.io/badge/pypy-7.1+-blue.svg
+            :target: https://travis-ci.org/aouinizied/nfstream
 .. |license| image:: https://img.shields.io/badge/license-LGPLv3-blue.svg
                :target: LICENSE
 .. |platform| image:: https://img.shields.io/badge/platform-linux%20%7C%20macos-blue
@@ -46,5 +44,6 @@ nfstream is a flexible and lightweight network data analysis library.
 .. |download| image:: https://img.shields.io/pypi/dm/nfstream.svg
                :target: https://pypistats.org/packages/nfstream
 
+
 .. _nDPI: https://www.ntop.org/products/deep-packet-inspection/ndpi/
-.. _NFStreamClassifier: https://nfstream.readthedocs.io/en/latest/tutorials.html#create-your-own-classifier
+.. _NFPlugin_: https://nfstream.readthedocs.io/en/latest/plugins.html

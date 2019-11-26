@@ -2,7 +2,7 @@
 |nfstream_logo| nfstream
 ========================
 
-|build| |coverage| |quality| |doc| |download| |release| |python| |platform| |license|
+|build| |doc| |download| |release| |python| |pypy| |platform| |license|
 
 nfstream is a flexible and lightweight network data analysis library.
 
@@ -10,8 +10,8 @@ nfstream is a flexible and lightweight network data analysis library.
 
 * **Performance:** nfstream was designed to be fast with a small CPU and memory footprint.
 * **Layer-7 visibility:** nfstream dissection is based on nDPI_ (~300 applications including Tor, Messenger, WhatsApp, etc.).
-* **Flexibility:** add a flow metric in 2 lines of code using nfstream plugins method.
-* **Machine Learning oriented:** add your trained model as an NFStreamClassifier_.
+* **Flexibility:** add a flow feature in 2 lines as an NFPlugin_.
+* **Machine Learning oriented:** add your trained model as an NFPlugin_.
 
 **Use**
 
@@ -19,58 +19,58 @@ nfstream is a flexible and lightweight network data analysis library.
 
 .. code-block:: python
 
-   from nfstream.streamer import Streamer
-   my_capture_streamer = Streamer(source="instagram.pcap") # or capture from a network interface
-   for flow in my_capture_streamer:  # or for flow in my_live_streamer
+   from nfstream.streamer import NFStreamer
+   my_awesome_streamer = Streamer(source="instagram.pcap") # or capture from a network interface (source="eth0")
+   for flow in my_awesome_streamer:
        print(flow)  # print, append to pandas Dataframe or whatever you want :)!
 
 
-.. code-block:: json
+.. code-block:: python
 
-    {"ip_src": "192.168.43.18",
-     "src_port": 52066,
-     "ip_dst": "66.220.156.68",
-     "dst_port": 443,
-     "ip_protocol": 6,
-     "vlan_id": 0,
-     "src_to_dst_pkts": 9,
-     "dst_to_src_pkts": 10,
-     "src_to_dst_bytes": 1345,
-     "dst_to_src_bytes": 4400,
-     "syn_count": [1, 1],
-     "cwr_count": [0, 0],
-     "ece_count": [0, 0],
-     "urg_count": [0, 0],
-     "ack_count": [8, 10],
-     "psh_count": [4, 5],
-     "rst_count": [0, 0],
-     "fin_count": [0, 0],
-     "start_time": 1472393122365.661,
-     "end_time": 1472393123665.163,
-     "export_reason": 2,
-     "metrics": {"application_name": "TLS.Facebook",
-                 "category_name": "SocialNetwork",
-                 "http_dns_server_name": "",
-                 "tls_client_server_name": "facebook.com",
-                 "tls_server_server_name": "*.facebook.com",
-                 "tls_server_organization": "Facebook, Inc.",
-                 "tls_version": "TLSv1.2",
-                 "tls_not_before": "2014-08-28 00:00:00+00:00",
-                 "tls_not_after": "2016-12-30 12:00:00+00:00"
-                 }
-     }
+    NFFlow(
+        flow_id=0,
+        first_seen=1472393122365,
+        last_seen=1472393123665,
+        nfhash=1456034341,
+        version=4,
+        src_port=52066,
+        dst_port=443,
+        protocol=6,
+        vlan_id=0,
+        src_ip='192.168.43.18',
+        dst_ip='66.220.156.68',
+        total_packets=19,
+        total_bytes=5745,
+        duration=1300,
+        src2dst_packets=9,
+        src2dst_bytes=1345,
+        dst2src_packets=10,
+        dst2src_bytes=4400,
+        expiration_id=0,
+        master_protocol=91,
+        app_protocol=119,
+        application_name='TLS.Facebook',
+        category_name='SocialNetwork',
+        client_info='facebook.com',
+        server_info='*.facebook.com',
+        j3a_client='bfcc1a3891601edb4f137ab7ab25b840',
+        j3a_server='2d1eb5817ece335c24904f516ad5da12'
+    )
 
-* Didn't find a specific flow feature? add a plugin to the Streamer in few lines:
+* Didn't find a specific flow feature? add a plugin to NFStreamer in few lines:
 
 .. code-block:: python
 
-   def my_awesome_plugin(packet_information, flow, direction):
-    if packet_information.length > 666:
-        return flow.metrics['count_pkts_gt_666'] + 1
+    from nfstream import NFPlugin
 
-   streamer_awesome = Streamer(source='devil.pcap', user_metrics={'count_pkts_gt_666': my_awesome_plugin})
-   for export in streamer_awesome:
-      print(export.metrics['count_pkts_gt_666']) # now you will see your created metric in generated flows
+    class my_awesome_plugin(NFPlugin):
+        def process(self, pkt, flow):
+            if pkt.length >= 666:
+                flow.my_awesome_plugin += 1
+
+   streamer_awesome = NFStreamer(source='devil.pcap', plugins=[my_awesome_plugin()])
+   for flow in streamer_awesome:
+      print(flow.my_awesome_plugin) # now you will see your dynamically created metric in generated flows
 
 
 * More example and details are provided on the official Documentation_.
@@ -130,17 +130,15 @@ License
 
 This project is licensed under the GPLv3 License - see the License_ file for details
 
-.. |coverage| image:: https://codecov.io/gh/aouinizied/nfstream/branch/master/graph/badge.svg
-               :target: https://codecov.io/gh/aouinizied/nfstream/
 .. |release| image:: https://img.shields.io/pypi/v/nfstream.svg
               :target: https://pypi.python.org/pypi/nfstream
 .. |nfstream_logo| image:: https://github.com/aouinizied/nfstream/blob/master/docs/nfstream_logo.png
 .. |build| image:: https://travis-ci.org/aouinizied/nfstream.svg?branch=master
                :target: https://travis-ci.org/aouinizied/nfstream
-.. |quality| image:: https://img.shields.io/lgtm/grade/python/github/aouinizied/nfstream.svg?logo=lgtm&logoWidth=18)
-               :target: https://lgtm.com/projects/g/aouinizied/nfstream/context:python
 .. |python| image:: https://img.shields.io/badge/python-3.6+-blue.svg
                :target: https://travis-ci.org/aouinizied/nfstream
+.. |pypy| image:: https://img.shields.io/badge/pypy-7.1+-blue.svg
+            :target: https://travis-ci.org/aouinizied/nfstream
 .. |doc| image:: https://readthedocs.org/projects/nfstream/badge/?version=latest
                :target: https://nfstream.readthedocs.io/en/latest/?badge=latest
 .. |license| image:: https://img.shields.io/badge/license-LGPLv3-blue.svg
@@ -157,6 +155,6 @@ This project is licensed under the GPLv3 License - see the License_ file for det
 .. _aouinizied: https://github.com/aouinizied
 .. _Documentation: https://nfstream.readthedocs.io/en/latest/
 .. _nDPI: https://www.ntop.org/products/deep-packet-inspection/ndpi/
-.. _NFStreamClassifier: https://nfstream.readthedocs.io/en/latest/tutorials.html#create-your-own-classifier
+.. _NFPlugin_: https://nfstream.readthedocs.io/en/latest/plugins.html
 
 

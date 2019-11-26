@@ -69,6 +69,12 @@ script:
 after_success:
   - codecov
 
+before_deploy:
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo pip3 install wheel ; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo pip3 install twine ; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo $PYTHON/pip3 install twine ; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo $PYTHON/pip3 install wheel ; fi
+
 deploy:
     provider: pypi
     distributions: bdist_wheel

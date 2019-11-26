@@ -17,11 +17,11 @@ You should have received a copy of the GNU General Public License along with nfs
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from nfstream.streamer import Streamer
+from nfstream import NFStreamer
 import sys
 
-flow_streamer = Streamer(source=sys.argv[1], capacity=524288)
-flows_count = 0
+
+path = sys.argv[1]
+flow_streamer = NFStreamer(source=path, idle_timeout=30)
 for flow in flow_streamer:
-    print("flow[{}]: \n{}\n".format(flows_count, flow))
-    flows_count += 1
+    print(flow)
