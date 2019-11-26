@@ -19,7 +19,7 @@ nfstream is a flexible and lightweight network data analysis framework.
 
 .. code-block:: python
 
-   from nfstream.streamer import NFStreamer
+   from nfstream import NFStreamer
    my_awesome_streamer = Streamer(source="instagram.pcap") # or capture from a network interface (source="eth0")
    for flow in my_awesome_streamer:
        print(flow)  # print, append to pandas Dataframe or whatever you want :)!

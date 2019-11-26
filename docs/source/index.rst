@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 ######################
-NFStream Documentation
+nfstream Documentation
 ######################
 
 |download| |release| |python| |pypy| |platform| |license|

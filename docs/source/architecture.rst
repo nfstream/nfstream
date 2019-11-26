@@ -1,6 +1,6 @@
-########################################
-Overview of FLow Monitoring Architecture
-########################################
+############################
+FLow monitoring architecture
+############################
 
 .. image:: asset/arch.png
   :scale: 100%
