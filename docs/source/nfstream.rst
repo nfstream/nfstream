@@ -31,35 +31,35 @@ NFStreamer
 
   - Source of packets. Can be ``live_interface_name`` or  ``pcap_file_path``.
 
-* ``bpf_filter`` [default=None]
+* ``bpf_filter`` [default=``None``]
 
   - BPF filter string. Example: ``tcp src port 44614``.
 
-* ``snaplen`` [default=65535]
+* ``snaplen`` [default=``65535``]
 
   - Packet capture length.
 
-* ``idle_timeout`` [default=30]
+* ``idle_timeout`` [default=``30``]
 
   - Flows that are inactive for more than this value in seconds will be exported.
 
-* ``active_timeout`` [default=300]
+* ``active_timeout`` [default=``300``]
 
   - Flows that are active for more than this value in seconds will be exported.
 
-* ``plugins`` [default=()]
+* ``plugins`` [default=``()``]
 
   - Set of user defined NFPlugins.
 
-* ``dissect`` [default=True]
+* ``dissect`` [default=``True``]
 
   - Enable nDPI deep packet inspection library for Layer 7 visibility.
 
-* ``max_tcp_dissections`` [default=10]
+* ``max_tcp_dissections`` [default=``10``]
 
   - Maximum per flow TCP packets to dissect (ignored when dissect=False).
 
-* ``max_udp_dissections`` [default=16]
+* ``max_udp_dissections`` [default=``16``]
 
   - Maximum per flow UDP packets to dissect (ignored when dissect=False).
 
@@ -140,9 +140,6 @@ NFFlow
    * - expiration_id
      - int
      - Identifier of flow expiration trigger. Can be ``0`` for idle_timeout, ``1`` for active_timeout or 'negative' for custom expiration.
-   * - total_bytes
-     - int
-     - Flow bytes accumulator.
    * - master_protocol
      - int
      - nDPI master protocol identifier.
