@@ -1,21 +1,56 @@
-========================
-|nfstream_logo| nfstream
-========================
+.. image:: https://github.com/aouinizied/nfstream/blob/master/docs/nfstream_logo.png
+  :scale: 100%
+  :align: left
 
-|build| |doc| |download| |release| |python| |pypy| |platform| |license|
+########
 
-nfstream is a flexible and lightweight network data analysis framework.
+NFStream
+########
 
-**nfstream main features**
 
-* **Performance:** nfstream was designed to be fast with a small CPU and memory footprint.
-* **Layer-7 visibility:** nfstream dissection is based on nDPI_ (~300 applications including Tor, Messenger, WhatsApp, etc.).
+|release| |python| |pypy| |platform| |license|
+
+NFStream is a flexible and lightweight network data analysis framework.
+
+
+
+
+.. list-table::
+   :widths: 25 25
+   :header-rows: 0
+
+   * - Build Status
+     - |build|
+   * - Documentation Status
+     - |doc|
+   * - Coverage
+     - |coverage|
+   * - Code Quality
+     - |quality|
+   * - Downloads
+     - |download|
+
+
+**NFStream main features**
+
+* **Performance:** NFStream was designed to be fast with a small CPU and memory footprint.
+* **Layer-7 visibility:** NFStream dissection is based on nDPI_ (~300 applications including Tor, Messenger, WhatsApp, etc.).
+* **Flexibility:** add a flow feature in 2 lines as an NFPlugin_.
+* **Machine Learning oriented:** add your trained model as an NFPlugin_.
+
+
+NFStream is a flexible and lightweight network data analysis framework.
+
+**NFStream main features**
+
+* **Performance:** NFStream was designed to be fast with a small CPU and memory footprint.
+* **Layer-7 visibility:** NFStream dissection is based on nDPI_ (~300 applications including Tor, Messenger, WhatsApp, etc.).
 * **Flexibility:** add a flow feature in 2 lines as an NFPlugin_.
 * **Machine Learning oriented:** add your trained model as an NFPlugin_.
 
 **Use**
 
-* Dealing with a big pcap file and just want to aggregate it as network flows? nfstream make this path easier in few lines:
+* Dealing with a big pcap file and just want to aggregate it as network flows? NFStream make this path easier in few lines:
 
 .. code-block:: python
 
@@ -101,7 +136,7 @@ Binary installers for the latest released version are available:
 from source
 ^^^^^^^^^^^
 
-If you want to build nfstream on your local machine:
+If you want to build NFStream on your local machine:
 
 .. code-block:: bash
 
@@ -121,16 +156,16 @@ requests to us.
 Authors
 =======
 
-`Zied Aouini`_  (`aouinizied`_) created nfstream and `these fine people`_
+`Zied Aouini`_  (`aouinizied`_) created NFStream and `these fine people`_
 have contributed.
 
 Ethics
 =======
 
-nfstream is intended for network data research and forensics.
+NFStream is intended for network data research and forensics.
 Researchers and network data scientists can use these framework to build reliable datasets, train and evaluate
 network applied machine learning models.
-As with any packet monitoring tool, nfstream could potentially be misused.
+As with any packet monitoring tool, NFStream could potentially be misused.
 **Do not run it on any network of which you are not the owner or the administrator**.
 
 License
@@ -141,7 +176,6 @@ This project is licensed under the GPLv3 License - see the License_ file for det
 
 .. |release| image:: https://img.shields.io/pypi/v/nfstream.svg
               :target: https://pypi.python.org/pypi/nfstream
-.. |nfstream_logo| image:: https://github.com/aouinizied/nfstream/blob/master/docs/nfstream_logo.png
 .. |build| image:: https://travis-ci.org/aouinizied/nfstream.svg?branch=master
                :target: https://travis-ci.org/aouinizied/nfstream
 .. |python| image:: https://img.shields.io/badge/python-3.6+-blue.svg
@@ -156,6 +190,10 @@ This project is licensed under the GPLv3 License - see the License_ file for det
                :target: https://travis-ci.org/aouinizied/nfstream
 .. |download| image:: https://img.shields.io/pypi/dm/nfstream.svg
                :target: https://pypistats.org/packages/nfstream
+.. |coverage| image:: https://codecov.io/gh/aouinizied/nfstream/branch/master/graph/badge.svg
+               :target: https://codecov.io/gh/aouinizied/nfstream/
+.. |quality| image:: https://img.shields.io/lgtm/grade/python/github/aouinizied/nfstream.svg?logo=lgtm&logoWidth=18)
+               :target: https://lgtm.com/projects/g/aouinizied/nfstream/context:python
 
 .. _License: https://github.com/aouinizied/nfstream/blob/master/LICENSE
 .. _Contributing: https://github.com/aouinizied/nfstream/blob/master/CONTRIBUTING.rst

@@ -1,10 +1,10 @@
-#####
-Usage
-#####
+########
+NFStream
+########
 
 
 Dealing with a big pcap file and just want to aggregate it as network flows?
-nfstream make this path easier in few lines:
+NFStream make this path easier in few lines:
 
 .. code-block:: python
 
@@ -88,7 +88,7 @@ NFFlow
      - Last packet timestamp in milliseconds.
    * - nfhash
      - int
-     - nfstream hash value for flow (not unique).
+     - NFStream hash value for flow (not unique).
    * - version
      - int
      - IP version.
@@ -189,7 +189,7 @@ NFPacket
      - Packet size.
    * - nfhash
      - int
-     - nfstream hash value for packet (not unique).
+     - NFStream hash value for packet (not unique).
    * - ip_src
      - int
      - Source IP address int value.

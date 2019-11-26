@@ -8,16 +8,16 @@
   :scale: 100%
   :align: left
 
-########
+######################
 
-nfstream
-########
-nfstream is a flexible and lightweight network data analysis framework.
+NFStream Documentation
+######################
+NFStream is a flexible and lightweight network data analysis framework.
 
-**nfstream main features**
+**NFStream main features**
 
-* **Performance:** nfstream was designed to be fast with a small CPU and memory footprint.
-* **Layer-7 visibility:** nfstream dissection is based on nDPI_ (~300 applications including Tor, Messenger, WhatsApp, etc.).
+* **Performance:** NFStream was designed to be fast with a small CPU and memory footprint.
+* **Layer-7 visibility:** NFStream dissection is based on nDPI_ (~300 applications including Tor, Messenger, WhatsApp, etc.).
 * **Flexibility:** add a flow feature in 2 lines as an NFPlugin_.
 * **Machine Learning oriented:** add your trained model as an NFPlugin_.
 
@@ -28,7 +28,7 @@ nfstream is a flexible and lightweight network data analysis framework.
 
    installation
    architecture
-   usage
+   nfstream
    plugins
    contributing
    changelog

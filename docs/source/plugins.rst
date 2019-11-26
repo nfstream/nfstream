@@ -1,8 +1,8 @@
 ##################
-Extending nfstream
+Extending NFStream
 ##################
 
-nfstream is designed to be flexible and machine learning oriented. In the following section, we depict the use of NFPlugin
+NFStream is designed to be flexible and machine learning oriented. In the following section, we depict the use of NFPlugin
 in both cases.
 
 .. code-block:: python
@@ -82,5 +82,5 @@ Add trained model prediction
         def process(self, pkt, flow):
             if flow.packets ==3:
                 flow.model_prediction = trained_model.predict_proba([flow.feat_1 , flow.feat_2 , flow.feat_3])
-                # optionally we can force nfstream to immediately expires the flow
+                # optionally we can force NFStreamer to immediately expires the flow
                 flow.expiration_id = -1

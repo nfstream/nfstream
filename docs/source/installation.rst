@@ -1,5 +1,5 @@
 ###################
-Installing nfstream
+Installing NFStream
 ###################
 
 *************
@@ -25,7 +25,7 @@ Binary installers for the latest released version are available:
 
 **from source**
 
-If you want to build nfstream on your local machine:
+If you want to build NFStream on your local machine:
 
 .. code-block:: bash
 
