@@ -8,8 +8,6 @@
   :scale: 100%
   :align: left
 
-########
-
 NFStream
 ########
 
