@@ -12,9 +12,9 @@
 
 NFStream Documentation
 ######################
-NFStream is a flexible and lightweight network data analysis framework.
+**NFStream** is a flexible and lightweight network data analysis framework.
 
-**NFStream main features**
+**Main Features**
 
 * **Performance:** NFStream was designed to be fast with a small CPU and memory footprint.
 * **Layer-7 visibility:** NFStream dissection is based on nDPI_ (~300 applications including Tor, Messenger, WhatsApp, etc.).
