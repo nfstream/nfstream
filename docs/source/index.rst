@@ -9,7 +9,7 @@ NFStream Documentation
 
 |download| |release| |python| |pypy| |platform| |license|
 
-nfstream is a flexible and lightweight network data analysis library.
+nfstream is a flexible and lightweight network data analysis framework.
 
 **nfstream main features**
 
