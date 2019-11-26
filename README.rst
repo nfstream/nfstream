@@ -1,4 +1,4 @@
-.. image:: https://github.com/aouinizied/nfstream/blob/master/docs/nfstream_logo.png
+.. image:: docs/nfstream_logo.png
   :scale: 100%
   :align: left
 
