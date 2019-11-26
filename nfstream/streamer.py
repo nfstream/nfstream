@@ -52,20 +52,23 @@ class NFStreamer(object):
         self._stopped = False
 
     def __iter__(self):
-        self._producer.start()
-        tm.sleep(0.1)
-        self._consumer.connect('ipc:///tmp/nfstream.pipe')
-        while True:
-            try:
-                flow = self._consumer.recv_pyobj()
-                if flow is None:
-                    break
-                else:
-                    yield flow
-            except KeyboardInterrupt:
-                if not self._stopped:
-                    self._stopped = True
-                    self._cache.stopped = True
+        try:
+            self._producer.start()
+            tm.sleep(0.1)
+            self._consumer.connect('ipc:///tmp/nfstream.pipe')
+            while True:
+                try:
+                    flow = self._consumer.recv_pyobj()
+                    if flow is None:
+                        break
+                    else:
+                        yield flow
+                except KeyboardInterrupt:
+                    if not self._stopped:
+                        self._stopped = True
+                        self._cache.stopped = True
+        except RuntimeError:
+            return None
 
 
 
