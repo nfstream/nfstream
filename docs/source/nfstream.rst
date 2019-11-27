@@ -17,7 +17,8 @@ NFStream make this path easier in few lines:
                                     plugins=(),
                                     dissect=True,
                                     max_tcp_dissections=10,
-                                    max_udp_dissections=16)
+                                    max_udp_dissections=16,
+                                    strict_timestamp=True)
 
    my_live_streamer = NFStreamer(source="eth1")  # or capture from a network interface
    for flow in my_capture_streamer:  # or for flow in my_live_streamer
@@ -63,6 +64,9 @@ NFStreamer
 
   - Maximum per flow UDP packets to dissect (ignored when dissect=False).
 
+* ``strict_timestamp`` [default= ``True`` ]
+
+  - Ignore out of time order packets.
 
 NFStreamer returns an iterator of **NFFlow** object.
 

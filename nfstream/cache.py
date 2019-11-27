@@ -48,7 +48,7 @@ class NFCache(object):
     """ NFCache for flows management """
     def __init__(self, observer=None, idle_timeout=30, active_timeout=300, nroots=512,
                  core_plugins=nfstream_core_plugins, user_plugins=(),
-                 dissect=True, max_tcp_dissections=10, max_udp_dissections=16):
+                 dissect=True, max_tcp_dissections=10, max_udp_dissections=16, strict_timestamp=True):
         self.observer = observer
         try:
             self.producer = zmq.Context().socket(zmq.PUSH)
@@ -73,6 +73,7 @@ class NFCache(object):
         self.performances = [0, 0]
         self.idle_scan_period = 10
         self.idle_scan_budget = 1024
+        self.strict_timestamp = strict_timestamp
         self.stopped = False
         if dissect:
             self.core_plugins = core_plugins + ndpi_plugins + [NFPlugin(name='max_tcp_dissections',
@@ -155,14 +156,15 @@ class NFCache(object):
         for parsed_packet in self.observer:
             if not self.stopped:
                 if parsed_packet is not None:
-                    go_scan = False
-                    if parsed_packet.time - self.current_tick >= self.idle_scan_period:
-                        go_scan = True
-                    if parsed_packet.time >= self.current_tick:
-                        self.current_tick = parsed_packet.time
-                    self.consume(parsed_packet)
-                    if go_scan:
-                        self.idle_scan()  # perform a micro scan
+                    if parsed_packet.time >= self.current_tick or (not self.strict_timestamp):
+                        go_scan = False
+                        if parsed_packet.time - self.current_tick >= self.idle_scan_period:
+                            go_scan = True
+                        if parsed_packet.time >= self.current_tick:
+                            self.current_tick = parsed_packet.time
+                        self.consume(parsed_packet)
+                        if go_scan:
+                            self.idle_scan()  # perform a micro scan
             else:
                 break
         self.terminate()
