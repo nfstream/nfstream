@@ -181,7 +181,7 @@ def init_ndpi_structs(pkt):
     f = ndpi.new_ndpi_flow()
     s = ndpi.new_ndpi_id()
     d = ndpi.new_ndpi_id()
-    p = ndpi.ndpi_detection_process_packet(f, pkt.raw, len(pkt.raw), int(pkt.time), s, d)
+    p = ndpi.ndpi_detection_process_packet(f, pkt.raw, len(pkt.raw), pkt.time, s, d)
     return [f, s, d, p, 0]
 
 
@@ -221,7 +221,7 @@ class ndpi_structs(NFPlugin):
             flow.ndpi_structs[3] = ndpi.ndpi_detection_process_packet(flow.ndpi_structs[0],
                                                                           pkt.raw,
                                                                           len(pkt.raw),
-                                                                          int(pkt.time),
+                                                                          pkt.time,
                                                                           flow.ndpi_structs[1],
                                                                           flow.ndpi_structs[2])
             collect_ndpi_information(flow, flow.ndpi_structs[0], flow.ndpi_structs[3])
