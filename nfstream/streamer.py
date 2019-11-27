@@ -31,6 +31,8 @@ class NFStreamer(object):
                  plugins=(), dissect=True, max_tcp_dissections=10, max_udp_dissections=16, strict_timestamp=True):
         self._consumer = zmq.Context().socket(zmq.PULL)
         self._nroots = 512
+        now = str(tm.time())
+        self.sock_name = "ipc:///tmp/nfstream-{}".format(now)
         try:
             self._cache = NFCache(observer=NFObserver(source=source, filter_str=bpf_filter, snaplen=snaplen,
                                                       nroots=self._nroots),
@@ -41,7 +43,8 @@ class NFStreamer(object):
                                   dissect=dissect,
                                   max_tcp_dissections=max_tcp_dissections,
                                   max_udp_dissections=max_udp_dissections,
-                                  strict_timestamp=strict_timestamp)
+                                  strict_timestamp=strict_timestamp,
+                                  sock_name=self.sock_name)
         except OSError as ose:
             sys.exit(ose)
         except ValueError as ve:
@@ -55,7 +58,7 @@ class NFStreamer(object):
     def __iter__(self):
         try:
             self._producer.start()
-            self._consumer.connect('ipc:///tmp/nfstream.pipe')
+            self._consumer.connect(self.sock_name)
             while True:
                 try:
                     flow = self._consumer.recv_pyobj()

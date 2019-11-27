@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 from .plugin import valid_plugins, nfstream_core_plugins, ndpi_plugins, NFPlugin
 from collections import OrderedDict
 from .flow import NFFlow
-import threading
+import time as tm
 import zmq
 
 
@@ -48,11 +48,12 @@ class NFCache(object):
     """ NFCache for flows management """
     def __init__(self, observer=None, idle_timeout=30, active_timeout=300, nroots=512,
                  core_plugins=nfstream_core_plugins, user_plugins=(),
-                 dissect=True, max_tcp_dissections=10, max_udp_dissections=16, strict_timestamp=True):
+                 dissect=True, max_tcp_dissections=10, max_udp_dissections=16, strict_timestamp=True, sock_name=None):
         self.observer = observer
+        self.mode = observer.mode
         try:
             self.producer = zmq.Context().socket(zmq.PUSH)
-            self.producer.bind('ipc:///tmp/nfstream.pipe')
+            self.producer.bind(sock_name)
         except zmq.error.ZMQError:
             raise OSError("NFStreamer failed to bind socket (producer).")
         self._roots = []  # root structure for flow caching: dict of LRUs
@@ -72,6 +73,7 @@ class NFCache(object):
         self.processed_pkts = 0
         self.performances = [0, 0]
         self.idle_scan_period = 10
+        self.idle_scan_tick = 0
         self.idle_scan_budget = 1024
         self.strict_timestamp = strict_timestamp
         self.stopped = False
@@ -158,13 +160,22 @@ class NFCache(object):
                 if parsed_packet is not None:
                     if parsed_packet.time >= self.current_tick or (not self.strict_timestamp):
                         go_scan = False
-                        if parsed_packet.time - self.current_tick >= self.idle_scan_period:
+                        if parsed_packet.time - self.idle_scan_tick >= self.idle_scan_period:
                             go_scan = True
+                            self.idle_scan_tick = parsed_packet.time
                         if parsed_packet.time >= self.current_tick:
                             self.current_tick = parsed_packet.time
                         self.consume(parsed_packet)
                         if go_scan:
                             self.idle_scan()  # perform a micro scan
+                else:
+                    if self.mode == 1:  # live capture
+                        now = int(tm.time() * 1000)
+                        if now > self.current_tick:
+                            self.current_tick = now
+                        if now - self.idle_scan_tick >= self.idle_scan_period:
+                            self.idle_scan()
+                            self.idle_scan_tick = now
             else:
                 break
         self.terminate()

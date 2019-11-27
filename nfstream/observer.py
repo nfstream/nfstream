@@ -25,7 +25,6 @@ from cffi import FFI
 from .libpcap_cc import cc, cc_packed
 import os.path
 import sys
-import time as tm
 
 
 TICK_RESOLUTION = 1000
@@ -613,7 +612,7 @@ class PcapLiveDevice(object):
         if filterstr is not None:
             self.set_filter(filterstr)
 
-    def recv_packet(self,  timeout=None, nroots=1):
+    def recv_packet(self,  timeout=0.01, nroots=1):
         if timeout is None or timeout < 0:
             timeout = None
         if self._fd >= 0:
@@ -688,7 +687,7 @@ class NFObserver:
                         r = self.packet_generator.recv_packet(nroots=self.nroots)
                         self.processed_pkts += 1  # increment total processed packet counter
                         if r is None:
-                            pass
+                            yield r  # trigger cleaning
                         elif r == -2:
                             raise KeyboardInterrupt
                         elif r == 0:
