@@ -225,6 +225,20 @@ class TestMethods(unittest.TestCase):
         self.assertEqual(len(flows), 1)
         print('PASS.')
 
+    def test_live_capture(self):
+        print("\n----------------------------------------------------------------------")
+        uid = os.getuid()
+        print(".Testing live capture (uid={})".format(uid))
+        streamer_test = NFStreamer(idle_timeout=1, bpf_filter='ip')
+        passed = 0
+        for flow in streamer_test:
+            if passed > 0:
+                streamer_test.cache.stopped = True
+                break
+            print(flow)
+            passed += 1
+            print("PASS.")
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -35,16 +35,16 @@ class NFStreamer(object):
         self.sock_name = "ipc:///tmp/nfstream-{}".format(now)
         try:
             self.cache = NFCache(observer=NFObserver(source=source, filter_str=bpf_filter, snaplen=snaplen,
-                                                      nroots=self._nroots),
-                                  idle_timeout=idle_timeout,
-                                  active_timeout=active_timeout,
-                                  nroots=self._nroots,
-                                  user_plugins=plugins,
-                                  dissect=dissect,
-                                  max_tcp_dissections=max_tcp_dissections,
-                                  max_udp_dissections=max_udp_dissections,
-                                  strict_timestamp=strict_timestamp,
-                                  sock_name=self.sock_name)
+                                                     nroots=self._nroots),
+                                 idle_timeout=idle_timeout,
+                                 active_timeout=active_timeout,
+                                 nroots=self._nroots,
+                                 user_plugins=plugins,
+                                 dissect=dissect,
+                                 max_tcp_dissections=max_tcp_dissections,
+                                 max_udp_dissections=max_udp_dissections,
+                                 strict_timestamp=strict_timestamp,
+                                 sock_name=self.sock_name)
         except OSError as ose:
             sys.exit(ose)
         except ValueError as ve:
