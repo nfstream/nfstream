@@ -5,21 +5,14 @@ matrix:
       language: generic
       env: TRAVIS_PYTHON_VERSION="3.6"
       python: '3.6'
-      compiler: gcc
-      addons:
-        homebrew:
-          packages:
-            - libpcap
+      compiler: clang
 
-    - os: linux
-      language: python
-      python: '3.6'
-      env: PYTHON=/home/travis/virtualenv/python3.6.7/bin
-      addons:
-        apt:
-          packages:
-            - libpcap-dev
-            - autogen
+    - os: osx
+      language: generic
+      env: TRAVIS_PYTHON_VERSION="3.7"
+      osx_image: xcode11.2
+      python: '3.7'
+      compiler: clang
 
     - os: linux
       language: python

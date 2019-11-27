@@ -175,7 +175,7 @@ class TestMethods(unittest.TestCase):
         print("----------------------------------------------------------------------")
         print(".Testing on {} applications:".format(len(files)))
         for file in files:
-            streamer_test = NFStreamer(source=file, idle_timeout=99999999999, strict_timestamp=False)
+            streamer_test = NFStreamer(source=file, idle_timeout=60000, active_timeout=60000, strict_timestamp=False)
             test_case_name = file.split('/')[-1]
             print(test_case_name)
             result = {}
@@ -219,7 +219,8 @@ class TestMethods(unittest.TestCase):
         print("\n----------------------------------------------------------------------")
         print(".Testing bpf filtering:")
         bpf_filter = "tcp src port 44614"
-        streamer_test = NFStreamer(source='tests/facebook.pcap', bpf_filter=bpf_filter)
+        streamer_test = NFStreamer(source='tests/facebook.pcap', bpf_filter=bpf_filter, idle_timeout=60,
+                                   active_timeout=120)
         flows = list(streamer_test)
         print(flows[0])
         self.assertEqual(len(flows), 1)
