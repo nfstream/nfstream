@@ -20,6 +20,8 @@
      - |quality|
    * - **Downloads**
      - |download|
+   * - **Discussions**
+     - |gitter|
 
 **Main Features**
 
@@ -156,6 +158,8 @@ This project is licensed under the GPLv3 License - see the License_ file for det
 
 .. |release| image:: https://img.shields.io/pypi/v/nfstream.svg
               :target: https://pypi.python.org/pypi/nfstream
+.. |gitter| image:: https://badges.gitter.im/gitterHQ/gitter.png
+              :target: https://gitter.im/nfstream/community
 .. |build| image:: https://travis-ci.org/aouinizied/nfstream.svg?branch=master
                :target: https://travis-ci.org/aouinizied/nfstream
 .. |python| image:: https://img.shields.io/badge/python-3.6+-blue.svg
