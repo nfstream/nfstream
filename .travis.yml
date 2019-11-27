@@ -5,7 +5,7 @@ matrix:
       language: generic
       env: TRAVIS_PYTHON_VERSION="3.6"
       python: '3.6'
-      compiler: clang
+      compiler: gcc
 
     - os: linux
       language: python
