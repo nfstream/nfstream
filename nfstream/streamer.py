@@ -54,7 +54,6 @@ class NFStreamer(object):
     def __iter__(self):
         try:
             self._producer.start()
-            tm.sleep(0.1)
             self._consumer.connect('ipc:///tmp/nfstream.pipe')
             while True:
                 try:

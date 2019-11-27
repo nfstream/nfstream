@@ -22,7 +22,7 @@ import sys
 
 
 path = sys.argv[1]
-flow_streamer = NFStreamer(source=path)
+flow_streamer = NFStreamer(source=path, idle_timeout=5)
 try:
     for flow in flow_streamer:
         print(flow)

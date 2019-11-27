@@ -22,7 +22,7 @@ from enum import Enum, IntEnum
 from threading import Lock
 from select import select
 from cffi import FFI
-from .cc.libpcap_cc import cc, cc_packed
+from .libpcap_cc import cc, cc_packed
 import os.path
 import sys
 

@@ -14,9 +14,9 @@ You should have received a copy of the GNU General Public License along with nfs
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from .cc.libndpi_cc import cc, cc_ndpi_network_headers, cc_ndpi_id_struct, cc_ndpi_flow_tcp_struct
-from .cc.libndpi_cc import cc_ndpi_flow_udp_struct, cc_ndpi_int_one_line_struct, cc_ndpi_packet_struct
-from .cc.libndpi_cc import cc_ndpi_packet_struct_stack, cc_ndpi_apis
+from .libndpi_cc import cc, cc_ndpi_network_headers, cc_ndpi_id_struct, cc_ndpi_flow_tcp_struct
+from .libndpi_cc import cc_ndpi_flow_udp_struct, cc_ndpi_int_one_line_struct, cc_ndpi_packet_struct
+from .libndpi_cc import cc_ndpi_packet_struct_stack, cc_ndpi_apis
 from os.path import abspath, dirname
 import cffi
 
