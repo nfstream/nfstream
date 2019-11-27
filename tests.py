@@ -22,7 +22,8 @@ from nfstream import NFStreamer
 import os
 
 
-ground_truth_ndpi = {'pps.pcap': {'HTTP': 1849543, 'HTTP.Google': 1093, 'SSDP': 17143},
+ground_truth_ndpi = {'ajp.pcap': {'AJP': 4446},
+                     'pps.pcap': {'HTTP': 1849543, 'HTTP.Google': 1093, 'SSDP': 17143},
                      'dropbox.pcap': {'DNS.Dropbox': 4522, 'Dropbox': 86010},
                      'nintendo.pcap': {'Amazon': 2216, 'DNS.Nintendo': 1550, 'ICMP': 2100, 'Nintendo': 303230,
                                        'TLS.Amazon': 8595, 'TLS.Nintendo': 15462},

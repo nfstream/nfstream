@@ -155,14 +155,14 @@ class NFCache(object):
         for parsed_packet in self.observer:
             if not self.stopped:
                 if parsed_packet is not None:
+                    go_scan = False
+                    if parsed_packet.time - self.current_tick >= self.idle_scan_period:
+                        go_scan = True
                     if parsed_packet.time >= self.current_tick:
-                        go_scan = False
-                        if parsed_packet.time - self.current_tick >= self.idle_scan_period:
-                            go_scan = True
                         self.current_tick = parsed_packet.time
-                        self.consume(parsed_packet)
-                        if go_scan:
-                            self.idle_scan()  # perform a micro scan
+                    self.consume(parsed_packet)
+                    if go_scan:
+                        self.idle_scan()  # perform a micro scan
             else:
                 break
         self.terminate()
