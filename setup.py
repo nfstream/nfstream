@@ -60,7 +60,7 @@ class BuildNdpiCommand(build_ext):
         subprocess.check_call(['git', 'clone', '--branch', '3.0-stable', 'https://github.com/ntop/nDPI.git'])
         os.chdir('nDPI/')
         subprocess.check_call(['./autogen.sh'])
-        subprocess.check_call(['./configure'])
+        subprocess.check_call(['CC=gcc ./configure'])
         subprocess.check_call(['make'])
         os.chdir('src/')
         os.chdir('lib/')
@@ -76,7 +76,7 @@ needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
 pytest_runner = ['pytest-runner'] if needs_pytest else []
 
 python_requires = '>=3.6'
-install_requires = ['cffi>=1.13.1',
+install_requires = ['cffi>=1.13.2',
                     'pyzmq>=18.1.1']
 
 if os.getenv('READTHEDOCS'):
