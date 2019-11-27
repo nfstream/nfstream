@@ -174,7 +174,7 @@ class TestMethods(unittest.TestCase):
         print("----------------------------------------------------------------------")
         print(".Testing on {} applications:".format(len(files)))
         for file in files:
-            streamer_test = NFStreamer(source=file)
+            streamer_test = NFStreamer(source=file, idle_timeout=99999999999)
             test_case_name = file.split('/')[-1]
             print(test_case_name)
             result = {}

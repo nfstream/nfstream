@@ -25,6 +25,7 @@ from cffi import FFI
 from .libpcap_cc import cc, cc_packed
 import os.path
 import sys
+import time as tm
 
 
 TICK_RESOLUTION = 1000
@@ -677,6 +678,7 @@ class NFObserver:
             self.packet_generator = None
         self.nroots = nroots
         self.processed_pkts = 0
+        self.mode = source_type[1]
 
     def __iter__(self):
         if self.packet_generator is not None:
