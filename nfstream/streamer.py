@@ -34,7 +34,7 @@ class NFStreamer(object):
         now = str(tm.time())
         self.sock_name = "ipc:///tmp/nfstream-{}".format(now)
         try:
-            self._cache = NFCache(observer=NFObserver(source=source, filter_str=bpf_filter, snaplen=snaplen,
+            self.cache = NFCache(observer=NFObserver(source=source, filter_str=bpf_filter, snaplen=snaplen,
                                                       nroots=self._nroots),
                                   idle_timeout=idle_timeout,
                                   active_timeout=active_timeout,
@@ -51,7 +51,7 @@ class NFStreamer(object):
             sys.exit(ve)
         except TypeError as te:
             sys.exit(te)
-        self._producer = Thread(target=self._cache.run, args=())
+        self._producer = Thread(target=self.cache.run, args=())
         self._producer.daemon = True  # demonize thread
         self._stopped = False
 
@@ -69,7 +69,7 @@ class NFStreamer(object):
                 except KeyboardInterrupt:
                     if not self._stopped:
                         self._stopped = True
-                        self._cache.stopped = True
+                        self.cache.stopped = True
         except RuntimeError:
             return None
 
