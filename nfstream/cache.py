@@ -74,7 +74,7 @@ class NFCache(object):
             self.active_timeout = 0
         for root_idx in range(nroots):  # init root
             self._roots.append(LRU(idle_timeout=self.idle_timeout))
-        self.idle_scan_period = 0.001
+        self.idle_scan_period = 0.01
         self.idle_scanning = True
         self.current_tick = 0
         self.current_root_idx = 0  # current updating to avoid collision
