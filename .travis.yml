@@ -7,6 +7,20 @@ matrix:
       python: '3.6'
       compiler: clang
 
+    - os: osx
+      language: generic
+      env: TRAVIS_PYTHON_VERSION="3.7"
+      osx_image: xcode11.2
+      python: '3.7'
+      compiler: clang
+
+    - os: osx
+      language: generic
+      env: TRAVIS_PYTHON_VERSION="3.7"
+      osx_image: xcode10.1
+      python: '3.7'
+      compiler: clang
+
     - os: linux
       language: python
       python: '3.6'
