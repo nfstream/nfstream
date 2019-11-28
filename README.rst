@@ -76,7 +76,7 @@
         j3a_server='2d1eb5817ece335c24904f516ad5da12'
     )
 
-* Didn't find a specific flow feature? add a plugin to**NFStream** in few lines:
+* Didn't find a specific flow feature? add a plugin to **NFStream** in few lines:
 
 .. code-block:: python
 
