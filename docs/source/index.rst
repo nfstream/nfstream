@@ -4,12 +4,7 @@
    contain the root `toctree` directive.
 
 
-.. image:: asset/nfstream_logo.png
-  :scale: 100%
-  :align: left
-
 ######################
-
 NFStream Documentation
 ######################
 **NFStream** is a flexible and lightweight network data analysis framework.
