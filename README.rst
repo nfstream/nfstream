@@ -10,6 +10,8 @@
    :widths: 25 25
    :header-rows: 0
 
+   * - **Package**
+     - |package|
    * - **Build**
      - |build|
    * - **Documentation**
@@ -162,6 +164,8 @@ This project is licensed under the GPLv3 License - see the License_ file for det
               :target: https://gitter.im/nfstream/community
 .. |build| image:: https://travis-ci.org/aouinizied/nfstream.svg?branch=master
                :target: https://travis-ci.org/aouinizied/nfstream
+.. |package| image:: https://img.shields.io/pypi/status/nfstream.svg
+               :target: https://pypi.org/project/nfstream/
 .. |python| image:: https://img.shields.io/badge/python-3.6+-blue.svg
                :target: https://travis-ci.org/aouinizied/nfstream
 .. |pypy| image:: https://img.shields.io/badge/pypy-7.1+-blue.svg
