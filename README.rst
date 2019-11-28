@@ -10,13 +10,13 @@
    :widths: 25 25
    :header-rows: 0
 
-   * - **Build Status**
+   * - **Build**
      - |build|
-   * - **Documentation Status**
+   * - **Documentation**
      - |doc|
    * - **Coverage**
      - |coverage|
-   * - **Code Quality**
+   * - **Quality**
      - |quality|
    * - **Downloads**
      - |download|
@@ -181,7 +181,7 @@ This project is licensed under the GPLv3 License - see the License_ file for det
 .. |nfstream_logo| image:: https://github.com/aouinizied/nfstream/blob/master/docs/nfstream_logo.png
 
 .. _License: https://github.com/aouinizied/nfstream/blob/master/LICENSE
-.. _Contributing: https://github.com/aouinizied/nfstream/blob/master/CONTRIBUTING.rst
+.. _Contributing: https://nfstream.readthedocs.io/en/latest/contributing.html
 .. _these fine people: https://github.com/aouinizied/nfstream/graphs/contributors
 .. _Zied Aouini: https://www.linkedin.com/in/dr-zied-aouini
 .. _aouinizied: https://github.com/aouinizied

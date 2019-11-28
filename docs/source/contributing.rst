@@ -103,7 +103,7 @@ Deploying
 *********
 
 A reminder for the maintainers on how to deploy.
-Make sure all your changes are committed (including an entry in HISTORY.rst).
+Make sure all your changes are committed (including an entry in /docs/source/changelog.rst).
 Then run::
 
 $ bumpversion patch # possible: major / minor / patch
