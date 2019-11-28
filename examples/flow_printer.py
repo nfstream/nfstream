@@ -22,7 +22,7 @@ import sys
 
 
 path = sys.argv[1]
-flow_streamer = NFStreamer(source=path, idle_timeout=999999)
+flow_streamer = NFStreamer(source=path)
 result = {}
 try:
     for flow in flow_streamer:
@@ -31,9 +31,9 @@ try:
             result[flow.application_name] += flow.total_packets
         except KeyError:
             result[flow.application_name] = flow.total_packets
-    print("Summary -------")
+    print("Summary (Application Name: Packets):")
     print(result)
 except KeyboardInterrupt:
-    print("Summary -------")
+    print("Summary (Application Name: Packets):")
     print(result)
     print("Terminated.")
