@@ -39,7 +39,7 @@
 .. code-block:: python
 
    from nfstream import NFStreamer
-   my_awesome_streamer = NFStreamer(source="instagram.pcap") # or capture from a network interface (source="eth0")
+   my_awesome_streamer = NFStreamer(source="facebook.pcap") # or capture from a network interface (source="eth0")
    for flow in my_awesome_streamer:
        print(flow)  # print, append to pandas Dataframe or whatever you want :)!
 

@@ -9,7 +9,7 @@ NFStream make this path easier in few lines:
 .. code-block:: python
 
    from nfstream import NFStreamer
-   my_capture_streamer = NFStreamer(source="instagram.pcap",
+   my_capture_streamer = NFStreamer(source="facebook.pcap",
                                     bpf_filter=None,
                                     snaplen=65535,
                                     idle_timeout=30,
