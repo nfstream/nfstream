@@ -108,7 +108,7 @@ setup(
     version='2.0.0',
     url='https://github.com/aouinizied/nfstream.git',
     license='LGPLv3',
-    description="A flexible and powerful network data analysis library",
+    description="A flexible and powerful network data analysis framework",
     long_description=description,
     author='Zied Aouini',
     author_email='aouinizied@gmail.com',
