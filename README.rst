@@ -25,14 +25,14 @@
 
 **Main Features**
 
-* **Performance:** NFStream was designed to be fast with a small CPU and memory footprint.
-* **Layer-7 visibility:** NFStream dissection is based on nDPI_ (~300 applications including Tor, Messenger, WhatsApp, etc.).
+* **Performance:** **NFStream** was designed to be fast with a small CPU and memory footprint.
+* **Layer-7 visibility:** **NFStream** dissection is based on nDPI_ (~300 applications including Tor, Messenger, WhatsApp, etc.).
 * **Flexibility:** add a flow feature in 2 lines as an NFPlugin_.
 * **Machine Learning oriented:** add your trained model as an NFPlugin_.
 
 **When to use it?**
 
-* Dealing with a big pcap file and just want to aggregate it as network flows? NFStream make this path easier in few lines:
+* Dealing with a big pcap file and just want to aggregate it as network flows? **NFStream** make this path easier in few lines:
 
 .. code-block:: python
 
@@ -74,7 +74,7 @@
         j3a_server='2d1eb5817ece335c24904f516ad5da12'
     )
 
-* Didn't find a specific flow feature? add a plugin to NFStreamer in few lines:
+* Didn't find a specific flow feature? add a plugin to**NFStream** in few lines:
 
 .. code-block:: python
 
@@ -118,7 +118,7 @@ Binary installers for the latest released version are available:
 from source
 ^^^^^^^^^^^
 
-If you want to build NFStream on your local machine:
+If you want to build **NFStream** on your local machine:
 
 .. code-block:: bash
 
@@ -138,16 +138,16 @@ requests to us.
 Authors
 =======
 
-`Zied Aouini`_  (`aouinizied`_) created NFStream and `these fine people`_
+`Zied Aouini`_  (`aouinizied`_) created **NFStream** and `these fine people`_
 have contributed.
 
 Ethics
 =======
 
-NFStream is intended for network data research and forensics.
+**NFStream** is intended for network data research and forensics.
 Researchers and network data scientists can use these framework to build reliable datasets, train and evaluate
 network applied machine learning models.
-As with any packet monitoring tool, NFStream could potentially be misused.
+As with any packet monitoring tool, **NFStream** could potentially be misused.
 **Do not run it on any network of which you are not the owner or the administrator**.
 
 License
