@@ -90,6 +90,7 @@ Changelog
 * nDPI3.1 compatibility.
 
 **2.0.0 (2019-11-28)**
+
 * Pypy support.
 * Major performances improvements.
 * NFPlugin as main extension API.
