@@ -88,3 +88,14 @@ Changelog
 
 * Fix ndpi padding and alignement issues.
 * nDPI3.1 compatibility.
+
+**2.0.0 (2019-11-28)**
+* Pypy support.
+* Major performances improvements.
+* NFPlugin as main extension API.
+* nDPI memory usage improved.
+* nDPI implemented using cffi.
+* tcp_max_dissections, udp_max_dissections options.
+* NFFlow dynamic attributes creation.
+* HTTP, SSH, DNS client and server informations extraction.
+* FlowCache management implemented in pure Python.
