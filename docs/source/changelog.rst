@@ -100,3 +100,7 @@ Changelog
 * NFFlow dynamic attributes creation.
 * HTTP, SSH, DNS client and server informations extraction.
 * FlowCache management implemented in pure Python.
+
+**2.0.1 (2019-11-29)**
+
+* Fix pypy3 wheel.

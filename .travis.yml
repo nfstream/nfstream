@@ -10,7 +10,7 @@ matrix:
     - os: linux
       language: python
       python: "pypy3"
-      env: PYTHON=/home/travis/virtualenv/pypy3/bin
+      env: PYTHON=/home/travis/virtualenv/pypy3.6-7.1.1/bin
       addons:
         apt:
           packages:
