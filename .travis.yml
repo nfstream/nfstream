@@ -19,6 +19,16 @@ matrix:
 
     - os: linux
       language: python
+      python: '3.6'
+      env: PYTHON=/home/travis/virtualenv/python3.6.7/bin
+      addons:
+        apt:
+          packages:
+            - libpcap-dev
+            - autogen
+
+    - os: linux
+      language: python
       python: '3.7'
       env: PYTHON=/home/travis/virtualenv/python3.7.1/bin
       addons:
