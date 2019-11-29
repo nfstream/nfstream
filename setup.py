@@ -76,7 +76,7 @@ needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
 pytest_runner = ['pytest-runner'] if needs_pytest else []
 
 python_requires = '>=3.6'
-install_requires = ['cffi>=1.13.2',
+install_requires = ['cffi>=1.13.1',
                     'pyzmq>=18.1.1']
 
 if os.getenv('READTHEDOCS'):
