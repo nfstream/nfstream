@@ -27,8 +27,8 @@
 
 **Main Features**
 
-* **Performance:** **NFStream** was designed to be fast with a small CPU and memory footprint.
-* **Layer-7 visibility:** **NFStream** dissection is based on nDPI_ (~300 applications including Tor, Messenger, WhatsApp, etc.).
+* **Performance:** **NFStream** is designed to be fast (pypy3 support) with a small CPU and memory footprint.
+* **Layer-7 visibility:** **NFStream** deep packet inspection engine is based on nDPI_. It allows NFStream to perform reliable **encrypted applications identification** in addition to  **TLS, SSH, DNS ans HTTP metadata extraction**.
 * **Flexibility:** add a flow feature in 2 lines as an NFPlugin_.
 * **Machine Learning oriented:** add your trained model as an NFPlugin_.
 
