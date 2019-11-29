@@ -28,7 +28,7 @@
 **Main Features**
 
 * **Performance:** **NFStream** is designed to be fast (pypy3 support) with a small CPU and memory footprint.
-* **Layer-7 visibility:** **NFStream** deep packet inspection engine is based on nDPI_. It allows NFStream to perform reliable_ encrypted applications identification in addition to  TLS, SSH, DNS ans HTTP metadata extraction.
+* **Layer-7 visibility:** **NFStream** deep packet inspection engine is based on nDPI_ library. It allows NFStream to perform reliable_ encrypted applications identification and metadata extraction (e.g. TLS, SSH, DNS, HTTP).
 * **Flexibility:** add a flow feature in 2 lines as an NFPlugin_.
 * **Machine Learning oriented:** add your trained model as an NFPlugin_.
 
