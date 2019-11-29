@@ -9,8 +9,8 @@ matrix:
 
     - os: linux
       language: python
-      python: 'pypy3'
-      env: PYTHON=/home/travis/virtualenv/python3.6.7/bin
+      python: "pypy3"
+      env: PYTHON=/home/travis/virtualenv/pypy3/bin
       addons:
         apt:
           packages:
@@ -44,6 +44,7 @@ install:
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo pip3 install codecov ; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo python3 setup.py bdist_wheel ; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo ls dist/ ; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo ls /home/travis/virtualenv/ ; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo $PYTHON/pip3 install -r requirements.txt ; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo $PYTHON/pip3 install codecov ; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo $PYTHON/python3 setup.py bdist_wheel ; fi

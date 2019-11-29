@@ -302,8 +302,7 @@ nfstream_core_plugins = [packet_direction_setter(init_function=lambda p: None, v
                          src2dst_bytes(init_function=lambda p: p.length),
                          dst2src_packets(),
                          dst2src_bytes(),
-                         expiration_id(init_function=lambda p: 0)]
-
+                         expiration_id()]
 
 ndpi_plugins = [master_protocol(),
                 app_protocol(),
@@ -314,3 +313,38 @@ ndpi_plugins = [master_protocol(),
                 j3a_client(init_function=lambda p: ''),
                 j3a_server(init_function=lambda p: ''),
                 ndpi_structs(init_function=init_ndpi_structs, volatile=True)]
+
+"""
+class pktlen_max(NFPlugin):
+    def process(self, pkt, flow):
+        if pkt.length > flow.pktlen_max:
+            flow.pktlen_max = pkt.length
+
+
+class pktlen_min(NFPlugin):
+    def process(self, pkt, flow):
+        if pkt.length < flow.pktlen_min:
+            flow.pktlen_min = pkt.length
+
+
+class pktlen_mean(NFPlugin):
+    def process(self, pkt, flow):
+        delta = pkt.length - flow.pktlen_mean
+        flow.pktlen_mean += delta / flow.total_packets
+        flow.pktlen_std += delta * (pkt.length - flow.pktlen_mean)
+
+
+class pktlen_std(NFPlugin):
+    def giveup(self, flow):
+        if flow.total_packets < 2:
+            flow.pktlen_std = None
+        else:
+            flow.pktlen_std / (flow.total_packets - 1)
+"""
+
+"""
+statistical_plugins = [pktlen_min(init_function=lambda p: p.length),
+                       pktlen_max(init_function=lambda p: p.length),
+                       pktlen_std(),
+                       pktlen_mean(init_function=lambda p: p.length),]
+"""
