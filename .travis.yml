@@ -52,6 +52,7 @@ install:
   - ls
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo pip3 install -r requirements.txt ; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo pip3 install codecov ; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update ; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install libpcap@1.8.1 ; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo python3 setup.py bdist_wheel ; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo ls dist/ ; fi
