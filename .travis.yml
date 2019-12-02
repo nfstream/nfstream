@@ -12,6 +12,18 @@ matrix:
             - libpcap
           update: true
 
+    - os: osx
+      language: generic
+      env: TRAVIS_PYTHON_VERSION="3.7", CC=gcc, CXX=g++
+      python: '3.7'
+      osx_image: xcode10.1
+      compiler: gcc
+      addons:
+        homebrew:
+          packages:
+            - libpcap
+          update: true
+
     - os: linux
       language: python
       python: "pypy3"
