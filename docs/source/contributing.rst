@@ -34,8 +34,8 @@ and "help wanted" is open to whoever wants to implement it.
 
 **Write documentation**
 
-NFStream could always use more documentation, whether as part of the
-official NFStream docs, in docstrings, or even on the web in blog posts,
+nfstream could always use more documentation, whether as part of the
+official nfstream docs, in docstrings, or even on the web in blog posts,
 articles, and such.
 
 **Submit feedback**
@@ -53,9 +53,9 @@ If you are proposing a feature:
 Get started
 ***********
 
-Ready to contribute? Here's how to set up NFStream for local development.
+Ready to contribute? Here's how to set up nfstream for local development.
 
-1. Fork the NFStream repo on GitHub.
+1. Fork the nfstream repo on GitHub.
 2. Clone your fork locally::
 
     $ git clone git@github.com:your_name_here/nfstream.git

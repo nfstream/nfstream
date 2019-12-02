@@ -1,10 +1,10 @@
 ========================
-|nfstream_logo| NFStream
+|nfstream_logo| nfstream
 ========================
 
 |release| |python| |pypy| |platform| |license|
 
-**NFStream** is a flexible and lightweight network data analysis framework.
+**nfstream** is a flexible and lightweight network data analysis framework.
 
 .. list-table::
    :widths: 25 25
@@ -27,14 +27,14 @@
 
 **Main Features**
 
-* **Performance:** **NFStream** is designed to be fast (pypy3 support) with a small CPU and memory footprint.
-* **Layer-7 visibility:** **NFStream** deep packet inspection engine is based on nDPI_ library. It allows NFStream to perform reliable_ encrypted applications identification and metadata extraction (e.g. TLS, SSH, DNS, HTTP).
+* **Performance:** **nfstream** is designed to be fast (pypy3 support) with a small CPU and memory footprint.
+* **Layer-7 visibility:** **nfstream** deep packet inspection engine is based on nDPI_ library. It allows nfstream to perform reliable_ encrypted applications identification and metadata extraction (e.g. TLS, SSH, DNS, HTTP).
 * **Flexibility:** add a flow feature in 2 lines as an NFPlugin_.
 * **Machine Learning oriented:** add your trained model as an NFPlugin_.
 
 **When to use it?**
 
-* Dealing with a big pcap file and just want to aggregate it as network flows? **NFStream** make this path easier in few lines:
+* Dealing with a big pcap file and just want to aggregate it as network flows? **nfstream** make this path easier in few lines:
 
 .. code-block:: python
 
@@ -76,7 +76,7 @@
         j3a_server='2d1eb5817ece335c24904f516ad5da12'
     )
 
-* Didn't find a specific flow feature? add a plugin to **NFStream** in few lines:
+* Didn't find a specific flow feature? add a plugin to **nfstream** in few lines:
 
 .. code-block:: python
 
@@ -120,7 +120,7 @@ Binary installers for the latest released version are available:
 from source
 ^^^^^^^^^^^
 
-If you want to build **NFStream** on your local machine:
+If you want to build **nfstream** on your local machine:
 
 .. code-block:: bash
 
@@ -140,16 +140,16 @@ requests to us.
 Authors
 =======
 
-`Zied Aouini`_  (`aouinizied`_) created **NFStream** and `these fine people`_
+`Zied Aouini`_  (`aouinizied`_) created **nfstream** and `these fine people`_
 have contributed.
 
 Ethics
 =======
 
-**NFStream** is intended for network data research and forensics.
+**nfstream** is intended for network data research and forensics.
 Researchers and network data scientists can use these framework to build reliable datasets, train and evaluate
 network applied machine learning models.
-As with any packet monitoring tool, **NFStream** could potentially be misused.
+As with any packet monitoring tool, **nfstream** could potentially be misused.
 **Do not run it on any network of which you are not the owner or the administrator**.
 
 License

@@ -1,8 +1,8 @@
 ##################
-Extending NFStream
+Extending nfstream
 ##################
 
-NFStream is designed to be flexible and machine learning oriented. In the following section, we depict the use of NFPlugin
+nfstream is designed to be flexible and machine learning oriented. In the following section, we depict the use of NFPlugin
 in both cases.
 
 .. code-block:: python

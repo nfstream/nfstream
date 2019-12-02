@@ -9,7 +9,7 @@ Architecture
 
 A step by step walk through each process involved when performing flow monitoring is
 developed in this section. Our aim is to provide you with a reminder about how
-things works in theory. Consequently, an easier understanding of NFStream features
+things works in theory. Consequently, an easier understanding of nfstream features
 and implementation is possible.
 
 ******************

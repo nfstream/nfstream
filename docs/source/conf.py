@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'NFStream'
+project = 'nfstream'
 copyright = '2019, Zied Aouini'
 author = 'Zied Aouini'
 
