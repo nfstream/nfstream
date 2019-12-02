@@ -6,8 +6,10 @@ matrix:
       env: TRAVIS_PYTHON_VERSION="3.6", CC=gcc, CXX=g++
       python: '3.6'
       compiler: gcc
-      brew_packages:
-        - libpcap@1.8.1
+      addons:
+        homebrew:
+          packages:
+            - libpcap@1.8.1
 
     - os: linux
       language: python
