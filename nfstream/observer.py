@@ -694,7 +694,7 @@ class _PcapFfi(object):
 
     def _set_filter(self, xdev, filterstr):
         bpf = self._ffi.new("struct bpf_program *")
-        cfilter = self._ffi.new("char []", bytes(filterstr, 'ascii'))
+        cfilter = self._ffi.new("char []", bytes(filterstr, 'utf-8'))
         compile_result = self._libpcap.pcap_compile(xdev, bpf, cfilter, 0, 0xffffffff)
         if compile_result < 0:
             # get error, raise exception
@@ -777,7 +777,7 @@ class PcapLiveDevice(object):
         self._devname = device
         self._pcapdev = None
 
-        pcap = self._libpcap.pcap_open_live(bytes(internal_name, 'ascii'), snaplen, promisc, to_ms, errbuf)
+        pcap = self._libpcap.pcap_open_live(bytes(internal_name, 'utf-8'), snaplen, promisc, to_ms, errbuf)
         if pcap == self._ffi.NULL:
             raise PcapException("Failed to open live device {}: {}".format(internal_name, self._ffi.string(errbuf)))
 

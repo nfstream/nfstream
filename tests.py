@@ -203,7 +203,9 @@ class TestMethods(unittest.TestCase):
         print("\n----------------------------------------------------------------------")
         print(".Testing Flow string representation:")
         streamer_test = NFStreamer(source='tests/facebook.pcap')
-        flows = list(streamer_test)
+        flows = []
+        for flow in streamer_test:
+            flows.append(flow)
         del streamer_test
         print(flows[0])
         print('PASS.')
@@ -219,10 +221,12 @@ class TestMethods(unittest.TestCase):
     def test_bpf_filter(self):
         print("\n----------------------------------------------------------------------")
         print(".Testing bpf filtering:")
-        bpf_filter = "tcp src port 44614"
+        bpf_filter = 'tcp src port 44614'
         streamer_test = NFStreamer(source='tests/facebook.pcap', bpf_filter=bpf_filter, idle_timeout=60,
                                    active_timeout=120)
-        flows = list(streamer_test)
+        flows = []
+        for flow in streamer_test:
+            flows.append(flow)
         print(flows[0])
         self.assertEqual(len(flows), 1)
         print('PASS.')
