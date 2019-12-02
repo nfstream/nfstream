@@ -6,11 +6,6 @@ matrix:
       env: TRAVIS_PYTHON_VERSION="3.6", CC=gcc, CXX=g++
       python: '3.6'
       compiler: gcc
-      addons:
-        homebrew:
-          packages:
-            - libpcap
-          update: true
 
     - os: linux
       language: python
@@ -57,6 +52,7 @@ install:
   - ls
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo pip3 install -r requirements.txt ; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo pip3 install codecov ; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo brew install libpcap@1.8.1 ; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo python3 setup.py bdist_wheel ; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo ls dist/ ; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo ls /home/travis/virtualenv/ ; fi
