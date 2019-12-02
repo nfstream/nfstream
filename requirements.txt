@@ -1,2 +1,5 @@
 pyzmq>=18.1.1
 cffi>=1.13.1
+lru-dict>=1.1.6
+wheel>=0.33.6
+twine>=2.0.0
