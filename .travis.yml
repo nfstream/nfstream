@@ -9,7 +9,7 @@ matrix:
       addons:
         homebrew:
           packages:
-            - libpcap@1.8.1
+            - libpcap
           update: true
 
     - os: linux
