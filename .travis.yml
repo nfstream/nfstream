@@ -3,14 +3,17 @@ matrix:
   include:
     - os: osx
       language: generic
-      env: TRAVIS_PYTHON_VERSION="3.6"
+      env: TRAVIS_PYTHON_VERSION="3.6", CC=gcc, CXX=g++
       python: '3.6'
-      compiler: clang
+      compiler: gcc
+      brew_packages:
+        - libpcap
+        - gcc
 
     - os: linux
       language: python
       python: "pypy3"
-      env: PYTHON=/home/travis/virtualenv/pypy3.6-7.1.1/bin
+      env: PYTHON=/home/travis/virtualenv/pypy3.6-7.1.1/bin, CC=gcc, CXX=g++
       addons:
         apt:
           packages:
@@ -20,7 +23,7 @@ matrix:
     - os: linux
       language: python
       python: '3.6'
-      env: PYTHON=/home/travis/virtualenv/python3.6.7/bin
+      env: PYTHON=/home/travis/virtualenv/python3.6.7/bin, CC=gcc, CXX=g++
       addons:
         apt:
           packages:
@@ -30,17 +33,7 @@ matrix:
     - os: linux
       language: python
       python: '3.7'
-      env: PYTHON=/home/travis/virtualenv/python3.7.1/bin
-      addons:
-        apt:
-          packages:
-            - libpcap-dev
-            - autogen
-
-    - os: linux
-      language: python
-      python: '3.7.3'
-      env: PYTHON=/home/travis/virtualenv/python3.7.3/bin
+      env: PYTHON=/home/travis/virtualenv/python3.7.1/bin, CC=gcc, CXX=g++
       addons:
         apt:
           packages:
@@ -50,7 +43,7 @@ matrix:
     - os: linux
       language: python
       python: '3.8'
-      env: PYTHON=/home/travis/virtualenv/python3.8.0/bin
+      env: PYTHON=/home/travis/virtualenv/python3.8.0/bin, CC=gcc, CXX=g++
       addons:
         apt:
           packages:
