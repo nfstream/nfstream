@@ -10,6 +10,7 @@ matrix:
         homebrew:
           packages:
             - libpcap@1.8.1
+          update: true
 
     - os: linux
       language: python
