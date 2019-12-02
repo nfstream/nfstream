@@ -8,10 +8,10 @@
   :scale: 100%
   :align: left
 
-########
+######################
 
-nfstream
-########
+nfstream documentation
+######################
 **nfstream** is a flexible and lightweight network data analysis framework.
 
 **Main Features**
