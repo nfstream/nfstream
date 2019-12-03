@@ -12,9 +12,11 @@
      - |release|
    * - **Supported versions**
      - |python|
+   * -
      - |pypy|
    * - **Supported platforms**
      - |linux|
+   * -
      - |macos|
    * - **Build status**
      - |build|
