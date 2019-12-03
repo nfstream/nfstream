@@ -1,42 +1,42 @@
-========================
-|nfstream_logo| nfstream
-========================
-
-**nfstream** is a flexible and lightweight network data analysis framework.
+==========================================================================
+|nfstream_logo| nfstream: powerful Python network data analysis framework.
+==========================================================================
 
 .. list-table::
    :widths: 25 25
    :header-rows: 0
 
-   * - **Pypi package**
+   * - Latest Release
      - |release|
-   * - **Supported versions**
+   * - Supported Versions
      - |python|
    * -
      - |pypy|
-   * - **Supported platforms**
+   * - Supported Platforms
      - |linux|
    * -
      - |macos|
-   * - **Build status**
+   * - Build Status
      - |build|
-   * - **Documentation status**
+   * - Documentation Status
      - |doc|
-   * - **Code coverage**
+   * - Code Coverage
      - |coverage|
-   * - **Code quality**
+   * - Code Quality
      - |quality|
-   * - **Discussions channel**
+   * - Discussions Channel
      - |gitter|
 
-**Main Features**
+Main Features
+=============
 
 * **Performance:** **nfstream** is designed to be fast (pypy3 support) with a small CPU and memory footprint.
 * **Layer-7 visibility:** **nfstream** deep packet inspection engine is based on nDPI_ library. It allows nfstream to perform reliable_ encrypted applications identification and metadata extraction (e.g. TLS, SSH, DNS, HTTP).
 * **Flexibility:** add a flow feature in 2 lines as an NFPlugin_.
 * **Machine Learning oriented:** add your trained model as an NFPlugin_.
 
-**When to use it?**
+How to use it?
+==============
 
 * Dealing with a big pcap file and just want to aggregate it as network flows? **nfstream** make this path easier in few lines:
 
