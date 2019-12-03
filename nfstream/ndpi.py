@@ -1211,7 +1211,7 @@ void ndpi_finalize_initalization(struct ndpi_detection_module_struct *ndpi_str);
 
 
 class NDPI():
-    def __init__(self, libpath=None):
+    def __init__(self, libpath=None, max_tcp_dissections=10, max_udp_dissections=16):
         self._ffi = cffi.FFI()
         if libpath is None:
             self._ndpi = self._ffi.dlopen(dirname(abspath(__file__)) + '/libs/libndpi.so')
@@ -1236,6 +1236,8 @@ class NDPI():
         self.SIZEOF_FLOW_STRUCT = self._ffi.sizeof("struct ndpi_flow_struct")
         self.SIZEOF_ID_STRUCT = self._ffi.sizeof("struct ndpi_id_struct")
         self.NULL = self._ffi.NULL
+        self.max_tcp_dissections = max_tcp_dissections
+        self.max_udp_dissections = max_udp_dissections
 
     def new_ndpi_flow(self):
         f = self._ffi.cast('struct ndpi_flow_struct*', self._ndpi.ndpi_flow_malloc(self.SIZEOF_FLOW_STRUCT))

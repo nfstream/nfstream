@@ -22,21 +22,21 @@ from collections import namedtuple
 class NFFlow(object):
     """ Flow entry class """
     def __init__(self, ppkt, core, user, idx):
-        self.flow_id = idx
+        self.id = idx
         for plugin in core:  # for each NFCache core plugin, we init and update
-            setattr(self, plugin.name, plugin.init_function(ppkt))
+            setattr(self, plugin.name, plugin.on_init(ppkt))
         for plugin in user:  # for each NFCache core plugin, we init and update
-            setattr(self, plugin.name, plugin.init_function(ppkt))
+            setattr(self, plugin.name, plugin.on_init(ppkt))
 
     def clean(self, core, user):
         """ Volatile attributes cleaner """
         for plugin in core:
             if plugin.volatile:
-                plugin.giveup(self)
+                plugin.on_expire(self)
                 delattr(self, plugin.name)
         for plugin in user:
             if plugin.volatile:
-                plugin.giveup(self)
+                plugin.on_expire(self)
                 delattr(self, plugin.name)
         return self
 
@@ -47,9 +47,9 @@ class NFFlow(object):
             return self.clean(core, user)
         else:
             for plugin in core:  # for each NFCache core plugin, we update
-                plugin.process(ppkt, self)
+                plugin.on_update(ppkt, self)
             for plugin in user:  # for each NFCache core plugin, we update
-                plugin.process(ppkt, self)
+                plugin.on_update(ppkt, self)
             if getattr(self, 'expiration_id') < -1:  # custom export
                 return self.clean(core, user)
 

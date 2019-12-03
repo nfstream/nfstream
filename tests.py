@@ -176,7 +176,7 @@ class TestMethods(unittest.TestCase):
         print("----------------------------------------------------------------------")
         print(".Testing on {} applications:".format(len(files)))
         for file in files:
-            streamer_test = NFStreamer(source=file, idle_timeout=60000, active_timeout=60000, strict_timestamp=False)
+            streamer_test = NFStreamer(source=file, idle_timeout=60000, active_timeout=60000)
             test_case_name = file.split('/')[-1]
             print(test_case_name)
             result = {}
@@ -235,15 +235,12 @@ class TestMethods(unittest.TestCase):
         print("\n----------------------------------------------------------------------")
         uid = os.getuid()
         print(".Testing live capture (uid={})".format(uid))
-        streamer_test = NFStreamer(idle_timeout=1, bpf_filter='ip')
-        passed = 0
+        streamer_test = NFStreamer(idle_timeout=0, bpf_filter='ip')
         for flow in streamer_test:
-            if passed > 0:
-                streamer_test.cache.stopped = True
-                break
             print(flow)
-            passed += 1
-            print("PASS.")
+            streamer_test.cache.stopped = True
+            break
+        print("PASS.")
 
 
 if __name__ == '__main__':

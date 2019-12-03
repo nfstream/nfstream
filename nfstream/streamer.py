@@ -28,7 +28,7 @@ class NFStreamer(object):
     """ Network Flow Streamer """
 
     def __init__(self, source=None, bpf_filter=None, snaplen=65535, idle_timeout=30, active_timeout=300,
-                 plugins=(), dissect=True, max_tcp_dissections=10, max_udp_dissections=16, strict_timestamp=True):
+                 plugins=(), dissect=True, max_tcp_dissections=10, max_udp_dissections=16):
         self._consumer = zmq.Context().socket(zmq.PULL)
         self._nroots = 512
         now = str(tm.time())
@@ -43,7 +43,6 @@ class NFStreamer(object):
                                  dissect=dissect,
                                  max_tcp_dissections=max_tcp_dissections,
                                  max_udp_dissections=max_udp_dissections,
-                                 strict_timestamp=strict_timestamp,
                                  sock_name=self.sock_name)
         except OSError as ose:
             sys.exit(ose)

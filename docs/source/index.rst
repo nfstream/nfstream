@@ -5,7 +5,7 @@
 
 
 .. image:: asset/nfstream_logo.png
-  :scale: 100%
+  :scale: 75%
   :align: left
 
 ######################

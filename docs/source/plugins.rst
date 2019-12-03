@@ -10,9 +10,10 @@ in both cases.
     from nfstream import NFPlugin
 
     class my_awesome_plugin(NFPlugin):
-        def process(self, pkt, flow):
-            if pkt.length >= 666:
-                flow.my_awesome_plugin += 1
+        def on_update(self, obs, entry):
+            if obs.length >= 666:
+                entry.my_awesome_plugin += 1
+
 
    streamer_awesome = NFStreamer(source='devil.pcap', plugins=[my_awesome_plugin()])
    for flow in streamer_awesome:
@@ -25,62 +26,85 @@ NFPlugin parameters
 
   - Plugin name. Must be unique as it's dynamically created as a flow attribute.
 
-* ``volatile`` [default=False]
+* ``volatile`` [default=``False``]
 
   - Volatile plugin is available only when flow is processed. At flow expiration level, plugin is automatically removed (will not appear as flow attribute).
 
-* ``init_function`` [default=lambda packet:0]
+* ``user_data`` [default=``None``]
 
-  - Function called at flow creation (First NFPacket as argument).
+  - user_data passed to the plugin. Example: external module, pickled sklearn model, etc.
 
 ****************
 NFPlugin methods
 ****************
-* ``process(NFPacket, NFFlow)``
+* ``on_init(self, obs)`` [default=``return 0``]
 
-  - Method called to update each NFFlow with its belonging NFPacket.
+  - Method called at entry creation). When aggregating packets into flows, this method is called on ``NFFlow`` object creation based on first ``NFPacket`` object belonging to it.
 
-* ``giveup(NFFlow)`` [default=pass]
+* ``on_update(self, obs, entry)`` [default=``pass``]
 
-  - Method called at flow expiration.
+  - Method called to update each entry with its belonging obs. When aggregating packets into flows, the entry is an ``NFFlow`` object and the obs is an ``NFPacket`` object.
 
+* ``on_expire(self, entry)`` [default=``pass``]
+
+  - Method called at entry expiration. When aggregating packets into flows, the entry is an ``NFFlow``
+
+* ``cleanup(self)`` [default=``pass``]
+
+  - Method called for plugin cleanup.
 
 In the following, we want to run an early classification of flows based on a trained machine learning model than takes
 as features the 3 first packets size of a flow.
 
-**************************
-Building required features
-**************************
+***************************
+Computing required features
+***************************
 
 .. code-block:: python
 
     from nfstream import NFPlugin
 
     class feat_1(NFPlugin):
-        def process(self, pkt, flow):
-            if flow.packets == 1:
-                flow.feat_1 == pkt.length
+        def on_update(self, obs, entry):
+            if entry.packets == 1:
+                entry.feat_1 == obs.length
 
     class feat_2(NFPlugin):
-        def process(self, pkt, flow):
-            if flow.packets == 1:
-                flow.feat_2 == pkt.length
+        def on_update(self, obs, entry):
+            if entry.packets == 1:
+                entry.feat_2 == obs.length
 
     class feat_3(NFPlugin):
-        def process(self, pkt, flow):
-            if flow.packets == 3:
-                flow.feat_3 == pkt.length
+        def on_update(self, obs, entry):
+            if entry.packets == 3:
+                entry.feat_3 == obs.length
 
-****************************
-Add trained model prediction
-****************************
+************************
+Trained model prediction
+************************
 
 .. code-block:: python
 
-    trained_model = load_my_magic_model(path)
     class model_prediction(NFPlugin):
-        def process(self, pkt, flow):
-            if flow.packets ==3:
-                flow.model_prediction = trained_model.predict_proba([flow.feat_1 , flow.feat_2 , flow.feat_3])
+        def on_update(self, obs, entry):
+            if entry.packets ==3:
+                entry.model_prediction = self.user_data.predict_proba([entry.feat_1 , entry.feat_2 , entry.feat_3])
                 # optionally we can force NFStreamer to immediately expires the flow
-                flow.expiration_id = -1
+                # entry.expiration_id = -1
+
+
+***********************
+Start your new streamer
+***********************
+
+.. code-block:: python
+
+   my_model = function_to_load_your_model() # or whatever
+   ml_streamer = NFStreamer(source='devil.pcap',
+                            plugins=[feat_1(volatile=True),
+                                     feat_2(volatile=True),
+                                     feat_3(volatile=True),
+                                     model_prediction(user_data=my_model)
+                                     ])
+   for flow in ml_streamer:
+        print(flow.model_prediction) # now you will see your trained model prediction as part of the flow :)

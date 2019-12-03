@@ -17,9 +17,10 @@ You should have received a copy of the GNU General Public License along with nfs
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from .plugin import valid_plugins, nfstream_core_plugins, ndpi_plugins, NFPlugin
+from .plugin import nfstream_core_plugins, nfplugins_validator, ndpi_infos_plugins, nDPI
 from collections import OrderedDict
 from .flow import NFFlow
+from .ndpi import NDPI
 import time as tm
 import zmq
 
@@ -48,7 +49,7 @@ class NFCache(object):
     """ NFCache for flows management """
     def __init__(self, observer=None, idle_timeout=30, active_timeout=300, nroots=512,
                  core_plugins=nfstream_core_plugins, user_plugins=(),
-                 dissect=True, max_tcp_dissections=10, max_udp_dissections=16, strict_timestamp=True, sock_name=None):
+                 dissect=True, max_tcp_dissections=10, max_udp_dissections=16, sock_name=None):
         self.observer = observer
         self.mode = observer.mode
         try:
@@ -75,20 +76,16 @@ class NFCache(object):
         self.idle_scan_period = 10
         self.idle_scan_tick = 0
         self.idle_scan_budget = 1024
-        self.strict_timestamp = strict_timestamp
         self.stopped = False
         if dissect:
-            self.core_plugins = core_plugins + ndpi_plugins + [NFPlugin(name='max_tcp_dissections',
-                                                                        init_function=lambda p: max_tcp_dissections,
-                                                                        volatile=True),
-                                                               NFPlugin(name='max_udp_dissections',
-                                                                        init_function=lambda p: max_udp_dissections,
-                                                                        volatile=True)
-                                                               ]
+            self.core_plugins = core_plugins + ndpi_infos_plugins + \
+                                [nDPI(user_data=NDPI(max_tcp_dissections=max_tcp_dissections,
+                                                     max_udp_dissections=max_udp_dissections),
+                                      volatile=True)]
         else:
             self.core_plugins = core_plugins
         try:
-            valid_plugins(user_plugins)
+            nfplugins_validator(user_plugins)
         except TypeError:
             raise TypeError("Streamer initiated with unknown type plugins (must be NFPlugin type).")
         except ValueError:
@@ -124,6 +121,10 @@ class NFCache(object):
                 self.producer.send_pyobj(f)
                 self.active_flows -= 1
                 del self._roots[root_idx][h]
+        for plugin in self.core_plugins:
+            plugin.cleanup()
+        for plugin in self.user_plugins:
+            plugin.cleanup()
         self.observer.packet_generator.close()  # close generator
         self.producer.send_pyobj(None)
 
@@ -141,10 +142,13 @@ class NFCache(object):
                     del self._roots[ppkt.root_idx][flow.nfhash]
                     self.active_flows -= 1
                 else:  # active expiration
-                    parent_flow_id = flow.flow_id
+                    parent_id = flow.id
                     self.producer.send_pyobj(flow)
                     del self._roots[ppkt.root_idx][flow.nfhash]
-                    self._roots[ppkt.root_idx][ppkt.nfhash] = NFFlow(ppkt, self.core_plugins, self.user_plugins, parent_flow_id)
+                    self._roots[ppkt.root_idx][ppkt.nfhash] = NFFlow(ppkt,
+                                                                     self.core_plugins,
+                                                                     self.user_plugins,
+                                                                     parent_id)
         except KeyError:  # create flow
             self._roots[ppkt.root_idx][ppkt.nfhash] = NFFlow(ppkt,
                                                              self.core_plugins,
@@ -158,16 +162,15 @@ class NFCache(object):
         for parsed_packet in self.observer:
             if not self.stopped:
                 if parsed_packet is not None:
-                    if parsed_packet.time >= self.current_tick or (not self.strict_timestamp):
-                        go_scan = False
-                        if parsed_packet.time - self.idle_scan_tick >= self.idle_scan_period:
-                            go_scan = True
-                            self.idle_scan_tick = parsed_packet.time
-                        if parsed_packet.time >= self.current_tick:
-                            self.current_tick = parsed_packet.time
-                        self.consume(parsed_packet)
-                        if go_scan:
-                            self.idle_scan()  # perform a micro scan
+                    go_scan = False
+                    if parsed_packet.time - self.idle_scan_tick >= self.idle_scan_period:
+                        go_scan = True
+                        self.idle_scan_tick = parsed_packet.time
+                    if parsed_packet.time >= self.current_tick:
+                        self.current_tick = parsed_packet.time
+                    self.consume(parsed_packet)
+                    if go_scan:
+                        self.idle_scan()  # perform a micro scan
                 else:
                     if self.mode == 1:  # live capture
                         now = int(tm.time() * 1000)
