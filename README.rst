@@ -162,24 +162,22 @@ License
 This project is licensed under the GPLv3 License - see the License_ file for details
 
 
-.. |release| image:: https://img.shields.io/badge/pypi-v2.0.1-brightgreen
+.. |release| image:: https://img.shields.io/pypi/v/nfstream.svg
               :target: https://pypi.python.org/pypi/nfstream
 .. |gitter| image:: https://badges.gitter.im/gitterHQ/gitter.png
               :target: https://gitter.im/nfstream/community
 .. |build| image:: https://travis-ci.org/aouinizied/nfstream.svg?branch=master
                :target: https://travis-ci.org/aouinizied/nfstream
-.. |python| image:: https://img.shields.io/badge/python-%3E%3D3.6-brightgreen
+.. |python| image:: https://img.shields.io/badge/python-%3E%3D3.6-blue
                :target: https://travis-ci.org/aouinizied/nfstream
-.. |pypy| image:: https://img.shields.io/badge/pypy-3-brightgreen
+.. |pypy| image:: https://img.shields.io/badge/pypy-3-blue
             :target: https://travis-ci.org/aouinizied/nfstream
 .. |doc| image:: https://readthedocs.org/projects/nfstream/badge/?version=latest
                :target: https://nfstream.readthedocs.io/en/latest/?badge=latest
-.. |linux| image:: https://img.shields.io/badge/linux-x86__64-brightgreen
+.. |linux| image:: https://img.shields.io/badge/linux-x86__64-blue
             :target: https://travis-ci.org/aouinizied/nfstream
-.. |macos| image:: https://img.shields.io/badge/%09macOS-%3E%3D10.13-brightgreen
+.. |macos| image:: https://img.shields.io/badge/%09macOS-%3E%3D10.13-blue
             :target: https://travis-ci.org/aouinizied/nfstream
-.. |download| image:: https://img.shields.io/pypi/dm/nfstream.svg
-               :target: https://pypistats.org/packages/nfstream
 .. |coverage| image:: https://codecov.io/gh/aouinizied/nfstream/branch/master/graph/badge.svg
                :target: https://codecov.io/gh/aouinizied/nfstream/
 .. |quality| image:: https://img.shields.io/lgtm/grade/python/github/aouinizied/nfstream.svg?logo=lgtm&logoWidth=18)
