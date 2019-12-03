@@ -2,25 +2,27 @@
 |nfstream_logo| nfstream
 ========================
 
-|release| |python| |pypy| |platform| |license|
-
 **nfstream** is a flexible and lightweight network data analysis framework.
 
 .. list-table::
    :widths: 25 25
    :header-rows: 0
 
-   * - **Package**
-     - |package|
-   * - **Build**
+   * - **Pypi package**
+     - |release|
+   * - **Supported versions**
+     - |python| |pypy|
+   * - **Supported platforms**
+     - |linux| |macos|
+   * - **Build status**
      - |build|
-   * - **Documentation**
+   * - **Documentation status**
      - |doc|
-   * - **Coverage**
+   * - **Code coverage**
      - |coverage|
-   * - **Quality**
+   * - **Code quality**
      - |quality|
-   * - **Discussions**
+   * - **Discussions channel**
      - |gitter|
 
 **Main Features**
@@ -156,24 +158,22 @@ License
 This project is licensed under the GPLv3 License - see the License_ file for details
 
 
-.. |release| image:: https://img.shields.io/pypi/v/nfstream.svg
+.. |release| image:: https://img.shields.io/badge/pypi-v2.0.1-brightgreen
               :target: https://pypi.python.org/pypi/nfstream
 .. |gitter| image:: https://badges.gitter.im/gitterHQ/gitter.png
               :target: https://gitter.im/nfstream/community
 .. |build| image:: https://travis-ci.org/aouinizied/nfstream.svg?branch=master
                :target: https://travis-ci.org/aouinizied/nfstream
-.. |package| image:: https://img.shields.io/pypi/status/nfstream.svg
-               :target: https://pypi.org/project/nfstream/
-.. |python| image:: https://img.shields.io/badge/python-3.6+-blue.svg
+.. |python| image:: https://img.shields.io/badge/python-%3E%3D3.6-brightgreen
                :target: https://travis-ci.org/aouinizied/nfstream
-.. |pypy| image:: https://img.shields.io/badge/pypy-7.1+-blue.svg
+.. |pypy| image:: https://img.shields.io/badge/pypy-3-brightgreen
             :target: https://travis-ci.org/aouinizied/nfstream
 .. |doc| image:: https://readthedocs.org/projects/nfstream/badge/?version=latest
                :target: https://nfstream.readthedocs.io/en/latest/?badge=latest
-.. |license| image:: https://img.shields.io/badge/license-LGPLv3-blue.svg
-               :target: LICENSE
-.. |platform| image:: https://img.shields.io/badge/platform-linux%20%7C%20macos-blue
-               :target: https://travis-ci.org/aouinizied/nfstream
+.. |linux| image:: https://img.shields.io/badge/linux-x86__64-brightgreen
+            :target: https://travis-ci.org/aouinizied/nfstream
+.. |macos| image:: https://img.shields.io/badge/%09macOS-%3E%3D10.13-brightgreen
+            :target: https://travis-ci.org/aouinizied/nfstream
 .. |download| image:: https://img.shields.io/pypi/dm/nfstream.svg
                :target: https://pypistats.org/packages/nfstream
 .. |coverage| image:: https://codecov.io/gh/aouinizied/nfstream/branch/master/graph/badge.svg
@@ -181,7 +181,7 @@ This project is licensed under the GPLv3 License - see the License_ file for det
 .. |quality| image:: https://img.shields.io/lgtm/grade/python/github/aouinizied/nfstream.svg?logo=lgtm&logoWidth=18)
                :target: https://lgtm.com/projects/g/aouinizied/nfstream/context:python
 .. |nfstream_logo| image:: https://github.com/aouinizied/nfstream/blob/master/docs/nfstream_logo.png
-                     :scale: 75%
+                     :scale: 50%
 
 
 .. _License: https://github.com/aouinizied/nfstream/blob/master/LICENSE
