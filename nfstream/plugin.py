@@ -234,7 +234,7 @@ class nDPI(NFPlugin):
         f = self.user_data.new_ndpi_flow()
         s = self.user_data.new_ndpi_id()
         d = self.user_data.new_ndpi_id()
-        p = self.user_data.ndpi_detection_process_packet(f, obs.raw, len(obs.raw), int(obs.time), s, d)
+        p = self.user_data.ndpi_detection_process_packet(f, obs.raw, len(obs.raw), obs.time, s, d)
         # nDPI structures are maintained in a list [ndpi_flow, ndpi_src, ndpi_dst, ndpi_proto, detection_completed]
         return [f, s, d, p, 0]
 
@@ -245,7 +245,7 @@ class nDPI(NFPlugin):
             entry.nDPI[3] = self.user_data.ndpi_detection_process_packet(entry.nDPI[0],
                                                                          obs.raw,
                                                                          len(obs.raw),
-                                                                         int(obs.time),
+                                                                         obs.time,
                                                                          entry.nDPI[1],
                                                                          entry.nDPI[2])
             update_ndpi_infos(entry, entry.nDPI[0], entry.nDPI[3], self.user_data)

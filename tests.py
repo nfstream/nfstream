@@ -218,24 +218,11 @@ class TestMethods(unittest.TestCase):
         except SystemExit:
             print("PASS.")
 
-    def test_bpf_filter(self):
-        print("\n----------------------------------------------------------------------")
-        print(".Testing bpf filtering:")
-        bpf_filter = 'tcp src port 44614'
-        streamer_test = NFStreamer(source='tests/facebook.pcap', bpf_filter=bpf_filter, idle_timeout=60,
-                                   active_timeout=120)
-        flows = []
-        for flow in streamer_test:
-            flows.append(flow)
-        print(flows[0])
-        self.assertEqual(len(flows), 1)
-        print('PASS.')
-
     def test_live_capture(self):
         print("\n----------------------------------------------------------------------")
         uid = os.getuid()
         print(".Testing live capture (uid={})".format(uid))
-        streamer_test = NFStreamer(idle_timeout=0, bpf_filter='ip')
+        streamer_test = NFStreamer(idle_timeout=0)
         for flow in streamer_test:
             print(flow)
             streamer_test.cache.stopped = True

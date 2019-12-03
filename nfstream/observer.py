@@ -55,16 +55,20 @@ struct pcap_pkthdr {
     unsigned int caplen;
     unsigned int len;
 };
+
 struct pcap_stat {
     unsigned int recv;
     unsigned int drop;
     unsigned int ifdrop;
 };
+
 typedef void (*pcap_handler)(unsigned char *, const struct pcap_pkthdr *, const unsigned char *);
+
 pcap_t *pcap_open_dead(int, int);
 pcap_dumper_t *pcap_dump_open(pcap_t *, const char *);
 void pcap_dump_close(pcap_dumper_t *);
 void pcap_dump(pcap_dumper_t *, struct pcap_pkthdr *, unsigned char *);
+
 // live capture
 pcap_t *pcap_create(const char *, char *); 
 pcap_t *pcap_open_live(const char *, int, int, int, char *);
@@ -72,13 +76,16 @@ pcap_t *pcap_open_offline(const char *fname, char *errbuf);
 int pcap_set_snaplen(pcap_t *, int);
 int pcap_snapshot(pcap_t *);
 int pcap_set_promisc(pcap_t *, int);
+
 int pcap_set_timeout(pcap_t *, int);
 int pcap_set_buffer_size(pcap_t *, int);
+
 int pcap_set_tstamp_precision(pcap_t *, int);
 int pcap_get_tstamp_precision(pcap_t *);
 int pcap_set_tstamp_type(pcap_t *, int);
 int pcap_list_tstamp_types(pcap_t *, int **);
 void pcap_free_tstamp_types(int *);
+
 int pcap_setdirection(pcap_t *, int); 
 int pcap_datalink(pcap_t *);
 int pcap_setnonblock(pcap_t *, int, char *); 
@@ -95,14 +102,6 @@ int pcap_sendpacket(pcap_t *, const unsigned char *, int);
 char *pcap_geterr(pcap_t *);
 char *pcap_lib_version();
 int pcap_stats(pcap_t *, struct pcap_stat *);
-struct bpf_insn;
-struct bpf_program {
-    unsigned int bf_len;
-    struct bpf_insn *bf_insns;
-};
-int pcap_setfilter(pcap_t *, struct bpf_program *);
-int pcap_compile(pcap_t *, struct bpf_program *, const char *, int, unsigned int);
-void pcap_freecode(struct bpf_program *);
 """
 
 cc_packed = """
@@ -112,6 +111,7 @@ struct nfstream_ethhdr
   u_char h_source[6];
   uint16_t h_proto;
 };
+
 struct nfstream_snap_extension
 {
   uint16_t oui;
@@ -417,7 +417,7 @@ class _PcapFfi(object):
     def ffi(self):
         return self._ffi
 
-    def _process_packet(self, xdev, header, packet):
+    def _process_packet(self, xdev, header, packet, nroots):
         # MPLS header
         mpls = self._ffi.new("union mpls *")
         # IP header
@@ -439,6 +439,7 @@ class _PcapFfi(object):
         proto = 0
         time = 0
         time = (header.tv_sec * TICK_RESOLUTION) + (header.tv_usec / (1000000 / TICK_RESOLUTION))
+
         datalink_type = self._libpcap.pcap_datalink(xdev)
         datalink_check = True
         while datalink_check:
@@ -635,7 +636,7 @@ class _PcapFfi(object):
             dport = 0
         nfstream_hash += sport + dport
         if version == 4:
-            return NFPacket(time=time,
+            return NFPacket(time=int(time),
                             capture_length=header.caplen,
                             length=header.len,
                             nfhash=nfstream_hash,
@@ -648,9 +649,9 @@ class _PcapFfi(object):
                             version=version,
                             tcpflags=tcpflags(syn=syn, cwr=cwr, ece=ece, urg=urg, ack=ack, psh=psh, rst=rst, fin=fin),
                             raw=bytes(xffi.buffer(iph, ipsize)),
-                            root_idx=nfstream_hash % 512)
+                            root_idx=nfstream_hash % nroots)
         else:
-            return NFPacket(time=time,
+            return NFPacket(time=int(time),
                             capture_length=header.caplen,
                             length=header.len,
                             nfhash=nfstream_hash,
@@ -663,14 +664,14 @@ class _PcapFfi(object):
                             version=version,
                             tcpflags=tcpflags(syn=syn, cwr=cwr, ece=ece, urg=urg, ack=ack, psh=psh, rst=rst, fin=fin),
                             raw=bytes(xffi.buffer(iph6, header.len - ip_offset)),
-                            root_idx=nfstream_hash % 512)
+                            root_idx=nfstream_hash % nroots)
 
-    def _recv_packet(self, xdev):
+    def _recv_packet(self, xdev, nroots=1):
         phdr = self._ffi.new("struct pcap_pkthdr **")
         pdata = self._ffi.new("unsigned char **")
         rv = self._libpcap.pcap_next_ex(xdev, phdr, pdata)
         if rv == 1:
-            return self._process_packet(xdev, phdr[0], pdata[0])
+            return self._process_packet(xdev, phdr[0], pdata[0], nroots)
         elif rv == 0:
             # timeout; nothing to return
             return 0
@@ -681,22 +682,6 @@ class _PcapFfi(object):
         elif rv == -2:
             # reading from savefile, but none left
             return -2
-
-    def _set_filter(self, xdev, filterstr):
-        bpf = self._ffi.new("struct bpf_program *")
-        cfilter = self._ffi.new("char []", bytes(filterstr, 'utf-8'))
-        compile_result = self._libpcap.pcap_compile(xdev, bpf, cfilter, 0, 0xffffffff)
-        if compile_result < 0:
-            # get error, raise exception
-            s = self._ffi.string(self._libpcap.pcap_geterr(xdev))
-            raise PcapException("Error compiling filter expression: {}".format(s))
-
-        sf_result = self._libpcap.pcap_setfilter(xdev, bpf)
-        if sf_result < 0:
-            # get error, raise exception
-            s = self._ffi.string(self._libpcap.pcap_geterr(xdev))
-            raise PcapException("Error setting filter on pcap handle: {}".format(s))
-        self._libpcap.pcap_freecode(bpf)
 
 
 def pcap_devices():
@@ -709,7 +694,7 @@ class PcapReader(object):
     """
     __slots__ = ['_ffi', '_libpcap', '_base', '_pcapdev', '_user_callback']
 
-    def __init__(self, filename, filterstr=None):
+    def __init__(self, filename):
         self._base = _PcapFfi.instance()
         self._ffi = self._base.ffi
         self._libpcap = self._base.lib
@@ -728,17 +713,11 @@ class PcapReader(object):
             raise PcapException("Don't know how to handle datalink type {}".format(dl))
         self._pcapdev = PcapDev(dl, 0, 0, _PcapFfi.instance().version, pcap)
 
-        if filterstr is not None:
-            self._base._set_filter(pcap, filterstr)
-
     def close(self):
         self._libpcap.pcap_close(self._pcapdev.pcap)
 
-    def recv_packet(self):
-        return self._base._recv_packet(self._pcapdev.pcap)
-
-    def set_filter(self, filterstr):
-        self._base._set_filter(self._pcapdev.pcap, filterstr)
+    def recv_packet(self, nroots=1):
+        return self._base._recv_packet(self._pcapdev.pcap, nroots)
 
 
 class PcapLiveDevice(object):
@@ -747,9 +726,9 @@ class PcapLiveDevice(object):
     """
     _OpenDevices = {}  # objectid -> low-level pcap dev
     _lock = Lock()
-    __slots__ = ['_ffi', '_libpcap', '_base', '_pcapdev', '_devname', '_fd', '_user_callback']
+    __slots__ = ['_ffi', '_libpcap', '_base', '_pcapdev', '_devname', '_fd', '_user_callback', '_nroots']
 
-    def __init__(self, device, snaplen, filterstr, promisc, to_ms, nonblock):
+    def __init__(self, device, snaplen, promisc, to_ms, nonblock):
         self._base = _PcapFfi.instance()
         self._ffi = self._base.ffi
         self._libpcap = self._base.lib
@@ -792,10 +771,7 @@ class PcapLiveDevice(object):
         with PcapLiveDevice._lock:
             PcapLiveDevice._OpenDevices[id(self)] = self._pcapdev.pcap
 
-        if filterstr is not None:
-            self.set_filter(filterstr)
-
-    def recv_packet(self,  timeout=0.01):
+    def recv_packet(self,  timeout=0.01, nroots=1):
         if timeout is None or timeout < 0:
             timeout = None
         if self._fd >= 0:
@@ -804,21 +780,18 @@ class PcapLiveDevice(object):
             except PcapException:
                 return None
             if xread:
-                return self._base._recv_packet(self._pcapdev.pcap)
+                return self._base._recv_packet(self._pcapdev.pcap, nroots)
             # timeout; return nothing
             return None
         else:
             # no select, no non-blocking mode.  block away, my friend.
-            return self._base._recv_packet(self._pcapdev.pcap)
+            return self._base._recv_packet(self._pcapdev.pcap, nroots)
 
     def close(self):
         with PcapLiveDevice._lock:
             xid = id(self)
             del PcapLiveDevice._OpenDevices[xid]
         self._libpcap.pcap_close(self._pcapdev.pcap)
-
-    def set_filter(self, filterstr):
-        self._base._set_filter(self._pcapdev.pcap, filterstr)
 
 
 _PcapFfi()  # instantiate singleton
@@ -842,22 +815,23 @@ def check_source_type(source):
 
 
 class NFObserver:
-    def __init__(self, source=None, snaplen=65535, promisc=1, to_ms=0, filter_str=None, non_block=True):
+    def __init__(self, source=None, snaplen=65535, promisc=1, to_ms=0, non_block=True, nroots=1):
         source_type = check_source_type(source)
         source = source_type[0]
         if source_type[1] == 1:  # Live interface
             try:
                 self.packet_generator = PcapLiveDevice(device=source, snaplen=snaplen, promisc=promisc, to_ms=to_ms,
-                                                       filterstr=filter_str, nonblock=non_block)
+                                                       nonblock=non_block)
             except PcapException:
                 raise OSError("Root privilege needed for live capture on {} interface.".format(source))
         elif source_type[1] == 0:  # pcap case
             try:
-                self.packet_generator = PcapReader(filename=source, filterstr=filter_str)
+                self.packet_generator = PcapReader(filename=source)
             except PcapException:
                 raise OSError('Unable to read pcap format of: {}'.format(source))
         else:
             self.packet_generator = None
+        self.nroots = nroots
         self.processed_pkts = 0
         self.mode = source_type[1]
 
@@ -866,7 +840,7 @@ class NFObserver:
             try:
                 while True:
                     try:
-                        r = self.packet_generator.recv_packet()
+                        r = self.packet_generator.recv_packet(nroots=self.nroots)
                         self.processed_pkts += 1  # increment total processed packet counter
                         if r is None:
                             yield r  # trigger cleaning

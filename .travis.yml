@@ -10,6 +10,13 @@ matrix:
     - os: osx
       language: generic
       env: TRAVIS_PYTHON_VERSION="3.7", CC=gcc, CXX=g++
+      osx_image: xcode11.2
+      python: '3.7'
+      compiler: gcc
+
+    - os: osx
+      language: generic
+      env: TRAVIS_PYTHON_VERSION="3.7", CC=gcc, CXX=g++
       osx_image: xcode10.1
       python: '3.7'
       compiler: gcc

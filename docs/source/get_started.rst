@@ -10,7 +10,6 @@ nfstream make this path easier in few lines:
 
    from nfstream import NFStreamer
    my_capture_streamer = NFStreamer(source="facebook.pcap",
-                                    bpf_filter=None,
                                     snaplen=65535,
                                     idle_timeout=30,
                                     active_timeout=300,
@@ -30,10 +29,6 @@ NFStreamer object
 * ``source`` [default= ``None`` ]
 
   - Source of packets. Can be ``live_interface_name`` or  ``pcap_file_path``.
-
-* ``bpf_filter`` [default= ``None`` ]
-
-  - BPF filter string. Example: ``tcp src port 44614``.
 
 * ``snaplen`` [default= ``65535`` ]
 
