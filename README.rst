@@ -20,8 +20,6 @@
      - |coverage|
    * - **Quality**
      - |quality|
-   * - **Downloads**
-     - |download|
    * - **Discussions**
      - |gitter|
 
