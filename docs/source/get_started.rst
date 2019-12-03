@@ -1,6 +1,6 @@
-##########################
-Get started with nfstream!
-##########################
+#########################
+Get started with nfstream
+#########################
 
 
 Dealing with a big pcap file and just want to aggregate it as network flows?
@@ -24,9 +24,9 @@ nfstream make this path easier in few lines:
        print(flow)  # print, append to pandas Dataframe or whatever you want :)!
 
 
-**********
-NFStreamer
-**********
+*****************
+NFStreamer object
+*****************
 * ``source`` [default= ``None`` ]
 
   - Source of packets. Can be ``live_interface_name`` or  ``pcap_file_path``.
@@ -65,9 +65,9 @@ NFStreamer
 
 NFStreamer returns an iterator of **NFFlow** object.
 
-******
-NFFlow
-******
+*************
+NFFlow object
+*************
 
 .. list-table:: NFFlow object
    :widths: 25 25 50
@@ -166,9 +166,9 @@ NFFlow
 
 **NFFlow** is an aggregation of **NFPacket** objects.
 
-********
-NFPacket
-********
+***************
+NFPacket object
+***************
 
 .. list-table:: NFPacket object
    :widths: 25 25 50
