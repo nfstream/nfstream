@@ -1,6 +1,8 @@
-========================
-|nfstream_logo| nfstream
-========================
+|nfstream_logo|
+
+===========================================================
+nfstream: a powerful Python network data analysis framework
+===========================================================
 
 .. list-table::
    :widths: 25 25
@@ -183,7 +185,6 @@ This project is licensed under the GPLv3 License - see the License_ file for det
 .. |quality| image:: https://img.shields.io/lgtm/grade/python/github/aouinizied/nfstream.svg?logo=lgtm&logoWidth=18)
                :target: https://lgtm.com/projects/g/aouinizied/nfstream/context:python
 .. |nfstream_logo| image:: https://github.com/aouinizied/nfstream/blob/master/docs/nfstream_logo.png
-
 
 .. _License: https://github.com/aouinizied/nfstream/blob/master/LICENSE
 .. _Contributing: https://nfstream.readthedocs.io/en/latest/contributing.html
