@@ -1,8 +1,8 @@
 |nfstream_logo|
 
-===========================================================
-nfstream: a powerful Python network data analysis framework
-===========================================================
+=================================================================
+nfstream: a flexible and powerful network data analysis framework
+=================================================================
 
 .. list-table::
    :widths: 25 25
