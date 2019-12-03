@@ -1,9 +1,9 @@
 .. image:: https://github.com/aouinizied/nfstream/blob/master/docs/nfstream_logo.png
      :align: center
 
-=========================================================
+#########################################################
 nfstream: powerful Python network data analysis framework
-=========================================================
+#########################################################
 
 .. list-table::
    :widths: 25 25

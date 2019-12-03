@@ -3,11 +3,6 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-
-.. image:: asset/nfstream_logo.png
-  :scale: 75%
-  :align: center
-
 ######################
 nfstream documentation
 ######################
