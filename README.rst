@@ -11,9 +11,11 @@
    * - **Pypi package**
      - |release|
    * - **Supported versions**
-     - |python| |pypy|
+     - |python|
+     - |pypy|
    * - **Supported platforms**
-     - |linux| |macos|
+     - |linux|
+     - |macos|
    * - **Build status**
      - |build|
    * - **Documentation status**
