@@ -34,8 +34,7 @@ class NFStreamer(object):
         now = str(tm.time())
         self.sock_name = "ipc:///tmp/nfstream-{}".format(now)
         try:
-            self.cache = NFCache(observer=NFObserver(source=source, filter_str=bpf_filter, snaplen=snaplen,
-                                                     nroots=self._nroots),
+            self.cache = NFCache(observer=NFObserver(source=source, snaplen=snaplen, nroots=self._nroots),
                                  idle_timeout=idle_timeout,
                                  active_timeout=active_timeout,
                                  nroots=self._nroots,
