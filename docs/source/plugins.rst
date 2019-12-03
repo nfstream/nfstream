@@ -26,30 +26,30 @@ NFPlugin parameters
 
   - Plugin name. Must be unique as it's dynamically created as a flow attribute.
 
-* ``volatile`` [default=``False``]
+* ``volatile`` [default= ``False`` ]
 
   - Volatile plugin is available only when flow is processed. At flow expiration level, plugin is automatically removed (will not appear as flow attribute).
 
-* ``user_data`` [default=``None``]
+* ``user_data`` [default= ``None`` ]
 
   - user_data passed to the plugin. Example: external module, pickled sklearn model, etc.
 
 ****************
 NFPlugin methods
 ****************
-* ``on_init(self, obs)`` [default=``return 0``]
+* ``on_init(self, obs)`` [default= ``return 0`` ]
 
   - Method called at entry creation). When aggregating packets into flows, this method is called on ``NFFlow`` object creation based on first ``NFPacket`` object belonging to it.
 
-* ``on_update(self, obs, entry)`` [default=``pass``]
+* ``on_update(self, obs, entry)`` [default= ``pass`` ]
 
   - Method called to update each entry with its belonging obs. When aggregating packets into flows, the entry is an ``NFFlow`` object and the obs is an ``NFPacket`` object.
 
-* ``on_expire(self, entry)`` [default=``pass``]
+* ``on_expire(self, entry)`` [default= ``pass`` ]
 
   - Method called at entry expiration. When aggregating packets into flows, the entry is an ``NFFlow``
 
-* ``cleanup(self)`` [default=``pass``]
+* ``cleanup(self)`` [default= ``pass`` ]
 
   - Method called for plugin cleanup.
 
@@ -87,7 +87,7 @@ Trained model prediction
 
     class model_prediction(NFPlugin):
         def on_update(self, obs, entry):
-            if entry.packets ==3:
+            if entry.packets == 3:
                 entry.model_prediction = self.user_data.predict_proba([entry.feat_1 , entry.feat_2 , entry.feat_3])
                 # optionally we can force NFStreamer to immediately expires the flow
                 # entry.expiration_id = -1

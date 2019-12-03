@@ -1,11 +1,6 @@
-.. image:: https://github.com/aouinizied/nfstream/blob/master/docs/nfstream_logo.png
-  :scale: 75%
-  :align: left
-
-########
-
-nfstream
-########
+========================
+|nfstream_logo| nfstream
+========================
 
 |release| |python| |pypy| |platform| |license|
 
@@ -86,9 +81,9 @@ nfstream
     from nfstream import NFPlugin
 
     class my_awesome_plugin(NFPlugin):
-        def process(self, pkt, flow):
-            if pkt.length >= 666:
-                flow.my_awesome_plugin += 1
+        def on_update(self, obs, entry):
+            if obs.length >= 666:
+                entry.my_awesome_plugin += 1
 
    streamer_awesome = NFStreamer(source='devil.pcap', plugins=[my_awesome_plugin()])
    for flow in streamer_awesome:
@@ -185,6 +180,9 @@ This project is licensed under the GPLv3 License - see the License_ file for det
                :target: https://codecov.io/gh/aouinizied/nfstream/
 .. |quality| image:: https://img.shields.io/lgtm/grade/python/github/aouinizied/nfstream.svg?logo=lgtm&logoWidth=18)
                :target: https://lgtm.com/projects/g/aouinizied/nfstream/context:python
+.. |nfstream_logo| image:: https://github.com/aouinizied/nfstream/blob/master/docs/nfstream_logo.png
+                     :scale: 75%
+
 
 .. _License: https://github.com/aouinizied/nfstream/blob/master/LICENSE
 .. _Contributing: https://nfstream.readthedocs.io/en/latest/contributing.html
