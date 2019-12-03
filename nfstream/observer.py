@@ -102,6 +102,15 @@ int pcap_sendpacket(pcap_t *, const unsigned char *, int);
 char *pcap_geterr(pcap_t *);
 char *pcap_lib_version();
 int pcap_stats(pcap_t *, struct pcap_stat *);
+
+struct bpf_insn;
+struct bpf_program {
+    unsigned int bf_len;
+    struct bpf_insn *bf_insns;
+};
+int pcap_setfilter(pcap_t *, struct bpf_program *);
+int pcap_compile(pcap_t *, struct bpf_program *, const char *, int, unsigned int);
+void pcap_freecode(struct bpf_program *);
 """
 
 cc_packed = """
@@ -683,6 +692,22 @@ class _PcapFfi(object):
             # reading from savefile, but none left
             return -2
 
+    def _set_filter(self, xdev, filterstr):
+        bpf = self._ffi.new("struct bpf_program *")
+        cfilter = self._ffi.new("char []", bytes(filterstr, 'utf-8'))
+        compile_result = self._libpcap.pcap_compile(xdev, bpf, cfilter, 0, 0xffffffff)
+        if compile_result < 0:
+            # get error, raise exception
+            s = self._ffi.string(self._libpcap.pcap_geterr(xdev))
+            raise PcapException("Error compiling filter expression: {}".format(s))
+
+        sf_result = self._libpcap.pcap_setfilter(xdev, bpf)
+        if sf_result < 0:
+            # get error, raise exception
+            s = self._ffi.string(self._libpcap.pcap_geterr(xdev))
+            raise PcapException("Error setting filter on pcap handle: {}".format(s))
+        self._libpcap.pcap_freecode(bpf)
+
 
 def pcap_devices():
     return _PcapFfi.instance().devices
@@ -694,7 +719,7 @@ class PcapReader(object):
     """
     __slots__ = ['_ffi', '_libpcap', '_base', '_pcapdev', '_user_callback']
 
-    def __init__(self, filename):
+    def __init__(self, filename, filterstr=None):
         self._base = _PcapFfi.instance()
         self._ffi = self._base.ffi
         self._libpcap = self._base.lib
@@ -713,11 +738,17 @@ class PcapReader(object):
             raise PcapException("Don't know how to handle datalink type {}".format(dl))
         self._pcapdev = PcapDev(dl, 0, 0, _PcapFfi.instance().version, pcap)
 
+        if filterstr is not None:
+            self._base._set_filter(pcap, filterstr)
+
     def close(self):
         self._libpcap.pcap_close(self._pcapdev.pcap)
 
     def recv_packet(self, nroots=1):
         return self._base._recv_packet(self._pcapdev.pcap, nroots)
+
+    def set_filter(self, filterstr):
+        self._base._set_filter(self._pcapdev.pcap, filterstr)
 
 
 class PcapLiveDevice(object):
@@ -728,7 +759,7 @@ class PcapLiveDevice(object):
     _lock = Lock()
     __slots__ = ['_ffi', '_libpcap', '_base', '_pcapdev', '_devname', '_fd', '_user_callback', '_nroots']
 
-    def __init__(self, device, snaplen, promisc, to_ms, nonblock):
+    def __init__(self, device, snaplen, filterstr, promisc, to_ms, nonblock):
         self._base = _PcapFfi.instance()
         self._ffi = self._base.ffi
         self._libpcap = self._base.lib
@@ -771,6 +802,9 @@ class PcapLiveDevice(object):
         with PcapLiveDevice._lock:
             PcapLiveDevice._OpenDevices[id(self)] = self._pcapdev.pcap
 
+        if filterstr is not None:
+            self.set_filter(filterstr)
+
     def recv_packet(self,  timeout=0.01, nroots=1):
         if timeout is None or timeout < 0:
             timeout = None
@@ -792,6 +826,9 @@ class PcapLiveDevice(object):
             xid = id(self)
             del PcapLiveDevice._OpenDevices[xid]
         self._libpcap.pcap_close(self._pcapdev.pcap)
+
+    def set_filter(self, filterstr):
+        self._base._set_filter(self._pcapdev.pcap, filterstr)
 
 
 _PcapFfi()  # instantiate singleton
@@ -815,18 +852,18 @@ def check_source_type(source):
 
 
 class NFObserver:
-    def __init__(self, source=None, snaplen=65535, promisc=1, to_ms=0, non_block=True, nroots=1):
+    def __init__(self, source=None, snaplen=65535, promisc=1, to_ms=0, filter_str=None, non_block=True, nroots=1):
         source_type = check_source_type(source)
         source = source_type[0]
         if source_type[1] == 1:  # Live interface
             try:
                 self.packet_generator = PcapLiveDevice(device=source, snaplen=snaplen, promisc=promisc, to_ms=to_ms,
-                                                       nonblock=non_block)
+                                                       filterstr=filter_str, nonblock=non_block)
             except PcapException:
                 raise OSError("Root privilege needed for live capture on {} interface.".format(source))
         elif source_type[1] == 0:  # pcap case
             try:
-                self.packet_generator = PcapReader(filename=source)
+                self.packet_generator = PcapReader(filename=source, filterstr=filter_str)
             except PcapException:
                 raise OSError('Unable to read pcap format of: {}'.format(source))
         else:
