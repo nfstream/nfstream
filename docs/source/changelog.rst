@@ -104,3 +104,9 @@ Changelog
 **2.0.1 (2019-11-29)**
 
 * Fix pypy3 wheel.
+
+**3.0.0 (2019-12-04)**
+
+* Sync with nDPI major.minor versions.
+* New NFPlugin API definition.
+* Fix macOS wheels for 10.13 and 10.14
