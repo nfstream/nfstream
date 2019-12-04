@@ -110,3 +110,7 @@ Changelog
 * Sync with nDPI major.minor versions.
 * New NFPlugin API definition.
 * Fix macOS wheels for 10.13 and 10.14
+
+**3.0.1 (2019-12-04)**
+
+* Fix macOS wheels 10.14
