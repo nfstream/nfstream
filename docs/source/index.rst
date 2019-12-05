@@ -1,10 +1,9 @@
 .. image:: asset/nfstream_logo.png
      :scale: 100%
-     :align: left
+     :align: center
 
 
 =================================================================
-
 nfstream: a flexible and powerful network data analysis framework
 =================================================================
 
@@ -32,4 +31,5 @@ Main Features
 .. _nDPI: https://www.ntop.org/products/deep-packet-inspection/ndpi/
 .. _NFPlugin: https://nfstream.readthedocs.io/en/latest/plugins.html
 .. _reliable: http://people.ac.upc.edu/pbarlet/papers/ground-truth.pam2014.pdf
+
 
