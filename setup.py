@@ -43,7 +43,7 @@ except ImportError:
 
 try:
     with open('README.rst', 'rt') as readme:
-        description = readme.read().replace('|nfstream_logo|\n', '')
+        description = readme.read()
 except IOError:
     # maybe running setup.py from some other dir
     description = ''
