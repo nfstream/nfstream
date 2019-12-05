@@ -12,7 +12,6 @@
 
 nfstream: a flexible and powerful network data analysis framework
 #################################################################
-**nfstream** is a flexible and powerful network data analysis framework.
 
 **Main Features**
 
