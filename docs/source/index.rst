@@ -3,14 +3,16 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+######################
+nfstream documentation
+######################
 
-.. image:: asset/nfstream_doc.png
+.. image:: asset/nfstream_logo.png
   :scale: 100%
   :align: center
 
 
-
-**nfstream** is a flexible and powerful network data analysis framework
+a flexible and powerful network data analysis framework
 
 **Main Features**
 
