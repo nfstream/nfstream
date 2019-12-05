@@ -3,7 +3,6 @@
      :align: right
 
 =================================================================
-
 nfstream: a flexible and powerful network data analysis framework
 =================================================================
 
