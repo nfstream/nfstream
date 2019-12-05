@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 
-.. image:: asset/nfstream_logo.png
+.. image:: asset/nfstream_doc.png
   :scale: 100%
   :align: center
 
@@ -20,9 +20,9 @@
 * **Machine Learning oriented:** add your trained model as an NFPlugin_.
 
 
+
 .. toctree::
    :maxdepth: 2
-   :caption: Table of Contents:
 
    installation
    architecture
