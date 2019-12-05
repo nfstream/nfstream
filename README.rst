@@ -1,6 +1,6 @@
 .. image:: docs/nfstream_logo.png
      :scale: 100%
-     :align: left
+     :align: right
 
 =================================================================
 
