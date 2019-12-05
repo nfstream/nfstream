@@ -5,16 +5,15 @@
 
 
 .. image:: asset/nfstream_logo.png
-  :scale: 75%
-  :align: left
+  :scale: 100%
+  :align: center
 
-######################
+=================================================================
+nfstream: a flexible and powerful network data analysis framework
+=================================================================
 
-nfstream documentation
-######################
-**nfstream** is a flexible and lightweight network data analysis framework.
-
-**Main Features**
+Main Features
+=============
 
 * **Performance:** **nfstream** is designed to be fast (pypy3 support) with a small CPU and memory footprint.
 * **Layer-7 visibility:** **nfstream** deep packet inspection engine is based on nDPI_ library. It allows nfstream to perform reliable_ encrypted applications identification and metadata extraction (e.g. TLS, SSH, DNS, HTTP).
