@@ -3,9 +3,9 @@
      :align: center
 
 
-=================================================================
-nfstream: a flexible and powerful network data analysis framework
-=================================================================
+-------------------------------------------------------
+a flexible and powerful network data analysis framework
+-------------------------------------------------------
 
 Main Features
 =============
