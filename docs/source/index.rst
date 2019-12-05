@@ -1,11 +1,11 @@
-.. image:: asset/nfstream_doc.png
+.. image:: asset/nfstream_logo.png
      :scale: 100%
      :align: center
 
 
--------------------------------------------------------
-a flexible and powerful network data analysis framework
--------------------------------------------------------
+=================================================================
+nfstream: a flexible and powerful network data analysis framework
+=================================================================
 
 Main Features
 =============
