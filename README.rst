@@ -1,6 +1,6 @@
-.. image:: https://github.com/aouinizied/nfstream/blob/master/docs/source/asset/nfstream_logo.png
+.. image:: https://github.com/aouinizied/nfstream/blob/master/docs/source/asset/logo.png
      :scale: 100%
-     :align: left
+     :align: center
 
 =================================================================
 nfstream: a flexible and powerful network data analysis framework

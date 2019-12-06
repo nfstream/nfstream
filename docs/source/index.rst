@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 
-.. image:: asset/nfstream_logo.png
+.. image:: asset/logo.png
   :scale: 100%
   :align: center
 
