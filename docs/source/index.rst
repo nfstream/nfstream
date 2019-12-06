@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 
-.. image:: asset/logo.png
+.. image:: asset/logo_doc.png
   :scale: 100%
   :align: center
 

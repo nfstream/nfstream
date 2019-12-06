@@ -1,6 +1,6 @@
-.. image:: https://github.com/aouinizied/nfstream/blob/master/docs/source/asset/logo.png
+.. image:: https://github.com/aouinizied/nfstream/blob/master/docs/source/asset/logo_main.png
      :scale: 100%
-     :align: center
+     :align: left
 
 
 .. list-table::
