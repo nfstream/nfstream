@@ -837,7 +837,6 @@ class NFObserver:
         else:
             self.packet_generator = None
         self.nroots = nroots
-        self.processed_pkts = 0
         self.mode = source_type[1]
 
     def __iter__(self):
@@ -846,7 +845,6 @@ class NFObserver:
                 while True:
                     try:
                         r = self.packet_generator.recv_packet(nroots=self.nroots)
-                        self.processed_pkts += 1  # increment total processed packet counter
                         if r is None:
                             yield r  # trigger cleaning
                         elif r == -2:
