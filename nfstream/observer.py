@@ -439,7 +439,6 @@ class _PcapFfi(object):
         proto = 0
         time = 0
         time = (header.tv_sec * TICK_RESOLUTION) + (header.tv_usec / (1000000 / TICK_RESOLUTION))
-
         datalink_type = self._libpcap.pcap_datalink(xdev)
         datalink_check = True
         while datalink_check:
@@ -504,28 +503,34 @@ class _PcapFfi(object):
             else:
                 return None
 
-            if type == 0x8100:
-                vlan_id = ((packet[ip_offset] << 8) + packet[ip_offset + 1]) & 0xFFF
-                type = (packet[ip_offset + 2] << 8) + packet[ip_offset + 3]
-                ip_offset += 4
-                if type == 0x8100:  # Double tagging for 802.1Q
+            ether_type_check = True
+            while ether_type_check:
+                ether_type_check = False
+                if type == 0x8100:
                     vlan_id = ((packet[ip_offset] << 8) + packet[ip_offset + 1]) & 0xFFF
                     type = (packet[ip_offset + 2] << 8) + packet[ip_offset + 3]
                     ip_offset += 4
-            elif (type == 0x8847) or (type == 0x8848):
-                tmp_u32 = self._ffi.cast('struct pp_32 *', packet + ip_offset)
-                mpls.u32 = int(ntohl(tmp_u32.value))
-                type = 0x0800
-                ip_offset += 4
-                while not mpls.mpls.s:
-                    tmp_u32_loop = self._ffi.cast('struct pp_32 *', packet + ip_offset)
-                    mpls.u32 = int(ntohl(tmp_u32_loop.value))
+                    while type == 0x8100 and ip_offset < header.caplen:  # Double tagging for 802.1Q
+                        vlan_id = ((packet[ip_offset] << 8) + packet[ip_offset + 1]) & 0xFFF
+                        type = (packet[ip_offset + 2] << 8) + packet[ip_offset + 3]
+                        ip_offset += 4
+                    ether_type_check = True
+                elif (type == 0x8847) or (type == 0x8848):
+                    tmp_u32 = self._ffi.cast('struct pp_32 *', packet + ip_offset)
+                    mpls.u32 = int(ntohl(tmp_u32.value))
+                    type = 0x0800
                     ip_offset += 4
-            elif type == 0x8864:
-                type = 0x0800
-                ip_offset += 8
-            else:
-                pass
+                    while not mpls.mpls.s:
+                        tmp_u32_loop = self._ffi.cast('struct pp_32 *', packet + ip_offset)
+                        mpls.u32 = int(ntohl(tmp_u32_loop.value))
+                        ip_offset += 4
+                    ether_type_check = True
+                elif type == 0x8864:
+                    type = 0x0800
+                    ip_offset += 8
+                    ether_type_check = True
+                else:
+                    pass
 
             ip_check = True
             while ip_check:

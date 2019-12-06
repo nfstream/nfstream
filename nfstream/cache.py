@@ -19,7 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from .plugin import nfstream_core_plugins, nfplugins_validator, ndpi_infos_plugins, nDPI
 from collections import OrderedDict
-from .flow import NFFlow
+from .entry import NFEntry
 from .ndpi import NDPI
 import time as tm
 import zmq
@@ -46,7 +46,7 @@ class LRU(OrderedDict):
 
 
 class NFCache(object):
-    """ NFCache for flows management """
+    """ NFCache for entries management """
     def __init__(self, observer=None, idle_timeout=30, active_timeout=300, nroots=512,
                  core_plugins=nfstream_core_plugins, user_plugins=(),
                  dissect=True, max_tcp_dissections=10, max_udp_dissections=16, sock_name=None):
@@ -57,7 +57,7 @@ class NFCache(object):
             self.producer.bind(sock_name)
         except zmq.error.ZMQError:
             raise OSError("NFStreamer failed to bind socket (producer).")
-        self._roots = []  # root structure for flow caching: dict of LRUs
+        self._roots = []  # root structure for entries caching: dict of LRUs
         self.nroots = nroots
         self.idle_timeout = idle_timeout * 1000
         self.active_timeout = active_timeout * 1000
@@ -69,7 +69,7 @@ class NFCache(object):
             self._roots.append(LRU(idle_timeout=self.idle_timeout))
         self.current_tick = 0
         self.last_visited_root_idx = 0
-        self.active_flows = 0
+        self.active_entries = 0
         self.idx_generator = 0
         self.processed_pkts = 0
         self.performances = [0, 0]
@@ -103,10 +103,10 @@ class NFCache(object):
                 if idle_item is not None:  # idle
                     self.producer.send_pyobj(idle_item)
                     del self._roots[self.last_visited_root_idx][idle_item.nfhash]
-                    self.active_flows -= 1  # remove it
+                    self.active_entries -= 1  # remove it
                     scanned += 1
                 else:
-                    remaining = False  # no idle flows to poll
+                    remaining = False  # no idle entries to poll
             except StopIteration:
                 remaining = False  # root is empty
         self.last_visited_root_idx += 1  # we move to next root
@@ -119,7 +119,7 @@ class NFCache(object):
             for h in list(self._roots[root_idx].keys()):
                 f = self._roots[root_idx][h].clean(self.core_plugins, self.user_plugins)
                 self.producer.send_pyobj(f)
-                self.active_flows -= 1
+                self.active_entries -= 1
                 del self._roots[root_idx][h]
         for plugin in self.core_plugins:
             plugin.cleanup()
@@ -128,47 +128,47 @@ class NFCache(object):
         self.observer.packet_generator.close()  # close generator
         self.producer.send_pyobj(None)
 
-    def consume(self, ppkt):
-        """ consume a parsed packet and produce flow """
+    def consume(self, obs):
+        """ consume an observable and produce entry """
         # classical create/update
-        try:  # update flow
-            flow = self._roots[ppkt.root_idx][ppkt.nfhash].update(ppkt,
-                                                                  self.core_plugins,
-                                                                  self.user_plugins,
-                                                                  self.active_timeout)
-            if flow is not None:
-                if flow.expiration_id < 0:  # custom expiration
-                    self.producer.send_pyobj(flow)
-                    del self._roots[ppkt.root_idx][flow.nfhash]
-                    self.active_flows -= 1
+        try:  # update entry
+            entry = self._roots[obs.root_idx][obs.nfhash].update(obs,
+                                                                 self.core_plugins,
+                                                                 self.user_plugins,
+                                                                 self.active_timeout)
+            if entry is not None:
+                if entry.expiration_id < 0:  # custom expiration
+                    self.producer.send_pyobj(entry)
+                    del self._roots[obs.root_idx][entry.nfhash]
+                    self.active_entries -= 1
                 else:  # active expiration
-                    parent_id = flow.id
-                    self.producer.send_pyobj(flow)
-                    del self._roots[ppkt.root_idx][flow.nfhash]
-                    self._roots[ppkt.root_idx][ppkt.nfhash] = NFFlow(ppkt,
-                                                                     self.core_plugins,
-                                                                     self.user_plugins,
-                                                                     parent_id)
-        except KeyError:  # create flow
-            self._roots[ppkt.root_idx][ppkt.nfhash] = NFFlow(ppkt,
-                                                             self.core_plugins,
-                                                             self.user_plugins,
-                                                             self.idx_generator)
-            self.active_flows += 1
+                    parent_id = entry.id
+                    self.producer.send_pyobj(entry)
+                    del self._roots[obs.root_idx][entry.nfhash]
+                    self._roots[obs.root_idx][obs.nfhash] = NFEntry(obs,
+                                                                    self.core_plugins,
+                                                                    self.user_plugins,
+                                                                    parent_id)
+        except KeyError:  # create entry
+            self._roots[obs.root_idx][obs.nfhash] = NFEntry(obs,
+                                                            self.core_plugins,
+                                                            self.user_plugins,
+                                                            self.idx_generator)
+            self.active_entries += 1
             self.idx_generator += 1
 
     def run(self):
         """ run NFCache main processing loop """
-        for parsed_packet in self.observer:
+        for observable in self.observer:
             if not self.stopped:
-                if parsed_packet is not None:
+                if observable is not None:
                     go_scan = False
-                    if parsed_packet.time - self.idle_scan_tick >= self.idle_scan_period:
+                    if observable.time - self.idle_scan_tick >= self.idle_scan_period:
                         go_scan = True
-                        self.idle_scan_tick = parsed_packet.time
-                    if parsed_packet.time >= self.current_tick:
-                        self.current_tick = parsed_packet.time
-                    self.consume(parsed_packet)
+                        self.idle_scan_tick = observable.time
+                    if observable.time >= self.current_tick:
+                        self.current_tick = observable.time
+                    self.consume(observable)
                     if go_scan:
                         self.idle_scan()  # perform a micro scan
                 else:

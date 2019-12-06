@@ -19,14 +19,14 @@ If not, see <http://www.gnu.org/licenses/>.
 from collections import namedtuple
 
 
-class NFFlow(object):
-    """ Flow entry class """
-    def __init__(self, ppkt, core, user, idx):
+class NFEntry(object):
+    """ NFEntry base class """
+    def __init__(self, obs, core, user, idx):
         self.id = idx
         for plugin in core:  # for each NFCache core plugin, we init and update
-            setattr(self, plugin.name, plugin.on_init(ppkt))
+            setattr(self, plugin.name, plugin.on_init(obs))
         for plugin in user:  # for each NFCache core plugin, we init and update
-            setattr(self, plugin.name, plugin.on_init(ppkt))
+            setattr(self, plugin.name, plugin.on_init(obs))
 
     def clean(self, core, user):
         """ Volatile attributes cleaner """
@@ -40,16 +40,16 @@ class NFFlow(object):
                 delattr(self, plugin.name)
         return self
 
-    def update(self, ppkt, core, user, to):
+    def update(self, obs, core, user, to):
         """ Update a flow from a packet  """
-        if ppkt.time - getattr(self, 'first_seen') >= to:
+        if obs.time - getattr(self, 'first_seen') >= to:
             setattr(self, 'expiration_id', 1)
             return self.clean(core, user)
         else:
             for plugin in core:  # for each NFCache core plugin, we update
-                plugin.on_update(ppkt, self)
+                plugin.on_update(obs, self)
             for plugin in user:  # for each NFCache core plugin, we update
-                plugin.on_update(ppkt, self)
+                plugin.on_update(obs, self)
             if getattr(self, 'expiration_id') < -1:  # custom export
                 return self.clean(core, user)
 
@@ -62,4 +62,4 @@ class NFFlow(object):
 
     def __str__(self):
         """ String representation of flow """
-        return str(namedtuple('NFFlow', self.__dict__.keys())(*self.__dict__.values()))
+        return str(namedtuple(type(self).__name__, self.__dict__.keys())(*self.__dict__.values()))

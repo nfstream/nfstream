@@ -54,7 +54,7 @@ How to use it?
 
 .. code-block:: python
 
-    NFFlow(
+    NFEntry(
         flow_id=0,
         first_seen=1472393122365,
         last_seen=1472393123665,

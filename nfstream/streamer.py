@@ -27,7 +27,7 @@ import sys
 class NFStreamer(object):
     """ Network Flow Streamer """
 
-    def __init__(self, source=None, bpf_filter=None, snaplen=65535, idle_timeout=30, active_timeout=300,
+    def __init__(self, source=None, snaplen=65535, idle_timeout=30, active_timeout=300,
                  plugins=(), dissect=True, max_tcp_dissections=10, max_udp_dissections=16):
         self._consumer = zmq.Context().socket(zmq.PULL)
         self._nroots = 512
@@ -70,5 +70,7 @@ class NFStreamer(object):
                         self.cache.stopped = True
         except RuntimeError:
             return None
+
+
 
 

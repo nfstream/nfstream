@@ -58,13 +58,13 @@ NFStreamer object
 
   - Maximum per flow UDP packets to dissect (ignored when dissect=False).
 
-NFStreamer returns an iterator of **NFFlow** object.
+NFStreamer returns an iterator of **NFEntry** object.
 
-*************
-NFFlow object
-*************
+**************
+NFEntry object
+**************
 
-.. list-table:: NFFlow object
+.. list-table:: NFEntry object
    :widths: 25 25 50
    :header-rows: 1
 
@@ -159,7 +159,7 @@ NFFlow object
      - str
      - J3A_ server fingerprint.
 
-**NFFlow** is an aggregation of **NFPacket** objects.
+**NFEntry** is an aggregation of **NFPacket** objects.
 
 ***************
 NFPacket object

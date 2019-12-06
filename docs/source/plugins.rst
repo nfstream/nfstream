@@ -39,15 +39,15 @@ NFPlugin methods
 ****************
 * ``on_init(self, obs)`` [default= ``return 0`` ]
 
-  - Method called at entry creation). When aggregating packets into flows, this method is called on ``NFFlow`` object creation based on first ``NFPacket`` object belonging to it.
+  - Method called at entry creation). When aggregating packets into flows, this method is called on ``NFEntry`` object creation based on first ``NFPacket`` object belonging to it.
 
 * ``on_update(self, obs, entry)`` [default= ``pass`` ]
 
-  - Method called to update each entry with its belonging obs. When aggregating packets into flows, the entry is an ``NFFlow`` object and the obs is an ``NFPacket`` object.
+  - Method called to update each entry with its belonging obs. When aggregating packets into flows, the entry is an ``NFEntry`` object and the obs is an ``NFPacket`` object.
 
 * ``on_expire(self, entry)`` [default= ``pass`` ]
 
-  - Method called at entry expiration. When aggregating packets into flows, the entry is an ``NFFlow``
+  - Method called at entry expiration. When aggregating packets into flows, the entry is an ``NFEntry``
 
 * ``cleanup(self)`` [default= ``pass`` ]
 
