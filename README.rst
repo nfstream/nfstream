@@ -6,6 +6,7 @@
 .. list-table::
    :widths: 25 25
    :header-rows: 0
+   :align: center
 
    * - Latest Release
      - |release|
