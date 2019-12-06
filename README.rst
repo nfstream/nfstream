@@ -6,7 +6,6 @@
 .. list-table::
    :widths: 25 25
    :header-rows: 0
-   :align: center
 
    * - Latest Release
      - |release|
@@ -29,8 +28,7 @@
    * - Discussions Channel
      - |gitter|
 
-Main Features
-=============
+**Main Features**
 
 * **Performance:** **nfstream** is designed to be fast (pypy3 support) with a small CPU and memory footprint.
 * **Layer-7 visibility:** **nfstream** deep packet inspection engine is based on nDPI_ library. It allows nfstream to perform reliable_ encrypted applications identification and metadata extraction (e.g. TLS, SSH, DNS, HTTP).
