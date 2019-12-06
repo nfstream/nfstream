@@ -42,7 +42,8 @@ class LRU(OrderedDict):
         return super().__eq__(o)
 
     def get_idle_item(self, current_tick, core, user):
-        return self[next(iter(self))].idle(self._idle_timeout, current_tick, core, user)
+        nxt = next(iter(self))
+        return nxt, self[nxt].idle(self._idle_timeout, current_tick, core, user)
 
 
 class NFCache(object):
@@ -97,12 +98,12 @@ class NFCache(object):
         scanned = 0
         while remaining and scanned < self.idle_scan_budget:
             try:
-                idle_item = self._roots[self.last_visited_root_idx].get_idle_item(self.current_tick,
-                                                                                  self.core_plugins,
-                                                                                  self.user_plugins)
+                idle_idx, idle_item = self._roots[self.last_visited_root_idx].get_idle_item(self.current_tick,
+                                                                                            self.core_plugins,
+                                                                                            self.user_plugins)
                 if idle_item is not None:  # idle
                     self.producer.send_pyobj(idle_item)
-                    del self._roots[self.last_visited_root_idx][idle_item.nfhash]
+                    del self._roots[self.last_visited_root_idx][idle_idx]
                     self.active_entries -= 1  # remove it
                     scanned += 1
                 else:
@@ -139,12 +140,12 @@ class NFCache(object):
             if entry is not None:
                 if entry.expiration_id < 0:  # custom expiration
                     self.producer.send_pyobj(entry)
-                    del self._roots[obs.root_idx][entry.nfhash]
+                    del self._roots[obs.root_idx][obs.nfhash]
                     self.active_entries -= 1
                 else:  # active expiration
                     parent_id = entry.id
                     self.producer.send_pyobj(entry)
-                    del self._roots[obs.root_idx][entry.nfhash]
+                    del self._roots[obs.root_idx][obs.nfhash]
                     self._roots[obs.root_idx][obs.nfhash] = NFEntry(obs,
                                                                     self.core_plugins,
                                                                     self.user_plugins,

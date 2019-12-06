@@ -80,9 +80,6 @@ NFEntry object
    * - last_seen
      - int
      - Last packet timestamp in milliseconds.
-   * - nfhash
-     - int
-     - nfstream hash value for flow (not unique).
    * - version
      - int
      - IP version.
@@ -181,9 +178,6 @@ NFPacket object
    * - length
      - int
      - Packet size.
-   * - nfhash
-     - int
-     - nfstream hash value for packet (not unique).
    * - ip_src
      - int
      - Source IP address int value.

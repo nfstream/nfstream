@@ -58,7 +58,6 @@ How to use it?
         flow_id=0,
         first_seen=1472393122365,
         last_seen=1472393123665,
-        nfhash=1456034341,
         version=4,
         src_port=52066,
         dst_port=443,

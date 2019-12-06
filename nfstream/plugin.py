@@ -324,7 +324,7 @@ class j3a_server(NFPlugin):
 nfstream_core_plugins = [packet_direction_setter(volatile=True),
                          first_seen(),
                          last_seen(),
-                         nfhash(),
+                         nfhash(volatile=True),
                          ip_src(volatile=True),
                          ip_dst(volatile=True),
                          version(),
