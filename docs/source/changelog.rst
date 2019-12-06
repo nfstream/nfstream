@@ -114,3 +114,8 @@ Changelog
 **3.0.1 (2019-12-04)**
 
 * Fix macOS wheels 10.14
+
+**3.0.2 (2019-12-06)**
+
+* ether type double stacking implementation.
+* Minor fixes.
