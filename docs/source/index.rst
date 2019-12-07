@@ -6,7 +6,7 @@
 
 .. image:: asset/logo_main.png
   :scale: 100%
-  :align: left
+  :align: center
 
 #############
 
