@@ -191,7 +191,7 @@ This project is licensed under the GPLv3 License - see the License_ file for det
 .. _these fine people: https://github.com/aouinizied/nfstream/graphs/contributors
 .. _Zied Aouini: https://www.linkedin.com/in/dr-zied-aouini
 .. _aouinizied: https://github.com/aouinizied
-.. _Documentation: https://nfstream.readthedocs.io/en/latest/
+.. _Documentation: https://readthedocs.org/projects/nfstream/downloads/pdf/latest/
 .. _nDPI: https://www.ntop.org/products/deep-packet-inspection/ndpi/
 .. _NFPlugin: https://nfstream.readthedocs.io/en/latest/plugins.html
 .. _reliable: http://people.ac.upc.edu/pbarlet/papers/ground-truth.pam2014.pdf
