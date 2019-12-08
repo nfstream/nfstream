@@ -19,8 +19,15 @@ If not, see <http://www.gnu.org/licenses/>.
 from .cache import NFCache
 from .observer import NFObserver
 from threading import Thread
+from random import randrange
+import socket
 import zmq
 import sys
+
+
+def port_in_use(port):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(('localhost', port)) == 0
 
 
 class NFStreamer(object):
@@ -30,7 +37,13 @@ class NFStreamer(object):
                  plugins=(), dissect=True, max_tcp_dissections=10, max_udp_dissections=16):
         self._consumer = zmq.Context().socket(zmq.PULL)
         self._nroots = 512
-        self.sock_name = "tcp://127.0.0.1:5557"
+
+        valid_port_candidate_found = False
+        while not valid_port_candidate_found:
+            candidate = randrange(49152, 65536, 1)
+            if not port_in_use(candidate):
+                valid_port_candidate_found = True
+                self.sock_name = "tcp://127.0.0.1:{}".format(candidate)
         try:
             self.cache = NFCache(observer=NFObserver(source=source, snaplen=snaplen, nroots=self._nroots),
                                  idle_timeout=idle_timeout,
