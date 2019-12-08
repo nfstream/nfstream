@@ -22,10 +22,6 @@ import os
 import subprocess
 import shutil
 
-
-if os.name != 'posix':
-    sys.exit("Sorry, Windows is not supported by nfstream.")
-
 if (not sys.version_info[0] == 3) and (not sys.version_info[1] >= 6):  # avoid py27 wheels generation on macos runners
     sys.exit("Sorry, nfstream requires Python3.6+ versions.")
 
@@ -57,18 +53,19 @@ class BuildPyCommand(build_py):
 
 class BuildNdpiCommand(build_ext):
     def run(self):
-        subprocess.check_call(['git', 'clone', '--branch', '3.0-stable', 'https://github.com/ntop/nDPI.git'])
-        os.chdir('nDPI/')
-        subprocess.check_call(['./autogen.sh'])
-        subprocess.check_call(['./configure'])
-        subprocess.check_call(['make'])
-        os.chdir('src/')
-        os.chdir('lib/')
-        shutil.copy2('libndpi.so', '../../../nfstream/libs/')
-        os.chdir('..')
-        os.chdir('..')
-        os.chdir('..')
-        shutil.rmtree('nDPI/', ignore_errors=True)
+        if os.name == 'posix':
+            subprocess.check_call(['git', 'clone', '--branch', '3.0-stable', 'https://github.com/ntop/nDPI.git'])
+            os.chdir('nDPI/')
+            subprocess.check_call(['./autogen.sh'])
+            subprocess.check_call(['./configure'])
+            subprocess.check_call(['make'])
+            os.chdir('src/')
+            os.chdir('lib/')
+            shutil.copy2('libndpi.so', '../../../nfstream/libs/')
+            os.chdir('..')
+            os.chdir('..')
+            os.chdir('..')
+            shutil.rmtree('nDPI/', ignore_errors=True)
         build_ext.run(self)
 
 
