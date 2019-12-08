@@ -19,15 +19,6 @@ install:
   - if "%type%"=="Cygwin" if not exist "C:\cygwin64" mkdir "C:\cygwin64"
   - if "%type%"=="Cygwin" appveyor-retry appveyor DownloadFile "http://cygwin.com/setup-x86_64.exe" -FileName "C:\cygwin64\setup-x86_64.exe"
   - if "%type%"=="Cygwin" C:\cygwin64\setup-x86_64.exe --quiet-mode --no-desktop --no-shortcuts --upgrade-also --root "C:\cygwin64" --local-package-dir "C:\cache\cygwin" --site "http://mirrors.kernel.org/sourceware/cygwin" --packages cygwin64-gcc,autoconf,autoconf2.5,automake,automake1.15,binutils,cmake,cygwin-devel,gcc-core,gcc-tools-epoch2-autoconf,gcc-tools-epoch2-automake,libtool,make,pkg-config,cygwin64-w32api-headers,cygwin64-w32api-runtime,gcc-g++
-  - cygwin64	Cygwin 64bit toolchain (source)
-    cygwin64-binutils	Binutils for Cygwin 64bit toolchain (source)
-    cygwin64-default-manifest	Default application manifest for Cygwin64 toolchain (source)
-    cygwin64-gcc	GCC for Cygwin 64bit toolchain (source)
-    cygwin64-gettext	GNU Gettext for Cygwin 64bit toolchain (source)
-    cygwin64-libbfd	BFD for Cygwin 64bit toolchain (source)
-    cygwin64-libiconv	Iconv for Cygwin 64bit toolchain (source)
-    cygwin64-libtool	libtool for Cygwin 64bit toolchain (source)
-
   # nDPI
   - '%command% "git clone --branch 3.0-stable https://github.com/aouinizied/nDPI.git"'
   - '%command% "cd nDPI; ./autogen.sh; make; cd src; cd lib; cp libndpi.so $APPVEYOR_BUILD_FOLDER/nfstream/libs/libndpi.so"'
