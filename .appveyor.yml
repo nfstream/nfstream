@@ -28,5 +28,8 @@ install:
   - "%PYTHON%\\python.exe setup.py bdist_wheel"
   - ls dist/
 
+test_script:
+  - "%PYTHON%\\python.exe tests.py"
+
 artifacts:
   - path: dist/*
