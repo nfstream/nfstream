@@ -35,7 +35,6 @@ class NFStreamer(object):
 
     def __init__(self, source=None, snaplen=65535, idle_timeout=30, active_timeout=300,
                  plugins=(), dissect=True, max_tcp_dissections=10, max_udp_dissections=16):
-        self._consumer = zmq.Context().socket(zmq.PULL)
         self._nroots = 512
 
         valid_port_candidate_found = False
@@ -65,6 +64,7 @@ class NFStreamer(object):
         self._stopped = False
 
     def __iter__(self):
+        self._consumer = zmq.Context().socket(zmq.PULL)
         try:
             self._producer.start()
             self._consumer.connect(self.sock_name)

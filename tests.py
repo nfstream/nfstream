@@ -187,7 +187,6 @@ class TestMethods(unittest.TestCase):
                     except KeyError:
                         result[flow.application_name] = flow.total_bytes
             self.assertEqual(result, ground_truth_ndpi[test_case_name])
-            del streamer_test
             print('PASS.')
 
     def test_expiration_management(self):

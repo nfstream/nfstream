@@ -26,7 +26,7 @@ install:
   - "%PYTHON%\\python.exe -m pip install -r requirements.txt"
   - "%PYTHON%\\python.exe -m pip install codecov"
   - "%PYTHON%\\python.exe setup.py bdist_wheel"
-  - ls dist\*
+  - ls dist/
 
 artifacts:
-  - path: dist\*
+  - path: dist/*
