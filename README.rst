@@ -16,9 +16,7 @@ Project Status
    * -
      - |pypy|
    * - Supported Platforms
-     - |linux|
-   * -
-     - |macos|
+     - |linux| |macos|
    * - Build Status
      - |build|
    * - Documentation Status
@@ -177,9 +175,9 @@ This project is licensed under the GPLv3 License - see the License_ file for det
             :target: https://travis-ci.org/aouinizied/nfstream
 .. |doc| image:: https://readthedocs.org/projects/nfstream/badge/?version=latest
                :target: https://nfstream.readthedocs.io/en/latest/?badge=latest
-.. |linux| image:: https://img.shields.io/badge/linux-x86__64-blue
+.. |linux| image:: https://raw.githubusercontent.com/wiki/ryanoasis/nerd-fonts/screenshots/v1.0.x/linux-pass-sm.png
             :target: https://travis-ci.org/aouinizied/nfstream
-.. |macos| image:: https://img.shields.io/badge/%09macOS-%3E%3D10.13-blue
+.. |macos| image:: https://raw.githubusercontent.com/wiki/ryanoasis/nerd-fonts/screenshots/v1.0.x/mac-pass-sm.png
             :target: https://travis-ci.org/aouinizied/nfstream
 .. |coverage| image:: https://codecov.io/gh/aouinizied/nfstream/branch/master/graph/badge.svg
                :target: https://codecov.io/gh/aouinizied/nfstream/
