@@ -1215,7 +1215,10 @@ class NDPI():
     def __init__(self, libpath=None, max_tcp_dissections=10, max_udp_dissections=16):
         self._ffi = cffi.FFI()
         if libpath is None:
-            self._ndpi = self._ffi.dlopen(dirname(abspath(__file__)) + '/libs/libndpi.so')
+            if "win" in sys.platform[:3]:
+                self._ndpi = self._ffi.dlopen(dirname(abspath(__file__)) + '/libs/libndpi.a')
+            else:
+                self._ndpi = self._ffi.dlopen(dirname(abspath(__file__)) + '/libs/libndpi.so')
         else:
             self._ndpi = self._ffi.dlopen(libpath)
         self._ffi.cdef(cc)
