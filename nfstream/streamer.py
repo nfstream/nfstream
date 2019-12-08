@@ -19,7 +19,6 @@ If not, see <http://www.gnu.org/licenses/>.
 from .cache import NFCache
 from .observer import NFObserver
 from threading import Thread
-import time as tm
 import zmq
 import sys
 
@@ -31,8 +30,7 @@ class NFStreamer(object):
                  plugins=(), dissect=True, max_tcp_dissections=10, max_udp_dissections=16):
         self._consumer = zmq.Context().socket(zmq.PULL)
         self._nroots = 512
-        now = str(tm.time())
-        self.sock_name = "ipc:///tmp/nfstream-{}".format(now)
+        self.sock_name = "tcp://127.0.0.1:5557"
         try:
             self.cache = NFCache(observer=NFObserver(source=source, snaplen=snaplen, nroots=self._nroots),
                                  idle_timeout=idle_timeout,
