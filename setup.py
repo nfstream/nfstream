@@ -54,7 +54,7 @@ class BuildPyCommand(build_py):
 class BuildNdpiCommand(build_ext):
     def run(self):
         if os.name == 'posix':
-            subprocess.check_call(['git', 'clone', '--branch', '3.0-stable', 'https://github.com/ntop/nDPI.git'])
+            subprocess.check_call(['git', 'clone', '--branch', '3.0-stable', 'https://github.com/aouinizied/nDPI.git'])
             os.chdir('nDPI/')
             subprocess.check_call(['./autogen.sh'])
             subprocess.check_call(['./configure'])

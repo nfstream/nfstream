@@ -1,0 +1,30 @@
+environment:
+  matrix:
+    - image: Visual Studio 2019
+      PYTHON: "C:\\Python36-x64"
+      type: Cygwin
+      command: C:\cygwin64\bin\bash -lc
+
+install:
+  # Winpcap for Windows 10
+  - appveyor DownloadFile http://www.win10pcap.org/download/Win10Pcap-v10.2-5002.msi
+  - msiexec /i Win10Pcap-v10.2-5002.msi /quiet /qn /norestart
+  - rm Win10Pcap-v10.2-5002.msi
+  # Chocolatey
+  - choco upgrade chocolatey
+  # Cygwin
+  - if "%type%"=="Cygwin" if not exist "C:\cygwin64" mkdir "C:\cygwin64"
+  - if "%type%"=="Cygwin" appveyor-retry appveyor DownloadFile "http://cygwin.com/setup-x86_64.exe" -FileName "C:\cygwin64\setup-x86_64.exe"
+  - if "%type%"=="Cygwin" C:\cygwin64\setup-x86_64.exe --quiet-mode --no-desktop --no-shortcuts --upgrade-also --root "C:\cygwin64" --local-package-dir "C:\cache\cygwin" --site "http://mirrors.kernel.org/sourceware/cygwin" --packages autoconf,autoconf2.5,automake,automake1.15,binutils,cmake,cygwin-devel,gcc-core,gcc-tools-epoch2-autoconf,gcc-tools-epoch2-automake,libtool,make,pkg-config,w32api-headers,w32api-runtime,gcc-g++
+  # nDPI
+  - '%command% "git clone --branch 3.0-stable https://github.com/aouinizied/nDPI.git"'
+  - '%command% "cd nDPI; ./autogen.sh; make; cd src; cd lib; cp libndpi.so $APPVEYOR_BUILD_FOLDER/nfstream/libs/libndpi.so"'
+  - "%PYTHON%\\python.exe -m pip install -r requirements.txt"
+  - "%PYTHON%\\python.exe -m pip install codecov"
+  - "%PYTHON%\\python.exe setup.py bdist_wheel"
+
+test_script:
+  - "%PYTHON%\\python.exe tests.py"
+
+artifacts:
+  - path: dist\*
