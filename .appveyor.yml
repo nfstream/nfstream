@@ -21,7 +21,7 @@ install:
   - if "%type%"=="Cygwin" C:\cygwin64\setup-x86_64.exe --quiet-mode --no-desktop --no-shortcuts --upgrade-also --root "C:\cygwin64" --local-package-dir "C:\cache\cygwin" --site "http://mirrors.kernel.org/sourceware/cygwin" --packages autoconf,autoconf2.5,automake,automake1.15,binutils,cmake,cygwin-devel,gcc-core,gcc-tools-epoch2-autoconf,gcc-tools-epoch2-automake,libtool,make,pkg-config,w32api-headers,w32api-runtime,gcc-g++
   # nDPI
   - '%command% "git clone --branch 3.0-stable https://github.com/aouinizied/nDPI.git"'
-  - '%command% "cd nDPI; ./autogen.sh; make; cd src; cd lib; cp libndpi.so $APPVEYOR_BUILD_FOLDER/nfstream/libs/libndpi.so"'
+  - '%command% "cd nDPI; ./autogen.sh; make; cd src; cd lib; cp libndpi.a $APPVEYOR_BUILD_FOLDER/nfstream/libs/libndpi.a"'
   - "%PYTHON%\\python.exe -m pip install wheel"
   - "%PYTHON%\\python.exe -m pip install -r requirements.txt"
   - "%PYTHON%\\python.exe -m pip install codecov"

@@ -339,7 +339,7 @@ class _PcapFfi(object):
         self._ffi.cdef(cc_packed, override=True, packed=1)
         if sys.platform == 'darwin':
             libname = 'libpcap.dylib'
-        elif sys.platform == 'win32':
+        elif "win" in sys.platform[:3]:
             libname = 'wpcap.dll'  # winpcap
             self._windows = True
         else:
