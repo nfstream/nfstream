@@ -20,6 +20,7 @@ install:
   # nDPI
   - '%command% "git clone --branch 3.0-stable https://github.com/aouinizied/nDPI.git"'
   - '%command% "cd nDPI; ./autogen.sh; make; cd src; cd lib; cp libndpi.so $APPVEYOR_BUILD_FOLDER/nfstream/libs/libndpi.so"'
+  - "%PYTHON%\\python.exe -m pip install wheel"
   - "%PYTHON%\\python.exe -m pip install -r requirements.txt"
   - "%PYTHON%\\python.exe -m pip install codecov"
   - "%PYTHON%\\python.exe setup.py bdist_wheel"
