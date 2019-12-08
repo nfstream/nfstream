@@ -1,6 +1,7 @@
+- image: Visual Studio 2019
+
 environment:
   matrix:
-    - image: Visual Studio 2019
       PYTHON: "C:\\Python36-x64"
       type: Cygwin
       command: C:\cygwin64\bin\bash -lc
