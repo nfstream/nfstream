@@ -6,6 +6,8 @@ environment:
       type: Cygwin
       command: C:\cygwin64\bin\bash -lc
 
+build: off
+
 install:
   # Winpcap for Windows 10
   - appveyor DownloadFile http://www.win10pcap.org/download/Win10Pcap-v10.2-5002.msi
