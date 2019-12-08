@@ -11,12 +11,10 @@ Project Status
 
    * - Latest Release
      - |release|
-   * - Supported Versions
-     - |python|
-   * -
-     - |pypy|
    * - Supported Platforms
      - |linux| |macos|
+   * - Supported Versions
+     - |python| |pypy|
    * - Build Status
      - |build|
    * - Documentation Status
@@ -163,15 +161,15 @@ License
 This project is licensed under the GPLv3 License - see the License_ file for details
 
 
-.. |release| image:: https://img.shields.io/pypi/v/nfstream.svg
+.. |release| image:: https://badge.fury.io/py/nfstream.svg
               :target: https://pypi.python.org/pypi/nfstream
 .. |gitter| image:: https://badges.gitter.im/gitterHQ/gitter.png
               :target: https://gitter.im/nfstream/community
 .. |build| image:: https://travis-ci.org/aouinizied/nfstream.svg?branch=master
                :target: https://travis-ci.org/aouinizied/nfstream
-.. |python| image:: https://img.shields.io/badge/python-%3E%3D3.6-blue
+.. |python| image:: https://img.shields.io/badge/python-%3E%3D3.6-brightgreen
                :target: https://travis-ci.org/aouinizied/nfstream
-.. |pypy| image:: https://img.shields.io/badge/pypy-3-blue
+.. |pypy| image:: https://img.shields.io/badge/pypy-3-brightgreen
             :target: https://travis-ci.org/aouinizied/nfstream
 .. |doc| image:: https://readthedocs.org/projects/nfstream/badge/?version=latest
                :target: https://nfstream.readthedocs.io/en/latest/?badge=latest
