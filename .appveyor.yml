@@ -26,10 +26,8 @@ install:
   - "%PYTHON%\\python.exe -m pip install -r requirements.txt"
   - "%PYTHON%\\python.exe -m pip install codecov"
   - "%PYTHON%\\python.exe setup.py bdist_wheel"
+  - ls C:\projects\nfstream\nfstream/libs/
   - ls dist/
-
-test_script:
-  - "%PYTHON%\\python.exe tests.py"
 
 artifacts:
   - path: dist/*
