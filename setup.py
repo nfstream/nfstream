@@ -22,7 +22,7 @@ import os
 import subprocess
 import shutil
 
-if (not sys.version_info[0] == 3) and (not sys.version_info[1] >= 6):  # avoid py27 wheels generation on macos runners
+if (not sys.version_info[0] == 3) and (not sys.version_info[1] >= 6):
     sys.exit("Sorry, nfstream requires Python3.6+ versions.")
 
 try:
@@ -39,7 +39,7 @@ except ImportError:
 
 try:
     with open('README.rst', 'rt') as readme:
-        description = readme.read()
+        description = "\n".join(readme.read().split("\n")[3:])
 except IOError:
     # maybe running setup.py from some other dir
     description = ''
