@@ -20,3 +20,7 @@ test_script:
 artifacts:
   - path: 'dist\*.whl'
     name: pypiartifacts
+
+after_test:
+  - codecov
+  - pip3 install twine wheel
