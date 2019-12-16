@@ -1,24 +1,9 @@
 sudo: required
 matrix:
   include:
-    - os: osx
-      language: generic
-      env: TRAVIS_PYTHON_VERSION="3.7", CC=gcc, CXX=g++
-      osx_image: xcode11.1
-      python: '3.7'
-      compiler: gcc
-
-    - os: osx
-      language: generic
-      env: TRAVIS_PYTHON_VERSION="3.7", CC=gcc, CXX=g++
-      osx_image: xcode10.1
-      python: '3.7'
-      compiler: gcc
-
     - os: linux
       language: python
       python: "pypy3"
-      env: PYTHON=/home/travis/virtualenv/pypy3.6-7.1.1/bin
       addons:
         apt:
           packages:
@@ -28,7 +13,6 @@ matrix:
     - os: linux
       language: python
       python: '3.6'
-      env: PYTHON=/home/travis/virtualenv/python3.6.7/bin
       addons:
         apt:
           packages:
@@ -38,7 +22,6 @@ matrix:
     - os: linux
       language: python
       python: '3.7'
-      env: PYTHON=/home/travis/virtualenv/python3.7.1/bin
       addons:
         apt:
           packages:
@@ -48,7 +31,6 @@ matrix:
     - os: linux
       language: python
       python: '3.8'
-      env: PYTHON=/home/travis/virtualenv/python3.8.0/bin
       addons:
         apt:
           packages:
@@ -57,28 +39,20 @@ matrix:
 
 
 install:
-  - ls
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo pip3 install -r requirements.txt ; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo pip3 install codecov ; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo python3 setup.py bdist_wheel ; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo ls dist/ ; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo ls /home/travis/virtualenv/ ; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo $PYTHON/pip3 install -r requirements.txt ; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo $PYTHON/pip3 install codecov ; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo $PYTHON/python3 setup.py bdist_wheel ; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ls dist/ ; fi
+  - pip3 install -r requirements.txt
+  - pip3 install codecov
+  - python3 setup.py bdist_wheel
+  - ls dist/
+
 script:
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo coverage run tests.py ; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo $PYTHON/coverage run tests.py ; fi
+  - coverage run tests.py
 
 after_success:
   - codecov
 
 before_deploy:
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo pip3 install wheel ; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo pip3 install twine ; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo $PYTHON/pip3 install twine ; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo $PYTHON/pip3 install wheel ; fi
+  - pip3 install twine
+  - pip3 install wheel
 
 deploy:
     provider: pypi

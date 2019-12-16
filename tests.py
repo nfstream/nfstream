@@ -218,16 +218,13 @@ class TestMethods(unittest.TestCase):
         except SystemExit:
             print("PASS.")
 
-    def test_live_capture(self):
+    def test_noroot_live(self):
         print("\n----------------------------------------------------------------------")
-        uid = os.getuid()
-        print(".Testing live capture (uid={})".format(uid))
-        streamer_test = NFStreamer(idle_timeout=0)
-        for flow in streamer_test:
-            print(flow)
-            streamer_test.cache.stopped = True
-            break
-        print("PASS.")
+        print(".Testing live capture (noroot)")
+        try:
+            streamer_test = NFStreamer(idle_timeout=0)
+        except SystemExit:
+            print("PASS.")
 
 
 if __name__ == '__main__':
