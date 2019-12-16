@@ -2,36 +2,45 @@ environment:
   matrix:
     # Ubuntu - python 3.8
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+      APPVEYOR_JOB_NAME: "python38-x64-ubuntu"
       PYTHON: "3.8"
     # Ubuntu - python 3.7
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+      APPVEYOR_JOB_NAME: "python37-x64-ubuntu"
       PYTHON: "3.7"
     # Ubuntu - python 3.6
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+      APPVEYOR_JOB_NAME: "python36-x64-ubuntu"
       PYTHON: "3.6"
     # macos-mojave - python 3.8
     - APPVEYOR_BUILD_WORKER_IMAGE: macos-mojave
+      APPVEYOR_JOB_NAME: "python38-x64-osx10.14"
       PYTHON: "3.8"
     # macos-mojave - python 3.7
     - APPVEYOR_BUILD_WORKER_IMAGE: macos-mojave
+      APPVEYOR_JOB_NAME: "python37-x64-osx10.14"
       PYTHON: "3.7"
     # macos-mojave - python 3.6
     - APPVEYOR_BUILD_WORKER_IMAGE: macos-mojave
+      APPVEYOR_JOB_NAME: "python36-x64-osx10.14"
       PYTHON: "3.6"
     # macos-catalina - python 3.8
     - APPVEYOR_BUILD_WORKER_IMAGE: macos
+      APPVEYOR_JOB_NAME: "python38-x64-osx10.15"
       PYTHON: "3.8"
     # macos-catalina - python 3.7
     - APPVEYOR_BUILD_WORKER_IMAGE: macos
+      APPVEYOR_JOB_NAME: "python37-x64-osx10.15"
       PYTHON: "3.7"
     # macos-catalina - python 3.6
     - APPVEYOR_BUILD_WORKER_IMAGE: macos
+      APPVEYOR_JOB_NAME: "python36-x64-osx10.15"
       PYTHON: "3.6"
 
-stack: python3 %PYTHON%
-
 install:
-  - python3 --version
+  - python3.6 --version
+  - python3.7 --version
+  - python3.8 --version
 
 build: off
 
