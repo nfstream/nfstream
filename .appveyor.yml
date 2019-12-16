@@ -9,6 +9,24 @@ environment:
     # Ubuntu - python 3.6
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
       PYTHON: "3.6"
+    # macos-mojave - python 3.8
+    - APPVEYOR_BUILD_WORKER_IMAGE: macos-mojave
+      PYTHON: "3.8"
+    # macos-mojave - python 3.7
+    - APPVEYOR_BUILD_WORKER_IMAGE: macos-mojave
+      PYTHON: "3.7"
+    # macos-mojave - python 3.6
+    - APPVEYOR_BUILD_WORKER_IMAGE: macos-mojave
+      PYTHON: "3.6"
+    # macos-catalina - python 3.8
+    - APPVEYOR_BUILD_WORKER_IMAGE: macos
+      PYTHON: "3.8"
+    # macos-catalina - python 3.7
+    - APPVEYOR_BUILD_WORKER_IMAGE: macos
+      PYTHON: "3.7"
+    # macos-catalina - python 3.6
+    - APPVEYOR_BUILD_WORKER_IMAGE: macos
+      PYTHON: "3.6"
 
 stack: python %PYTHON%
 
