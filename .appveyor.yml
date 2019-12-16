@@ -28,10 +28,10 @@ environment:
     - APPVEYOR_BUILD_WORKER_IMAGE: macos
       PYTHON: "3.6"
 
-stack: python %PYTHON%
+stack: python3 %PYTHON%
 
 install:
-  - python --version
+  - python3 --version
 
 build: off
 
