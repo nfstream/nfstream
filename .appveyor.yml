@@ -7,11 +7,11 @@ environment:
 
 install:
   - python3 --version
+  - pip3 --version
 
 build: off
 
 artifacts:
-  # bdist_wheel puts your built wheel in the dist directory
   - path: dist\*
 
 #on_success:
