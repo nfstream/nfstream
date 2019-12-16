@@ -6,7 +6,7 @@ environment:
       APPVEYOR_JOB_NAME: "py37-x64-osx10.15"
 
 install:
-  - python --version
+  - python3 --version
 
 build: off
 
