@@ -16,7 +16,7 @@ Project Status
    * - Supported Versions
      - |python| |pypy|
    * - Build Status
-     - |build|
+     - |travis| |appveyor|
    * - Documentation Status
      - |doc|
    * - Code Coverage
@@ -164,8 +164,10 @@ This project is licensed under the GPLv3 License - see the License_ file for det
               :target: https://pypi.python.org/pypi/nfstream
 .. |gitter| image:: https://badges.gitter.im/gitterHQ/gitter.png
               :target: https://gitter.im/nfstream/community
-.. |build| image:: https://travis-ci.org/aouinizied/nfstream.svg?branch=master
+.. |travis| image:: https://travis-ci.org/aouinizied/nfstream.svg?branch=master
                :target: https://travis-ci.org/aouinizied/nfstream
+.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/github/aouinizied/nfstream?svg=true
+               :target: https://ci.appveyor.com/project/aouinizied/nfstream
 .. |python| image:: https://img.shields.io/badge/python-%3E%3D3.6-brightgreen
                :target: https://travis-ci.org/aouinizied/nfstream
 .. |pypy| image:: https://img.shields.io/badge/pypy-3-brightgreen
@@ -175,7 +177,7 @@ This project is licensed under the GPLv3 License - see the License_ file for det
 .. |linux| image:: https://raw.githubusercontent.com/wiki/ryanoasis/nerd-fonts/screenshots/v1.0.x/linux-pass-sm.png
             :target: https://travis-ci.org/aouinizied/nfstream
 .. |macos| image:: https://raw.githubusercontent.com/wiki/ryanoasis/nerd-fonts/screenshots/v1.0.x/mac-pass-sm.png
-            :target: https://travis-ci.org/aouinizied/nfstream
+            :target: https://ci.appveyor.com/project/aouinizied/nfstream
 .. |coverage| image:: https://codecov.io/gh/aouinizied/nfstream/branch/master/graph/badge.svg
                :target: https://codecov.io/gh/aouinizied/nfstream/
 .. |quality| image:: https://img.shields.io/lgtm/grade/python/github/aouinizied/nfstream.svg?logo=lgtm&logoWidth=18)
