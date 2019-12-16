@@ -18,5 +18,5 @@ test_script:
   - coverage run tests.py
 
 artifacts:
-  - path: dist\*
+  - path: 'dist\*.whl'
     name: pypiartifacts
