@@ -1,9 +1,23 @@
-sudo: required
 matrix:
   include:
+    - os: osx
+      language: generic
+      env: TRAVIS_PYTHON_VERSION="3.7", CC=gcc, CXX=g++
+      osx_image: xcode11.1
+      python: '3.7'
+      compiler: gcc
+
+    - os: osx
+      language: generic
+      env: TRAVIS_PYTHON_VERSION="3.7", CC=gcc, CXX=g++
+      osx_image: xcode10.1
+      python: '3.7'
+      compiler: gcc
+
     - os: linux
       language: python
       python: "pypy3"
+      env: PYTHON=/home/travis/virtualenv/pypy3.6-7.1.1/bin
       addons:
         apt:
           packages:
@@ -13,6 +27,7 @@ matrix:
     - os: linux
       language: python
       python: '3.6'
+      env: PYTHON=/home/travis/virtualenv/python3.6.7/bin
       addons:
         apt:
           packages:
@@ -22,6 +37,7 @@ matrix:
     - os: linux
       language: python
       python: '3.7'
+      env: PYTHON=/home/travis/virtualenv/python3.7.1/bin
       addons:
         apt:
           packages:
@@ -31,6 +47,7 @@ matrix:
     - os: linux
       language: python
       python: '3.8'
+      env: PYTHON=/home/travis/virtualenv/python3.8.0/bin
       addons:
         apt:
           packages:
@@ -43,7 +60,7 @@ install:
   - pip3 install codecov
   - python3 setup.py bdist_wheel
   - ls dist/
-
+  
 script:
   - coverage run tests.py
 
@@ -51,8 +68,8 @@ after_success:
   - codecov
 
 before_deploy:
-  - pip3 install twine
   - pip3 install wheel
+  - pip3 install twine
 
 deploy:
     provider: pypi
