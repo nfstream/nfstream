@@ -1,19 +1,23 @@
 version: 3.0.2.{build}
 environment:
+  TWINE_USERNAME:
+    secure: kuL7IEgQ60jLJ5TXKY1C9A==
+  TWINE_PASSWORD:
+    secure: 7TPnKbfi538yO/KwAj5wfg==
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: macos
       APPVEYOR_JOB_NAME: "py37-x64-osx10.15"
-      PYPATH: "/usr/local/bin/python3.7"
+      PYTHON: "/usr/local/bin/python3.7"
 
 install:
-  - $PYPATH --version
-  - $PYPATH -m pip install --upgrade pip
-  - $PYPATH -m pip install -r requirements.txt
-  - $PYPATH -m pip install codecov
-  - $PYPATH -m pip install twine wheel
+  - $PYTHON --version
+  - $PYTHON -m pip install --upgrade pip
+  - $PYTHON -m pip install -r requirements.txt
+  - $PYTHON -m pip install codecov
+  - $PYTHON -m pip install twine wheel
 
 build_script:
-  - $PYPATH setup.py bdist_wheel
+  - $PYTHON setup.py bdist_wheel
 
 test_script:
   - coverage run tests.py
@@ -24,3 +28,6 @@ artifacts:
 
 after_test:
   - codecov
+
+on_success:
+  - if "%APPVEYOR_REPO_TAG%"=="true" ( twine upload --skip-existing dist\*.whl )
