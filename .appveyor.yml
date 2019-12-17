@@ -1,8 +1,6 @@
 version: 3.0.2.{build}
 environment:
   matrix:
-    - APPVEYOR_BUILD_WORKER_IMAGE: macos-mojave
-      APPVEYOR_JOB_NAME: "py37-x64-osx10.14"
     - APPVEYOR_BUILD_WORKER_IMAGE: macos
       APPVEYOR_JOB_NAME: "py37-x64-osx10.15"
 
