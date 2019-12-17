@@ -27,10 +27,9 @@ artifacts:
     name: pypiartifacts
 
 after_test:
-  - codecov
+    on_success: true
+        - codecov
 
 deploy_script:
-    on_success: true
-    on:
-      APPVEYOR_REPO_TAG: true
-  - twine upload --skip-existing dist\*.whl
+    on_tag: true
+        - twine upload --skip-existing dist\*.whl
