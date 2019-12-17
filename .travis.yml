@@ -2,13 +2,13 @@ matrix:
   include:
     - os: osx
       language: generic
-      env: TRAVIS_PYTHON_VERSION="3.7", CC=gcc, CXX=g++
+      env: TRAVIS_PYTHON_VERSION="3.7"
       osx_image: xcode11.1
       python: '3.7'
 
     - os: osx
       language: generic
-      env: TRAVIS_PYTHON_VERSION="3.7", CC=gcc, CXX=g++
+      env: TRAVIS_PYTHON_VERSION="3.7"
       osx_image: xcode10.1
       python: '3.7'
 
