@@ -8,7 +8,6 @@ environment:
 
 install:
   - /usr/local/bin/python3.7 --version
-  - /usr/local/bin/python3.7 -c \"import struct; print(struct.calcsize('P') * 8)\"
   - /usr/local/bin/python3.7 -m pip install --upgrade pip
   - /usr/local/bin/python3.7 -m pip install -r requirements.txt
   - /usr/local/bin/python3.7 -m pip install codecov
