@@ -3,15 +3,17 @@ environment:
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: macos-mojave
       APPVEYOR_JOB_NAME: "py37-x64-osx10.14"
+      PYTHON: /usr/local/bin/python3.7
     - APPVEYOR_BUILD_WORKER_IMAGE: macos
       APPVEYOR_JOB_NAME: "py37-x64-osx10.15"
+      PYTHON: /usr/local/bin/python3.7
+
 install:
-  - ls /usr/local/bin
-  - python3.7 -m pip install -r requirements.txt
-  - python3.7 -m pip install codecov
+  - %PYTHON% -m pip install -r requirements.txt
+  - %PYTHON% -m pip install codecov
 
 build_script:
-  - python3.7 setup.py bdist_wheel
+  - %PYTHON% setup.py bdist_wheel
 
 test_script:
   - coverage run tests.py
@@ -22,4 +24,4 @@ artifacts:
 
 after_test:
   - codecov
-  - python3.7 -m pip twine wheel
+  - %PYTHON% -m pip twine wheel
