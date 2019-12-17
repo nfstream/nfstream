@@ -3,23 +3,24 @@ environment:
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: macos
       APPVEYOR_JOB_NAME: "py37-x64-osx10.15"
+      PYTHON: "/usr/local/bin/python3.7"
 
 install:
-  - /usr/local/bin/python3.7 --version
-  - /usr/local/bin/python3.7 -m pip install --upgrade pip
-  - /usr/local/bin/python3.7 -m pip install -r requirements.txt
-  - /usr/local/bin/python3.7 -m pip install codecov
-  - /usr/local/bin/python3.7 -m pip install twine wheel
+  - "%PYTHON% --version"
+  - "%PYTHON% -m pip install --upgrade pip"
+  - "%PYTHON% -m pip install -r requirements.txt"
+  - "%PYTHON% -m pip install codecov"
+  - "%PYTHON% -m pip install twine wheel"
 
 build_script:
-  - /usr/local/bin/python3.7 setup.py bdist_wheel
+  - "%PYTHON% setup.py bdist_wheel"
 
 test_script:
-  - coverage run tests.py
+  - "coverage run tests.py"
 
 artifacts:
   - path: 'dist\*.whl'
     name: pypiartifacts
 
 after_test:
-  - codecov
+  - "codecov"
