@@ -7,20 +7,20 @@ environment:
 
 install:
   - $PYPATH --version
-  - "$env:PYPATH -m pip install --upgrade pip"
-  - "$env:PYPATH -m pip install -r requirements.txt"
-  - "$env:PYPATH -m pip install codecov"
-  - "$env:PYPATH -m pip install twine wheel"
+  - $PYPATH -m pip install --upgrade pip
+  - $PYPATH -m pip install -r requirements.txt
+  - $PYPATH -m pip install codecov
+  - $PYPATH -m pip install twine wheel
 
 build_script:
-  - "$env:PYPATH setup.py bdist_wheel"
+  - $PYPATH setup.py bdist_wheel
 
 test_script:
-  - "coverage run tests.py"
+  - coverage run tests.py
 
 artifacts:
   - path: 'dist\*.whl'
     name: pypiartifacts
 
 after_test:
-  - "codecov"
+  - codecov
