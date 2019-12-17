@@ -53,19 +53,18 @@ class BuildPyCommand(build_py):
 
 class BuildNdpiCommand(build_ext):
     def run(self):
-        if os.name == 'posix':
-            subprocess.check_call(['git', 'clone', '--branch', '3.0-stable', 'https://github.com/aouinizied/nDPI.git'])
-            os.chdir('nDPI/')
-            subprocess.check_call(['./autogen.sh'])
-            subprocess.check_call(['./configure'])
-            subprocess.check_call(['make'])
-            os.chdir('src/')
-            os.chdir('lib/')
-            shutil.copy2('libndpi.so', '../../../nfstream/libs/')
-            os.chdir('..')
-            os.chdir('..')
-            os.chdir('..')
-            shutil.rmtree('nDPI/', ignore_errors=True)
+        subprocess.check_call(['git', 'clone', '--branch', '3.0-stable', 'https://github.com/aouinizied/nDPI.git'])
+        os.chdir('nDPI/')
+        subprocess.check_call(['./autogen.sh'])
+        subprocess.check_call(['./configure'])
+        subprocess.check_call(['make'])
+        os.chdir('src/')
+        os.chdir('lib/')
+        shutil.copy2('libndpi.so', '../../../nfstream/libs/')
+        os.chdir('..')
+        os.chdir('..')
+        os.chdir('..')
+        shutil.rmtree('nDPI/', ignore_errors=True)
         build_ext.run(self)
 
 
