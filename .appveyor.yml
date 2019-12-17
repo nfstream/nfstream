@@ -29,5 +29,8 @@ artifacts:
 after_test:
   - codecov
 
-on_success:
-  - if $APPVEYOR_REPO_TAG ( twine upload --skip-existing dist\*.whl )
+deploy_script:
+    on_success: true
+    on:
+      APPVEYOR_REPO_TAG: true
+  - twine upload --skip-existing dist\*.whl
