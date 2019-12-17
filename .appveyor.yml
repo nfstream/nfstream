@@ -9,22 +9,19 @@ environment:
       PYTHON: /usr/local/bin/python3.7
 
 install:
-  # Prepend Python to the PATH of this build
-  - "SET PATH=%PYTHON%;%PATH%"
-
   # Check that we have the expected version and architecture for Python
-  - "python --version"
-  - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
+  - "%PYTHON% --version"
+  - "%PYTHON% -c \"import struct; print(struct.calcsize('P') * 8)\""
 
   # Upgrade to the latest version of pip to avoid it displaying warnings
   # about it being out of date.
-  - "python -m pip install --upgrade pip"
-  - "python -m pip install -r requirements.txt"
-  - "python -m pip install codecov"
-  - "python -m pip install twine wheel"
+  - "%PYTHON% -m pip install --upgrade pip"
+  - "%PYTHON% -m pip install -r requirements.txt"
+  - "%PYTHON% -m pip install codecov"
+  - "%PYTHON% -m pip install twine wheel"
 
 build_script:
-  - "python setup.py bdist_wheel"
+  - "%PYTHON% setup.py bdist_wheel"
 
 test_script:
   - "coverage run tests.py"
