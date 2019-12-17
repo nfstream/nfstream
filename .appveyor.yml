@@ -10,7 +10,7 @@ environment:
       PYTHON: "/usr/local/bin/python3.7"
 
 install:
-  - ps: "SET PATH=%PYTHON%;%PATH%"
+  - ps: "set PATH=$env:PYTHON;$env:PATH"
   - ps: python --version
   - ps: python -m pip install --upgrade pip
   - ps: python -m pip install -r requirements.txt
