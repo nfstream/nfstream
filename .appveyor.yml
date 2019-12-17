@@ -3,10 +3,10 @@ environment:
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: macos
       APPVEYOR_JOB_NAME: "py37-x64-osx10.15"
-      PYPATH: /usr/local/bin/python3.7
+      PYPATH: "/usr/local/bin/python3.7"
 
 install:
-  - "$env:PYPATH --version"
+  - $env:PYPATH --version
   - "$env:PYPATH -m pip install --upgrade pip"
   - "$env:PYPATH -m pip install -r requirements.txt"
   - "$env:PYPATH -m pip install codecov"
