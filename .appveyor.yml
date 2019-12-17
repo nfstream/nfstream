@@ -27,10 +27,7 @@ artifacts:
     name: pypiartifacts
 
 on_success:
-   - codecov
-   
-# deploy wheels to PyPI on tagged commits
-deploy_script:
+  - codecov
   - ps: >-
       if($env:APPVEYOR_REPO_TAG -eq 'true') {
         Write-Output ("Deploying " + $env:APPVEYOR_REPO_TAG_NAME + " to PyPI...")
