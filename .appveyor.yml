@@ -27,12 +27,14 @@ artifacts:
     name: pypiartifacts
 
 on_success:
-  - ps: if($env:APPVEYOR_REPO_TAG -eq true) {
-          $env:PUBLISH_WORK = "twine upload --skip-existing *.whl";
-        }
-        else {
-          $env:PUBLISH_WORK = "echo 'Skip on non tag commit'";
-        }
    - codecov
-   - cd dist
-   - $PUBLISH_WORK
+   
+# deploy wheels to PyPI on tagged commits
+deploy_script:
+  - ps: >-
+      if($env:APPVEYOR_REPO_TAG -eq 'true') {
+        Write-Output ("Deploying " + $env:APPVEYOR_REPO_TAG_NAME + " to PyPI...")
+        twine upload --skip-existing dist/*.whl
+      } else {
+        Write-Output "Not deploying as this is not a tagged commit"
+      }
