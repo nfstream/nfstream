@@ -6,7 +6,7 @@ environment:
       PYPATH: "/usr/local/bin/python3.7"
 
 install:
-  - ps: "$env:PYPATH --version"
+  - ps: $env:PYPATH --version
   - "$env:PYPATH -m pip install --upgrade pip"
   - "$env:PYPATH -m pip install -r requirements.txt"
   - "$env:PYPATH -m pip install codecov"
