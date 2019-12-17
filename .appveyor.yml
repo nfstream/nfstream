@@ -5,7 +5,7 @@ environment:
       APPVEYOR_JOB_NAME: "py37-x64-osx10.14"
     - APPVEYOR_BUILD_WORKER_IMAGE: macos
       APPVEYOR_JOB_NAME: "py37-x64-osx10.15"
-
+stack: python 3.7
 install:
   - python3.7 -m pip install -r requirements.txt
   - python3.7 -m pip install codecov
