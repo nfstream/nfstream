@@ -3,32 +3,26 @@ environment:
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: macos-mojave
       APPVEYOR_JOB_NAME: "py37-x64-osx10.14"
-      PYTHON: /usr/local/bin/python3.7
     - APPVEYOR_BUILD_WORKER_IMAGE: macos
       APPVEYOR_JOB_NAME: "py37-x64-osx10.15"
-      PYTHON: /usr/local/bin/python3.7
 
 install:
-  # Check that we have the expected version and architecture for Python
-  - "%PYTHON% --version"
-  - "%PYTHON% -c \"import struct; print(struct.calcsize('P') * 8)\""
-
-  # Upgrade to the latest version of pip to avoid it displaying warnings
-  # about it being out of date.
-  - "%PYTHON% -m pip install --upgrade pip"
-  - "%PYTHON% -m pip install -r requirements.txt"
-  - "%PYTHON% -m pip install codecov"
-  - "%PYTHON% -m pip install twine wheel"
+  - /usr/local/bin/python3.7 --version
+  - /usr/local/bin/python3.7 -c \"import struct; print(struct.calcsize('P') * 8)\"
+  - /usr/local/bin/python3.7 -m pip install --upgrade pip
+  - /usr/local/bin/python3.7 -m pip install -r requirements.txt
+  - /usr/local/bin/python3.7 -m pip install codecov
+  - /usr/local/bin/python3.7 -m pip install twine wheel
 
 build_script:
-  - "%PYTHON% setup.py bdist_wheel"
+  - /usr/local/bin/python3.7 setup.py bdist_wheel
 
 test_script:
-  - "coverage run tests.py"
+  - coverage run tests.py
 
 artifacts:
   - path: 'dist\*.whl'
     name: pypiartifacts
 
 after_test:
-  - "codecov"
+  - codecov
