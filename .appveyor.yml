@@ -6,14 +6,14 @@ environment:
       PYPATH: /usr/local/bin/python3.7
 
 install:
-  - "$(PYPATH) --version"
-  - "$(PYPATH) -m pip install --upgrade pip"
-  - "$(PYPATH) -m pip install -r requirements.txt"
-  - "$(PYPATH) -m pip install codecov"
-  - "$(PYPATH) -m pip install twine wheel"
+  - "$env:PYPATH --version"
+  - "$env:PYPATH -m pip install --upgrade pip"
+  - "$env:PYPATH -m pip install -r requirements.txt"
+  - "$env:PYPATH -m pip install codecov"
+  - "$env:PYPATH -m pip install twine wheel"
 
 build_script:
-  - "$(PYPATH) setup.py bdist_wheel"
+  - "$env:PYPATH setup.py bdist_wheel"
 
 test_script:
   - "coverage run tests.py"
