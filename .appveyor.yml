@@ -7,13 +7,11 @@ environment:
       APPVEYOR_JOB_NAME: "py37-x64-osx10.15"
 
 install:
-  - python3 --version
-  - pip3 --version
-  - pip3 install -r requirements.txt
-  - pip3 install codecov
+  - python3.7 -m pip install -r requirements.txt
+  - python3.7 -m pip install codecov
 
 build_script:
-  - python3 setup.py bdist_wheel
+  - python3.7 setup.py bdist_wheel
 
 test_script:
   - coverage run tests.py
@@ -24,4 +22,4 @@ artifacts:
 
 after_test:
   - codecov
-  - pip3 install twine wheel
+  - python3.7 -m pip twine wheel
