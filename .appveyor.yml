@@ -10,25 +10,29 @@ environment:
       PYTHON: "/usr/local/bin/python3.7"
 
 install:
-  - ps: "set PATH=$env:PYTHON;$env:PATH"
-  - ps: python --version
-  - ps: python -m pip install --upgrade pip
-  - ps: python -m pip install -r requirements.txt
-  - ps: python -m pip install codecov
-  - ps: python -m pip install twine wheel
+  - $PYTHON --version
+  - $PYTHON -m pip install --upgrade pip
+  - $PYTHON -m pip install -r requirements.txt
+  - $PYTHON -m pip install codecov
+  - $PYTHON -m pip install twine wheel
 
 build_script:
-  - ps: python setup.py bdist_wheel
+  - $PYTHON setup.py bdist_wheel
 
 test_script:
-  - ps: python -m coverage run tests.py
+  - coverage run tests.py
 
 artifacts:
   - path: 'dist\*.whl'
     name: pypiartifacts
 
-after_test:
-   - ps: python -m codecov
-
-#deploy_script:
-#   - ps: twine upload --skip-existing dist/*.whl
+on_success:
+  - ps: if($env:APPVEYOR_REPO_TAG -eq true) {
+          $env:PUBLISH_WORK = "twine upload --skip-existing *.whl";
+        }
+        else {
+          $env:PUBLISH_WORK = "echo 'Skip on non tag commit'";
+        }
+   - codecov
+   - cd dist
+   - $PUBLISH_WORK
