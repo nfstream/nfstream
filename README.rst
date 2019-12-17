@@ -1,14 +1,12 @@
-.. raw:: html
-
-    <style> .blue {color:#0B77B6; font-weight:bold; font-size:42px} </style>
-.. role:: blue
-
-
-:blue:`nfstream`
-================
+=========
+ nfstream
+=========
+--------------------------------------------------------
+ a flexible and powerful network data analysis framework
+--------------------------------------------------------
 
 Project Status
---------------
+==============
 
 .. list-table::
    :widths: 25 25
@@ -33,7 +31,7 @@ Project Status
 
 
 Main features
--------------
+=============
 
 * **Performance:** **nfstream** is designed to be fast (x10 faster with pypy3 support) with a small CPU and memory footprint.
 * **Layer-7 visibility:** **nfstream** deep packet inspection engine is based on nDPI_ library. It allows nfstream to perform reliable_ encrypted applications identification and metadata extraction (e.g. TLS, SSH, DNS, HTTP).
@@ -41,7 +39,7 @@ Main features
 * **Machine Learning oriented:** add your trained model as an NFPlugin_.
 
 How to use it?
---------------
+==============
 
 * Dealing with a big pcap file and just want to aggregate it as network flows? **nfstream** make this path easier in few lines:
 
@@ -103,17 +101,17 @@ How to use it?
 * More example and details are provided on the official Documentation_.
 
 Prerequisites
--------------
+=============
 
 .. code-block:: bash
 
     apt-get install libpcap-dev
 
 Installation
-------------
+============
 
 using pip
-^^^^^^^^^
+---------
 
 Binary installers for the latest released version are available:
 
@@ -123,7 +121,7 @@ Binary installers for the latest released version are available:
 
 
 from source
-^^^^^^^^^^^
+-----------
 
 If you want to build **nfstream** on your local machine:
 
@@ -135,20 +133,20 @@ If you want to build **nfstream** on your local machine:
 
 
 Contributing
-------------
+============
 
 Please read Contributing_ for details on our code of conduct, and the process for submitting pull
 requests to us.
 
 
 Authors
--------
+=======
 
 `Zied Aouini`_  (`aouinizied`_) created **nfstream** and `these fine people`_
 have contributed.
 
 Ethics
-------
+======
 
 **nfstream** is intended for network data research and forensics.
 Researchers and network data scientists can use these framework to build reliable datasets, train and evaluate
@@ -157,7 +155,7 @@ As with any packet monitoring tool, **nfstream** could potentially be misused.
 **Do not run it on any network of which you are not the owner or the administrator**.
 
 License
--------
+=======
 
 This project is licensed under the GPLv3 License - see the License_ file for details
 
