@@ -10,25 +10,24 @@ environment:
       PYTHON: "/usr/local/bin/python3.7"
 
 install:
-  - $PYTHON --version
-  - $PYTHON -m pip install --upgrade pip
-  - $PYTHON -m pip install -r requirements.txt
-  - $PYTHON -m pip install codecov
-  - $PYTHON -m pip install twine wheel
+  - ps: $PYTHON --version
+  - ps: $PYTHON -m pip install --upgrade pip
+  - ps: $PYTHON -m pip install -r requirements.txt
+  - ps: $PYTHON -m pip install codecov
+  - ps: $PYTHON -m pip install twine wheel
 
 build_script:
-  - $PYTHON setup.py bdist_wheel
+  - ps: $PYTHON setup.py bdist_wheel
 
 test_script:
-  - coverage run tests.py
+  - ps: coverage run tests.py
 
 artifacts:
   - path: 'dist\*.whl'
     name: pypiartifacts
 
 after_test:
-   - codecov
+   - ps: codecov
 
 deploy_script:
-   - cd dist
-   - twine upload --skip-existing *.whl
+   - ps: twine upload --skip-existing dist/*.whl
