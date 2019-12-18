@@ -37,12 +37,10 @@ except ImportError:
     use_setuptools = False
 
 
-try:
-    with open('README.rst', 'rt') as readme:
-        description = "\n".join(readme.read().split("\n")[3:])
-except IOError:
-    # maybe running setup.py from some other dir
-    description = ''
+from os import path
+this_directory = path.abspath(path.dirname(__file__))
+with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
 
 
 class BuildPyCommand(build_py):
@@ -105,7 +103,8 @@ setup(
     url='https://github.com/aouinizied/nfstream.git',
     license='LGPLv3',
     description="A flexible and powerful network data analysis framework",
-    long_description=description,
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     author='Zied Aouini',
     author_email='aouinizied@gmail.com',
     packages=['nfstream'],

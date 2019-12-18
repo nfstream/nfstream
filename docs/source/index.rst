@@ -3,16 +3,20 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+####################################################
+nfstream: a flexible network data analysis framework
+####################################################
 
 .. image:: asset/logo_main.png
-  :scale: 100%
-  :align: center
+  :width: 140
+  :height: 122
+  :align: right
 
-#############
+**nfstream** is a Python package providing fast, flexible, and expressive data structures designed to make working with "online" or "offline" network data both easy and intuitive. It aims to be the fundamental high-level building block for
+doing practical, **real world** network data analysis in Python. Additionally, it has
+the broader goal of becoming **a common network data processing framework for researchers** providing data reproducibility across experiments.
 
-Main Features
-#############
-
+**Main Features**
 
 * **Performance:** **nfstream** is designed to be fast (x10 faster with pypy3 support) with a small CPU and memory footprint.
 * **Layer-7 visibility:** **nfstream** deep packet inspection engine is based on nDPI_ library. It allows nfstream to perform reliable_ encrypted applications identification and metadata extraction (e.g. TLS, SSH, DNS, HTTP).
