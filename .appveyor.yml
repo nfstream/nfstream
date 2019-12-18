@@ -1,4 +1,4 @@
-version: version='3.0.3'.{build}
+version: version='3.0.4'.{build}
 environment:
   TWINE_USERNAME:
     secure: kuL7IEgQ60jLJ5TXKY1C9A==
