@@ -119,3 +119,8 @@ Changelog
 
 * ether type double stacking implementation.
 * Minor fixes.
+
+**3.0.3 (2019-12-18)**
+
+* MacOS Catalina support.
+* Implement random port selection for zmq.
