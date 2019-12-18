@@ -124,3 +124,7 @@ Changelog
 
 * MacOS Catalina support.
 * Implement random port selection for zmq.
+
+**3.0.4 (2019-12-18)**
+
+* Fix pypi description rendering.
