@@ -5,30 +5,39 @@ environment:
   TWINE_PASSWORD:
     secure: 7TPnKbfi538yO/KwAj5wfg==
   matrix:
-    - APPVEYOR_BUILD_WORKER_IMAGE: macos
-    - PYTHON: "C:\\Python36"
+    - PYTHON: "C:\\Python36-x64"
+      PYTHON_VERSION: "3.6.x"
+      PYTHON_ARCH: "64"
+
+    - PYTHON: "C:\\Python37"
+      PYTHON_VERSION: "3.7.x"
+      PYTHON_ARCH: "32"
 
 install:
   # Prepend Python to the PATH of this build
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
-  - python3 --version
-  - python3 -m pip install --upgrade pip
-  - python3 -m pip install -r requirements.txt
-  - python3 -m pip install codecov
-  - python3 -m pip install twine wheel
+  # Check that we have the expected version and architecture for Python
+  - "python --version"
+  - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
+  # Upgrade to the latest version of pip to avoid it displaying warnings
+  # about it being out of date.
+  - "python -m pip install --upgrade pip"
+  - "python -m pip install -r requirements.txt"
+  - "python -m pip install --upgrade pip"
+  - "python -m pip install twine wheel codecov"
 
 build_script:
-  - python3 setup.py bdist_wheel
+  - "python setup.py bdist_wheel"
 
 test_script:
-  - coverage run tests.py
+  - "coverage run tests.py"
 
 artifacts:
   - path: 'dist\*.whl'
     name: pypiartifacts
 
 on_success:
-  - codecov
+  - "codecov"
   - ps: >-
       if($env:APPVEYOR_REPO_TAG -eq 'true') {
         Write-Output ("Deploying " + $env:APPVEYOR_REPO_TAG_NAME + " to PyPI...")
