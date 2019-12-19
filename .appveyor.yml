@@ -8,17 +8,15 @@ environment:
     - APPVEYOR_BUILD_WORKER_IMAGE: macos
       APPVEYOR_JOB_NAME: "py37-x64-osx10.15"
       PYTHON: "/usr/local/bin/python3.7"
-
     - APPVEYOR_JOB_NAME: "py36-32-win"
       PYTHON: "C:\\Python36"
 
-
 install:
-  - ps: "$env:PYTHON --version"
-  - ps: $PYTHON -m pip install --upgrade pip
-  - ps: $PYTHON -m pip install -r requirements.txt
-  - ps: $PYTHON -m pip install codecov
-  - ps: $PYTHON -m pip install twine wheel
+  - $PYTHON --version
+  - $PYTHON -m pip install --upgrade pip
+  - $PYTHON -m pip install -r requirements.txt
+  - $PYTHON -m pip install codecov
+  - $PYTHON -m pip install twine wheel
 
 build_script:
   - $PYTHON setup.py bdist_wheel
@@ -31,13 +29,7 @@ artifacts:
     name: pypiartifacts
 
 on_success:
-  - ps: >-
-      if($env:APPVEYOR_REPO_TAG -eq 'true') {
-        Write-Output ("Deploying " + $env:APPVEYOR_REPO_TAG_NAME + " to PyPI...")
-        twine upload --skip-existing dist/*.whl
-      } else {
-        Write-Output "Not deploying as this is not a tagged commit"
-      }
+  - codecov
   - ps: >-
       if($env:APPVEYOR_REPO_TAG -eq 'true') {
         Write-Output ("Deploying " + $env:APPVEYOR_REPO_TAG_NAME + " to PyPI...")
