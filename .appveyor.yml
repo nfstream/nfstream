@@ -25,11 +25,7 @@ install:
   - "python -m pip install setuptools twine wheel codecov"
   - "python -m pip install --upgrade setuptools wheel"
 
-before_build:
-    - set Path=%MINGW_DIR%\bin;%Path%
-
 build_script:
-  - set Path=%MINGW_DIR%\bin;c:\msys64\usr\bin;
   - "python setup.py bdist_wheel"
 
 test_script:
