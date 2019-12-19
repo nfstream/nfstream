@@ -51,13 +51,12 @@ class BuildPyCommand(build_py):
 
 class BuildNdpiCommand(build_ext):
     def run(self):
-        subprocess.check_call(['git', 'clone', '--branch', '3.0-stable', 'https://github.com/aouinizied/nDPI.git'])
+        subprocess.check_call(['git', 'clone', '--branch', '3.0-stable', 'https://github.com/ntop/nDPI.git'])
         os.chdir('nDPI/')
         subprocess.check_call(['./autogen.sh'])
-        subprocess.check_call(['./configure'])
-        subprocess.check_call(['make'])
         os.chdir('src/')
         os.chdir('lib/')
+        subprocess.check_call(['make'])
         shutil.copy2('libndpi.so', '../../../nfstream/libs/')
         os.chdir('..')
         os.chdir('..')
