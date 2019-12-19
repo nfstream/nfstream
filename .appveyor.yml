@@ -12,24 +12,24 @@ environment:
       PYTHON: "C:\\Python36"
 
 install:
-  - $PYTHON --version
-  - $PYTHON -m pip install --upgrade pip
-  - $PYTHON -m pip install -r requirements.txt
-  - $PYTHON -m pip install codecov
-  - $PYTHON -m pip install twine wheel
+  - ps: $PYTHON --version
+  - ps: $PYTHON -m pip install --upgrade pip
+  - ps: $PYTHON -m pip install -r requirements.txt
+  - ps: $PYTHON -m pip install codecov
+  - ps: $PYTHON -m pip install twine wheel
 
 build_script:
-  - $PYTHON setup.py bdist_wheel
+  - ps: $PYTHON setup.py bdist_wheel
 
 test_script:
-  - coverage run tests.py
+  - ps: coverage run tests.py
 
 artifacts:
   - path: 'dist\*.whl'
     name: pypiartifacts
 
 on_success:
-  - codecov
+  - ps: codecov
   - ps: >-
       if($env:APPVEYOR_REPO_TAG -eq 'true') {
         Write-Output ("Deploying " + $env:APPVEYOR_REPO_TAG_NAME + " to PyPI...")
