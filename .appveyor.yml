@@ -22,7 +22,7 @@ install:
   - "python -m pip install --upgrade pip"
   - "python -m pip install -r requirements.txt"
   - "python -m pip install --upgrade pip"
-  - "python -m pip install twine wheel codecov"
+  - "python -m pip install setuptools twine wheel codecov"
 
 before_build:
     - set Path=%MINGW_DIR%\bin;%Path%
