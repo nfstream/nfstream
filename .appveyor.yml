@@ -5,13 +5,11 @@ environment:
   TWINE_PASSWORD:
     secure: 7TPnKbfi538yO/KwAj5wfg==
   matrix:
-    - PYTHON: "C:\\Python36-x64"
-      PYTHON_VERSION: "3.6.x"
-      PYTHON_ARCH: "64"
-
     - PYTHON: "C:\\Python37"
       PYTHON_VERSION: "3.7.x"
       PYTHON_ARCH: "32"
+      COMPILER: mingw
+      MINGW_DIR: c:\msys64\mingw32
 
 install:
   # Prepend Python to the PATH of this build
@@ -26,7 +24,11 @@ install:
   - "python -m pip install --upgrade pip"
   - "python -m pip install twine wheel codecov"
 
+before_build:
+    - set Path=%MINGW_DIR%\bin;%Path%
+
 build_script:
+  - set Path=%MINGW_DIR%\bin;c:\msys64\usr\bin;
   - "python setup.py bdist_wheel"
 
 test_script:
