@@ -31,6 +31,7 @@ try:
     from setuptools.command.build_py import build_py
     use_setuptools = True
 except ImportError:
+    print("Switch to distutils")
     from distutils.core import setup
     from distutils.command.build_ext import build_ext
     from distutils.command.build_py import build_py
