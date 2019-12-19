@@ -6,20 +6,19 @@ environment:
     secure: 7TPnKbfi538yO/KwAj5wfg==
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: macos
-      APPVEYOR_JOB_NAME: "py37-x64-osx10.15"
-      PYTHON: "/usr/local/bin/python3.7"
-    - APPVEYOR_JOB_NAME: "py36-32-win"
-      PYTHON: "C:\\Python36"
+    - PYTHON: "C:\\Python36"
 
 install:
-  - $PYTHON --version
-  - $PYTHON -m pip install --upgrade pip
-  - $PYTHON -m pip install -r requirements.txt
-  - $PYTHON -m pip install codecov
-  - $PYTHON -m pip install twine wheel
+  # Prepend Python to the PATH of this build
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+  - python3 --version
+  - python3 -m pip install --upgrade pip
+  - python3 -m pip install -r requirements.txt
+  - python3 -m pip install codecov
+  - python3 -m pip install twine wheel
 
 build_script:
-  - $PYTHON setup.py bdist_wheel
+  - python3 setup.py bdist_wheel
 
 test_script:
   - coverage run tests.py
