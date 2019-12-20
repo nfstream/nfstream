@@ -25,17 +25,10 @@ import shutil
 if (not sys.version_info[0] == 3) and (not sys.version_info[1] >= 6):
     sys.exit("Sorry, nfstream requires Python3.6+ versions.")
 
-try:
-    from setuptools import setup
-    from setuptools.command.build_ext import build_ext
-    from setuptools.command.build_py import build_py
-    use_setuptools = True
-except ImportError:
-    print("Switch to distutils")
-    from distutils.core import setup
-    from distutils.command.build_ext import build_ext
-    from distutils.command.build_py import build_py
-    use_setuptools = False
+
+from setuptools import setup
+from setuptools.command.build_ext import build_ext
+from setuptools.command.build_py import build_py
 
 
 from os import path
