@@ -2,7 +2,7 @@ matrix:
   include:
     - os: windows
       language: sh
-      python: '3.7'
+      python: '3.8'
       before_install:
         - choco install python3
         - ln -s "/c/Python38/python.exe" "/c/Python38/python3.exe"
