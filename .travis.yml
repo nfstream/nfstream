@@ -5,8 +5,8 @@ matrix:
       python: '3.7'
       before_install:
         - choco install python3
-        - ln -s "/c/Python37/python.exe" "/c/Python37/python3.exe"
-        - export PATH="/c/Python37:/c/Python37/Scripts/:$PATH"
+        - ln -s "/c/Python38/python.exe" "/c/Python38/python3.exe"
+        - export PATH="/c/Python38:/c/Python38/Scripts/:$PATH"
 
     - os: osx
       language: generic
@@ -62,8 +62,8 @@ matrix:
 
 
 install:
-  - pip3 install -r requirements.txt
-  - pip3 install codecov
+  - python3 -m pip install -r requirements.txt
+  - python3 -m pip install codecov
   - python3 setup.py bdist_wheel
   - ls dist/
   
@@ -74,8 +74,8 @@ after_success:
   - codecov
 
 before_deploy:
-  - pip3 install wheel
-  - pip3 install twine
+  - python3 -m pip install install wheel
+  - python3 -m pip install install twine
 
 deploy:
     provider: pypi
