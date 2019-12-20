@@ -60,6 +60,9 @@ matrix:
             - libpcap-dev
             - autogen
 
+  allow_failures:
+    - os: windows
+
 
 install:
   - python3 -m pip install --upgrade pip
