@@ -90,6 +90,8 @@ try:
 except ImportError:
     bdist_wheel = None
 
+cmdclass = {'nDPI': BuildNdpiCommand, 'build_py': BuildPyCommand, 'bdist_wheel': bdist_wheel} if bdist_wheel is not None else dict()
+
 setup(
     name="nfstream",
     version='3.0.4',
@@ -102,7 +104,7 @@ setup(
     author_email='aouinizied@gmail.com',
     packages=['nfstream'],
     install_requires=install_requires,
-    cmdclass={'nDPI': BuildNdpiCommand, 'build_py': BuildPyCommand, 'bdist_wheel': bdist_wheel},
+    cmdclass=cmdclass,
     setup_requires=pytest_runner,
     tests_require=['pytest>=5.0.1'],
     include_package_data=True,
