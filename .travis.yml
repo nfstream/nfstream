@@ -1,5 +1,13 @@
 matrix:
   include:
+    - os: windows
+      language: sh
+      python: '3.7'
+      before_install:
+        - choco install python3
+        - ln -s "/c/Python38/python.exe" "/c/Python38/python3.exe"
+        - export PATH="/c/Python38:/c/Python38/Scripts/:$PATH"
+
     - os: osx
       language: generic
       env: TRAVIS_PYTHON_VERSION="3.7"
@@ -51,6 +59,9 @@ matrix:
           packages:
             - libpcap-dev
             - autogen
+
+  allow_failures:
+    - os: windows
 
 
 install:

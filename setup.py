@@ -45,20 +45,21 @@ class BuildPyCommand(build_py):
 
 class BuildNdpiCommand(build_ext):
     def run(self):
-        print("Setting up nDPI: Cloning.")
-        subprocess.check_call(['git', 'clone', '--branch', '3.0-stable', 'https://github.com/aouinizied/nDPI.git'])
-        print("Setting up nDPI: Directory setup.")
-        os.chdir('nDPI/')
-        print("Setting up nDPI: autogen.")
-        subprocess.check_call(['./autogen.sh'])
-        os.chdir('src/')
-        os.chdir('lib/')
-        subprocess.check_call(['make'])
-        shutil.copy2('libndpi.so', '../../../nfstream/libs/')
-        os.chdir('..')
-        os.chdir('..')
-        os.chdir('..')
-        shutil.rmtree('nDPI/', ignore_errors=True)
+        if os.name != 'posix':  # Windows case
+            pass
+        else:
+            subprocess.check_call(['git', 'clone', '--branch', '3.0-stable', 'https://github.com/aouinizied/nDPI.git'])
+            os.chdir('nDPI/')
+            print("Setting up nDPI: autogen.")
+            subprocess.check_call(['./autogen.sh'])
+            os.chdir('src/')
+            os.chdir('lib/')
+            subprocess.check_call(['make'])
+            shutil.copy2('libndpi.so', '../../../nfstream/libs/')
+            os.chdir('..')
+            os.chdir('..')
+            os.chdir('..')
+            shutil.rmtree('nDPI/', ignore_errors=True)
         build_ext.run(self)
 
 
