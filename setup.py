@@ -88,6 +88,8 @@ try:
 
 
 except ImportError:
+    print('Warning: cannot import "wheel" package to build platform-specific wheel')
+    print('Install the "wheel" package to fix this warning')
     bdist_wheel = None
 
 cmdclass = {'nDPI': BuildNdpiCommand, 'build_py': BuildPyCommand, 'bdist_wheel': bdist_wheel} if bdist_wheel is not None else dict()
