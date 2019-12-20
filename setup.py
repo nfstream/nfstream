@@ -46,7 +46,7 @@ class BuildPyCommand(build_py):
 class BuildNdpiCommand(build_ext):
     def run(self):
         print("Setting up nDPI: Cloning.")
-        subprocess.check_call(['git', 'clone', '--branch', '3.0-stable', 'https://github.com/ntop/nDPI.git'])
+        subprocess.check_call(['git', 'clone', '--branch', '3.0-stable', 'https://github.com/aouinizied/nDPI.git'])
         print("Setting up nDPI: Directory setup.")
         os.chdir('nDPI/')
         print("Setting up nDPI: autogen.")
