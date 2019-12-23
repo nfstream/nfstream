@@ -63,3 +63,7 @@ class NFEntry(object):
     def __str__(self):
         """ String representation of flow """
         return str(namedtuple(type(self).__name__, self.__dict__.keys())(*self.__dict__.values()))
+
+    def to_namedtuple(self):
+        """ Convert NFEntry to namedtuple """
+        return namedtuple(type(self).__name__, self.__dict__.keys())(*self.__dict__.values())

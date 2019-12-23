@@ -143,6 +143,18 @@ the broader goal of becoming **a common network data processing framework for re
       print(flow.my_awesome_plugin) # see your dynamically created metric in generated flows
 ```
 
+* From pcap file to Pandas Dataframe?
+
+```python
+    import pandas as pd	
+    streamer_awesome = NFStreamer(source='devil.pcap')
+    data = []
+    for flow in streamer_awesome:
+       data.append(flow.to_namedtuple())
+    my_df = pd.DataFrame(data=data)
+    my_df.head(5) # Enjoy!
+```
+
 * More example and details are provided on the official [**documentation**][documentation].
 
 ## Prerequisites
