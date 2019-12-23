@@ -95,7 +95,7 @@ the broader goal of becoming **a common network data processing framework for re
    from nfstream import NFStreamer
    my_awesome_streamer = NFStreamer(source="facebook.pcap") # or network interface (source="eth0")
    for flow in my_awesome_streamer:
-       print(flow)  # print, append to pandas Dataframe or whatever you want :)!
+       print(flow)  # print it.
 ```
 
 ```python
@@ -128,6 +128,18 @@ the broader goal of becoming **a common network data processing framework for re
         j3a_server='2d1eb5817ece335c24904f516ad5da12'
     )
  ```
+* From pcap to Pandas DataFrame?
+
+```python
+    import pandas as pd	
+    streamer_awesome = NFStreamer(source='devil.pcap')
+    data = []
+    for flow in streamer_awesome:
+       data.append(flow.to_namedtuple())
+    my_df = pd.DataFrame(data=data)
+    my_df.head(5) # Enjoy!
+```
+
 * Didn't find a specific flow feature? add a plugin to **nfstream** in few lines:
 
 ```python
@@ -141,18 +153,6 @@ the broader goal of becoming **a common network data processing framework for re
    streamer_awesome = NFStreamer(source='devil.pcap', plugins=[my_awesome_plugin()])
    for flow in streamer_awesome:
       print(flow.my_awesome_plugin) # see your dynamically created metric in generated flows
-```
-
-* From pcap file to Pandas Dataframe?
-
-```python
-    import pandas as pd	
-    streamer_awesome = NFStreamer(source='devil.pcap')
-    data = []
-    for flow in streamer_awesome:
-       data.append(flow.to_namedtuple())
-    my_df = pd.DataFrame(data=data)
-    my_df.head(5) # Enjoy!
 ```
 
 * More example and details are provided on the official [**documentation**][documentation].
