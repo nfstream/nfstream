@@ -186,6 +186,7 @@ class TestMethods(unittest.TestCase):
                         result[flow.application_name] += flow.total_bytes
                     except KeyError:
                         result[flow.application_name] = flow.total_bytes
+            print(result)
             self.assertEqual(result, ground_truth_ndpi[test_case_name])
             print('PASS.')
 
