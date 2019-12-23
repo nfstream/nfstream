@@ -27,4 +27,4 @@ from .plugin import NFPlugin
 
 __author__ = """Zied Aouini"""
 __email__ = 'aouinizied@gmail.com'
-__version__ = '3.0.4'
+__version__ = '3.1.0'

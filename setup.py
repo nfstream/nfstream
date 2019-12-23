@@ -100,7 +100,7 @@ cmdclass = {'nDPI': BuildNdpiCommand, 'build_py': BuildPyCommand, 'bdist_wheel':
 
 setup(
     name="nfstream",
-    version='3.0.4',
+    version='3.1.0',
     url='https://github.com/aouinizied/nfstream.git',
     license='LGPLv3',
     description="A flexible and powerful network data analysis framework",
