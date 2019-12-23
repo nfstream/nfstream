@@ -18,7 +18,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 import unittest
-from nfstream import NFStreamer
+from nfstream import NFStreamer, NFPlugin
 import os
 
 
@@ -224,6 +224,23 @@ class TestMethods(unittest.TestCase):
             streamer_test = NFStreamer(idle_timeout=0)
         except SystemExit:
             print("PASS.")
+
+    def test_user_plugins(self):
+        class feat_1(NFPlugin):
+            def on_update(self, obs, entry):
+                if entry.total_packets == 1:
+                    entry.feat_1 == obs.length
+
+        print("\n----------------------------------------------------------------------")
+        print(".Testing adding user plugins.")
+        streamer_test = NFStreamer(source='tests/facebook.pcap', plugins=[feat_1()])
+        for flow in streamer_test:
+            if flow.id == 0:
+                self.assertEqual(flow.feat_1, 0)
+            else:
+                self.assertEqual(flow.feat_1, 0)
+        del streamer_test
+        print('PASS.')
 
 
 if __name__ == '__main__':

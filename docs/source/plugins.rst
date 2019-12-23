@@ -66,17 +66,17 @@ Computing required features
 
     class feat_1(NFPlugin):
         def on_update(self, obs, entry):
-            if entry.packets == 1:
+            if entry.total_packets == 1:
                 entry.feat_1 == obs.length
 
     class feat_2(NFPlugin):
         def on_update(self, obs, entry):
-            if entry.packets == 1:
+            if entry.total_packets == 2:
                 entry.feat_2 == obs.length
 
     class feat_3(NFPlugin):
         def on_update(self, obs, entry):
-            if entry.packets == 3:
+            if entry.total_packets == 3:
                 entry.feat_3 == obs.length
 
 ************************
@@ -87,7 +87,7 @@ Trained model prediction
 
     class model_prediction(NFPlugin):
         def on_update(self, obs, entry):
-            if entry.packets == 3:
+            if entry.total_packets == 3:
                 entry.model_prediction = self.user_data.predict_proba([entry.feat_1 , entry.feat_2 , entry.feat_3])
                 # optionally we can force NFStreamer to immediately expires the flow
                 # entry.expiration_id = -1
