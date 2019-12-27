@@ -128,3 +128,8 @@ Changelog
 **3.0.4 (2019-12-18)**
 
 * Fix pypi description rendering.
+
+**3.1.0 (2019-12-27)**
+
+* Add wrapping for pandas.
+* Initial support for nDPI 3.1 next release.
