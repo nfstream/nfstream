@@ -43,3 +43,10 @@ jobs:
     - name: Testing
       run: |
         coverage run tests.py
+
+    - name: Upload coverage
+      if: success()
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        name: ${{ matrix.os }} Python ${{ matrix.python-version }}
