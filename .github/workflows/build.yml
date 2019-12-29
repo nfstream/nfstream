@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest", "macOS-latest"]
-        python-version: [pypy3, 3.8, 3.7, 3.6]
+        python-version: [pypy3, 3.8, 3.7, 3.6, 3.5]
         exclude:
           - os: macos-latest
             python-version: pypy3
@@ -39,12 +39,13 @@ jobs:
         pip install wheel twine setuptools codecov
         pip install -r requirements.txt
         python setup.py bdist_wheel
+    - name: Generated wheel
+      run: |
         ls dist/
     - name: Testing
       run: |
         coverage run tests.py
-
-    - name: Upload coverage
+    - name: Uploading coverage report
       if: success()
       run: |
         codecov -t ${{ secrets.CODECOV_TOKEN }}
