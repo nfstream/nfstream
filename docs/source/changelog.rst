@@ -2,9 +2,9 @@
 Changelog
 #########
 
-**3.1.0 (2019-12-XX)**
+**3.1.0 (2019-12-29)**
 
-* Initial support for nDPI3.1 (commit: xxxxx).
+* Initial support for nDPI3.1 (commit: 73c7ccdb65a1e13e3fb1726af7882dd34534906f).
 * Add wrapping for pandas.
 * pypy7.2 support.
 * Add py36, py38 for macOS wheels.
