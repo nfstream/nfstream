@@ -47,4 +47,4 @@ jobs:
     - name: Upload coverage
       if: success()
       run: |
-        codecov
+        codecov -t ${{ secrets.CODECOV_TOKEN }}
