@@ -22,6 +22,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Installation
       run: |
+        brew install autoconf automake libtool libpcap-dev
         python -m pip install --upgrade pip
         pip install wheel twine setuptools codecov
         pip install -r requirements.txt
