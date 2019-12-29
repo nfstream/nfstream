@@ -1,4 +1,4 @@
-name: Test nfstream on ubuntu and macOS
+name: Build
 on:
   push:
     branches:
