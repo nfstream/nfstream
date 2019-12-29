@@ -43,6 +43,7 @@ jobs:
     - name: Testing
       run: |
         coverage run tests.py
+        ls -a
 
     - name: Upload coverage
       if: success()
