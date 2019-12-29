@@ -37,7 +37,6 @@ ground_truth_ndpi = {'ajp.pcap': {'AJP': 4446},
                                                   'ICMP': 700, 'IMAPS.Apple': 1998, 'MDNS': 952,
                                                   'STUN.WhatsAppCall': 102942, 'Spotify': 258,
                                                   'TLS': 589, 'TLS.Apple': 47935, 'WhatsApp': 24874},
-                     'bittorrent.pcap': {'BitTorrent': 305728},
                      'mpegts.pcap': {'MPEG_TS': 1362},
                      'steam.pcap': {'Steam': 9020},
                      '6in4tunnel.pcap': {'DNS.Facebook': 800, 'HTTP': 1792, 'ICMPV6': 7862, 'IMAPS': 516,
@@ -54,7 +53,6 @@ ground_truth_ndpi = {'ajp.pcap': {'AJP': 4446},
                                                'TLS.Apple': 19581, 'TLS.Dropbox': 2990, 'TLS.Skype': 207023},
                      'youtubeupload.pcap': {'QUIC.YouTubeUpload': 121590, 'TLS.YouTubeUpload': 5448},
                      'ftp.pcap': {'FTP_CONTROL': 5571, 'FTP_DATA': 1819},
-                     'ethereum.pcap': {'Mining': 134165},
                      'bt_search.pcap': {'BitTorrent': 322},
                      'viber.pcap': {'DNS': 1267, 'DNS.Facebook': 281, 'DNS.Google': 164, 'DNS.Viber': 527,
                                     'ICMP': 3028, 'ICMPV6': 140, 'MDNS': 412, 'QUIC.Google': 194,
@@ -84,8 +82,6 @@ ground_truth_ndpi = {'ajp.pcap': {'AJP': 4446},
                      'nest_log_sink.pcap': {'DNS': 1612, 'NestLogSink': 44483, 'NestLogSink.Google': 72365},
                      'http_ipv6.pcap': {'QUIC': 502, 'QUIC.Google': 15977, 'TLS': 3245, 'TLS.Facebook': 10202,
                                         'TLS.ntop': 36401},
-                     'netflix.pcap': {'DNS': 386, 'DNS.NetFlix': 4083, 'HTTP.NetFlix': 5544013, 'IGMP': 60,
-                                      'SSDP': 2648, 'TLS.Amazon': 126, 'TLS.NetFlix': 603725},
                      'smbv1.pcap': {'SMBv1': 1197},
                      'ocs.pcap': {'DNS.Google': 214, 'DNS.GoogleServices': 65, 'DNS.OCS': 180, 'DNS.PlayStore': 72,
                                   'Google': 120, 'HTTP': 1019, 'HTTP.OCS': 51283, 'TLS.Amazon': 2715,
@@ -115,7 +111,6 @@ ground_truth_ndpi = {'ajp.pcap': {'AJP': 4446},
                                     'HTTP': 530967, 'HTTP.Google': 176, 'HTTP.QQ': 4950, 'LLMNR': 6799,
                                     'MDNS': 82, 'NTP.Apple': 90, 'NetBIOS': 3589, 'RTP': 132, 'SSDP': 36951,
                                     'TLS': 21914, 'TLS.Facebook': 6840},
-                     'vnc.pcap': {'VNC': 329158},
                      'ookla.pcap': {'HTTP.Ookla': 4320, 'Ookla': 4685425},
                      'skype-conference-call.pcap': {'STUN.SkypeCall': 39687},
                      'smpp_in_general.pcap': {'SMPP': 1144},
@@ -173,9 +168,9 @@ class TestMethods(unittest.TestCase):
         self.maxDif = None
         print("----------------------------------------------------------------------")
         print(".Testing on {} applications:".format(len(files)))
-        for file in files:
-            streamer_test = NFStreamer(source=file, idle_timeout=60000, active_timeout=60000)
-            test_case_name = file.split('/')[-1]
+        for test_file in files:
+            streamer_test = NFStreamer(source=test_file, idle_timeout=60000, active_timeout=60000)
+            test_case_name = test_file.split('/')[-1]
             print(test_case_name)
             result = {}
             for flow in streamer_test:
@@ -186,6 +181,7 @@ class TestMethods(unittest.TestCase):
                         result[flow.application_name] = flow.total_bytes
             print(result)
             self.assertEqual(result, ground_truth_ndpi[test_case_name])
+            del streamer_test
             print('PASS.')
 
     def test_expiration_management(self):
