@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-file: flow.py
+file: entry.py
 This file is part of nfstream.
 
 Copyright (C) 2019 - Zied Aouini <aouinizied@gmail.com>
