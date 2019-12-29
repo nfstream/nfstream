@@ -38,9 +38,6 @@ the broader goal of becoming **a common network data processing framework for re
 <tr>
   <td>Build Status</td>
   <td>
-    <a href="https://ci.appveyor.com/project/aouinizied/nfstream">
-    <img src="https://ci.appveyor.com/api/projects/status/github/aouinizied/nfstream?svg=true" alt="Appveyor CI" />
-    </a>
     <a href="https://travis-ci.org/aouinizied/nfstream">
     <img src="https://travis-ci.org/aouinizied/nfstream.svg?branch=master" alt="Travis CI" />
     </a>
