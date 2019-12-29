@@ -17,20 +17,20 @@ the broader goal of becoming **a common network data processing framework for re
 <tr>
   <td>Supported Platforms</td>
   <td>
-    <a href="https://travis-ci.org/aouinizied/nfstream">
+    <a href="https://github.com/aouinizied/nfstream/actions?query=workflow%3Abuild">
     <img src="https://raw.githubusercontent.com/wiki/ryanoasis/nerd-fonts/screenshots/v1.0.x/linux-pass-sm.png" alt="Linux" />
     </a>
-    <a href="https://ci.appveyor.com/project/aouinizied/nfstream">
+    <a href="https://github.com/aouinizied/nfstream/actions?query=workflow%3Abuild">
     <img src="https://raw.githubusercontent.com/wiki/ryanoasis/nerd-fonts/screenshots/v1.0.x/mac-pass-sm.png" alt="MacOS" />
   </td>
 </tr>
 <tr>
   <td>Supported Versions</td>
   <td>
-    <a href="https://travis-ci.org/aouinizied/nfstream">
+    <a href="https://github.com/aouinizied/nfstream/actions?query=workflow%3Abuild">
     <img src="https://img.shields.io/badge/python3-%3E%3D3.6-blue" alt="python3" />
     </a>
-    <a href="https://travis-ci.org/aouinizied/nfstream">
+    <a href="https://github.com/aouinizied/nfstream/actions?query=workflow%3Abuild">
     <img src="https://img.shields.io/badge/pypy3-%3E%3D7.1-blue" alt="pypy3" />
     </a>
   </td>
@@ -38,8 +38,8 @@ the broader goal of becoming **a common network data processing framework for re
 <tr>
   <td>Build Status</td>
   <td>
-    <a href="https://travis-ci.org/aouinizied/nfstream">
-    <img src="https://travis-ci.org/aouinizied/nfstream.svg?branch=master" alt="Travis CI" />
+    <a href="https://github.com/aouinizied/nfstream/actions?query=workflow%3Abuild">
+    <img src="https://github.com/aouinizied/nfstream/workflows/build/badge.svg" alt="Github WorkFlows" />
     </a>
   </td>
 </tr>
