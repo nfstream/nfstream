@@ -2,6 +2,10 @@
 Changelog
 #########
 
+**3.1.1 (2019-12-29)**
+
+* Fix generated wheels. (drop sdist)
+
 **3.1.0 (2019-12-29)**
 
 * Initial support for nDPI3.1 (commit: 73c7ccdb65a1e13e3fb1726af7882dd34534906f).
