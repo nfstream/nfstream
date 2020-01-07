@@ -50,14 +50,21 @@ class BuildNdpiCommand(build_ext):
         else:
             subprocess.check_call(['git', 'clone', '--branch', 'dev', 'https://github.com/ntop/nDPI.git'])
             os.chdir('nDPI/')
-            print("Setting up nDPI: autogen.")
+            print("Setting up nDPI.")
             subprocess.check_call(['./autogen.sh'])
             os.chdir('src/')
             os.chdir('lib/')
             subprocess.check_call(['make'])
             shutil.copy2('libndpi.so', '../../../nfstream/libs/')
+            print("Setting up tests.")
             os.chdir('..')
             os.chdir('..')
+            os.chdir('example/')
+            subprocess.check_call(['make'])
+            os.chdir('..')
+            os.chdir('..')
+            os.chdir('tests/')
+            subprocess.check_call(['./build_results.sh'])
             os.chdir('..')
             shutil.rmtree('nDPI/', ignore_errors=True)
         build_ext.run(self)
@@ -96,14 +103,16 @@ except ImportError:
     print('Install the "wheel" package to fix this warning')
     bdist_wheel = None
 
-cmdclass = {'nDPI': BuildNdpiCommand, 'build_py': BuildPyCommand, 'bdist_wheel': bdist_wheel} if bdist_wheel is not None else dict()
+cmdclass = {'nDPI': BuildNdpiCommand,
+            'build_py': BuildPyCommand,
+            'bdist_wheel': bdist_wheel} if bdist_wheel is not None else dict()
 
 setup(
     name="nfstream",
     version='3.1.1',
     url='https://github.com/aouinizied/nfstream.git',
     license='LGPLv3',
-    description="A flexible and powerful network data analysis framework",
+    description="A flexible network data analysis framework",
     long_description=long_description,
     long_description_content_type='text/markdown',
     author='Zied Aouini',
