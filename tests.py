@@ -69,7 +69,7 @@ class TestMethods(unittest.TestCase):
     def test_expiration_management(self):
         print("\n----------------------------------------------------------------------")
         print(".Testing Streamer expiration management:")
-        streamer_test = NFStreamer(source='tests/facebook.pcap', active_timeout=0)
+        streamer_test = NFStreamer(source='tests/pcap/facebook.pcap', active_timeout=0)
         flows = []
         for flow in streamer_test:
             flows.append(flow)
@@ -79,7 +79,7 @@ class TestMethods(unittest.TestCase):
     def test_flow_str_representation(self):
         print("\n----------------------------------------------------------------------")
         print(".Testing Flow string representation:")
-        streamer_test = NFStreamer(source='tests/facebook.pcap')
+        streamer_test = NFStreamer(source='tests/pcap/facebook.pcap')
         flows = []
         for flow in streamer_test:
             flows.append(flow)
