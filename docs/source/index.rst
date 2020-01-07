@@ -9,7 +9,7 @@ nfstream: a flexible network data analysis framework
 
 .. image:: asset/logo_main.png
   :width: 140
-  :height: 122
+  :height: 140
   :align: right
 
 **nfstream** is a Python package providing fast, flexible, and expressive data structures designed to make working with **online** or **offline** network data both easy and intuitive. It aims to be the fundamental high-level building block for
