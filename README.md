@@ -97,7 +97,7 @@ the broader goal of becoming **a common network data processing framework for re
 
 ```python
     NFEntry(
-        flow_id=0,
+        id=0,
         first_seen=1472393122365,
         last_seen=1472393123665,
         version=4,

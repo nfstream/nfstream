@@ -71,7 +71,7 @@ NFEntry object
    * - attribute name
      - attribute type
      - attribute description
-   * - flow_id
+   * - id
      - int
      - Flow identifier.
    * - first_seen
