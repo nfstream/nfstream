@@ -2,6 +2,11 @@
 Changelog
 #########
 
+**3.1.2 (2020-01-07)**
+
+* Fix tests workflow.
+* Update nDPI (commit: 73c7ccdb65a1e13e3fb1726af7882dd34534906f).
+
 **3.1.1 (2019-12-29)**
 
 * Fix generated wheels. (drop sdist)
