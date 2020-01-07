@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 import unittest
 from nfstream import NFStreamer, NFPlugin
 import os
-import pandas as pd
+import csv
 
 
 def get_files_list(path):
@@ -32,14 +32,24 @@ def get_files_list(path):
     return files
 
 
+def get_app_dict(path):
+    with open(path) as csvfile:
+        reader = csv.DictReader(csvfile)
+        app = {}
+        for row in reader:
+            try:
+                app[row['ndpi_proto']] += int(row['s_to_c_bytes']) + int(row['c_to_s_bytes'])
+            except KeyError:
+                app[row['ndpi_proto']] = 0
+                app[row['ndpi_proto']] += int(row['s_to_c_bytes']) + int(row['c_to_s_bytes'])
+    return app
+
+
 def build_ground_truth_dict(path):
     list_gt = get_files_list(path)
     ground_truth = {}
     for file in list_gt:
-        d = pd.read_csv(file, index_col=0)[["ndpi_proto", 'src2dst_bytes', 'dst2src_bytes']].groupby("ndpi_proto").sum()
-        d['total'] = d['src2dst_bytes'] + d['dst2src_bytes']
-        d.drop(['src2dst_bytes', 'dst2src_bytes'], axis=1, inplace=True)
-        ground_truth[file.split('/')[-1]] = d.to_dict()['total']
+        ground_truth[file.split('/')[-1]] = get_app_dict(file)
     return ground_truth
 
 
