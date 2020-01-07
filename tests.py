@@ -121,7 +121,7 @@ class TestMethods(unittest.TestCase):
 
         print("\n----------------------------------------------------------------------")
         print(".Testing adding user plugins.")
-        streamer_test = NFStreamer(source='tests/facebook.pcap', plugins=[feat_1()])
+        streamer_test = NFStreamer(source='tests/pcap/facebook.pcap', plugins=[feat_1()])
         for flow in streamer_test:
             if flow.id == 0:
                 self.assertEqual(flow.feat_1, 0)
