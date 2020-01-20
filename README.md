@@ -15,6 +15,14 @@ the broader goal of becoming **a common network data processing framework for re
   </td>
 </tr>
 <tr>
+  <td>Downloads</td>
+  <td>
+    <a href="https://pepy.tech/project/nfstream">
+    <img src="https://pepy.tech/badge/nfstream" alt="downloads" />
+    </a>
+  </td>
+</tr>
+<tr>
   <td>Supported Platforms</td>
   <td>
     <a href="https://github.com/aouinizied/nfstream/actions?query=workflow%3Abuild">
