@@ -112,7 +112,7 @@ NFEntry object
      - Flow packets accumulator.
    * - total_bytes
      - int
-     - Flow bytes accumulator.
+     - Flow bytes (full packet lentgh) accumulator.
    * - duration
      - int
      - Flow duration in milliseconds.
@@ -121,13 +121,13 @@ NFEntry object
      - Flow packets accumulator (source->destination).
    * - src2dst_bytes
      - int
-     - Flow bytes accumulator (source->destination).
+     - Flow bytes (full packet lentgh) accumulator (source->destination).
    * - dst2src_packets
      - int
      - Flow packets accumulator (destination->source).
    * - dst2src_bytes
      - int
-     - Flow bytes accumulator (destination->source).
+     - Flow bytes (full packet lentgh) accumulator (destination->source).
    * - expiration_id
      - int
      - Identifier of flow expiration trigger. Can be ``0`` for idle_timeout, ``1`` for active_timeout or 'negative' for custom expiration.
