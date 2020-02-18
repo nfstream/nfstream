@@ -2,7 +2,7 @@
 file: ndpi.py
 This file is part of nfstream.
 
-Copyright (C) 2019-20 - Zied Aouini <aouinizied@gmail.com>
+Copyright (C) 2019 - Zied Aouini <aouinizied@gmail.com>
 
 nfstream is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -36,7 +36,8 @@ typedef enum {
 typedef enum {
     ndpi_url_no_problem = 0,
     ndpi_url_possible_xss,
-    ndpi_url_possible_sql_injection
+    ndpi_url_possible_sql_injection,
+    ndpi_url_possible_rce_injection
 } ndpi_url_risk;
 
 /* NDPI_VISIT */
@@ -988,7 +989,7 @@ struct ndpi_flow_struct {
     char *pktbuf;
     uint16_t pktbuf_maxlen, pktbuf_currlen;
   } kerberos_buf;
-  
+
   union {
     /* the only fields useful for nDPI and ntopng */
     struct {
@@ -1001,7 +1002,7 @@ struct ndpi_flow_struct {
       uint8_t request_code;
       uint8_t version;
     } ntp;
-    
+
    struct {
       char hostname[48], domain[48], username[48];
     } kerberos;
@@ -1037,7 +1038,7 @@ struct ndpi_flow_struct {
       uint8_t character_id;
       char username[32], password[32];
     } telnet;
-    
+
     struct {
       char answer[96];
     } mdns;
@@ -1057,7 +1058,7 @@ struct ndpi_flow_struct {
       uint8_t auth_found:1, auth_failed:1, _pad:5;
       char username[16], password[16];
     } ftp_imap_pop_smtp;
-    
+
     struct {
       /* Bittorrent hash */
       uint8_t hash[20];
@@ -1232,7 +1233,7 @@ class NDPI():
         self._ffi = cffi.FFI()
         if libpath is None:
             if "win" in sys.platform[:3]:
-                self._ndpi = self._ffi.dlopen(dirname(abspath(__file__)) + '/libs/libndpi.a')
+                self._ndpi = self._ffi.dlopen(dirname(abspath(__file__)) + '/libs/libndpi.dll')
             else:
                 self._ndpi = self._ffi.dlopen(dirname(abspath(__file__)) + '/libs/libndpi.so')
         else:
