@@ -222,7 +222,7 @@ def update_ndpi_infos(entry, ndpi_flow, ndpi_protocol, ndpi):
         entry.server_info = ndpi.get_str_field(ndpi_flow.protos.ssh.server_signature)
     elif is_ndpi_proto(entry, 91) or ndpi.get_str_field(ndpi_flow.protos.stun_ssl.ssl.ja3_client) != '':  # TLS
         entry.client_info = ndpi.get_str_field(ndpi_flow.protos.stun_ssl.ssl.client_requested_server_name)
-        entry.server_info = ndpi.get_str_field(ndpi_flow.protos.stun_ssl.ssl.server_names)
+        entry.server_info = ndpi.get_str_field(ndpi_flow.protos.stun_ssl.ssl.server_organization)
         entry.j3a_client = ndpi.get_str_field(ndpi_flow.protos.stun_ssl.ssl.ja3_client)
         entry.j3a_server = ndpi.get_str_field(ndpi_flow.protos.stun_ssl.ssl.ja3_server)
     else:
