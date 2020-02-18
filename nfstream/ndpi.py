@@ -520,17 +520,6 @@ struct ndpi_flow_tcp_struct {
 
     /* NDPI_PROTOCOL_TELNET */
     uint32_t telnet_stage:2;			// 0 - 2
-    void* tls_srv_cert_fingerprint_ctx;
-
-    /* NDPI_PROTOCOL_TLS */
-    uint8_t tls_seen_client_cert:1,
-    tls_seen_server_cert:1,
-    tls_seen_certificate:1,
-    tls_srv_cert_fingerprint_found:1,
-    tls_srv_cert_fingerprint_processed:1,
-    tls_stage:2, _pad:1; // 0 - 5
-    int16_t tls_record_offset, tls_fingerprint_len; /* Need to be signed */
-    uint8_t tls_sha1_certificate_fingerprint[20];
     
     struct {
       struct {
@@ -806,7 +795,6 @@ typedef enum {
 
 typedef enum {
     ndpi_pref_direction_detect_disable = 0,
-    ndpi_pref_disable_metadata_export,
 } ndpi_detection_preference;
 
 /* ntop extensions */
