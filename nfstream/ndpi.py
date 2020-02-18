@@ -920,7 +920,7 @@ struct ndpi_detection_module_struct {
     struct ndpi_lru_cache *stun_cache;
     ndpi_proto_defaults_t proto_defaults[512];
     uint8_t direction_detect_disable:1, /* disable internal detection of packet direction */
-    disable_metadata_export:1   /* No metadata is exported */
+    _pad:7
     ;
     void *hyperscan; /* Intel Hyperscan */
 };
@@ -968,7 +968,7 @@ struct ndpi_flow_struct {
   */
   struct ndpi_id_struct *server_id;
   /* HTTP host or DNS query */
-  uint8_t host_server_name[256];
+  uint8_t host_server_name[240];
 
   /*
     This structure below will not not stay inside the protos
@@ -1009,8 +1009,8 @@ struct ndpi_flow_struct {
 
     struct {
       struct {
-            uint16_t ssl_version;
-            char client_certificate[64], server_certificate[64], server_organization[64];
+            uint16_t ssl_version, server_names_len;
+            char client_requested_server_name[64], *server_names, server_organization[64], *alpn, *tls_supported_versions;
             uint32_t notBefore, notAfter;
             char ja3_client[33], ja3_server[33];
             uint16_t server_cipher;
