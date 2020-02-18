@@ -531,6 +531,19 @@ struct ndpi_flow_tcp_struct {
     tls_stage:2, _pad:1; // 0 - 5
     int16_t tls_record_offset, tls_fingerprint_len; /* Need to be signed */
     uint8_t tls_sha1_certificate_fingerprint[20];
+    
+    struct {
+      struct {
+        uint8_t *buffer;
+        uint buffer_len, buffer_used;
+      } message;
+
+      void* srv_cert_fingerprint_ctx; /* SHA-1 */
+
+      /* NDPI_PROTOCOL_TLS */
+      uint8_t hello_processed:1, certificate_processed:1, subprotocol_detected:1, fingerprint_set:1, _pad:4;
+      uint8_t sha1_certificate_fingerprint[20];
+    } tls;
 
     /* NDPI_PROTOCOL_POSTGRES */
     uint32_t postgres_stage:3;
