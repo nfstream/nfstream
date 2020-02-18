@@ -962,7 +962,8 @@ struct ndpi_flow_struct {
     struct ndpi_flow_tcp_struct tcp;
     struct ndpi_flow_udp_struct udp;
   } l4;
-
+  /* Place textual flow info here */
+  char flow_extra_info[16];
   /*
     Pointer to src or dst that identifies the
     server of this connection
