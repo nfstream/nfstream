@@ -522,17 +522,18 @@ struct ndpi_flow_tcp_struct {
     uint32_t telnet_stage:2;			// 0 - 2
     
     struct {
-      struct {
-        uint8_t *buffer;
-        unsigned buffer_len, buffer_used;
-      } message;
+    struct {
+      uint8_t *buffer;
+      unsigned buffer_len, buffer_used;
+    } message;
 
-      void* srv_cert_fingerprint_ctx; /* SHA-1 */
+    void* srv_cert_fingerprint_ctx; /* SHA-1 */
 
-      /* NDPI_PROTOCOL_TLS */
-      uint8_t hello_processed:1, certificate_processed:1, subprotocol_detected:1, fingerprint_set:1, _pad:4;
-      uint8_t sha1_certificate_fingerprint[20];
-    } tls;
+    /* NDPI_PROTOCOL_TLS */
+    uint8_t hello_processed:1, certificate_processed:1, subprotocol_detected:1,
+    fingerprint_set:1, _pad:4;
+    uint8_t sha1_certificate_fingerprint[20];
+  } tls;
 
     /* NDPI_PROTOCOL_POSTGRES */
     uint32_t postgres_stage:3;
@@ -921,8 +922,7 @@ struct ndpi_detection_module_struct {
     struct ndpi_lru_cache *stun_cache;
     ndpi_proto_defaults_t proto_defaults[512];
     uint8_t direction_detect_disable:1, /* disable internal detection of packet direction */
-    _pad:7
-    ;
+    _pad:7;
     void *hyperscan; /* Intel Hyperscan */
 };
 
@@ -940,8 +940,7 @@ struct ndpi_flow_struct {
   struct ndpi_flow_struct_stack ndpi_flow_stack;
   /* init parameter, internal used to set up timestamp,... */
   uint16_t guessed_protocol_id, guessed_host_protocol_id, guessed_category, guessed_header_category;
-  uint8_t l4_proto, protocol_id_already_guessed:1, host_already_guessed:1, 
-  init_finished:1, setup_packet_direction:1, packet_direction:1, check_extra_packets:1;
+  uint8_t l4_proto, protocol_id_already_guessed:1, host_already_guessed:1, init_finished:1, setup_packet_direction:1, packet_direction:1, check_extra_packets:1;
 
   /*
     if ndpi_struct->direction_detect_disable == 1
@@ -963,8 +962,9 @@ struct ndpi_flow_struct {
     struct ndpi_flow_tcp_struct tcp;
     struct ndpi_flow_udp_struct udp;
   } l4;
-  /* Place textual flow info here */
+
   char flow_extra_info[16];
+  
   /*
     Pointer to src or dst that identifies the
     server of this connection
@@ -992,7 +992,7 @@ struct ndpi_flow_struct {
     char *pktbuf;
     uint16_t pktbuf_maxlen, pktbuf_currlen;
   } kerberos_buf;
-  
+
   union {
     /* the only fields useful for nDPI and ntopng */
     struct {
@@ -1005,7 +1005,7 @@ struct ndpi_flow_struct {
       uint8_t request_code;
       uint8_t version;
     } ntp;
-    
+
    struct {
       char hostname[48], domain[48], username[48];
     } kerberos;
@@ -1013,8 +1013,8 @@ struct ndpi_flow_struct {
     struct {
       struct {
             uint16_t ssl_version, server_names_len;
-            char client_requested_server_name[64], *server_names, server_organization[64], 
-            *alpn, *tls_supported_versions;
+            char client_requested_server_name[64], *server_names, server_organization[64], *alpn, 
+            *tls_supported_versions;
             uint32_t notBefore, notAfter;
             char ja3_client[33], ja3_server[33];
             uint16_t server_cipher;
@@ -1038,13 +1038,11 @@ struct ndpi_flow_struct {
     } imo;
 
     struct {
-      uint8_t username_detected:1, username_found:1,
-      password_detected:1, password_found:1, 
-      _pad:4;
+      uint8_t username_detected:1, username_found:1, password_detected:1, password_found:1, _pad:4;
       uint8_t character_id;
       char username[32], password[32];
     } telnet;
-    
+
     struct {
       char answer[96];
     } mdns;
@@ -1064,7 +1062,7 @@ struct ndpi_flow_struct {
       uint8_t auth_found:1, auth_failed:1, _pad:5;
       char username[16], password[16];
     } ftp_imap_pop_smtp;
-    
+
     struct {
       /* Bittorrent hash */
       uint8_t hash[20];
@@ -1100,6 +1098,7 @@ struct ndpi_flow_struct {
 
   /* NDPI_PROTOCOL_HTTP */
   uint8_t http_detected:1;
+  uint16_t http_upper_protocol, http_lower_protocol;
 
   /* NDPI_PROTOCOL_RTSP */
   uint8_t rtsprdt_stage:2, rtsp_control_flow:1;
