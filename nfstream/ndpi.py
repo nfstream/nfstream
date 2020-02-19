@@ -940,7 +940,8 @@ struct ndpi_flow_struct {
   struct ndpi_flow_struct_stack ndpi_flow_stack;
   /* init parameter, internal used to set up timestamp,... */
   uint16_t guessed_protocol_id, guessed_host_protocol_id, guessed_category, guessed_header_category;
-  uint8_t l4_proto, protocol_id_already_guessed:1, host_already_guessed:1, init_finished:1, setup_packet_direction:1, packet_direction:1, check_extra_packets:1;
+  uint8_t l4_proto, protocol_id_already_guessed:1, host_already_guessed:1, 
+  init_finished:1, setup_packet_direction:1, packet_direction:1, check_extra_packets:1;
 
   /*
     if ndpi_struct->direction_detect_disable == 1
@@ -1012,7 +1013,8 @@ struct ndpi_flow_struct {
     struct {
       struct {
             uint16_t ssl_version, server_names_len;
-            char client_requested_server_name[64], *server_names, server_organization[64], *alpn, *tls_supported_versions;
+            char client_requested_server_name[64], *server_names, server_organization[64], 
+            *alpn, *tls_supported_versions;
             uint32_t notBefore, notAfter;
             char ja3_client[33], ja3_server[33];
             uint16_t server_cipher;
@@ -1036,7 +1038,9 @@ struct ndpi_flow_struct {
     } imo;
 
     struct {
-      uint8_t username_detected:1, username_found:1, password_detected:1, password_found:1, _pad:4;
+      uint8_t username_detected:1, username_found:1,
+      password_detected:1, password_found:1, 
+      _pad:4;
       uint8_t character_id;
       char username[32], password[32];
     } telnet;
@@ -1096,7 +1100,6 @@ struct ndpi_flow_struct {
 
   /* NDPI_PROTOCOL_HTTP */
   uint8_t http_detected:1;
-  uint16_t http_upper_protocol, http_lower_protocol;
 
   /* NDPI_PROTOCOL_RTSP */
   uint8_t rtsprdt_stage:2, rtsp_control_flow:1;
