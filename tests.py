@@ -86,7 +86,7 @@ class TestMethods(unittest.TestCase):
         self.assertEqual(len(flows), 60)
         print('PASS.')
 
-    def test_flow_str_representation(self):
+    def test_flow_metadata_extraction(self):
         print("\n----------------------------------------------------------------------")
         print(".Testing Flow string representation:")
         streamer_test = NFStreamer(source='tests/pcap/facebook.pcap')
@@ -95,6 +95,11 @@ class TestMethods(unittest.TestCase):
             flows.append(flow)
         del streamer_test
         print(flows[0])
+        self.assertEqual(flows[0].client_info, 'facebook.com')
+        self.assertEqual(flows[0].server_info, '*.facebook.com,*.facebook.net,*.fb.com,*.fbcdn.net,*.fbsbx.com,*.m.facebook.com,*.messenger.com,*.xx.fbcdn.net,*.xy.fbcdn.net,*.xz.fbcdn.net,facebook.com,fb.com,messenger.com')
+        self.assertEqual(flows[0].client_info, 'facebook.com')
+        self.assertEqual(flows[0].j3a_client, 'bfcc1a3891601edb4f137ab7ab25b840')
+        self.assertEqual(flows[0].j3a_server, '2d1eb5817ece335c24904f516ad5da12')
         print('PASS.')
 
     def test_unfound_device(self):
