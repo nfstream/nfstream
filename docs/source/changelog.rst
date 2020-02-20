@@ -2,6 +2,11 @@
 Changelog
 #########
 
+**3.2.0 (2020-02-02)**
+
+* nDPI 3.2 support.
+* Fix metadata extraction issues.
+
 **3.1.2 (2020-01-07)**
 
 * Fix tests workflow.
