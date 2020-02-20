@@ -48,7 +48,7 @@ class BuildNdpiCommand(build_ext):
         if os.name != 'posix':  # Windows case
             pass
         else:
-            subprocess.check_call(['git', 'clone', '--branch', 'dev', 'https://github.com/ntop/nDPI.git'])
+            subprocess.check_call(['git', 'clone', '--branch', '3.2-stable', 'https://github.com/ntop/nDPI.git'])
             os.chdir('nDPI/')
             print("Setting up nDPI.")
             subprocess.check_call(['./autogen.sh'])
@@ -64,6 +64,7 @@ class BuildNdpiCommand(build_ext):
             os.chdir('..')
             os.chdir('..')
             os.chdir('tests/')
+            subprocess.check_call(['chmod', 'a+x', 'build_results.sh'])
             subprocess.check_call(['./build_results.sh'])
             os.chdir('..')
             shutil.rmtree('nDPI/', ignore_errors=True)
