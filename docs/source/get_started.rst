@@ -145,10 +145,10 @@ NFEntry object
      - nDPI application category name.
    * - client_info
      - str
-     - Dissected client informations. Can be ``http_detected_os`` for HTTP, ``client_signature`` for SSH or ``ssl_client_hello_sni`` for SSL.
-   * - client_info
+     - Dissected client informations. Can be ``http_user_agent`` for HTTP, ``client_signature`` for SSH or ``client_requested_server_name`` for SSL.
+   * - server_info
      - str
-     - Dissected server informations. Can be ``host_server_name`` for HTTP or DNS, ``server_signature`` for SSH or ``ssl_server_hello_sni`` for SSL.
+     - Dissected server informations. Can be ``host_server_name`` for HTTP or DNS, ``server_signature`` for SSH or ``server_names`` for SSL.
    * - j3a_client
      - str
      - J3A_ client fingerprint.

@@ -18,126 +18,6 @@ from os.path import abspath, dirname
 import cffi
 import sys
 
-cc = """
-typedef enum {
-	      NDPI_LOG_ERROR,
-	      NDPI_LOG_TRACE,
-	      NDPI_LOG_DEBUG,
-	      NDPI_LOG_DEBUG_EXTRA
-} ndpi_log_level_t;
-
-typedef enum {
-	      ndpi_l4_proto_unknown = 0,
-	      ndpi_l4_proto_tcp_only,
-	      ndpi_l4_proto_udp_only,
-	      ndpi_l4_proto_tcp_and_udp,
-} ndpi_l4_proto_info;
-
-typedef enum {
-  ndpi_no_tunnel = 0,
-  ndpi_gtp_tunnel,
-  ndpi_capwap_tunnel,
-  ndpi_tzsp_tunnel,
-  ndpi_l2tp_tunnel,
-} ndpi_packet_tunnel;
-
-typedef enum {
-  ndpi_url_no_problem = 0,
-  ndpi_url_possible_xss,
-  ndpi_url_possible_sql_injection,
-  ndpi_url_possible_rce_injection
-} ndpi_url_risk;
-
-/* NDPI_VISIT */
-typedef enum {
-	      ndpi_preorder,
-	      ndpi_postorder,
-	      ndpi_endorder,
-	      ndpi_leaf
-} ndpi_VISIT;
-
-/* NDPI_NODE */
-typedef struct node_t {
-  char *key;
-  struct node_t *left, *right;
-} ndpi_node;
-
-/* NDPI_MASK_SIZE */
-typedef uint32_t ndpi_ndpi_mask;
-
-/* NDPI_PROTO_BITMASK_STRUCT */
-typedef struct ndpi_protocol_bitmask_struct {
-  ndpi_ndpi_mask fds_bits[16];
-} NDPI_PROTOCOL_BITMASK;
-
-/* NDPI_PROTOCOL_BITTORRENT */
-typedef struct spinlock {
-  volatile int    val;
-} spinlock_t;
-
-typedef struct atomic {
-  volatile int counter;
-} atomic_t;
-
-typedef long int time_t;
-
-struct hash_ip4p_node {
-  struct hash_ip4p_node *next, *prev;
-  time_t                  lchg;
-  uint16_t               port,count:12,flag:4;
-  uint32_t               ip;
-};
-
-struct hash_ip4p {
-  struct hash_ip4p_node   *top;
-  spinlock_t              lock;
-  size_t                  len;
-};
-
-struct hash_ip4p_table {
-  size_t                  size;
-  int			  ipv6;
-  spinlock_t              lock;
-  atomic_t                count;
-  struct hash_ip4p        tbl;
-};
-
-struct bt_announce {              // 192 bytes
-  uint32_t		hash[5];
-  uint32_t		ip[4];
-  uint32_t		time;
-  uint16_t		port;
-  uint8_t		name_len,
-    name[149];     // 149 bytes
-};
-
-/* NDPI_PROTOCOL_TINC */
-#define TINC_CACHE_MAX_SIZE 10
-
-typedef enum {
-	      NDPI_HTTP_METHOD_UNKNOWN = 0,
-	      NDPI_HTTP_METHOD_OPTIONS,
-	      NDPI_HTTP_METHOD_GET,
-	      NDPI_HTTP_METHOD_HEAD,
-	      NDPI_HTTP_METHOD_PATCH,
-	      NDPI_HTTP_METHOD_POST,
-	      NDPI_HTTP_METHOD_PUT,
-	      NDPI_HTTP_METHOD_DELETE,
-	      NDPI_HTTP_METHOD_TRACE,
-	      NDPI_HTTP_METHOD_CONNECT
-} ndpi_http_method;
-
-struct ndpi_lru_cache_entry {
-  uint32_t key; /* Store the whole key to avoid ambiguities */
-  uint32_t is_full:1, value:16, pad:15;
-};
-  
-struct ndpi_lru_cache {
-  uint32_t num_entries;
-  struct ndpi_lru_cache_entry *entries;
-};
-"""
-
 cc_ndpi_network_headers = """
 struct ndpi_chdlc
 {
@@ -376,7 +256,126 @@ struct tinc_cache_entry {
 };
 """
 
-cc_ndpi_id_struct = """
+
+cc_ndpi_stuctures = """
+typedef enum {
+	      NDPI_LOG_ERROR,
+	      NDPI_LOG_TRACE,
+	      NDPI_LOG_DEBUG,
+	      NDPI_LOG_DEBUG_EXTRA
+} ndpi_log_level_t;
+
+typedef enum {
+	      ndpi_l4_proto_unknown = 0,
+	      ndpi_l4_proto_tcp_only,
+	      ndpi_l4_proto_udp_only,
+	      ndpi_l4_proto_tcp_and_udp,
+} ndpi_l4_proto_info;
+
+typedef enum {
+  ndpi_no_tunnel = 0,
+  ndpi_gtp_tunnel,
+  ndpi_capwap_tunnel,
+  ndpi_tzsp_tunnel,
+  ndpi_l2tp_tunnel,
+} ndpi_packet_tunnel;
+
+typedef enum {
+  ndpi_url_no_problem = 0,
+  ndpi_url_possible_xss,
+  ndpi_url_possible_sql_injection,
+  ndpi_url_possible_rce_injection
+} ndpi_url_risk;
+
+/* NDPI_VISIT */
+typedef enum {
+	      ndpi_preorder,
+	      ndpi_postorder,
+	      ndpi_endorder,
+	      ndpi_leaf
+} ndpi_VISIT;
+
+/* NDPI_NODE */
+typedef struct node_t {
+  char *key;
+  struct node_t *left, *right;
+} ndpi_node;
+
+/* NDPI_MASK_SIZE */
+typedef uint32_t ndpi_ndpi_mask;
+
+/* NDPI_PROTO_BITMASK_STRUCT */
+typedef struct ndpi_protocol_bitmask_struct {
+  ndpi_ndpi_mask fds_bits[16];
+} NDPI_PROTOCOL_BITMASK;
+
+/* NDPI_PROTOCOL_BITTORRENT */
+typedef struct spinlock {
+  volatile int    val;
+} spinlock_t;
+
+typedef struct atomic {
+  volatile int counter;
+} atomic_t;
+
+typedef long int time_t;
+
+struct hash_ip4p_node {
+  struct hash_ip4p_node *next, *prev;
+  time_t                  lchg;
+  uint16_t               port,count:12,flag:4;
+  uint32_t               ip;
+};
+
+struct hash_ip4p {
+  struct hash_ip4p_node   *top;
+  spinlock_t              lock;
+  size_t                  len;
+};
+
+struct hash_ip4p_table {
+  size_t                  size;
+  int			  ipv6;
+  spinlock_t              lock;
+  atomic_t                count;
+  struct hash_ip4p        tbl;
+};
+
+struct bt_announce {              // 192 bytes
+  uint32_t		hash[5];
+  uint32_t		ip[4];
+  uint32_t		time;
+  uint16_t		port;
+  uint8_t		name_len,
+    name[149];     // 149 bytes
+};
+
+/* NDPI_PROTOCOL_TINC */
+#define TINC_CACHE_MAX_SIZE 10
+
+typedef enum {
+	      NDPI_HTTP_METHOD_UNKNOWN = 0,
+	      NDPI_HTTP_METHOD_OPTIONS,
+	      NDPI_HTTP_METHOD_GET,
+	      NDPI_HTTP_METHOD_HEAD,
+	      NDPI_HTTP_METHOD_PATCH,
+	      NDPI_HTTP_METHOD_POST,
+	      NDPI_HTTP_METHOD_PUT,
+	      NDPI_HTTP_METHOD_DELETE,
+	      NDPI_HTTP_METHOD_TRACE,
+	      NDPI_HTTP_METHOD_CONNECT
+} ndpi_http_method;
+
+struct ndpi_lru_cache_entry {
+  uint32_t key; /* Store the whole key to avoid ambiguities */
+  uint32_t is_full:1, value:16, pad:15;
+};
+
+struct ndpi_lru_cache {
+  uint32_t num_entries;
+  struct ndpi_lru_cache_entry *entries;
+};
+
 typedef union
 {
   uint32_t ipv4;
@@ -477,8 +476,7 @@ struct ndpi_id_struct {
   /* NDPI_PROTOCOL_RTSP */
   uint32_t rtsp_ts_set:1;
 };
-"""
-cc_ndpi_flow_tcp_struct = """
+
 struct ndpi_flow_tcp_struct {
   /* NDPI_PROTOCOL_MAIL_SMTP */
   uint16_t smtp_command_bitmask;
@@ -561,8 +559,7 @@ struct ndpi_flow_tcp_struct {
     void* srv_cert_fingerprint_ctx; /* SHA-1 */
   
     /* NDPI_PROTOCOL_TLS */
-    uint8_t hello_processed:1, certificate_processed:1, subprotocol_detected:1, 
-    fingerprint_set:1, _pad:4;
+    uint8_t hello_processed:1, certificate_processed:1, subprotocol_detected:1, fingerprint_set:1, _pad:4; 
     uint8_t sha1_certificate_fingerprint[20];
   } tls;
   
@@ -627,9 +624,7 @@ struct ndpi_flow_tcp_struct {
   /* NDPI_PROTOCOL_NEST_LOG_SINK */
   uint8_t nest_log_sink_matches;
 };
-"""
 
-cc_ndpi_flow_udp_struct = """
 struct ndpi_flow_udp_struct {
   /* NDPI_PROTOCOL_BATTLEFIELD */
   uint32_t battlefield_msg_id;
@@ -682,27 +677,12 @@ struct ndpi_flow_udp_struct {
   uint8_t wireguard_stage;
   uint32_t wireguard_peer_index[2];
 };
-"""
 
-cc_ndpi_int_one_line_struct = """
 struct ndpi_int_one_line_struct {
   const uint8_t *ptr;
   uint16_t len;
 };
-"""
 
-cc_ndpi_packet_struct_stack = """
-struct ndpi_packet_struct_stack {
-    uint8_t detected_subprotocol_stack[2];
-    uint16_t protocol_stack_info;
-};
-struct ndpi_flow_struct_stack {
-    uint16_t detected_protocol_stack[2];
-    uint16_t protocol_stack_info;
-};
-"""
-
-cc_ndpi_packet_struct = """
 struct ndpi_packet_struct {
   const struct ndpi_iphdr *iph;
   const struct ndpi_ipv6hdr *iphv6;
@@ -715,7 +695,8 @@ struct ndpi_packet_struct {
   uint64_t tick_timestamp_l;
 
   uint16_t detected_protocol_stack[2];
-  struct ndpi_packet_struct_stack ndpi_packet_stack;
+  uint8_t detected_subprotocol_stack[2];
+  uint16_t protocol_stack_info;
 
   struct ndpi_int_one_line_struct line[64];
   /* HTTP headers */
@@ -1004,13 +985,12 @@ typedef enum {
 } ndpi_cipher_weakness;
 
 struct ndpi_flow_struct {
-  struct ndpi_flow_struct_stack ndpi_flow_stack;
+  uint16_t detected_protocol_stack[2];
+  uint16_t protocol_stack_info;
   /* init parameter, internal used to set up timestamp,... */
   uint16_t guessed_protocol_id, guessed_host_protocol_id, guessed_category, guessed_header_category;
   uint8_t l4_proto, protocol_id_already_guessed:1, host_already_guessed:1,
     init_finished:1, setup_packet_direction:1, packet_direction:1, check_extra_packets:1;
-  uint8_t fix_pad[8]; /* FIXME: dirty hack until we find the 8 bytes causing misalignement
-
   /*
     if ndpi_struct->direction_detect_disable == 1
     tcp sequence number connection tracking
@@ -1021,7 +1001,6 @@ struct ndpi_flow_struct {
   uint8_t num_processed_pkts; /* <= WARNING it can wrap but we do expect people to giveup earlier */
 
   int (*extra_packets_func) (struct ndpi_detection_module_struct *, struct ndpi_flow_struct *flow);
-
   /*
     the tcp / udp / other l4 value union
     used to reduce the number of bytes for tcp or udp protocol states
@@ -1328,6 +1307,8 @@ char* ndpi_revision(void);
 void ndpi_finalize_initalization(struct ndpi_detection_module_struct *ndpi_str);
 uint32_t ndpi_detection_get_sizeof_ndpi_flow_struct(void);
 uint32_t ndpi_detection_get_sizeof_ndpi_id_struct(void);
+uint32_t ndpi_detection_get_sizeof_ndpi_flow_tcp_struct(void);
+uint32_t ndpi_detection_get_sizeof_ndpi_flow_udp_struct(void);
 """
 
 
@@ -1341,14 +1322,8 @@ class NDPI():
                 self._ndpi = self._ffi.dlopen(dirname(abspath(__file__)) + '/libs/libndpi.so')
         else:
             self._ndpi = self._ffi.dlopen(libpath)
-        self._ffi.cdef(cc)
         self._ffi.cdef(cc_ndpi_network_headers, packed=True)
-        self._ffi.cdef(cc_ndpi_id_struct)
-        self._ffi.cdef(cc_ndpi_flow_tcp_struct, packed=True)
-        self._ffi.cdef(cc_ndpi_flow_udp_struct, packed=True)
-        self._ffi.cdef(cc_ndpi_int_one_line_struct)
-        self._ffi.cdef(cc_ndpi_packet_struct_stack, packed=True)
-        self._ffi.cdef(cc_ndpi_packet_struct)
+        self._ffi.cdef(cc_ndpi_stuctures)
         self._ffi.cdef(cc_ndpi_apis)
         self._mod = self._ndpi.ndpi_init_detection_module()
         ndpi_revision = self._ffi.string(self._ndpi.ndpi_revision()).decode('utf-8', errors='ignore')
@@ -1358,17 +1333,7 @@ class NDPI():
         self._ndpi.memset(self._ffi.cast("char *", all), 0xFF, self._ffi.sizeof("NDPI_PROTOCOL_BITMASK"))
         self._ndpi.ndpi_set_protocol_detection_bitmask2(self._mod, all)
         self.SIZEOF_FLOW_STRUCT = self._ffi.sizeof("struct ndpi_flow_struct")
-        if int(self._ndpi.ndpi_detection_get_sizeof_ndpi_flow_struct()) != self.SIZEOF_FLOW_STRUCT:
-            print("Error: size_of_loaded_flow_struct({a}) nor equal to size_of_defined_flow_struct({b})".format(
-                a=self._ndpi.ndpi_detection_get_sizeof_ndpi_flow_struct(),
-                b=self.SIZEOF_FLOW_STRUCT
-            ))
         self.SIZEOF_ID_STRUCT = self._ffi.sizeof("struct ndpi_id_struct")
-        if int(self._ndpi.ndpi_detection_get_sizeof_ndpi_id_struct()) != self.SIZEOF_ID_STRUCT:
-            print("Error: size_of_loaded_id_struct({a}) nor equal to size_of_defined_id_struct({b})".format(
-                a=self._ndpi.ndpi_detection_get_sizeof_ndpi_id_struct(),
-                b=self.SIZEOF_ID_STRUCT
-            ))
         self.NULL = self._ffi.NULL
         self.max_tcp_dissections = max_tcp_dissections
         self.max_udp_dissections = max_udp_dissections

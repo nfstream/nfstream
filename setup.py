@@ -48,7 +48,7 @@ class BuildNdpiCommand(build_ext):
         if os.name != 'posix':  # Windows case
             pass
         else:
-            subprocess.check_call(['git', 'clone', '--branch', '3.2-stable', 'https://github.com/ntop/nDPI.git'])
+            subprocess.check_call(['git', 'clone', '--branch', 'dev', 'https://github.com/aouinizied/nDPI.git'])
             os.chdir('nDPI/')
             print("Setting up nDPI.")
             subprocess.check_call(['./autogen.sh'])

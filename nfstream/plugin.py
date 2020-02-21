@@ -216,7 +216,7 @@ def update_ndpi_infos(entry, ndpi_flow, ndpi_protocol, ndpi):
     entry.category_name = ndpi.ndpi_category_get_name(ndpi_protocol.category)
     entry.server_info = ndpi.get_str_field(ndpi_flow.host_server_name)  # DNS and HTTP
     if is_ndpi_proto(entry, 7):  # HTTP
-        entry.client_info = ndpi.get_str_field(ndpi_flow.protos.http.detected_os)
+        entry.client_info = ndpi.get_str_field(ndpi_flow.http.user_agent)
     elif is_ndpi_proto(entry, 92):  # SSH
         entry.client_info = ndpi.get_str_field(ndpi_flow.protos.ssh.client_signature)
         entry.server_info = ndpi.get_str_field(ndpi_flow.protos.ssh.server_signature)
