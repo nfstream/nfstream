@@ -154,9 +154,9 @@ the broader goal of becoming **a common network data processing framework for re
             if obs.length >= 666:
                 entry.my_awesome_plugin += 1
 		
-   streamer_awesome = NFStreamer(source='devil.pcap', plugins=[my_awesome_plugin()])
-   for flow in streamer_awesome:
-      print(flow.my_awesome_plugin) # see your dynamically created metric in generated flows
+    streamer_awesome = NFStreamer(source='devil.pcap', plugins=[my_awesome_plugin()])
+    for flow in streamer_awesome:
+       print(flow.my_awesome_plugin) # see your dynamically created metric in generated flows
 ```
 
 * More example and details are provided on the official [**documentation**][documentation].
