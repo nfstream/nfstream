@@ -64,7 +64,6 @@ class BuildNdpiCommand(build_ext):
             os.chdir('..')
             os.chdir('..')
             os.chdir('tests/')
-            subprocess.check_call(['chmod', 'a+x', 'build_results.sh'])
             subprocess.check_call(['./build_results.sh'])
             os.chdir('..')
             shutil.rmtree('nDPI/', ignore_errors=True)
