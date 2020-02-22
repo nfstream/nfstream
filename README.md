@@ -7,7 +7,7 @@ the broader goal of becoming **a common network data processing framework for re
 
 <table>
 <tr>
-  <td>Latest Release</td>
+  <td><b>Latest Release</b></td>
   <td>
     <a href="https://pypi.python.org/pypi/nfstream">
     <img src="https://img.shields.io/pypi/v/nfstream.svg" alt="latest release" />
@@ -15,7 +15,7 @@ the broader goal of becoming **a common network data processing framework for re
   </td>
 </tr>
 <tr>
-  <td>DOI</td>
+  <td><b>DOI</b></td>
   <td>
     <a href="https://zenodo.org/badge/latestdoi/216051909">
     <img src="https://zenodo.org/badge/216051909.svg" alt="DOI" />
@@ -23,7 +23,7 @@ the broader goal of becoming **a common network data processing framework for re
   </td>
 </tr>
 <tr>
-  <td>Downloads</td>
+  <td><b>Downloads</b></td>
   <td>
     <a href="https://pepy.tech/project/nfstream">
     <img src="https://pepy.tech/badge/nfstream" alt="downloads" />
@@ -31,7 +31,7 @@ the broader goal of becoming **a common network data processing framework for re
   </td>
 </tr>
 <tr>
-  <td>Supported Platforms</td>
+  <td><b>Supported Platforms</b></td>
   <td>
     <a href="https://github.com/aouinizied/nfstream/actions?query=workflow%3Abuild">
     <img src="https://raw.githubusercontent.com/wiki/ryanoasis/nerd-fonts/screenshots/v1.0.x/linux-pass-sm.png" alt="Linux" />
@@ -41,7 +41,7 @@ the broader goal of becoming **a common network data processing framework for re
   </td>
 </tr>
 <tr>
-  <td>Supported Versions</td>
+  <td><b>Supported Versions</b></td>
   <td>
     <a href="https://github.com/aouinizied/nfstream/actions?query=workflow%3Abuild">
     <img src="https://img.shields.io/badge/python3-%3E%3D3.6-blue" alt="python3" />
@@ -52,7 +52,7 @@ the broader goal of becoming **a common network data processing framework for re
   </td>
 </tr>
 <tr>
-  <td>Build Status</td>
+  <td><b>Build Status</b></td>
   <td>
     <a href="https://github.com/aouinizied/nfstream/actions?query=workflow%3Abuild">
     <img src="https://github.com/aouinizied/nfstream/workflows/build/badge.svg" alt="Github WorkFlows" />
@@ -60,7 +60,7 @@ the broader goal of becoming **a common network data processing framework for re
   </td>
 </tr>
 <tr>
-  <td>Documentation Status</td>
+  <td><b>Documentation Status</b></td>
   <td>
     <a href="https://nfstream.readthedocs.io/en/latest/?badge=latest">
     <img src="https://readthedocs.org/projects/nfstream/badge/?version=latest" alt="ReadTheDocs" />
@@ -68,7 +68,7 @@ the broader goal of becoming **a common network data processing framework for re
   </td>
 </tr>
 <tr>
-  <td>Code Quality</td>
+  <td><b>Code Quality</b></td>
   <td>
     <a href="https://lgtm.com/projects/g/aouinizied/nfstream/context:python">
     <img src="https://img.shields.io/lgtm/grade/python/github/aouinizied/nfstream.svg?logo=lgtm&logoWidth=18)" alt="Quality" />
@@ -76,7 +76,7 @@ the broader goal of becoming **a common network data processing framework for re
   </td>
 </tr>
 <tr>
-  <td>Code Coverage</td>
+  <td><b>Code Coverage</b></td>
   <td>
     <a href="https://codecov.io/gh/aouinizied/nfstream/">
     <img src="https://codecov.io/gh/aouinizied/nfstream/branch/master/graph/badge.svg" alt="Coverage" />
@@ -84,7 +84,7 @@ the broader goal of becoming **a common network data processing framework for re
   </td>
 </tr>
 <tr>
-  <td>Discussion Channel</td>
+  <td><b>Discussion Channel</b></td>
   <td>
     <a href="https://gitter.im/nfstream/community">
     <img src="https://badges.gitter.im/gitterHQ/gitter.png" alt="Gitter" />
