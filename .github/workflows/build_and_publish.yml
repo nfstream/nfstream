@@ -21,6 +21,10 @@ jobs:
         exclude:
           - os: macos-latest
             python-version: pypy3
+          - os: macos-latest
+            python-version: 3.8
+          - os: macos-latest
+            python-version: 3.6
 
     steps:
     - uses: actions/checkout@v1
@@ -41,7 +45,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install wheel twine setuptools codecov
         pip install -r requirements.txt
-        chmod +x tests/build_results.sh
         python setup.py bdist_wheel
     - name: Generated wheel
       run: |
