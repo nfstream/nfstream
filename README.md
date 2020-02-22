@@ -15,6 +15,14 @@ the broader goal of becoming **a common network data processing framework for re
   </td>
 </tr>
 <tr>
+  <td>DOI</td>
+  <td>
+    <a href="https://zenodo.org/badge/latestdoi/216051909">
+    <img src="https://zenodo.org/badge/216051909.svg" alt="DOI" />
+    </a>
+  </td>
+</tr>
+<tr>
   <td>Downloads</td>
   <td>
     <a href="https://pepy.tech/project/nfstream">
