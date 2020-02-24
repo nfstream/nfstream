@@ -807,7 +807,7 @@ def check_source_type(source):
     if source is None:  # start on first up device
         for dev in pcap_devices():
             if dev.isup:
-                print("Streamer source not defined. Set to interface {} as default value.".format(dev.name))
+                print("Source not defined. Using {} as default value.".format(dev.name))
                 return dev.name, 1
         raise OSError
     if os.path.isfile(str(source)):

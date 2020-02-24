@@ -58,12 +58,11 @@ class TestMethods(unittest.TestCase):
         files = get_files_list("tests/pcap/")
         ground_truth_ndpi = build_ground_truth_dict("tests/result/")
         self.maxDif = None
-        print("----------------------------------------------------------------------")
+        print("\n----------------------------------------------------------------------")
         print(".Testing on {} applications:".format(len(files)))
         for test_file in files:
             streamer_test = NFStreamer(source=test_file, idle_timeout=60000, active_timeout=60000)
             test_case_name = test_file.split('/')[-1]
-            print(test_case_name)
             result = {}
             for flow in streamer_test:
                 if flow.application_name != 'Unknown':
@@ -71,52 +70,46 @@ class TestMethods(unittest.TestCase):
                         result[flow.application_name] += flow.total_bytes
                     except KeyError:
                         result[flow.application_name] = flow.total_bytes
-            print(result)
             self.assertEqual(result, ground_truth_ndpi[test_case_name])
             del streamer_test
-            print('PASS.')
+            print("{}\t: \033[94mOK\033[0m".format(test_case_name.ljust(60, ' ')))
 
     def test_expiration_management(self):
         print("\n----------------------------------------------------------------------")
-        print(".Testing Streamer expiration management:")
         streamer_test = NFStreamer(source='tests/pcap/facebook.pcap', active_timeout=0)
         flows = []
         for flow in streamer_test:
             flows.append(flow)
         self.assertEqual(len(flows), 60)
-        print('PASS.')
+        print("{}\t: \033[94mOK\033[0m".format(".Testing Streamer expiration management".ljust(60, ' ')))
 
     def test_flow_metadata_extraction(self):
         print("\n----------------------------------------------------------------------")
-        print(".Testing Flow string representation:")
         streamer_test = NFStreamer(source='tests/pcap/facebook.pcap')
         flows = []
         for flow in streamer_test:
             flows.append(flow)
         del streamer_test
-        print(flows[0])
         self.assertEqual(flows[0].client_info, 'facebook.com')
         self.assertEqual(flows[0].server_info, '*.facebook.com,*.facebook.net,*.fb.com,*.fbcdn.net,*.fbsbx.com,*.m.facebook.com,*.messenger.com,*.xx.fbcdn.net,*.xy.fbcdn.net,*.xz.fbcdn.net,facebook.com,fb.com,messenger.com')
         self.assertEqual(flows[0].client_info, 'facebook.com')
         self.assertEqual(flows[0].j3a_client, 'bfcc1a3891601edb4f137ab7ab25b840')
         self.assertEqual(flows[0].j3a_server, '2d1eb5817ece335c24904f516ad5da12')
-        print('PASS.')
+        print("{}\t: \033[94mOK\033[0m".format(".Testing metadata extraction".ljust(60, ' ')))
 
     def test_unfound_device(self):
         print("\n----------------------------------------------------------------------")
-        print(".Testing unfoud device")
         try:
             streamer_test = NFStreamer(source="inexisting_file.pcap")
         except SystemExit:
-            print("PASS.")
+            print("{}\t: \033[94mOK\033[0m".format(".Testing unfoud device".ljust(60, ' ')))
 
     def test_noroot_live(self):
         print("\n----------------------------------------------------------------------")
-        print(".Testing live capture (noroot)")
         try:
             streamer_test = NFStreamer(idle_timeout=0)
         except SystemExit:
-            print("PASS.")
+            print("{}\t: \033[94mOK\033[0m".format(".Testing live capture (noroot)".ljust(60, ' ')))
 
     def test_user_plugins(self):
         class feat_1(NFPlugin):
@@ -125,7 +118,6 @@ class TestMethods(unittest.TestCase):
                     entry.feat_1 == obs.length
 
         print("\n----------------------------------------------------------------------")
-        print(".Testing adding user plugins.")
         streamer_test = NFStreamer(source='tests/pcap/facebook.pcap', plugins=[feat_1()])
         for flow in streamer_test:
             if flow.id == 0:
@@ -133,8 +125,9 @@ class TestMethods(unittest.TestCase):
             else:
                 self.assertEqual(flow.feat_1, 0)
         del streamer_test
-        print('PASS.')
+        print("{}\t: \033[94mOK\033[0m".format(".Testing adding user plugins".ljust(60, ' ')))
 
 
 if __name__ == '__main__':
     unittest.main()
+
