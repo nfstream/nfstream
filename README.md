@@ -189,6 +189,7 @@ If you want to build **nfstream** on your local machine:
 ```bash
     git clone https://github.com/aouinizied/nfstream.git
     cd nfstream
+    pip install -r requirements.txt
     python3 setup.py install
 ```
 
