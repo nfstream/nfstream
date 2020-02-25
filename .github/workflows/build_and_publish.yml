@@ -46,6 +46,7 @@ jobs:
         pip install wheel twine setuptools codecov
         pip install -r requirements.txt
         python setup.py bdist_wheel
+        ls nfstream/libs/
     - name: Generated wheel
       run: |
         ls dist/

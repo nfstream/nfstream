@@ -48,7 +48,12 @@ class BuildNdpiCommand(build_ext):
         if os.name != 'posix':  # Windows case
             pass
         else:
-            subprocess.check_call(['git', 'clone', '--branch', 'dev', 'https://github.com/aouinizied/nDPI.git'])
+            print("Cloning nDPI.")
+            subprocess.check_call(['git',
+                                   'clone',
+                                   '--branch',
+                                   'dev',
+                                   'https://github.com/aouinizied/nDPI.git'])
             os.chdir('nDPI/')
             print("Setting up nDPI.")
             subprocess.check_call(['./autogen.sh'])
@@ -68,6 +73,19 @@ class BuildNdpiCommand(build_ext):
             subprocess.check_call(['./build_results.sh'])
             os.chdir('..')
             shutil.rmtree('nDPI/', ignore_errors=True)
+            print("Cloning libpcap.")
+            subprocess.check_call(['git',
+                                   'clone',
+                                   '--branch',
+                                   'libpcap-1.9.1',
+                                   'https://github.com/the-tcpdump-group/libpcap.git'])
+            os.chdir('libpcap/')
+            print("Setting up libpcap.")
+            subprocess.check_call(['./configure'])
+            subprocess.check_call(['make'])
+            shutil.copy2('libpcap.so.1.9.1', '../nfstream/libs/')
+            os.chdir('..')
+            shutil.rmtree('libpcap/', ignore_errors=True)
         build_ext.run(self)
 
 
