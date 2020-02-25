@@ -36,10 +36,12 @@ jobs:
       if: startsWith(matrix.os, 'ubuntu')
       run: |
         sudo apt-get install autoconf automake libtool pkg-config libpcap-dev
+        sudo apt-get install libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev libibverbs-dev
     - name: Installing macOS prerequisites
       if: startsWith(matrix.os, 'macOS')
       run: |
-        brew install autoconf automake libtool pkg-config 
+        brew install autoconf automake libtool pkg-config
+        brew install libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev libibverbs-dev
     - name: Installing package dependencies
       run: |
         python -m pip install --upgrade pip
