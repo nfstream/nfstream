@@ -39,7 +39,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 def setup_libpcap():
     if sys.platform == 'darwin':
-        shutil.copy2('/usr/lib/libpcap.dylib', 'nfstream/libs/')
+        subprocess.check_call(['sudo', 'cp', '/usr/lib/libpcap.dylib', 'nfstream/libs/libpcap.dylib'])
     else:
         print("\nSetting up libpcap. Platform: {}".format(sys.platform))
         subprocess.check_call(['git',
