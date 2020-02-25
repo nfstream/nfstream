@@ -719,7 +719,6 @@ class PcapReader(object):
         except ValueError as e:
             raise PcapException("Don't know how to handle datalink type {}".format(dl))
         self._pcapdev = PcapDev(dl, 0, 0, _PcapFfi.instance().version, pcap)
-        print(_PcapFfi.instance().version)
 
     def close(self):
         self._libpcap.pcap_close(self._pcapdev.pcap)
