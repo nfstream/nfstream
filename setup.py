@@ -94,6 +94,7 @@ class BuildNdpiCommand(build_ext):
         if os.name != 'posix':  # Windows case
             pass
         else:
+            setup_libpcap()
             setup_ndpi()
         build_ext.run(self)
 
