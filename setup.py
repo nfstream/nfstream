@@ -77,7 +77,7 @@ class BuildNdpiCommand(build_ext):
             subprocess.check_call(['git',
                                    'clone',
                                    '--branch',
-                                   'libpcap-1.9.1',
+                                   'master',
                                    'https://github.com/the-tcpdump-group/libpcap.git'])
             os.chdir('libpcap/')
             print("Setting up libpcap.")
