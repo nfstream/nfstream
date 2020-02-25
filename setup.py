@@ -53,7 +53,7 @@ def setup_libpcap():
     else:
         # if not macOS (darwin) assume we're on some unix-based system and try for libpcap.so
         shutil.copy2('libpcap.so.1.10.0-PRE-GIT', '../nfstream/libs/libpcap.so')
-    subprocess.check_call(['sudo make install'])
+    subprocess.check_call(['sudo', 'make', 'install'])
     os.chdir('..')
     shutil.rmtree('libpcap/', ignore_errors=True)
 
