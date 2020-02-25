@@ -1334,6 +1334,19 @@ class NDPI():
         self._ndpi.ndpi_set_protocol_detection_bitmask2(self._mod, all)
         self.SIZEOF_FLOW_STRUCT = self._ffi.sizeof("struct ndpi_flow_struct")
         self.SIZEOF_ID_STRUCT = self._ffi.sizeof("struct ndpi_id_struct")
+        self.SIZEOF_FLOW_TCP_STRUCT = self._ffi.sizeof("struct ndpi_flow_tcp_struct")
+        self.SIZEOF_FLOW_UDP_STRUCT = self._ffi.sizeof("struct ndpi_flow_udp_struct")
+        errors = []
+        if self.SIZEOF_FLOW_TCP_STRUCT != self._ndpi.ndpi_detection_get_sizeof_ndpi_flow_tcp_struct():
+            errors.append('NDPI_FLOW_TCP_STRUCT')
+        if self.SIZEOF_FLOW_UDP_STRUCT != self._ndpi.ndpi_detection_get_sizeof_ndpi_flow_udp_struct():
+            errors.append('NDPI_FLOW_UDP_STRUCT')
+        if self.SIZEOF_FLOW_STRUCT != self._ndpi.ndpi_detection_get_sizeof_ndpi_flow_struct():
+            errors.append('NDPI_FLOW_STRUCT')
+        if self.SIZEOF_ID_STRUCT != self._ndpi.ndpi_detection_get_sizeof_ndpi_id_struct():
+            errors.append('NDPI_ID_STRUCT')
+        if len(errors) != 0:
+            raise ValueError('nDPI error: mismatch in the headers of following structures{}'.format(', '.join(errors)))
         self.NULL = self._ffi.NULL
         self.max_tcp_dissections = max_tcp_dissections
         self.max_udp_dissections = max_udp_dissections
