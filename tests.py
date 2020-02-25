@@ -60,6 +60,8 @@ class TestMethods(unittest.TestCase):
         self.maxDif = None
         print("\n----------------------------------------------------------------------")
         print(".Testing on {} applications:".format(len(files)))
+        ok_files = []
+        ko_files = []
         for test_file in files:
             streamer_test = NFStreamer(source=test_file, idle_timeout=60000, active_timeout=60000)
             test_case_name = test_file.split('/')[-1]
@@ -70,9 +72,15 @@ class TestMethods(unittest.TestCase):
                         result[flow.application_name] += flow.total_bytes
                     except KeyError:
                         result[flow.application_name] = flow.total_bytes
-            self.assertEqual(result, ground_truth_ndpi[test_case_name])
+            if result == ground_truth_ndpi[test_case_name]:
+                ok_files.append(test_case_name)
+                print("{}\t: \033[94mOK\033[0m".format(test_case_name.ljust(60, ' ')))
+            else:
+                ko_files.append(test_case_name)
+                print("{}\t: \033[31mKO\033[0m".format(test_case_name.ljust(60, ' ')))
             del streamer_test
-            print("{}\t: \033[94mOK\033[0m".format(test_case_name.ljust(60, ' ')))
+        self.assertEqual(len(files), len(ok_files))
+
 
     def test_expiration_management(self):
         print("\n----------------------------------------------------------------------")
