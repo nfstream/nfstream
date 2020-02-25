@@ -41,7 +41,7 @@ def setup_libpcap():
     if sys.platform == 'darwin':
         subprocess.check_call(['sudo', 'cp', '/usr/lib/libpcap.dylib', 'nfstream/libs/libpcap.dylib'])
     else:
-        subprocess.check_call(['ls', '/usr/lib/'])
+        subprocess.check_call(['ls', '/usr/lib/x86_64-linux-gnu/'])
 
 
 def setup_ndpi():
