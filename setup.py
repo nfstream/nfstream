@@ -37,6 +37,13 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 
+def setup_libpcap():
+    if sys.platform == 'darwin':
+        shutil.copy2('/usr/lib/libpcap.dylib', 'nfstream/libs/')
+    else:
+        shutil.copy2('/usr/lib/x86_64-linux-gnu/libpcap.so', 'nfstream/libs/')
+
+
 def setup_ndpi():
     print("\nSetting up nDPI. Platform: {}".format(sys.platform))
     subprocess.check_call(['git',

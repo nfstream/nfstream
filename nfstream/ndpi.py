@@ -1317,7 +1317,7 @@ class NDPI():
         self._ffi = cffi.FFI()
         if libpath is None:
             if "win" in sys.platform[:3]:
-                self._ndpi = self._ffi.dlopen(dirname(abspath(__file__)) + '/libs/libndpi.a')
+                raise ValueError('Windows OS is not currently supported.')
             else:
                 self._ndpi = self._ffi.dlopen(dirname(abspath(__file__)) + '/libs/libndpi.so')
         else:

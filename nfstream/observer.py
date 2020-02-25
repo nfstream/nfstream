@@ -343,13 +343,13 @@ class _PcapFfi(object):
         self._ffi.cdef(cc_packed, override=True, packed=True)
         if "win" in sys.platform[:3]:
             libname = 'wpcap.dll'  # winpcap
-            self._windows = True
+            raise ValueError('Windows OS is not currently supported.')
         elif sys.platform == 'darwin':
-            libname = 'libpcap.dylib'
+            libname = '/libs/libpcap.dylib'
         else:
-            libname = 'libpcap.so'
+            libname = '/libs/libpcap.so'
         try:
-            self._libpcap = self._ffi.dlopen(libname)
+            self._libpcap = self._ffi.dlopen(dirname(abspath(__file__)) + libname)
         except Exception as e:
             raise PcapException("Error opening libpcap: {}".format(e))
 
