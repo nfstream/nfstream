@@ -46,12 +46,13 @@ def setup_libpcap():
                            'https://github.com/the-tcpdump-group/libpcap.git'])
     os.chdir('libpcap/')
     print("Setting up libpcap.")
-    subprocess.check_call(['./configure'])
-    subprocess.check_call(['make'])
     if sys.platform == 'darwin':
         shutil.copy2('libpcap.1.10.0-PRE-GIT.dylib', '../nfstream/libs/libpcap.so')
+        subprocess.check_call(['./configure', '--enable-ipv6', '--disable-universal'])
+        subprocess.check_call(['make'])
     else:
-        # if not macOS (darwin) assume we're on some unix-based system and try for libpcap.so
+        subprocess.check_call(['./configure'])
+        subprocess.check_call(['make'])
         shutil.copy2('libpcap.so.1.10.0-PRE-GIT', '../nfstream/libs/libpcap.so')
     subprocess.check_call(['sudo', 'make', 'install'])
     os.chdir('..')
