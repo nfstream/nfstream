@@ -37,6 +37,54 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 
+def setup_libpcap():
+    print("Cloning libpcap.")
+    subprocess.check_call(['git',
+                           'clone',
+                           '--branch',
+                           'master',
+                           'https://github.com/the-tcpdump-group/libpcap.git'])
+    os.chdir('libpcap/')
+    print("Setting up libpcap.")
+    subprocess.check_call(['./configure'])
+    subprocess.check_call(['make'])
+    if sys.platform == 'darwin':
+        shutil.copy2('libpcap.dylib.1.10.0-PRE-GIT', '../nfstream/libs/libpcap.dylib')
+    else:
+        # if not macOS (darwin) assume we're on some unix-based system and try for libpcap.so
+        shutil.copy2('libpcap.so.1.10.0-PRE-GIT', '../nfstream/libs/libpcap.so')
+    os.chdir('..')
+    shutil.rmtree('libpcap/', ignore_errors=True)
+
+
+def setup_ndpi():
+    print("Cloning nDPI.")
+    subprocess.check_call(['git',
+                           'clone',
+                           '--branch',
+                           'dev',
+                           'https://github.com/aouinizied/nDPI.git'])
+    os.chdir('nDPI/')
+    print("Setting up nDPI.")
+    subprocess.check_call(['./autogen.sh'])
+    os.chdir('src/')
+    os.chdir('lib/')
+    subprocess.check_call(['make'])
+    shutil.copy2('libndpi.so', '../../../nfstream/libs/')
+    print("Setting up tests.")
+    os.chdir('..')
+    os.chdir('..')
+    os.chdir('example/')
+    subprocess.check_call(['make'])
+    os.chdir('..')
+    os.chdir('..')
+    os.chdir('tests/')
+    subprocess.check_call(['chmod', 'a+x', 'build_results.sh'])
+    subprocess.check_call(['./build_results.sh'])
+    os.chdir('..')
+    shutil.rmtree('nDPI/', ignore_errors=True)
+
+
 class BuildPyCommand(build_py):
     def run(self):
         self.run_command('nDPI')
@@ -48,45 +96,8 @@ class BuildNdpiCommand(build_ext):
         if os.name != 'posix':  # Windows case
             pass
         else:
-            print("Cloning nDPI.")
-            subprocess.check_call(['git',
-                                   'clone',
-                                   '--branch',
-                                   'dev',
-                                   'https://github.com/aouinizied/nDPI.git'])
-            os.chdir('nDPI/')
-            print("Setting up nDPI.")
-            subprocess.check_call(['./autogen.sh'])
-            os.chdir('src/')
-            os.chdir('lib/')
-            subprocess.check_call(['make'])
-            shutil.copy2('libndpi.so', '../../../nfstream/libs/')
-            print("Setting up tests.")
-            os.chdir('..')
-            os.chdir('..')
-            os.chdir('example/')
-            subprocess.check_call(['make'])
-            os.chdir('..')
-            os.chdir('..')
-            os.chdir('tests/')
-            subprocess.check_call(['chmod', 'a+x', 'build_results.sh'])
-            subprocess.check_call(['./build_results.sh'])
-            os.chdir('..')
-            shutil.rmtree('nDPI/', ignore_errors=True)
-            print("Cloning libpcap.")
-            subprocess.check_call(['git',
-                                   'clone',
-                                   '--branch',
-                                   'master',
-                                   'https://github.com/the-tcpdump-group/libpcap.git'])
-            os.chdir('libpcap/')
-            print("Setting up libpcap.")
-            subprocess.check_call(['./configure'])
-            subprocess.check_call(['make'])
-            subprocess.check_call(['ls'])
-            # shutil.copy2('libpcap.so.1.10.0-PRE-GIT', '../nfstream/libs/')
-            os.chdir('..')
-            shutil.rmtree('libpcap/', ignore_errors=True)
+            setup_libpcap()
+            setup_ndpi()
         build_ext.run(self)
 
 

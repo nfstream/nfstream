@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License along with nfs
 If not, see <http://www.gnu.org/licenses/>.
 """
 from collections import namedtuple
+from os.path import abspath, dirname
 from socket import ntohs, ntohl
 from enum import Enum, IntEnum
 from threading import Lock
@@ -347,7 +348,7 @@ class _PcapFfi(object):
             # some unix-based system and try for libpcap.so
             libname = 'libpcap.so'
         try:
-            self._libpcap = self._ffi.dlopen(libname)
+            self._libpcap = self._ffi.dlopen(dirname(abspath(__file__)) + '/libs/' + libname)
         except Exception as e:
             raise PcapException("Error opening libpcap: {}".format(e))
 
