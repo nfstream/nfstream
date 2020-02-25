@@ -47,9 +47,9 @@ def setup_libpcap():
     os.chdir('libpcap/')
     print("Setting up libpcap.")
     if sys.platform == 'darwin':
-        shutil.copy2('libpcap.1.10.0-PRE-GIT.dylib', '../nfstream/libs/libpcap.so')
         subprocess.check_call(['./configure', '--enable-ipv6', '--disable-universal'])
         subprocess.check_call(['make'])
+        shutil.copy2('libpcap.1.10.0-PRE-GIT.dylib', '../nfstream/libs/libpcap.so')
     else:
         subprocess.check_call(['./configure'])
         subprocess.check_call(['make'])
