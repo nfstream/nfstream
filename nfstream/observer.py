@@ -63,6 +63,10 @@ struct pcap_stat {
     unsigned int ifdrop;
 };
 
+struct pp_32 {
+    uint32_t value;
+};
+
 typedef void (*pcap_handler)(unsigned char *, const struct pcap_pkthdr *, const unsigned char *);
 
 pcap_t *pcap_open_dead(int, int);
@@ -196,9 +200,7 @@ struct nfstream_udphdr
   uint16_t len;
   uint16_t check;
 };
-struct pp_32 {
-    uint32_t value;
-};
+
 struct nfstream_tcphdr
 {
   uint16_t source;
@@ -338,7 +340,7 @@ class _PcapFfi(object):
         self._windows = False
         self._ffi = FFI()
         self._ffi.cdef(cc, override=True)
-        self._ffi.cdef(cc_packed, override=True, packed=1)
+        self._ffi.cdef(cc_packed, override=True, packed=True)
         if "win" in sys.platform[:3]:
             libname = 'wpcap.dll'  # winpcap
             self._windows = True
@@ -347,7 +349,7 @@ class _PcapFfi(object):
         else:
             libname = 'libpcap.so'
         try:
-            self._libpcap = self._ffi.dlopen(dirname(abspath(__file__)) + '/libs/' + libname)
+            self._libpcap = self._ffi.dlopen(libname)
         except Exception as e:
             raise PcapException("Error opening libpcap: {}".format(e))
 

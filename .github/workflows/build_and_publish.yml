@@ -23,8 +23,8 @@ jobs:
             python-version: pypy3
           - os: macos-latest
             python-version: 3.8
-          - os: macos-latest
-            python-version: 3.6
+          #- os: macos-latest
+            #python-version: 3.6
           #- os: macos-latest
           #  python-version: 3.7
 
@@ -38,7 +38,6 @@ jobs:
       if: startsWith(matrix.os, 'ubuntu')
       run: |
         sudo apt-get install autoconf automake libtool pkg-config libpcap-dev
-        sudo apt-get install libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev libibverbs-dev flex bison
     - name: Installing macOS prerequisites
       if: startsWith(matrix.os, 'macOS')
       run: |
