@@ -76,11 +76,8 @@ considered as terminated. Termination of a flow is triggered by an expiration ev
 The metering process should consider an entry as expired based on:
 
 * Natural expiration: observed TCP packet belonging to a flow with FIN/RST flag.
-* Emergency expiration: flush a certain number of entries to free some space when the cache become full.
-* Active timeout: a flow entry expires after being considered active during a certain period (range from 120 seconds to 30 minutes). Counters are reset while start/end timestamp are updated.
-* Idle timeout: a flow entry expires if no packets belonging to it are observed during a specific period (range from 15 seconds to 5 minutes).
-* Resource constraints: special heuristics such as dynamic timeouts configuration at runtime.
-* Cache flush: flush of all the entries due to unexpected situations.
+* Active timeout: a flow entry expires after being considered active during a certain period.
+* Idle timeout: a flow entry expires if no packets belonging to it are observed during a specific period..
 
 It is possible to configure our metering process based on expiration policy to
 reduce the amount of records exported.
