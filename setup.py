@@ -46,7 +46,7 @@ def setup_libpcap():
                            'https://github.com/the-tcpdump-group/libpcap.git'])
     os.chdir('libpcap/')
     if sys.platform == 'darwin':
-        subprocess.check_call(['./configure', '--enable-ipv6', '--disable-universal'])
+        subprocess.check_call(['./configure', 'CC=clang', '--enable-ipv6', '--disable-universal'])
         subprocess.check_call(['make'])
         shutil.copy2('libpcap.1.9.1.dylib', '../nfstream/libs/libpcap.dylib')
     else:
