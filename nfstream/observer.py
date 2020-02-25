@@ -342,6 +342,8 @@ class _PcapFfi(object):
         if "win" in sys.platform[:3]:
             libname = 'wpcap.dll'  # winpcap
             self._windows = True
+        elif sys.platform == 'darwin':
+            libname = 'libpcap.dylib'
         else:
             libname = 'libpcap.so'
         try:

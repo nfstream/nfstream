@@ -42,17 +42,17 @@ def setup_libpcap():
     subprocess.check_call(['git',
                            'clone',
                            '--branch',
-                           'libpcap-1.8.0',
+                           'libpcap-1.9.1',
                            'https://github.com/the-tcpdump-group/libpcap.git'])
     os.chdir('libpcap/')
     if sys.platform == 'darwin':
         subprocess.check_call(['./configure', '--enable-ipv6', '--disable-universal'])
         subprocess.check_call(['make'])
-        shutil.copy2('libpcap.1.8.0.dylib', '../nfstream/libs/libpcap.so')
+        shutil.copy2('libpcap.1.9.1.dylib', '../nfstream/libs/libpcap.dylib')
     else:
         subprocess.check_call(['./configure'])
         subprocess.check_call(['make'])
-        shutil.copy2('libpcap.so.1.8.0', '../nfstream/libs/libpcap.so')
+        shutil.copy2('libpcap.so.1.9.1', '../nfstream/libs/libpcap.so')
     subprocess.check_call(['sudo', 'make', 'install'])
     os.chdir('..')
     shutil.rmtree('libpcap/', ignore_errors=True)
