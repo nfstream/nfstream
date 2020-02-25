@@ -49,7 +49,7 @@ def setup_libpcap():
     subprocess.check_call(['./configure'])
     subprocess.check_call(['make'])
     if sys.platform == 'darwin':
-        shutil.copy2('libpcap.dylib.1.10.0-PRE-GIT', '../nfstream/libs/libpcap.dylib')
+        shutil.copy2('libpcap.1.10.0-PRE-GIT.dylib', '../nfstream/libs/libpcap.dylib')
     else:
         # if not macOS (darwin) assume we're on some unix-based system and try for libpcap.so
         shutil.copy2('libpcap.so.1.10.0-PRE-GIT', '../nfstream/libs/libpcap.so')
