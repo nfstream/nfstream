@@ -38,15 +38,13 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 
 def setup_libpcap():
-    print("Cloning libpcap.")
+    print("Setting up libpcap. Platform: {}".format(sys.platform))
     subprocess.check_call(['git',
                            'clone',
                            '--branch',
                            'libpcap-1.8.1',
                            'https://github.com/the-tcpdump-group/libpcap.git'])
     os.chdir('libpcap/')
-    print("Setting up libpcap.")
-    print(sys.platform)
     if sys.platform == 'darwin':
         subprocess.check_call(['./configure', '--enable-ipv6', '--disable-universal'])
         subprocess.check_call(['make'])
@@ -61,14 +59,13 @@ def setup_libpcap():
 
 
 def setup_ndpi():
-    print("Cloning nDPI.")
+    print("Setting up nDPI. Platform: {}".format(sys.platform))
     subprocess.check_call(['git',
                            'clone',
                            '--branch',
                            'dev',
                            'https://github.com/aouinizied/nDPI.git'])
     os.chdir('nDPI/')
-    print("Setting up nDPI.")
     subprocess.check_call(['./autogen.sh'])
     os.chdir('src/')
     os.chdir('lib/')
