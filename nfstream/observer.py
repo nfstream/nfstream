@@ -141,6 +141,7 @@ struct nfstream_radiotap_header
   uint64_t MAC_timestamp;
   uint8_t flags;
 };
+
 struct nfstream_wifi_header
 {
   uint16_t fc;
