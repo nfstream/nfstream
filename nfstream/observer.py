@@ -338,14 +338,10 @@ class _PcapFfi(object):
         self._ffi = FFI()
         self._ffi.cdef(cc, override=True)
         self._ffi.cdef(cc_packed, override=True, packed=1)
-        if sys.platform == 'darwin':
-            libname = 'libpcap.dylib'
-        elif "win" in sys.platform[:3]:
+        if "win" in sys.platform[:3]:
             libname = 'wpcap.dll'  # winpcap
             self._windows = True
         else:
-            # if not macOS (darwin) or windows, assume we're on
-            # some unix-based system and try for libpcap.so
             libname = 'libpcap.so'
         try:
             self._libpcap = self._ffi.dlopen(dirname(abspath(__file__)) + '/libs/' + libname)
