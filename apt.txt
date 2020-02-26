@@ -1,5 +1,0 @@
-autoconf
-automake
-libtool
-pkg-config
-libpcap-dev
