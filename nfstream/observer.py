@@ -346,6 +346,96 @@ def get_flags(d, p):
                         fin=0)
 
 
+def process_packet(ffi, time, vlan_id, iph, iph6, ip_offset, ipsize, rawsize, header, packet, nroots):
+    nfstream_hash = 0
+    if iph6 == ffi.NULL:
+        version = 4
+        l4_packet_len = ntohs(iph.tot_len) - (iph.ihl * 4)
+        proto = iph.protocol
+        src_addr = ntohl(iph.saddr)
+        dst_addr = ntohl(iph.daddr)
+        nfstream_hash += iph.saddr + iph.daddr + proto + vlan_id
+    else:
+        version = 6
+        src_addr = ntohl(iph6.ip6_src.u6_addr.u6_addr32[0]) << 96 | \
+                   ntohl(iph6.ip6_src.u6_addr.u6_addr32[1]) << 64 | \
+                   ntohl(iph6.ip6_src.u6_addr.u6_addr32[2]) << 32 | \
+                   ntohl(iph6.ip6_src.u6_addr.u6_addr32[3])
+        dst_addr = ntohl(iph6.ip6_dst.u6_addr.u6_addr32[0]) << 96 | \
+                   ntohl(iph6.ip6_dst.u6_addr.u6_addr32[1]) << 64 | \
+                   ntohl(iph6.ip6_dst.u6_addr.u6_addr32[2]) << 32 | \
+                   ntohl(iph6.ip6_dst.u6_addr.u6_addr32[3])
+        proto = iph6.ip6_hdr.ip6_un1_nxt
+        if proto == 60:
+            options = ffi.cast('uint8_t *', iph6) + ffi.sizeof('struct nfstream_ipv6hdr')
+            proto = options[0]
+        l4_packet_len = ntohs(iph6.ip6_hdr.ip6_un1_plen)
+        nfstream_hash += (iph6.ip6_src.u6_addr.u6_addr32[2] + iph6.ip6_src.u6_addr.u6_addr32[3]) + \
+                         (iph6.ip6_dst.u6_addr.u6_addr32[2] + iph6.ip6_dst.u6_addr.u6_addr32[3]) + proto + vlan_id
+
+    if version == 4:
+        if ipsize < 20:
+            return None
+        if ((iph.ihl * 4) > ipsize) or (ipsize < ntohs(iph.tot_len)):
+            return None
+        l4_offset = iph.ihl * 4
+        l3 = ffi.cast('uint8_t *', iph)
+    else:
+        l4_offset = ffi.sizeof('struct nfstream_ipv6hdr')
+        if ffi.sizeof('struct nfstream_ipv6hdr') > ipsize:
+            return None
+        l3 = ffi.cast('uint8_t *', iph6)
+
+    if ipsize < (l4_offset + l4_packet_len):
+        return None
+    l4 = ffi.cast('uint8_t *', l3) + l4_offset
+    if (proto == 6) and l4_packet_len >= ffi.sizeof('struct nfstream_tcphdr'):
+        tcph = ffi.cast('struct nfstream_tcphdr *', l4)
+        sport = int(ntohs(tcph.source))
+        dport = int(ntohs(tcph.dest))
+        flags = get_flags(tcph, proto)
+    elif (proto == 17) and l4_packet_len >= ffi.sizeof('struct nfstream_udphdr'):
+        udph = ffi.cast('struct nfstream_udphdr *', l4)
+        sport = int(ntohs(udph.source))
+        dport = int(ntohs(udph.dest))
+        flags = get_flags(udph, proto)
+    else:
+        sport = 0
+        dport = 0
+        flags = get_flags(None, proto)
+    nfstream_hash += sport + dport
+    if version == 4:
+        return NFPacket(time=int(time),
+                        capture_length=header.caplen,
+                        length=header.len,
+                        nfhash=nfstream_hash,
+                        ip_src=src_addr,
+                        ip_dst=dst_addr,
+                        src_port=sport,
+                        dst_port=dport,
+                        protocol=proto,
+                        vlan_id=vlan_id,
+                        version=version,
+                        tcpflags=flags,
+                        raw=bytes(xffi.buffer(iph, ipsize)),
+                        root_idx=nfstream_hash % nroots)
+    else:
+        return NFPacket(time=int(time),
+                        capture_length=header.caplen,
+                        length=header.len,
+                        nfhash=nfstream_hash,
+                        ip_src=src_addr,
+                        ip_dst=dst_addr,
+                        src_port=sport,
+                        dst_port=dport,
+                        protocol=proto,
+                        vlan_id=vlan_id,
+                        version=version,
+                        tcpflags=flags,
+                        raw=bytes(xffi.buffer(iph6, ipsize)),
+                        root_idx=nfstream_hash % nroots)
+
+
 class _PcapFfi(object):
     """ This class represents the low-level interface to the libpcap library. It encapsulates all the cffi calls
         and C/Python conversions, as well as translation of errors and error codes to PcapExceptions.  It is intended
@@ -572,95 +662,17 @@ class _PcapFfi(object):
                 else:
                     return None
 
-        ipsize = header.caplen - ip_offset
-        nfstream_hash = 0
-        if iph6 == self._ffi.NULL:
-            version = 4
-            l4_packet_len = ntohs(iph.tot_len) - (iph.ihl * 4)
-            proto = iph.protocol
-            src_addr = ntohl(iph.saddr)
-            dst_addr = ntohl(iph.daddr)
-            nfstream_hash += iph.saddr + iph.daddr + proto + vlan_id
-        else:
-            version = 6
-            src_addr = ntohl(iph6.ip6_src.u6_addr.u6_addr32[0]) << 96 | \
-                       ntohl(iph6.ip6_src.u6_addr.u6_addr32[1]) << 64 | \
-                       ntohl(iph6.ip6_src.u6_addr.u6_addr32[2]) << 32 | \
-                       ntohl(iph6.ip6_src.u6_addr.u6_addr32[3])
-            dst_addr = ntohl(iph6.ip6_dst.u6_addr.u6_addr32[0]) << 96 | \
-                       ntohl(iph6.ip6_dst.u6_addr.u6_addr32[1]) << 64 | \
-                       ntohl(iph6.ip6_dst.u6_addr.u6_addr32[2]) << 32 | \
-                       ntohl(iph6.ip6_dst.u6_addr.u6_addr32[3])
-            proto = iph6.ip6_hdr.ip6_un1_nxt
-            if proto == 60:
-                options = self._ffi.cast('uint8_t *', iph6) + self._ffi.sizeof('struct nfstream_ipv6hdr')
-                proto = options[0]
-            l4_packet_len = ntohs(iph6.ip6_hdr.ip6_un1_plen)
-            nfstream_hash += (iph6.ip6_src.u6_addr.u6_addr32[2] + iph6.ip6_src.u6_addr.u6_addr32[3]) + \
-                             (iph6.ip6_dst.u6_addr.u6_addr32[2] + iph6.ip6_dst.u6_addr.u6_addr32[3]) + proto + vlan_id
-
-        if version == 4:
-            if ipsize < 20:
-                return None
-            if ((iph.ihl * 4) > ipsize) or (ipsize < ntohs(iph.tot_len)):
-                return None
-            l4_offset = iph.ihl * 4
-            l3 = self._ffi.cast('uint8_t *', iph)
-        else:
-            l4_offset = self._ffi.sizeof('struct nfstream_ipv6hdr')
-            if self._ffi.sizeof('struct nfstream_ipv6hdr') > ipsize:
-                return None
-            l3 = self._ffi.cast('uint8_t *', iph6)
-
-        if ipsize < (l4_offset + l4_packet_len):
-            return None
-
-        l4 = self._ffi.cast('uint8_t *', l3) + l4_offset
-        if (proto == 6) and l4_packet_len >= self._ffi.sizeof('struct nfstream_tcphdr'):
-            tcph = self._ffi.cast('struct nfstream_tcphdr *', l4)
-            sport = int(ntohs(tcph.source))
-            dport = int(ntohs(tcph.dest))
-            flags = get_flags(tcph, proto)
-        elif (proto == 17) and l4_packet_len >= self._ffi.sizeof('struct nfstream_udphdr'):
-            udph = self._ffi.cast('struct nfstream_udphdr *', l4)
-            sport = int(ntohs(udph.source))
-            dport = int(ntohs(udph.dest))
-            flags = get_flags(udph, proto)
-        else:
-            sport = 0
-            dport = 0
-            flags = get_flags(None, proto)
-        nfstream_hash += sport + dport
-        if version == 4:
-            return NFPacket(time=int(time),
-                            capture_length=header.caplen,
-                            length=header.len,
-                            nfhash=nfstream_hash,
-                            ip_src=src_addr,
-                            ip_dst=dst_addr,
-                            src_port=sport,
-                            dst_port=dport,
-                            protocol=proto,
-                            vlan_id=vlan_id,
-                            version=version,
-                            tcpflags=flags,
-                            raw=bytes(xffi.buffer(iph, ipsize)),
-                            root_idx=nfstream_hash % nroots)
-        else:
-            return NFPacket(time=int(time),
-                            capture_length=header.caplen,
-                            length=header.len,
-                            nfhash=nfstream_hash,
-                            ip_src=src_addr,
-                            ip_dst=dst_addr,
-                            src_port=sport,
-                            dst_port=dport,
-                            protocol=proto,
-                            vlan_id=vlan_id,
-                            version=version,
-                            tcpflags=flags,
-                            raw=bytes(xffi.buffer(iph6, ipsize)),
-                            root_idx=nfstream_hash % nroots)
+        return process_packet(self._ffi,
+                              time,
+                              vlan_id,
+                              iph,
+                              iph6,
+                              ip_offset,
+                              header.caplen - ip_offset,
+                              header.caplen,
+                              header,
+                              packet,
+                              nroots)
 
     def _recv_packet(self, xdev, nroots=1):
         phdr = self._ffi.new("struct pcap_pkthdr **")
