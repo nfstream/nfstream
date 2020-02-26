@@ -45,7 +45,7 @@ def setup_libpcap():
 
 
 def setup_ndpi():
-    print("\nSetting up nDPI. Platform: {}".format(sys.platform))
+    print("\nSetting up nDPI. Platform: {plat}, Byteorder{bo}".format(plat=sys.platform, bo=sys.byteorder))
     subprocess.check_call(['git',
                            'clone',
                            '--branch',
