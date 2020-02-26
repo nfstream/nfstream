@@ -16,8 +16,8 @@ of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Pub
 You should have received a copy of the GNU General Public License along with nfstream.
 If not, see <http://www.gnu.org/licenses/>.
 """
-from collections import namedtuple
 from os.path import abspath, dirname
+from collections import namedtuple
 from socket import ntohs, ntohl
 from enum import Enum, IntEnum
 from threading import Lock
@@ -26,8 +26,122 @@ from cffi import FFI
 import os.path
 import sys
 
-cc = """
-typedef uint8_t u_char;
+cc_network_headers = """
+struct nfstream_ethhdr
+{
+  uint8_t h_dest[6];
+  uint8_t h_source[6];
+  uint16_t h_proto;
+};
+
+struct nfstream_snap_extension
+{
+  uint16_t oui;
+  uint8_t oui2;
+  uint16_t proto_ID;
+};
+
+struct nfstream_llc_header_snap
+{
+  uint8_t dsap;
+  uint8_t ssap;
+  uint8_t ctrl;
+  struct nfstream_snap_extension snap;
+};
+
+struct nfstream_chdlc
+{
+  uint8_t addr;
+  uint8_t ctrl;
+  uint16_t proto_code;
+};
+
+struct nfstream_radiotap_header
+{
+  uint8_t version;
+  uint8_t pad;
+  uint16_t len;
+  uint32_t present;
+  uint64_t MAC_timestamp;
+  uint8_t flags;
+};
+
+struct nfstream_wifi_header
+{
+  uint16_t fc;
+  uint16_t duration;
+  uint8_t rcvr[6];
+  uint8_t trsm[6];
+  uint8_t dest[6];
+  uint16_t seq_ctrl;
+};
+
+struct nfstream_mpls_header
+{
+  uint32_t ttl:8, s:1, exp:3, label:20;
+};
+
+extern union mpls {
+  uint32_t u32;
+  struct nfstream_mpls_header mpls;
+} mpls;
+
+struct nfstream_iphdr {
+  uint8_t ihl:4, version:4;
+  uint8_t tos;
+  uint16_t tot_len;
+  uint16_t id;
+  uint16_t frag_off;
+  uint8_t ttl;
+  uint8_t protocol;
+  uint16_t check;
+  uint32_t saddr;
+  uint32_t daddr;
+};
+
+struct nfstream_in6_addr {
+  union {
+    uint8_t u6_addr8[16];
+    uint16_t u6_addr16[8];
+    uint32_t u6_addr32[4];
+  } u6_addr;
+};
+
+struct nfstream_ip6_hdrctl {
+  uint32_t ip6_un1_flow;
+  uint16_t ip6_un1_plen;
+  uint8_t ip6_un1_nxt;
+  uint8_t ip6_un1_hlim;
+};
+
+struct nfstream_ipv6hdr {
+  struct nfstream_ip6_hdrctl ip6_hdr;
+  struct nfstream_in6_addr ip6_src;
+  struct nfstream_in6_addr ip6_dst;
+};
+
+struct nfstream_udphdr
+{
+  uint16_t source;
+  uint16_t dest;
+  uint16_t len;
+  uint16_t check;
+};
+
+struct nfstream_tcphdr
+{
+  uint16_t source;
+  uint16_t dest;
+  uint32_t seq;
+  uint32_t ack_seq;
+  uint16_t res1:4, doff:4, fin:1, syn:1, rst:1, psh:1, ack:1, urg:1, ece:1, cwr:1;
+  uint16_t window;
+  uint16_t check;
+  uint16_t urg_ptr;
+};
+"""
+
+cc_libpcap = """
 struct pcap;
 typedef struct pcap pcap_t;
 struct pcap_dumper;
@@ -108,112 +222,6 @@ char *pcap_geterr(pcap_t *);
 char *pcap_lib_version();
 int pcap_stats(pcap_t *, struct pcap_stat *);
 """
-
-cc_packed = """
-struct nfstream_ethhdr
-{
-  u_char h_dest[6];
-  u_char h_source[6];
-  uint16_t h_proto;
-};
-
-struct nfstream_snap_extension
-{
-  uint16_t oui;
-  uint8_t oui2;
-  uint16_t proto_ID;
-};
-struct nfstream_llc_header_snap
-{
-  uint8_t dsap;
-  uint8_t ssap;
-  uint8_t ctrl;
-  struct nfstream_snap_extension snap;
-};
-struct nfstream_chdlc
-{
-  uint8_t addr;
-  uint8_t ctrl;
-  uint16_t proto_code;
-};
-struct nfstream_radiotap_header
-{
-  uint8_t version;
-  uint8_t pad;
-  uint16_t len;
-  uint32_t present;
-  uint64_t MAC_timestamp;
-  uint8_t flags;
-};
-
-struct nfstream_wifi_header
-{
-  uint16_t fc;
-  uint16_t duration;
-  u_char rcvr[6];
-  u_char trsm[6];
-  u_char dest[6];
-  uint16_t seq_ctrl;
-};
-struct nfstream_mpls_header
-{
-  uint32_t ttl:8, s:1, exp:3, label:20;
-};
-extern union mpls {
-  uint32_t u32;
-  struct nfstream_mpls_header mpls;
-} mpls;
-struct nfstream_iphdr {
-  uint8_t ihl:4, version:4;
-  uint8_t tos;
-  uint16_t tot_len;
-  uint16_t id;
-  uint16_t frag_off;
-  uint8_t ttl;
-  uint8_t protocol;
-  uint16_t check;
-  uint32_t saddr;
-  uint32_t daddr;
-};
-struct nfstream_in6_addr {
-  union {
-    uint8_t u6_addr8[16];
-    uint16_t u6_addr16[8];
-    uint32_t u6_addr32[4];
-  } u6_addr;
-};
-struct nfstream_ip6_hdrctl {
-  uint32_t ip6_un1_flow;
-  uint16_t ip6_un1_plen;
-  uint8_t ip6_un1_nxt;
-  uint8_t ip6_un1_hlim;
-};
-struct nfstream_ipv6hdr {
-  struct nfstream_ip6_hdrctl ip6_hdr;
-  struct nfstream_in6_addr ip6_src;
-  struct nfstream_in6_addr ip6_dst;
-};
-struct nfstream_udphdr
-{
-  uint16_t source;
-  uint16_t dest;
-  uint16_t len;
-  uint16_t check;
-};
-
-struct nfstream_tcphdr
-{
-  uint16_t source;
-  uint16_t dest;
-  uint32_t seq;
-  uint32_t ack_seq;
-  uint16_t res1:4, doff:4, fin:1, syn:1, rst:1, psh:1, ack:1, urg:1, ece:1, cwr:1;
-  uint16_t window;
-  uint16_t check;
-  uint16_t urg_ptr;
-};
-"""
-
 
 TICK_RESOLUTION = 1000
 
@@ -317,30 +325,45 @@ def fcf_from_ds(fc):
     return fc & 0x0200
 
 
+def get_flags(d, p):
+    if p == 6:
+        return tcpflags(syn=int(d.syn),
+                        cwr=int(d.cwr),
+                        ece=int(d.ece),
+                        urg=int(d.urg),
+                        ack=int(d.ack),
+                        psh=int(d.psh),
+                        rst=int(d.rst),
+                        fin=int(d.fin))
+    else:
+        return tcpflags(syn=0,
+                        cwr=0,
+                        ece=0,
+                        urg=0,
+                        ack=0,
+                        psh=0,
+                        rst=0,
+                        fin=0)
+
+
 class _PcapFfi(object):
-    """
-    This class represents the low-level interface to the libpcap library.
-    It encapsulates all the cffi calls and C/Python conversions, as well
-    as translation of errors and error codes to PcapExceptions.  It is
-    intended to be used as a singleton class through the PcapDumper
-    and PcapLiveDevice classes, below.
-    """
+    """ This class represents the low-level interface to the libpcap library. It encapsulates all the cffi calls
+        and C/Python conversions, as well as translation of errors and error codes to PcapExceptions.  It is intended
+        to be used as a singleton class through the PcapDumper and PcapLiveDevice classes, below. """
     _instance = None
     __slots__ = ['_ffi', '_libpcap', '_interfaces', '_windows']
 
     def __init__(self):
-        """
-        Assumption: this class is instantiated once in the main thread before
-        any other threads have a chance to try instantiating it.
-        """
+        """ Assumption: this class is instantiated once in the main thread before any other threads have a chance
+            to try instantiating it. """
         if _PcapFfi._instance:
             raise Exception("Can't initialize this class more than once!")
 
         _PcapFfi._instance = self
         self._windows = False
         self._ffi = FFI()
-        self._ffi.cdef(cc, override=True)
-        self._ffi.cdef(cc_packed, override=True, packed=True)
+        self._ffi.cdef(cc_network_headers, override=True, packed=True)
+        self._ffi.cdef(cc_libpcap, override=True)
         if "win" in sys.platform[:3]:
             libname = 'wpcap.dll'  # winpcap
             raise ValueError('Windows OS is not currently supported.')
@@ -367,9 +390,7 @@ class _PcapFfi(object):
         return self._ffi.string(self._libpcap.pcap_lib_version())
 
     def discoverdevs(self):
-        """
-        Find all the pcap-eligible devices on the local system.
-        """
+        """ Find all the pcap-eligible devices on the local system """
         if len(self._interfaces):
             raise PcapException("Device discovery should only be done once.")
 
@@ -419,7 +440,7 @@ class _PcapFfi(object):
     def ffi(self):
         return self._ffi
 
-    def _process_packet(self, xdev, header, packet, nroots):
+    def _parse_packet(self, xdev, header, packet, nroots):
         # MPLS header
         mpls = self._ffi.new("union mpls *")
         # IP header
@@ -427,62 +448,49 @@ class _PcapFfi(object):
         # IPv6 header
         iph6 = self._ffi.new("struct nfstream_ipv6hdr *")
         # lengths and offsets
-        eth_offset = 0
-        radio_len = 0
-        fc = 0
-        type = 0
-        wifi_len = 0
-        pyld_eth_len = 0
-        check = 0
-        ip_offset = 0
-        ip_len = 0
-        frag_off = 0
-        vlan_id = 0
-        proto = 0
-        time = 0
+        eth_offset, ether_type, wifi_len, pyld_eth_len, ip_offset, frag_off, vlan_id = 0, 0, 0, 0, 0, 0, 0
         time = (header.tv_sec * TICK_RESOLUTION) + (header.tv_usec / (1000000 / TICK_RESOLUTION))
-        datalink_type = self._libpcap.pcap_datalink(xdev)
+        dlt = self._libpcap.pcap_datalink(xdev)
         datalink_check = True
         while datalink_check:
             datalink_check = False
-            if Dlt(datalink_type) == Dlt.DLT_NULL:
+            if header.caplen < (40 + eth_offset):
+                return None  # too short
+            if Dlt(dlt) == Dlt.DLT_NULL:
                 tmp_dlt_null = self._ffi.cast('struct pp_32 *', packet + eth_offset)
                 if int(ntohs(tmp_dlt_null.value)) == 2:
-                    type = 0x0800
+                    ether_type = 0x0800
                 else:
-                    type = 0x86dd
+                    ether_type = 0x86dd
                 ip_offset = 4 + eth_offset
-            elif Dlt(datalink_type) == Dlt.DLT_PPP_SERIAL:  # Cisco PPP in HDLC - like framing - 50
+            elif (Dlt(dlt) == Dlt.DLT_C_HDLC) or (Dlt(dlt) == Dlt.DLT_PPP) or Dlt(dlt) == Dlt.DLT_PPP_SERIAL:
                 chdlc = self._ffi.cast('struct nfstream_chdlc *', packet + eth_offset)
-                ip_offset = self._ffi.sizeof('struct nfstream_chdlc')  # CHDLC_OFF = 4
-                type = ntohs(chdlc.proto_code)
-            elif (Dlt(datalink_type) == Dlt.DLT_C_HDLC) or (Dlt(datalink_type) == Dlt.DLT_PPP):  # Cisco PPP - 9 or 104
-                chdlc = self._ffi.cast('struct nfstream_chdlc *', packet + eth_offset)  # CHDLC_OFF = 4
-                ip_offset = self._ffi.sizeof('struct nfstream_chdlc')  # CHDLC_OFF = 4
-                type = ntohs(chdlc.proto_code)
-            elif Dlt(datalink_type) == Dlt.DLT_EN10MB:  # IEEE 802.3 Ethernet - 1 */
+                ip_offset = self._ffi.sizeof('struct nfstream_chdlc')
+                ether_type = ntohs(chdlc.proto_code)
+            elif Dlt(dlt) == Dlt.DLT_EN10MB:  # IEEE 802.3 Ethernet - 1 */
                 ethernet = self._ffi.cast('struct nfstream_ethhdr *', packet + eth_offset)
                 ip_offset = self._ffi.sizeof('struct nfstream_ethhdr') + eth_offset
                 check = ntohs(ethernet.h_proto)
                 if check <= 1500:
                     pyld_eth_len = check
                 elif check >= 1536:
-                    type = check
-
+                    ether_type = check
                 if pyld_eth_len != 0:
                     llc = self._ffi.cast('struct nfstream_llc_header_snap *', packet + ip_offset)
                     if (llc.dsap == 0xaa) or (llc.ssap == 0xaa):  # check for LLC layer with SNAP ext
-                        type = llc.snap.proto_ID
+                        ether_type = llc.snap.proto_ID
                         ip_offset += 8
                     elif (llc.dsap == 0x42) or (llc.ssap == 0x42):  # No SNAP ext
                         return None
-            elif Dlt(datalink_type) == Dlt.DLT_LINUX_SLL:  # Linux Cooked Capture - 113
-                type = (packet[eth_offset+14] << 8) + packet[eth_offset+15]
+            elif Dlt(dlt) == Dlt.DLT_LINUX_SLL:  # Linux Cooked Capture - 113
+                ether_type = (packet[eth_offset + 14] << 8) + packet[eth_offset + 15]
                 ip_offset = 16 + eth_offset
-            elif Dlt(datalink_type) == Dlt.DLT_IEEE802_11_RADIO:  # Radiotap link - layer - 127
+            elif Dlt(dlt) == Dlt.DLT_IEEE802_11_RADIO:  # Radiotap link-layer - 127
                 radiotap = self._ffi.cast('struct nfstream_radiotap_header *', packet + eth_offset)
                 radio_len = radiotap.len
                 if (radiotap.flags & 0x50) == 0x50:  # Check Bad FCS presence
+                    return None
+                if header.caplen < (eth_offset + radio_len + self._ffi.sizeof('struct nfstream_wifi_header')):
                     return None
                 # Calculate 802.11 header length(variable)
                 wifi = self._ffi.cast('struct nfstream_wifi_header *', packet + (eth_offset + radio_len))
@@ -491,44 +499,41 @@ class _PcapFfi(object):
                 if fcf_type(fc) == 0x2:
                     if (fcf_to_ds(fc) and fcf_from_ds(fc) == 0x0) or (fcf_to_ds(fc) == 0x0 and fcf_from_ds(fc)):
                         wifi_len = 26  # + 4 byte fcs
-                else:
-                    pass
                 # Check ether_type from LLC
                 llc = self._ffi.cast('struct nfstream_llc_header_snap *', packet + (eth_offset + wifi_len + radio_len))
                 if llc.dsap == 0xaa:
-                    type = ntohs(llc.snap.proto_ID)
+                    ether_type = ntohs(llc.snap.proto_ID)
                 # Set IP header offset
                 ip_offset = wifi_len + radio_len + self._ffi.sizeof('struct nfstream_llc_header_snap') + eth_offset
-            elif Dlt(datalink_type) == Dlt.DLT_RAW:
-                ip_offset = 0
-                eth_offset = 0
+            elif Dlt(dlt) == Dlt.DLT_RAW:
+                ip_offset, eth_offset = 0, 0
             else:
                 return None
 
             ether_type_check = True
             while ether_type_check:
                 ether_type_check = False
-                if type == 0x8100:
+                if ether_type == 0x8100:
                     vlan_id = ((packet[ip_offset] << 8) + packet[ip_offset + 1]) & 0xFFF
-                    type = (packet[ip_offset + 2] << 8) + packet[ip_offset + 3]
+                    ether_type = (packet[ip_offset + 2] << 8) + packet[ip_offset + 3]
                     ip_offset += 4
-                    while type == 0x8100 and ip_offset < header.caplen:  # Double tagging for 802.1Q
+                    while ether_type == 0x8100 and ip_offset < header.caplen:  # Double tagging for 802.1Q
                         vlan_id = ((packet[ip_offset] << 8) + packet[ip_offset + 1]) & 0xFFF
-                        type = (packet[ip_offset + 2] << 8) + packet[ip_offset + 3]
+                        ether_type = (packet[ip_offset + 2] << 8) + packet[ip_offset + 3]
                         ip_offset += 4
                     ether_type_check = True
-                elif (type == 0x8847) or (type == 0x8848):
+                elif (ether_type == 0x8847) or (ether_type == 0x8848):
                     tmp_u32 = self._ffi.cast('struct pp_32 *', packet + ip_offset)
                     mpls.u32 = int(ntohl(tmp_u32.value))
-                    type = 0x0800
+                    ether_type = 0x0800
                     ip_offset += 4
                     while not mpls.mpls.s:
                         tmp_u32_loop = self._ffi.cast('struct pp_32 *', packet + ip_offset)
                         mpls.u32 = int(ntohl(tmp_u32_loop.value))
                         ip_offset += 4
                     ether_type_check = True
-                elif type == 0x8864:
-                    type = 0x0800
+                elif ether_type == 0x8864:
+                    ether_type = 0x0800
                     ip_offset += 8
                     ether_type_check = True
                 else:
@@ -537,10 +542,12 @@ class _PcapFfi(object):
             ip_check = True
             while ip_check:
                 ip_check = False
+                if header.caplen < (ip_offset + self._ffi.sizeof('struct nfstream_iphdr')):
+                    return None  # too short for next IP header
                 # Check and set IP header size and total packet length
                 iph = self._ffi.cast('struct nfstream_iphdr *', packet + ip_offset)
                 # Just work on Ethernet packets that contain IP
-                if (type == 0x0800) and (header.caplen >= ip_offset):
+                if (ether_type == 0x0800) and (header.caplen >= ip_offset):
                     frag_off = ntohs(iph.frag_off)
                     if header.caplen < header.len:
                         pass
@@ -549,10 +556,13 @@ class _PcapFfi(object):
                     iph6 = self._ffi.NULL
                     if iph.protocol == 41:  # IPPROTO_IPV6
                         ip_offset += ip_len
-                        ip_check = True
+                        if ip_len > 0:
+                            ip_check = True
                     if (frag_off & 0x1FFF) != 0:
                         return None
                 elif iph.version == 6:
+                    if header.caplen < (ip_offset + self._ffi.sizeof('struct nfstream_ipv6hdr')):
+                        return None  # too short for IPv6 header
                     iph6 = self._ffi.cast('struct nfstream_ipv6hdr *', packet + ip_offset)
                     ip_len = self._ffi.sizeof('struct nfstream_ipv6hdr')
                     if iph6.ip6_hdr.ip6_un1_nxt == 60:  # IPv6 destination option
@@ -562,52 +572,32 @@ class _PcapFfi(object):
                 else:
                     return None
 
-        l4_offset = 0
-        ipsize = 0
-        src_addr = 0
-        dst_addr = 0
-        l4_packet_len = 0
-        version = 0
-
+        ipsize = header.caplen - ip_offset
         nfstream_hash = 0
         if iph6 == self._ffi.NULL:
             version = 4
             l4_packet_len = ntohs(iph.tot_len) - (iph.ihl * 4)
-            ipsize = header.caplen - ip_offset
             proto = iph.protocol
             src_addr = ntohl(iph.saddr)
             dst_addr = ntohl(iph.daddr)
             nfstream_hash += iph.saddr + iph.daddr + proto + vlan_id
         else:
             version = 6
-            src_addr = ntohl(
-                iph6.ip6_src.u6_addr.u6_addr32[0]
-            ) << 96 | ntohl(
-                iph6.ip6_src.u6_addr.u6_addr32[1]
-            ) << 64 | ntohl(
-                iph6.ip6_src.u6_addr.u6_addr32[2]
-            ) << 32 | ntohl(
-                iph6.ip6_src.u6_addr.u6_addr32[3]
-            )
-            dst_addr = ntohl(
-                iph6.ip6_dst.u6_addr.u6_addr32[0]
-            ) << 96 | ntohl(
-                iph6.ip6_dst.u6_addr.u6_addr32[1]
-            ) << 64 | ntohl(
-                iph6.ip6_dst.u6_addr.u6_addr32[2]
-            ) << 32 | ntohl(
-                iph6.ip6_dst.u6_addr.u6_addr32[3]
-            )
+            src_addr = ntohl(iph6.ip6_src.u6_addr.u6_addr32[0]) << 96 | \
+                       ntohl(iph6.ip6_src.u6_addr.u6_addr32[1]) << 64 | \
+                       ntohl(iph6.ip6_src.u6_addr.u6_addr32[2]) << 32 | \
+                       ntohl(iph6.ip6_src.u6_addr.u6_addr32[3])
+            dst_addr = ntohl(iph6.ip6_dst.u6_addr.u6_addr32[0]) << 96 | \
+                       ntohl(iph6.ip6_dst.u6_addr.u6_addr32[1]) << 64 | \
+                       ntohl(iph6.ip6_dst.u6_addr.u6_addr32[2]) << 32 | \
+                       ntohl(iph6.ip6_dst.u6_addr.u6_addr32[3])
             proto = iph6.ip6_hdr.ip6_un1_nxt
             if proto == 60:
                 options = self._ffi.cast('uint8_t *', iph6) + self._ffi.sizeof('struct nfstream_ipv6hdr')
                 proto = options[0]
             l4_packet_len = ntohs(iph6.ip6_hdr.ip6_un1_plen)
-            nfstream_hash += (
-                                     iph6.ip6_src.u6_addr.u6_addr32[2] + iph6.ip6_src.u6_addr.u6_addr32[3]
-                             ) + (
-                    iph6.ip6_dst.u6_addr.u6_addr32[2] + iph6.ip6_dst.u6_addr.u6_addr32[3]
-            ) + proto + vlan_id
+            nfstream_hash += (iph6.ip6_src.u6_addr.u6_addr32[2] + iph6.ip6_src.u6_addr.u6_addr32[3]) + \
+                             (iph6.ip6_dst.u6_addr.u6_addr32[2] + iph6.ip6_dst.u6_addr.u6_addr32[3]) + proto + vlan_id
 
         if version == 4:
             if ipsize < 20:
@@ -618,29 +608,28 @@ class _PcapFfi(object):
             l3 = self._ffi.cast('uint8_t *', iph)
         else:
             l4_offset = self._ffi.sizeof('struct nfstream_ipv6hdr')
+            if self._ffi.sizeof('struct nfstream_ipv6hdr') > ipsize:
+                return None
             l3 = self._ffi.cast('uint8_t *', iph6)
 
+        if ipsize < (l4_offset + l4_packet_len):
+            return None
+
         l4 = self._ffi.cast('uint8_t *', l3) + l4_offset
-        syn, cwr, ece, urg, ack, psh, rst, fin = 0, 0, 0, 0, 0, 0, 0, 0
         if (proto == 6) and l4_packet_len >= self._ffi.sizeof('struct nfstream_tcphdr'):
             tcph = self._ffi.cast('struct nfstream_tcphdr *', l4)
             sport = int(ntohs(tcph.source))
             dport = int(ntohs(tcph.dest))
-            syn = int(tcph.syn)
-            cwr = int(tcph.cwr)
-            ece = int(tcph.ece)
-            urg = int(tcph.urg)
-            ack = int(tcph.ack)
-            psh = int(tcph.psh)
-            rst = int(tcph.rst)
-            fin = int(tcph.fin)
+            flags = get_flags(tcph, proto)
         elif (proto == 17) and l4_packet_len >= self._ffi.sizeof('struct nfstream_udphdr'):
             udph = self._ffi.cast('struct nfstream_udphdr *', l4)
             sport = int(ntohs(udph.source))
             dport = int(ntohs(udph.dest))
+            flags = get_flags(udph, proto)
         else:
             sport = 0
             dport = 0
+            flags = get_flags(None, proto)
         nfstream_hash += sport + dport
         if version == 4:
             return NFPacket(time=int(time),
@@ -654,7 +643,7 @@ class _PcapFfi(object):
                             protocol=proto,
                             vlan_id=vlan_id,
                             version=version,
-                            tcpflags=tcpflags(syn=syn, cwr=cwr, ece=ece, urg=urg, ack=ack, psh=psh, rst=rst, fin=fin),
+                            tcpflags=flags,
                             raw=bytes(xffi.buffer(iph, ipsize)),
                             root_idx=nfstream_hash % nroots)
         else:
@@ -669,8 +658,8 @@ class _PcapFfi(object):
                             protocol=proto,
                             vlan_id=vlan_id,
                             version=version,
-                            tcpflags=tcpflags(syn=syn, cwr=cwr, ece=ece, urg=urg, ack=ack, psh=psh, rst=rst, fin=fin),
-                            raw=bytes(xffi.buffer(iph6, header.len - ip_offset)),
+                            tcpflags=flags,
+                            raw=bytes(xffi.buffer(iph6, ipsize)),
                             root_idx=nfstream_hash % nroots)
 
     def _recv_packet(self, xdev, nroots=1):
@@ -678,7 +667,7 @@ class _PcapFfi(object):
         pdata = self._ffi.new("unsigned char **")
         rv = self._libpcap.pcap_next_ex(xdev, phdr, pdata)
         if rv == 1:
-            return self._process_packet(xdev, phdr[0], pdata[0], nroots)
+            return self._parse_packet(xdev, phdr[0], pdata[0], nroots)
         elif rv == 0:
             # timeout; nothing to return
             return 0
@@ -696,9 +685,7 @@ def pcap_devices():
 
 
 class PcapReader(object):
-    """
-    Class the represents a reader of an existing pcap capture file.
-    """
+    """ Class the represents a reader of an existing pcap capture file. """
     __slots__ = ['_ffi', '_libpcap', '_base', '_pcapdev', '_user_callback']
 
     def __init__(self, filename):
@@ -728,9 +715,7 @@ class PcapReader(object):
 
 
 class PcapLiveDevice(object):
-    """
-    Class the represents a live pcap capture/injection device.
-    """
+    """ Class the represents a live pcap capture/injection device. """
     _OpenDevices = {}  # objectid -> low-level pcap dev
     _lock = Lock()
     __slots__ = ['_ffi', '_libpcap', '_base', '_pcapdev', '_devname', '_fd', '_user_callback', '_nroots']
