@@ -8,6 +8,9 @@ on:
     - master
   release:
     types: [created]
+  schedule:
+    # CI run every day (except weekends) at 22.
+    - cron:  '0 22 * * 1-5'
     
 jobs:
   test:
