@@ -345,7 +345,7 @@ class _PcapFfi(object):
             libname = 'wpcap.dll'  # winpcap
             raise ValueError('Windows OS is not currently supported.')
         elif sys.platform == 'darwin':
-            libname = '/libs/libpcap.dylib'
+            libname = '/libs/libpcap.so'
         else:
             libname = '/libs/libpcap.so'
         try:

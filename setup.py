@@ -39,7 +39,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 def setup_libpcap():
     if sys.platform == 'darwin':
-        subprocess.check_call(['cp', '/usr/lib/libpcap.dylib', 'nfstream/libs/libpcap.dylib'])
+        subprocess.check_call(['cp', '/usr/lib/libpcap.dylib', 'nfstream/libs/libpcap.so'])
     else:
         subprocess.check_call(['cp', '/usr/lib/x86_64-linux-gnu/libpcap.so.1.8.1', 'nfstream/libs/libpcap.so'])
 
