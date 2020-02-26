@@ -250,26 +250,25 @@ struct ndpi_vxlanhdr {
 };
 
 struct tinc_cache_entry {
-    uint32_t src_address;
-    uint32_t dst_address;
-    uint16_t dst_port;
+  uint32_t src_address;
+  uint32_t dst_address;
+  uint16_t dst_port;
 };
 """
 
-
 cc_ndpi_stuctures = """
 typedef enum {
-	      NDPI_LOG_ERROR,
-	      NDPI_LOG_TRACE,
-	      NDPI_LOG_DEBUG,
-	      NDPI_LOG_DEBUG_EXTRA
+  NDPI_LOG_ERROR,
+  NDPI_LOG_TRACE,
+  NDPI_LOG_DEBUG,
+  NDPI_LOG_DEBUG_EXTRA
 } ndpi_log_level_t;
 
 typedef enum {
-	      ndpi_l4_proto_unknown = 0,
-	      ndpi_l4_proto_tcp_only,
-	      ndpi_l4_proto_udp_only,
-	      ndpi_l4_proto_tcp_and_udp,
+  ndpi_l4_proto_unknown = 0,
+  ndpi_l4_proto_tcp_only,
+  ndpi_l4_proto_udp_only,
+  ndpi_l4_proto_tcp_and_udp,
 } ndpi_l4_proto_info;
 
 typedef enum {
@@ -289,10 +288,10 @@ typedef enum {
 
 /* NDPI_VISIT */
 typedef enum {
-	      ndpi_preorder,
-	      ndpi_postorder,
-	      ndpi_endorder,
-	      ndpi_leaf
+  ndpi_preorder,
+  ndpi_postorder,
+  ndpi_endorder,
+  ndpi_leaf
 } ndpi_VISIT;
 
 /* NDPI_NODE */
@@ -354,16 +353,16 @@ struct bt_announce {              // 192 bytes
 #define TINC_CACHE_MAX_SIZE 10
 
 typedef enum {
-	      NDPI_HTTP_METHOD_UNKNOWN = 0,
-	      NDPI_HTTP_METHOD_OPTIONS,
-	      NDPI_HTTP_METHOD_GET,
-	      NDPI_HTTP_METHOD_HEAD,
-	      NDPI_HTTP_METHOD_PATCH,
-	      NDPI_HTTP_METHOD_POST,
-	      NDPI_HTTP_METHOD_PUT,
-	      NDPI_HTTP_METHOD_DELETE,
-	      NDPI_HTTP_METHOD_TRACE,
-	      NDPI_HTTP_METHOD_CONNECT
+  NDPI_HTTP_METHOD_UNKNOWN = 0,
+  NDPI_HTTP_METHOD_OPTIONS,
+  NDPI_HTTP_METHOD_GET,
+  NDPI_HTTP_METHOD_HEAD,
+  NDPI_HTTP_METHOD_PATCH,
+  NDPI_HTTP_METHOD_POST,
+  NDPI_HTTP_METHOD_PUT,
+  NDPI_HTTP_METHOD_DELETE,
+  NDPI_HTTP_METHOD_TRACE,
+  NDPI_HTTP_METHOD_CONNECT
 } ndpi_http_method;
 
 struct ndpi_lru_cache_entry {
@@ -555,14 +554,14 @@ struct ndpi_flow_tcp_struct {
       uint8_t *buffer;
       unsigned buffer_len, buffer_used;
     } message;
-    
+
     void* srv_cert_fingerprint_ctx; /* SHA-1 */
-  
+
     /* NDPI_PROTOCOL_TLS */
     uint8_t hello_processed:1, certificate_processed:1, subprotocol_detected:1, fingerprint_set:1, _pad:4; 
     uint8_t sha1_certificate_fingerprint[20];
   } tls;
-  
+
   /* NDPI_PROTOCOL_POSTGRES */
   uint32_t postgres_stage:3;
 
@@ -715,8 +714,7 @@ struct ndpi_packet_struct {
   struct ndpi_int_one_line_struct http_x_session_type;
   struct ndpi_int_one_line_struct server_line;
   struct ndpi_int_one_line_struct http_method;
-  struct ndpi_int_one_line_struct http_response; /* the first "word" in this pointer is the
-						    response code in the packet (200, etc) */
+  struct ndpi_int_one_line_struct http_response;
   uint8_t http_num_headers; /* number of found (valid) header lines in HTTP request or response */
 
   uint16_t l3_packet_len;
@@ -732,7 +730,7 @@ struct ndpi_packet_struct {
 
   uint8_t tls_certificate_detected:4, tls_certificate_num_checks:4;
   uint8_t packet_lines_parsed_complete:1,
-    packet_direction:1, empty_line_position_set:1, pad:5;
+  packet_direction:1, empty_line_position_set:1, pad:5;
 };
 
 struct ndpi_detection_module_struct;
@@ -755,85 +753,86 @@ typedef struct {
 } ndpi_port_range;
 
 typedef enum {
-	      NDPI_PROTOCOL_SAFE = 0,              /* Surely doesn't provide risks for the network. (e.g., a news site) */
-	      NDPI_PROTOCOL_ACCEPTABLE,            /* Probably doesn't provide risks, but could be malicious (e.g., Dropbox) */
-	      NDPI_PROTOCOL_FUN,                   /* Pure fun protocol, which may be prohibited by the user policy (e.g., Netflix) */
-	      NDPI_PROTOCOL_UNSAFE,                /* Probably provides risks, but could be a normal traffic. Unencrypted protocols with clear pass should be here (e.g., telnet) */
-	      NDPI_PROTOCOL_POTENTIALLY_DANGEROUS, /* Possibly dangerous (ex. Tor). */
-	      NDPI_PROTOCOL_DANGEROUS,             /* Surely is dangerous (ex. smbv1). Be prepared to troubles */
-	      NDPI_PROTOCOL_TRACKER_ADS,           /* Trackers, Advertisements... */
-	      NDPI_PROTOCOL_UNRATED                /* No idea, not implemented or impossible to classify */
+  NDPI_PROTOCOL_SAFE = 0,              /* Surely doesn't provide risks for the network. (e.g., a news site) */
+  NDPI_PROTOCOL_ACCEPTABLE,            /* Probably doesn't provide risks, but could be malicious (e.g., Dropbox) */
+  NDPI_PROTOCOL_FUN,                   /* Pure fun protocol, which may be prohibited by the user policy (e.g., Netflix) */
+  NDPI_PROTOCOL_UNSAFE,                /* Probably provides risks, but could be a normal traffic. Unencrypted protocols with clear pass should be here (e.g., telnet) */
+  NDPI_PROTOCOL_POTENTIALLY_DANGEROUS, /* Possibly dangerous (ex. Tor). */
+  NDPI_PROTOCOL_DANGEROUS,             /* Surely is dangerous (ex. smbv1). Be prepared to troubles */
+  NDPI_PROTOCOL_TRACKER_ADS,           /* Trackers, Advertisements... */
+  NDPI_PROTOCOL_UNRATED                /* No idea, not implemented or impossible to classify */
 } ndpi_protocol_breed_t;
 
 #define NUM_BREEDS 8
 
 /* Abstract categories to group the protocols. */
 typedef enum {
-	      NDPI_PROTOCOL_CATEGORY_UNSPECIFIED = 0,   /* For general services and unknown protocols */
-	      NDPI_PROTOCOL_CATEGORY_MEDIA,             /* Multimedia and streaming */
-	      NDPI_PROTOCOL_CATEGORY_VPN,               /* Virtual Private Networks */
-	      NDPI_PROTOCOL_CATEGORY_MAIL,              /* Protocols to send/receive/sync emails */
-	      NDPI_PROTOCOL_CATEGORY_DATA_TRANSFER,     /* AFS/NFS and similar protocols */
-	      NDPI_PROTOCOL_CATEGORY_WEB,               /* Web/mobile protocols and services */
-	      NDPI_PROTOCOL_CATEGORY_SOCIAL_NETWORK,    /* Social networks */
-	      NDPI_PROTOCOL_CATEGORY_DOWNLOAD_FT,       /* Download, FTP, file transfer/sharing */
-	      NDPI_PROTOCOL_CATEGORY_GAME,              /* Online games */
-	      NDPI_PROTOCOL_CATEGORY_CHAT,              /* Instant messaging */
-	      NDPI_PROTOCOL_CATEGORY_VOIP,              /* Real-time communications and conferencing */
-	      NDPI_PROTOCOL_CATEGORY_DATABASE,          /* Protocols for database communication */
-	      NDPI_PROTOCOL_CATEGORY_REMOTE_ACCESS,     /* Remote access and control */
-	      NDPI_PROTOCOL_CATEGORY_CLOUD,             /* Online cloud services */
-	      NDPI_PROTOCOL_CATEGORY_NETWORK,           /* Network infrastructure protocols */
-	      NDPI_PROTOCOL_CATEGORY_COLLABORATIVE,     /* Software for collaborative development, including Webmail */
-	      NDPI_PROTOCOL_CATEGORY_RPC,               /* High level network communication protocols */
-	      NDPI_PROTOCOL_CATEGORY_STREAMING,         /* Streaming protocols */
-	      NDPI_PROTOCOL_CATEGORY_SYSTEM_OS,         /* System/Operating System level applications */
-	      NDPI_PROTOCOL_CATEGORY_SW_UPDATE,         /* Software update */
+  NDPI_PROTOCOL_CATEGORY_UNSPECIFIED = 0,   /* For general services and unknown protocols */
+  NDPI_PROTOCOL_CATEGORY_MEDIA,             /* Multimedia and streaming */
+  NDPI_PROTOCOL_CATEGORY_VPN,               /* Virtual Private Networks */
+  NDPI_PROTOCOL_CATEGORY_MAIL,              /* Protocols to send/receive/sync emails */
+  NDPI_PROTOCOL_CATEGORY_DATA_TRANSFER,     /* AFS/NFS and similar protocols */
+  NDPI_PROTOCOL_CATEGORY_WEB,               /* Web/mobile protocols and services */
+  NDPI_PROTOCOL_CATEGORY_SOCIAL_NETWORK,    /* Social networks */
+  NDPI_PROTOCOL_CATEGORY_DOWNLOAD_FT,       /* Download, FTP, file transfer/sharing */
+  NDPI_PROTOCOL_CATEGORY_GAME,              /* Online games */
+  NDPI_PROTOCOL_CATEGORY_CHAT,              /* Instant messaging */
+  NDPI_PROTOCOL_CATEGORY_VOIP,              /* Real-time communications and conferencing */
+  NDPI_PROTOCOL_CATEGORY_DATABASE,          /* Protocols for database communication */
+  NDPI_PROTOCOL_CATEGORY_REMOTE_ACCESS,     /* Remote access and control */
+  NDPI_PROTOCOL_CATEGORY_CLOUD,             /* Online cloud services */
+  NDPI_PROTOCOL_CATEGORY_NETWORK,           /* Network infrastructure protocols */
+  NDPI_PROTOCOL_CATEGORY_COLLABORATIVE,     /* Software for collaborative development, including Webmail */
+  NDPI_PROTOCOL_CATEGORY_RPC,               /* High level network communication protocols */
+  NDPI_PROTOCOL_CATEGORY_STREAMING,         /* Streaming protocols */
+  NDPI_PROTOCOL_CATEGORY_SYSTEM_OS,         /* System/Operating System level applications */
+  NDPI_PROTOCOL_CATEGORY_SW_UPDATE,         /* Software update */
 
-	      /* See #define NUM_CUSTOM_CATEGORIES */
-	      NDPI_PROTOCOL_CATEGORY_CUSTOM_1,          /* User custom category 1 */
-	      NDPI_PROTOCOL_CATEGORY_CUSTOM_2,          /* User custom category 2 */
-	      NDPI_PROTOCOL_CATEGORY_CUSTOM_3,          /* User custom category 3 */
-	      NDPI_PROTOCOL_CATEGORY_CUSTOM_4,          /* User custom category 4 */
-	      NDPI_PROTOCOL_CATEGORY_CUSTOM_5,          /* User custom category 5 */
+  /* See #define NUM_CUSTOM_CATEGORIES */
+  NDPI_PROTOCOL_CATEGORY_CUSTOM_1,          /* User custom category 1 */
+  NDPI_PROTOCOL_CATEGORY_CUSTOM_2,          /* User custom category 2 */
+  NDPI_PROTOCOL_CATEGORY_CUSTOM_3,          /* User custom category 3 */
+  NDPI_PROTOCOL_CATEGORY_CUSTOM_4,          /* User custom category 4 */
+  NDPI_PROTOCOL_CATEGORY_CUSTOM_5,          /* User custom category 5 */
 
-	      /* Further categories... */
-	      NDPI_PROTOCOL_CATEGORY_MUSIC,
-	      NDPI_PROTOCOL_CATEGORY_VIDEO,
-	      NDPI_PROTOCOL_CATEGORY_SHOPPING,
-	      NDPI_PROTOCOL_CATEGORY_PRODUCTIVITY,
-	      NDPI_PROTOCOL_CATEGORY_FILE_SHARING,
+  /* Further categories... */
+  NDPI_PROTOCOL_CATEGORY_MUSIC,
+  NDPI_PROTOCOL_CATEGORY_VIDEO,
+  NDPI_PROTOCOL_CATEGORY_SHOPPING,
+  NDPI_PROTOCOL_CATEGORY_PRODUCTIVITY,
+  NDPI_PROTOCOL_CATEGORY_FILE_SHARING,
 
-	      /* Some custom categories */
-	      CUSTOM_CATEGORY_MINING           = 99,
-	      CUSTOM_CATEGORY_MALWARE          = 100,
-	      CUSTOM_CATEGORY_ADVERTISEMENT    = 101,
-	      CUSTOM_CATEGORY_BANNED_SITE      = 102,
-	      CUSTOM_CATEGORY_SITE_UNAVAILABLE = 103,
-	      CUSTOM_CATEGORY_ALLOWED_SITE     = 104,
-	      /*
-		The category below is used to track communications made by
-		security applications (e.g. sophosxl.net, spamhaus.org)
-		to track malware, spam etc.
-	      */
-	      CUSTOM_CATEGORY_ANTIMALWARE      = 105,
+  /* Some custom categories */
+  CUSTOM_CATEGORY_MINING           = 99,
+  CUSTOM_CATEGORY_MALWARE          = 100,
+  CUSTOM_CATEGORY_ADVERTISEMENT    = 101,
+  CUSTOM_CATEGORY_BANNED_SITE      = 102,
+  CUSTOM_CATEGORY_SITE_UNAVAILABLE = 103,
+  CUSTOM_CATEGORY_ALLOWED_SITE     = 104,
+  /*
+    The category below is used to track communications made by
+    security applications (e.g. sophosxl.net, spamhaus.org)
+    to track malware, spam etc.
+    */
+  CUSTOM_CATEGORY_ANTIMALWARE      = 105,
 
-	      /*
-		IMPORTANT
-		Please keep in sync with
-		static const char* categories[] = { ..}
-		in ndpi_main.c
-	      */
+  /*
+    IMPORTANT
+    Please keep in sync with
+    static const char* categories[] = { ..}
+    in ndpi_main.c
+  */
 
-	      NDPI_PROTOCOL_NUM_CATEGORIES /*
-					     NOTE: Keep this as last member
-					     Unused as value but useful to getting the number of elements
-					     in this datastructure
-					   */
+  NDPI_PROTOCOL_NUM_CATEGORIES
+  /*
+    NOTE: Keep this as last member
+    Unused as value but useful to getting the number of elements
+    in this datastructure
+  */
 } ndpi_protocol_category_t;
 
 typedef enum {
-   ndpi_pref_direction_detect_disable = 0,
+  ndpi_pref_direction_detect_disable = 0,
 } ndpi_detection_preference;
 
 /* ntop extensions */
@@ -917,7 +916,7 @@ struct ndpi_detection_module_struct {
     subprotocol_automa,                        /* Used for HTTP subprotocol_detection */
     bigrams_automa, impossible_bigrams_automa; /* TOR */
   /* IMPORTANT: please update ndpi_finalize_initalization() whenever you add a new automa */
-  
+
   struct {
     ndpi_automa hostnames, hostnames_shadow;
     void *ipAddresses, *ipAddresses_shadow; /* Patricia */
@@ -979,9 +978,9 @@ struct ndpi_detection_module_struct {
 #define NDPI_CIPHER_INSECURE                    2
 
 typedef enum {
-   ndpi_cipher_safe = NDPI_CIPHER_SAFE,
-   ndpi_cipher_weak = NDPI_CIPHER_WEAK,
-   ndpi_cipher_insecure = NDPI_CIPHER_INSECURE
+  ndpi_cipher_safe = NDPI_CIPHER_SAFE,
+  ndpi_cipher_weak = NDPI_CIPHER_WEAK,
+  ndpi_cipher_insecure = NDPI_CIPHER_INSECURE
 } ndpi_cipher_weakness;
 
 struct ndpi_flow_struct {
@@ -1012,7 +1011,7 @@ struct ndpi_flow_struct {
 
   /* Place textual flow info here */
   char flow_extra_info[16];
-  
+
   /*
     Pointer to src or dst that identifies the
     server of this connection
@@ -1088,7 +1087,7 @@ struct ndpi_flow_struct {
     struct {
       uint8_t last_one_byte_pkt, last_byte;
     } imo;
-    
+
     struct {
       uint8_t username_detected:1, username_found:1,
       password_detected:1, password_found:1,
@@ -1096,7 +1095,7 @@ struct ndpi_flow_struct {
       uint8_t character_id;
       char username[32], password[32];
     } telnet;
-    
+
     struct {
       char answer[96];
     } mdns;
@@ -1116,7 +1115,7 @@ struct ndpi_flow_struct {
       uint8_t auth_found:1, auth_failed:1, _pad:5;
       char username[16], password[16];
     } ftp_imap_pop_smtp;
-  
+
     struct {
       /* Bittorrent hash */
       uint8_t hash[20];
@@ -1240,11 +1239,10 @@ typedef struct {
 
 typedef uint32_t ndpi_init_prefs;
 
-typedef enum
-  {
-   ndpi_no_prefs = 0,
-   ndpi_dont_load_tor_hosts,
-  } ndpi_prefs;
+typedef enum {
+  ndpi_no_prefs = 0,
+  ndpi_dont_load_tor_hosts,
+} ndpi_prefs;
 
 typedef struct {
   int protocol_id;
@@ -1273,8 +1271,6 @@ struct ndpi_analyze_struct {
 #define MAX_SERIES_LEN      512
 #define MIN_SERIES_LEN      8
 
-/* **************************************** */
-
 typedef struct ndpi_ptree ndpi_ptree_t;
 
 """
@@ -1301,7 +1297,9 @@ void   ndpi_free(void *ptr);
 void * ndpi_flow_malloc(size_t size);
 void  ndpi_flow_free(void *ptr);
 void ndpi_exit_detection_module(struct ndpi_detection_module_struct *ndpi_struct);
-char* ndpi_protocol2name(struct ndpi_detection_module_struct *ndpi_mod, ndpi_protocol proto, char *buf, unsigned buf_len);
+char* ndpi_protocol2name(struct ndpi_detection_module_struct *ndpi_mod,
+                         ndpi_protocol proto,
+                         char *buf, unsigned buf_len);
 const char* ndpi_category_get_name(struct ndpi_detection_module_struct *ndpi_mod, ndpi_protocol_category_t category);
 char* ndpi_revision(void);
 void ndpi_finalize_initalization(struct ndpi_detection_module_struct *ndpi_str);
@@ -1312,14 +1310,29 @@ uint32_t ndpi_detection_get_sizeof_ndpi_flow_udp_struct(void);
 """
 
 
+def check_structures_size(flow_struct_defined, flow_struct_loaded,
+                          id_struct_defined, id_struct_loaded,
+                          tcp_flow_struct_defined, tcp_flow_struct_loaded,
+                          udp_flow_struct_defined, udp_flow_struct_loaded):
+    """ Function used to check loaded structures sizes againt defined ones """
+    errors = []
+    if flow_struct_defined != flow_struct_loaded:
+        errors.append('ndpi_flow_struct')
+    if id_struct_defined != id_struct_loaded:
+        errors.append('ndpi_id_struct')
+    if tcp_flow_struct_defined != tcp_flow_struct_loaded:
+        errors.append('ndpi_tcp_flow_struct')
+    if udp_flow_struct_defined != udp_flow_struct_loaded:
+        errors.append('ndpi_udp_flow_struct')
+    return errors
+
+
 class NDPI():
+    """ ndpi module main class """
     def __init__(self, libpath=None, max_tcp_dissections=10, max_udp_dissections=16):
         self._ffi = cffi.FFI()
         if libpath is None:
-            if "win" in sys.platform[:3]:
-                raise ValueError('Windows OS is not currently supported.')
-            else:
-                self._ndpi = self._ffi.dlopen(dirname(abspath(__file__)) + '/libs/libndpi.so')
+            self._ndpi = self._ffi.dlopen(dirname(abspath(__file__)) + '/libs/libndpi.so')
         else:
             self._ndpi = self._ffi.dlopen(libpath)
         self._ffi.cdef(cc_ndpi_network_headers, packed=True)
@@ -1332,60 +1345,69 @@ class NDPI():
         all = self._ffi.new('NDPI_PROTOCOL_BITMASK*')
         self._ndpi.memset(self._ffi.cast("char *", all), 0xFF, self._ffi.sizeof("NDPI_PROTOCOL_BITMASK"))
         self._ndpi.ndpi_set_protocol_detection_bitmask2(self._mod, all)
-        self.SIZEOF_FLOW_STRUCT = self._ffi.sizeof("struct ndpi_flow_struct")
-        self.SIZEOF_ID_STRUCT = self._ffi.sizeof("struct ndpi_id_struct")
-        self.SIZEOF_FLOW_TCP_STRUCT = self._ffi.sizeof("struct ndpi_flow_tcp_struct")
-        self.SIZEOF_FLOW_UDP_STRUCT = self._ffi.sizeof("struct ndpi_flow_udp_struct")
-        errors = []
-        if self.SIZEOF_FLOW_TCP_STRUCT != self._ndpi.ndpi_detection_get_sizeof_ndpi_flow_tcp_struct():
-            errors.append('NDPI_FLOW_TCP_STRUCT')
-        if self.SIZEOF_FLOW_UDP_STRUCT != self._ndpi.ndpi_detection_get_sizeof_ndpi_flow_udp_struct():
-            errors.append('NDPI_FLOW_UDP_STRUCT')
-        if self.SIZEOF_FLOW_STRUCT != self._ndpi.ndpi_detection_get_sizeof_ndpi_flow_struct():
-            errors.append('NDPI_FLOW_STRUCT')
-        if self.SIZEOF_ID_STRUCT != self._ndpi.ndpi_detection_get_sizeof_ndpi_id_struct():
-            errors.append('NDPI_ID_STRUCT')
+        errors = check_structures_size(self._ffi.sizeof("struct ndpi_flow_struct"),
+                                       self._ndpi.ndpi_detection_get_sizeof_ndpi_flow_struct(),
+                                       self._ffi.sizeof("struct ndpi_id_struct"),
+                                       self._ndpi.ndpi_detection_get_sizeof_ndpi_id_struct(),
+                                       self._ffi.sizeof("struct ndpi_flow_tcp_struct"),
+                                       self._ndpi.ndpi_detection_get_sizeof_ndpi_flow_tcp_struct(),
+                                       self._ffi.sizeof("struct ndpi_flow_udp_struct"),
+                                       self._ndpi.ndpi_detection_get_sizeof_ndpi_flow_udp_struct())
         if len(errors) != 0:
             raise ValueError('nDPI error: mismatch in the headers of following structures{}'.format(', '.join(errors)))
+        else:
+            self.SIZEOF_FLOW_STRUCT = self._ffi.sizeof("struct ndpi_flow_struct")
+            self.SIZEOF_ID_STRUCT = self._ffi.sizeof("struct ndpi_id_struct")
         self.NULL = self._ffi.NULL
         self.max_tcp_dissections = max_tcp_dissections
         self.max_udp_dissections = max_udp_dissections
 
     def new_ndpi_flow(self):
+        """ Create a new nDPI flow object """
         f = self._ffi.cast('struct ndpi_flow_struct*', self._ndpi.ndpi_flow_malloc(self.SIZEOF_FLOW_STRUCT))
         self._ndpi.memset(f, 0, self.SIZEOF_FLOW_STRUCT)
         return f
 
     def new_ndpi_id(self):
+        """ Create a new nDPI id object """
         i = self._ffi.cast('struct ndpi_id_struct*', self._ndpi.ndpi_malloc(self.SIZEOF_ID_STRUCT))
         self._ndpi.memset(i, 0, self.SIZEOF_ID_STRUCT)
         return i
 
     def ndpi_detection_process_packet(self, flow, packet, packetlen, current_tick, src, dst):
+        """ Main detection processing function """
         return self._ndpi.ndpi_detection_process_packet(self._mod, flow, packet, packetlen, current_tick, src, dst)
 
     def ndpi_detection_giveup(self, flow):
+        """ Giveup detection function """
         return self._ndpi.ndpi_detection_giveup(self._mod, flow, 1, self._ffi.new("uint8_t*", 0))
 
     def ndpi_flow_free(self, flow):
+        """ Free nDPI flow object """
         return self._ndpi.ndpi_flow_free(flow)
 
     def ndpi_free(self, ptr):
+        """ Free nDPI object """
         return self._ndpi.ndpi_free(ptr)
 
     def get_str_field(self, ptr):
+        """ Get fixed string size attribute """
         return self._ffi.string(ptr).decode('utf-8', errors='ignore')
 
     def get_buffer_field(self, ptr, l):
+        """ Get variable string size attribute """
         return bytes(self._ffi.buffer(ptr, l)).decode('utf-8', errors='ignore')
 
     def ndpi_protocol2name(self, proto):
+        """ Convert nDPI protocol object to readable name """
         buf = self._ffi.new("char[32]")
         self._ndpi.ndpi_protocol2name(self._mod, proto, buf, self._ffi.sizeof(buf))
         return self._ffi.string(buf).decode('utf-8', errors='ignore')
 
     def ndpi_category_get_name(self, category):
+        """ Convert nDPI protocol object to readable name """
         return self._ffi.string(self._ndpi.ndpi_category_get_name(self._mod, category)).decode('utf-8', errors='ignore')
 
     def ndpi_exit_detection_module(self):
+        """ Exit function for nDPI module """
         self._ndpi.ndpi_exit_detection_module(self._mod)
