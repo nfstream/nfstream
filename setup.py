@@ -50,7 +50,7 @@ def setup_ndpi():
                            'clone',
                            '--branch',
                            'dev',
-                           'https://github.com/aouinizied/nDPI.git'])
+                           'https://github.com/ntop/nDPI.git'])
     os.chdir('nDPI/')
     subprocess.check_call(['./autogen.sh'])
     os.chdir('src/')
