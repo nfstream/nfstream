@@ -15,7 +15,7 @@ the broader goal of becoming **a common network data processing framework for re
   </td>
 </tr>
 <tr>
-  <td><b>DOI</b></td>
+  <td><b>Citation</b></td>
   <td>
     <a href="https://zenodo.org/badge/latestdoi/216051909">
     <img src="https://zenodo.org/badge/216051909.svg" alt="DOI" />
