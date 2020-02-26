@@ -2,14 +2,6 @@
 Installing nfstream
 ###################
 
-*************
-Prerequisites
-*************
-
-.. code-block:: bash
-
-    apt-get install libpcap-dev
-
 ************
 Installation
 ************
@@ -20,16 +12,25 @@ Binary installers for the latest released version are available:
 
 .. code-block:: bash
 
-    pip3 install nfstream
+    python3 -m pip install nfstream
 
 
-**from source**
-
-If you want to build nfstream on your local machine:
+**from source: linux**
 
 .. code-block:: bash
 
-    apt-get install autogen
+    sudo apt-get install autoconf automake libtool pkg-config libpcap-dev
     git clone https://github.com/aouinizied/nfstream.git
     cd nfstream
+    python3 -m pip install -r requirements.txt
+    python3 setup.py install
+
+**from source: macos**
+
+.. code-block:: bash
+
+    brew install autoconf automake libtool pkg-config
+    git clone https://github.com/aouinizied/nfstream.git
+    cd nfstream
+    python3 -m pip install -r requirements.txt
     python3 setup.py install

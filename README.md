@@ -169,27 +169,36 @@ the broader goal of becoming **a common network data processing framework for re
 
 * More example and details are provided on the official [**documentation**][documentation].
 
-## Prerequisites
-```bash
-    apt-get install libpcap-dev
-```
 ## Installation
 
 ### Using pip
 
 Binary installers for the latest released version are available:
 ```bash
-    pip3 install nfstream
+    python3 -m pip install nfstream
 ```
 
-### Build from source
+### Build from sources
 
-If you want to build **nfstream** on your local machine:
+If you want to build **nfstream** from sources on your local machine:
+
+### linux
 
 ```bash
+    sudo apt-get install autoconf automake libtool pkg-config libpcap-dev
     git clone https://github.com/aouinizied/nfstream.git
     cd nfstream
-    pip install -r requirements.txt
+    python3 -m pip install -r requirements.txt
+    python3 setup.py install
+```
+
+### macos
+
+```bash
+    brew install autoconf automake libtool pkg-config
+    git clone https://github.com/aouinizied/nfstream.git
+    cd nfstream
+    python3 -m pip install -r requirements.txt
     python3 setup.py install
 ```
 
