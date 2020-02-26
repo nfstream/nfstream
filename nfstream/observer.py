@@ -455,8 +455,7 @@ class _PcapFfi(object):
         self._ffi.cdef(cc_network_headers, override=True, packed=True)
         self._ffi.cdef(cc_libpcap, override=True)
         if "win" in sys.platform[:3]:
-            libname = 'wpcap.dll'  # winpcap
-            raise ValueError('Windows OS is not currently supported.')
+            raise PcapException('Windows OS is not currently supported.')
         elif sys.platform == 'darwin':
             libname = '/libs/libpcap.so'
         else:

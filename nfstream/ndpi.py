@@ -16,7 +16,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from os.path import abspath, dirname
 import cffi
-import sys
 
 cc_ndpi_network_headers = """
 struct ndpi_chdlc
