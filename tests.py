@@ -98,7 +98,6 @@ class TestMethods(unittest.TestCase):
         for flow in streamer_test:
             flows.append(flow)
         del streamer_test
-        print(flows[0])
         self.assertEqual(flows[0].client_info, 'facebook.com')
         self.assertEqual(flows[0].server_info, '*.facebook.com,*.facebook.net,*.fb.com,*.fbcdn.net,*.fbsbx.com,*.m.facebook.com,*.messenger.com,*.xx.fbcdn.net,*.xy.fbcdn.net,*.xz.fbcdn.net,facebook.com,fb.com,messenger.com')
         self.assertEqual(flows[0].client_info, 'facebook.com')
