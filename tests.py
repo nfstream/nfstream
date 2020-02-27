@@ -81,7 +81,6 @@ class TestMethods(unittest.TestCase):
             del streamer_test
         self.assertEqual(len(files), len(ok_files))
 
-
     def test_expiration_management(self):
         print("\n----------------------------------------------------------------------")
         streamer_test = NFStreamer(source='tests/pcap/facebook.pcap', active_timeout=0)

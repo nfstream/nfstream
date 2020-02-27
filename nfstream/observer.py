@@ -139,6 +139,10 @@ struct nfstream_tcphdr
   uint16_t check;
   uint16_t urg_ptr;
 };
+
+struct pp_32 {
+    uint32_t value;
+};
 """
 
 cc_libpcap = """
@@ -178,9 +182,6 @@ struct pcap_stat {
     unsigned int ifdrop;
 };
 
-struct pp_32 {
-    uint32_t value;
-};
 
 typedef void (*pcap_handler)(unsigned char *, const struct pcap_pkthdr *, const unsigned char *);
 
