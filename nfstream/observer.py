@@ -169,6 +169,7 @@ struct pcap_pkthdr {
     long tv_usec;
     unsigned int caplen;
     unsigned int len;
+    apple_additional
 };
 
 struct pcap_stat {
@@ -453,12 +454,13 @@ class _PcapFfi(object):
         self._windows = False
         self._ffi = FFI()
         self._ffi.cdef(cc_network_headers, override=True, packed=True)
-        self._ffi.cdef(cc_libpcap, override=True)
         if "win" in sys.platform[:3]:
             raise PcapException('Windows OS is not currently supported.')
         elif sys.platform == 'darwin':
+            self._ffi.cdef(cc_libpcap.replace('apple_additional', 'char comment[256];'), override=True)
             libname = '/libs/libpcap.so'
         else:
+            self._ffi.cdef(cc_libpcap.replace('apple_additional', ''), override=True)
             libname = '/libs/libpcap.so'
         try:
             self._libpcap = self._ffi.dlopen(dirname(abspath(__file__)) + libname)
