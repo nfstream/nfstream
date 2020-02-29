@@ -2,6 +2,12 @@
 Changelog
 #########
 
+**3.2.2 (2020-02-29)**
+
+* Add to_pandas method.
+* Live demo using binder
+* Fix previous broken package.
+
 **3.2.1 (2020-02-29)**
 
 * Add libpcap to builded libs.
