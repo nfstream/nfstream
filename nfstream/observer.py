@@ -74,6 +74,7 @@ char *pcap_geterr(pcap_t *);
 char *pcap_lib_version();
 void pcap_freealldevs(pcap_if_t *);
 int pcap_findalldevs(pcap_if_t **, char *);
+int pcap_snapshot(pcap_t *);
 """
 
 TICK_RESOLUTION = 1000

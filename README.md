@@ -144,13 +144,8 @@ the broader goal of becoming **a common network data processing framework for re
 * From pcap to Pandas DataFrame?
 
 ```python
-    import pandas as pd	
-    streamer_awesome = NFStreamer(source='devil.pcap')
-    data = []
-    for flow in streamer_awesome:
-       data.append(flow.to_namedtuple())
-    my_df = pd.DataFrame(data=data)
-    my_df.head(5) # Enjoy!
+    my_dataframe = NFStreamer(source='devil.pcap').to_pandas()
+    my_dataframe.head(5)
 ```
 * Didn't find a specific flow feature? add a plugin to **nfstream** in few lines:
 
