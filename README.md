@@ -224,7 +224,7 @@ This project is licensed under the GPLv3 License - see the [**License**][license
 [contributors]: https://github.com/aouinizied/nfstream/graphs/contributors
 [linkedin]: https://www.linkedin.com/in/dr-zied-aouini
 [github]: https://github.com/aouinizied
-[documentation]: https://readthedocs.org/projects/nfstream/downloads/pdf/latest/
+[documentation]: https://nfstream.readthedocs.io/en/latest/index.html
 [ndpi]: https://github.com/ntop/nDPI
 [nfplugin]: https://nfstream.readthedocs.io/en/latest/plugins.html
 [reliable]: http://people.ac.upc.edu/pbarlet/papers/ground-truth.pam2014.pdf
