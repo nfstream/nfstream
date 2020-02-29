@@ -2,7 +2,7 @@
 Changelog
 #########
 
-**3.2.1 (next planned)**
+**3.2.1 (2020-02-29)**
 
 * Add libpcap to builded libs.
 * Packet parsing improvements (expose several packet size levels).
