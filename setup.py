@@ -37,10 +37,24 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 
 def setup_libpcap():
+    print("\nSetting up libpcap. Platform: {}".format(sys.platform))
+    subprocess.check_call(['git',
+                           'clone',
+                           '--branch',
+                           'libpcap-1.9.1',
+                           'https://github.com/the-tcpdump-group/libpcap.git'])
+    os.chdir('libpcap/')
     if sys.platform == 'darwin':
-        subprocess.check_call(['cp', '/usr/lib/libpcap.dylib', 'nfstream/libs/libpcap.so'])
+        subprocess.check_call(['./configure', 'CC=clang', '--enable-ipv6', '--disable-universal'])
+        subprocess.check_call(['make'])
+        shutil.copy2('libpcap.1.9.1.dylib', '../nfstream/libs/libpcap.so')
     else:
-        subprocess.check_call(['cp', '/usr/lib/x86_64-linux-gnu/libpcap.so.1.8.1', 'nfstream/libs/libpcap.so'])
+        subprocess.check_call(['./configure'])
+        subprocess.check_call(['make'])
+        shutil.copy2('libpcap.so.1.9.1', '../nfstream/libs/libpcap.so')
+    subprocess.check_call(['sudo', 'make', 'install'])
+    os.chdir('..')
+    shutil.rmtree('libpcap/', ignore_errors=True)
 
 
 def setup_ndpi():
