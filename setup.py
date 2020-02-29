@@ -52,7 +52,6 @@ def setup_libpcap():
         subprocess.check_call(['./configure'])
         subprocess.check_call(['make'])
         shutil.copy2('libpcap.so.1.9.1', '../nfstream/libs/libpcap.so')
-    subprocess.check_call(['sudo', 'make', 'install'])
     os.chdir('..')
     shutil.rmtree('libpcap/', ignore_errors=True)
 
