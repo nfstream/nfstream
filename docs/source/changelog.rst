@@ -2,6 +2,13 @@
 Changelog
 #########
 
+**3.2.1 (next planned)**
+
+* Add libpcap to builded libs.
+* Packet parsing improvements (expose several packet size levels).
+* Observer code refactoring.
+* Improve nDPI structures handling.
+
 **3.2.0 (2020-02-02)**
 
 * nDPI 3.2 support.

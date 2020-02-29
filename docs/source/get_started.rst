@@ -172,12 +172,18 @@ NFPacket object
    * - time
      - int
      - Packet timestamp in milliseconds.
-   * - capture_length
+   * - raw_size
      - int
-     - Packet capture length.
-   * - length
+     - Packet raw size.
+   * - ip_size
      - int
-     - Packet size.
+     - IP packet size.
+   * - transport_size
+     - int
+     - Transport packet size.
+   * - payload_size
+     - int
+     - Packet payload size.
    * - ip_src
      - int
      - Source IP address int value.
@@ -202,7 +208,7 @@ NFPacket object
    * - tcp_flags
      - int
      - Packet observed TCP flags.
-   * - raw
+   * - ip_packet
      - bytes
      - Raw content starting from IP Header.
    * - direction

@@ -11,7 +11,7 @@ in both cases.
 
     class my_awesome_plugin(NFPlugin):
         def on_update(self, obs, entry):
-            if obs.length >= 666:
+            if obs.raw_size >= 666:
                 entry.my_awesome_plugin += 1
 
 
@@ -67,17 +67,17 @@ Computing required features
     class feat_1(NFPlugin):
         def on_update(self, obs, entry):
             if entry.total_packets == 1:
-                entry.feat_1 == obs.length
+                entry.feat_1 == obs.raw_size
 
     class feat_2(NFPlugin):
         def on_update(self, obs, entry):
             if entry.total_packets == 2:
-                entry.feat_2 == obs.length
+                entry.feat_2 == obs.raw_size
 
     class feat_3(NFPlugin):
         def on_update(self, obs, entry):
             if entry.total_packets == 3:
-                entry.feat_3 == obs.length
+                entry.feat_3 == obs.raw_size
 
 ************************
 Trained model prediction

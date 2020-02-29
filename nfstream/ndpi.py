@@ -18,6 +18,10 @@ from os.path import abspath, dirname
 import cffi
 
 cc_ndpi_network_headers = """
+struct ptr_uint32 {
+    uint32_t value;
+};
+
 struct ndpi_chdlc
 {
   uint8_t addr;          /* 0x0F (Unicast) - 0x8F (Broadcast) */
@@ -142,6 +146,11 @@ struct ndpi_mpls_header
   uint32_t ttl:8, s:1, exp:3, label:20;
 };
 
+extern union mpls {
+  uint32_t u32;
+  struct ndpi_mpls_header mpls;
+} mpls;
+  
 /* ++++++++++++++++++++++++ IP header ++++++++++++++++++++++++ */
 struct ndpi_iphdr {
   uint8_t ihl:4, version:4;
@@ -755,7 +764,8 @@ typedef enum {
   NDPI_PROTOCOL_SAFE = 0,              /* Surely doesn't provide risks for the network. (e.g., a news site) */
   NDPI_PROTOCOL_ACCEPTABLE,            /* Probably doesn't provide risks, but could be malicious (e.g., Dropbox) */
   NDPI_PROTOCOL_FUN,                   /* Pure fun protocol, which may be prohibited by the user policy (e.g., Netflix) */
-  NDPI_PROTOCOL_UNSAFE,                /* Probably provides risks, but could be a normal traffic. Unencrypted protocols with clear pass should be here (e.g., telnet) */
+  NDPI_PROTOCOL_UNSAFE,                /* Probably provides risks, but could be a normal traffic. Unencrypted protocols 
+                                          with clear pass should be here (e.g., telnet) */
   NDPI_PROTOCOL_POTENTIALLY_DANGEROUS, /* Possibly dangerous (ex. Tor). */
   NDPI_PROTOCOL_DANGEROUS,             /* Surely is dangerous (ex. smbv1). Be prepared to troubles */
   NDPI_PROTOCOL_TRACKER_ADS,           /* Trackers, Advertisements... */

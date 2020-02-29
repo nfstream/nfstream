@@ -159,7 +159,7 @@ the broader goal of becoming **a common network data processing framework for re
 
     class my_awesome_plugin(NFPlugin):
         def on_update(self, obs, entry):
-            if obs.length >= 666:
+            if obs.raw_size >= 666:
                 entry.my_awesome_plugin += 1
 		
     streamer_awesome = NFStreamer(source='devil.pcap', plugins=[my_awesome_plugin()])

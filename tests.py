@@ -38,10 +38,14 @@ def get_app_dict(path):
         app = {}
         for row in reader:
             try:
-                app[row['ndpi_proto']] += int(row['s_to_c_bytes']) + int(row['c_to_s_bytes'])
+                app[row['ndpi_proto']]['bytes'] += int(row['s_to_c_bytes']) + int(row['c_to_s_bytes'])
+                app[row['ndpi_proto']]['flows'] += 1
+                app[row['ndpi_proto']]['pkts'] += int(row['s_to_c_pkts']) + int(row['c_to_s_pkts'])
             except KeyError:
-                app[row['ndpi_proto']] = 0
-                app[row['ndpi_proto']] += int(row['s_to_c_bytes']) + int(row['c_to_s_bytes'])
+                app[row['ndpi_proto']] = {"bytes": 0, "flows": 0, "pkts": 0}
+                app[row['ndpi_proto']]["bytes"] += int(row['s_to_c_bytes']) + int(row['c_to_s_bytes'])
+                app[row['ndpi_proto']]["flows"] += 1
+                app[row['ndpi_proto']]['pkts'] += int(row['s_to_c_pkts']) + int(row['c_to_s_pkts'])
     return app
 
 
@@ -57,7 +61,6 @@ class TestMethods(unittest.TestCase):
     def test_no_unknown_protocols_without_timeouts(self):
         files = get_files_list("tests/pcap/")
         ground_truth_ndpi = build_ground_truth_dict("tests/result/")
-        self.maxDif = None
         print("\n----------------------------------------------------------------------")
         print(".Testing on {} applications:".format(len(files)))
         ok_files = []
@@ -69,9 +72,11 @@ class TestMethods(unittest.TestCase):
             for flow in streamer_test:
                 if flow.application_name != 'Unknown':
                     try:
-                        result[flow.application_name] += flow.total_bytes
+                        result[flow.application_name]['bytes'] += flow.total_bytes
+                        result[flow.application_name]['flows'] += 1
+                        result[flow.application_name]['pkts'] += flow.total_packets
                     except KeyError:
-                        result[flow.application_name] = flow.total_bytes
+                        result[flow.application_name] = {"bytes": flow.total_bytes, 'flows': 1, 'pkts': flow.total_packets}
             if result == ground_truth_ndpi[test_case_name]:
                 ok_files.append(test_case_name)
                 print("{}\t: \033[94mOK\033[0m".format(test_case_name.ljust(60, ' ')))
@@ -98,7 +103,9 @@ class TestMethods(unittest.TestCase):
             flows.append(flow)
         del streamer_test
         self.assertEqual(flows[0].client_info, 'facebook.com')
-        self.assertEqual(flows[0].server_info, '*.facebook.com,*.facebook.net,*.fb.com,*.fbcdn.net,*.fbsbx.com,*.m.facebook.com,*.messenger.com,*.xx.fbcdn.net,*.xy.fbcdn.net,*.xz.fbcdn.net,facebook.com,fb.com,messenger.com')
+        self.assertEqual(flows[0].server_info, '*.facebook.com,*.facebook.net,*.fb.com,*.fbcdn.net,*.fbsbx.com,\
+*.m.facebook.com,*.messenger.com,*.xx.fbcdn.net,*.xy.fbcdn.net,*.xz.fbcdn.net,facebook.com,fb.com,\
+messenger.com')
         self.assertEqual(flows[0].client_info, 'facebook.com')
         self.assertEqual(flows[0].j3a_client, 'bfcc1a3891601edb4f137ab7ab25b840')
         self.assertEqual(flows[0].j3a_server, '2d1eb5817ece335c24904f516ad5da12')

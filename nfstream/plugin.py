@@ -154,10 +154,10 @@ class total_packets(NFPlugin):
 class total_bytes(NFPlugin):
     """ Flow bidirectional bytes accumulator """
     def on_init(self, obs):
-        return obs.length
+        return obs.raw_size
 
     def on_update(self, obs, entry):
-        entry.total_bytes += obs.length
+        entry.total_bytes += obs.raw_size
 
 
 class duration(NFPlugin):
@@ -179,11 +179,11 @@ class src2dst_packets(NFPlugin):
 class src2dst_bytes(NFPlugin):
     """ Flow src -> dst packets accumulator """
     def on_init(self, obs):
-        return obs.length
+        return obs.raw_size
 
     def on_update(self, obs, entry):
         if obs.direction == 0:
-            entry.src2dst_bytes += obs.length
+            entry.src2dst_bytes += obs.raw_size
 
 
 class dst2src_packets(NFPlugin):
@@ -195,7 +195,7 @@ class dst2src_packets(NFPlugin):
 class dst2src_bytes(NFPlugin):
     def on_update(self, obs, entry):
         if obs.direction == 1:
-            entry.dst2src_bytes += obs.length
+            entry.dst2src_bytes += obs.raw_size
 
 
 class expiration_id(NFPlugin):
@@ -234,7 +234,7 @@ class nDPI(NFPlugin):
         f = self.user_data.new_ndpi_flow()
         s = self.user_data.new_ndpi_id()
         d = self.user_data.new_ndpi_id()
-        p = self.user_data.ndpi_detection_process_packet(f, obs.raw, len(obs.raw), obs.time, s, d)
+        p = self.user_data.ndpi_detection_process_packet(f, obs.ip_packet, obs.ip_size, obs.time, s, d)
         # nDPI structures are maintained in a list [ndpi_flow, ndpi_src, ndpi_dst, ndpi_proto, detection_completed]
         return [f, s, d, p, 0]
 
@@ -243,8 +243,8 @@ class nDPI(NFPlugin):
         udp_not_enough = (entry.protocol == 17) and (entry.total_packets <= self.user_data.max_udp_dissections)
         if (tcp_not_enough or udp_not_enough) and entry.nDPI[4] == 0:
             entry.nDPI[3] = self.user_data.ndpi_detection_process_packet(entry.nDPI[0],
-                                                                         obs.raw,
-                                                                         len(obs.raw),
+                                                                         obs.ip_packet,
+                                                                         obs.ip_size,
                                                                          obs.time,
                                                                          entry.nDPI[1],
                                                                          entry.nDPI[2])
