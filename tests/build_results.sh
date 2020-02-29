@@ -6,7 +6,6 @@ build_results() {
     for f in $PCAPS; do
 	if [ ! -f result/$f.pcap ]; then
 	    CMD="$READER -q -i pcap/$f -C result/$f"
-	    echo CMD
 	    $CMD
 	fi
     done
