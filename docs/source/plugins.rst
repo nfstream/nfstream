@@ -65,9 +65,8 @@ Computing required features
     from nfstream import NFPlugin
 
     class feat_1(NFPlugin):
-        def on_update(self, obs, entry):
-            if entry.total_packets == 1:
-                entry.feat_1 == obs.raw_size
+        def on_init(self, obs):
+            entry.feat_1 == obs.raw_size
 
     class feat_2(NFPlugin):
         def on_update(self, obs, entry):
