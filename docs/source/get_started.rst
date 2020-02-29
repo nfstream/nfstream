@@ -20,8 +20,16 @@ nfstream make this path easier in few lines:
 
    my_live_streamer = NFStreamer(source="eth1")  # or capture from a network interface
    for flow in my_capture_streamer:  # or for flow in my_live_streamer
-       print(flow)  # print, append to pandas Dataframe or whatever you want :)!
+       print(flow)  # print, send it to Kafka or whatever you want :)!
 
+
+From pcap to pandas dataframe?
+
+.. code-block:: python
+
+   from nfstream import NFStreamer
+   my_df = NFStreamer(source="facebook.pcap").to_pandas()
+   my_df.head()
 
 *****************
 NFStreamer object
