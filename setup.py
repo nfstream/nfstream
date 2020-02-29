@@ -125,7 +125,7 @@ cmdclass = {'nDPI': BuildNdpiCommand,
 
 setup(
     name="nfstream",
-    version='3.2.0',
+    version='3.2.1',
     url='https://github.com/aouinizied/nfstream.git',
     license='LGPLv3',
     description="A flexible network data analysis framework",
