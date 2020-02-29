@@ -7,6 +7,14 @@ the broader goal of becoming **a common network data processing framework for re
 
 <table>
 <tr>
+  <td><b>Live Demo Notebook</b></td>
+  <td>
+    <a href="https://mybinder.org/v2/gh/aouinizied/nfstream-tutorials/master?filepath=demo_notebook.ipynb">
+    <img src="https://mybinder.org/badge_logo.svg" alt="live notebook" />
+    </a>
+  </td>
+</tr>
+<tr>
   <td><b>Latest Release</b></td>
   <td>
     <a href="https://pypi.python.org/pypi/nfstream">
