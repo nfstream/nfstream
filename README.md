@@ -171,8 +171,10 @@ the broader goal of becoming **a common network data processing framework for re
 ```
 
 * More example and details are provided on the official [**documentation**][documentation].
+* You can test nfstream without installation using our [**live demo notebook**][demo].
 
 ## Installation
+
 
 ### Using pip
 
@@ -185,7 +187,7 @@ Binary installers for the latest released version are available:
 
 If you want to build **nfstream** from sources on your local machine:
 
-### linux
+#### On Linux
 
 ```bash
     sudo apt-get install autoconf automake libtool pkg-config libpcap-dev
@@ -195,7 +197,7 @@ If you want to build **nfstream** from sources on your local machine:
     python3 setup.py install
 ```
 
-### macos
+#### On MacOS
 
 ```bash
     brew install autoconf automake libtool pkg-config
@@ -237,3 +239,4 @@ This project is licensed under the GPLv3 License - see the [**License**][license
 [nfplugin]: https://nfstream.readthedocs.io/en/latest/plugins.html
 [reliable]: http://people.ac.upc.edu/pbarlet/papers/ground-truth.pam2014.pdf
 [repo]: https://github.com/aouinizied/nfstream
+[demo]: https://mybinder.org/v2/gh/aouinizied/nfstream-tutorials/master?filepath=demo_notebook.ipynb
