@@ -23,7 +23,7 @@ Binary installers for the latest released version are available:
     git clone https://github.com/aouinizied/nfstream.git
     cd nfstream
     python3 -m pip install -r requirements.txt
-    python3 setup.py install
+    python3 setup.py bdist_wheel
 
 **from source: macos**
 
@@ -33,4 +33,4 @@ Binary installers for the latest released version are available:
     git clone https://github.com/aouinizied/nfstream.git
     cd nfstream
     python3 -m pip install -r requirements.txt
-    python3 setup.py install
+    python3 setup.py bdist_wheel
