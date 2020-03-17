@@ -194,7 +194,7 @@ If you want to build **nfstream** from sources on your local machine:
     git clone https://github.com/aouinizied/nfstream.git
     cd nfstream
     python3 -m pip install -r requirements.txt
-    python3 setup.py install
+    python3 setup.py bdist_wheel
 ```
 
 #### On MacOS
