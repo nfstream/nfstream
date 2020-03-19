@@ -159,15 +159,20 @@ the broader goal of becoming **a common network data processing framework for re
 
 ```python
     from nfstream import NFPlugin
-
-    class my_awesome_plugin(NFPlugin):
-        def on_update(self, obs, entry):
-            if obs.raw_size >= 666:
-                entry.my_awesome_plugin += 1
+    
+    class ack_count(NFPlugin):
+        def on_init(self, pkt): # flow creation with the first packet
+	    if pkt.tcpflags.ack == 1:
+	        return 1
+	    else:
+	        return 0
+	def on_update(self, pkt, flow): # flow update with each packet belonging to the flow
+	    if pkt.tcpflags.ack == 1:
+	        flow.ack_count += 1
 		
-    streamer_awesome = NFStreamer(source='devil.pcap', plugins=[my_awesome_plugin()])
+    streamer_awesome = NFStreamer(source='devil.pcap', plugins=[ack_count()])
     for flow in streamer_awesome:
-       print(flow.my_awesome_plugin) # see your dynamically created metric in generated flows
+       print(flow.ack_count) # see your dynamically created metric in generated flows
 ```
 
 * More example and details are provided on the official [**documentation**][documentation].
