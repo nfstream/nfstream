@@ -1,4 +1,4 @@
-<p align="center"><a href="https://nfstream.github.io/"><img width=35% alt="" src="https://raw.githubusercontent.com/aouinizied/nfstream/master/docs/source/asset/logo_main.png?raw=true"></a></p>
+<p align="center"><a href="https://nfstream.github.io/"><img width=35% alt="" src="https://raw.githubusercontent.com/aouinizied/nfstream/master/logo_main.png?raw=true"></a></p>
 <h1 align="center">nfstream: a flexible network data analysis framework</h1>
 
 [**nfstream**][repo] is a Python package providing fast, flexible, and expressive data structures designed to make working with **online** or **offline** network data both easy and intuitive. It aims to be the fundamental high-level building block for
@@ -64,14 +64,6 @@ the broader goal of becoming **a common network data processing framework for re
   <td>
     <a href="https://github.com/aouinizied/nfstream/actions?query=workflow%3Abuild">
     <img src="https://github.com/aouinizied/nfstream/workflows/build/badge.svg" alt="Github WorkFlows" />
-    </a>
-  </td>
-</tr>
-<tr>
-  <td><b>Documentation Status</b></td>
-  <td>
-    <a href="https://nfstream.readthedocs.io/en/latest/?badge=latest">
-    <img src="https://readthedocs.org/projects/nfstream/badge/?version=latest" alt="ReadTheDocs" />
     </a>
   </td>
 </tr>
@@ -235,13 +227,13 @@ As with any packet monitoring tool, **nfstream** could potentially be misused.
 This project is licensed under the GPLv3 License - see the [**License**][license] file for details
 
 [license]: https://github.com/aouinizied/nfstream/blob/master/LICENSE
-[contribute]: https://nfstream.readthedocs.io/en/latest/contributing.html
+[contribute]: https://nfstream.github.io/docs/community
 [contributors]: https://github.com/aouinizied/nfstream/graphs/contributors
 [linkedin]: https://www.linkedin.com/in/dr-zied-aouini
 [github]: https://github.com/aouinizied
-[documentation]: https://nfstream.readthedocs.io/en/latest/index.html
-[ndpi]: https://github.com/ntop/nDPI
-[nfplugin]: https://nfstream.readthedocs.io/en/latest/plugins.html
+[documentation]: https://nfstream.github.io/
+[ndpi]: https://nfstream.github.io/docs/visibility
+[nfplugin]: https://nfstream.github.io/docs/api#nfplugin
 [reliable]: http://people.ac.upc.edu/pbarlet/papers/ground-truth.pam2014.pdf
 [repo]: https://github.com/aouinizied/nfstream
 [demo]: https://mybinder.org/v2/gh/aouinizied/nfstream-tutorials/master?filepath=demo_notebook.ipynb

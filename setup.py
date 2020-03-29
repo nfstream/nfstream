@@ -94,10 +94,6 @@ install_requires = ['cffi>=1.14.0',
                     'pyzmq>=19.0.0',
                     'pandas>=1.0.1']
 
-if os.getenv('READTHEDOCS'):
-    install_requires.append('numpydoc>=0.8')
-    install_requires.append('sphinx_rtd_theme>=0.4.3')
-
 try:
     from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
@@ -152,6 +148,6 @@ setup(
         'Topic :: Scientific/Engineering :: Artificial Intelligence'
     ],
     project_urls={
-        'Documentation': 'https://nfstream.readthedocs.io',
+        'GitHub': 'https://nfstream.github.io',
     }
 )
