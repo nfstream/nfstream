@@ -235,5 +235,5 @@ This project is licensed under the GPLv3 License - see the [**License**][license
 [ndpi]: https://nfstream.github.io/docs/visibility
 [nfplugin]: https://nfstream.github.io/docs/api#nfplugin
 [reliable]: http://people.ac.upc.edu/pbarlet/papers/ground-truth.pam2014.pdf
-[repo]: https://github.com/aouinizied/nfstream
+[repo]: https://nfstream.github.io/
 [demo]: https://mybinder.org/v2/gh/aouinizied/nfstream-tutorials/master?filepath=demo_notebook.ipynb
