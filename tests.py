@@ -72,11 +72,12 @@ class TestMethods(unittest.TestCase):
             for flow in streamer_test:
                 if flow.application_name != 'Unknown':
                     try:
-                        result[flow.application_name]['bytes'] += flow.total_bytes
+                        result[flow.application_name]['bytes'] += flow.bidirectional_raw_bytes
                         result[flow.application_name]['flows'] += 1
-                        result[flow.application_name]['pkts'] += flow.total_packets
+                        result[flow.application_name]['pkts'] += flow.bidirectional_packets
                     except KeyError:
-                        result[flow.application_name] = {"bytes": flow.total_bytes, 'flows': 1, 'pkts': flow.total_packets}
+                        result[flow.application_name] = {"bytes": flow.bidirectional_raw_bytes,
+                                                         'flows': 1, 'pkts': flow.bidirectional_packets}
             if result == ground_truth_ndpi[test_case_name]:
                 ok_files.append(test_case_name)
                 print("{}\t: \033[94mOK\033[0m".format(test_case_name.ljust(60, ' ')))
@@ -125,16 +126,82 @@ messenger.com')
         for flow in streamer_test:
             flows.append(flow)
         del streamer_test
-        self.assertEqual(flows[0].min_piat_ms, 0)
-        self.assertEqual(flows[0].max_piat_ms, 995)
-        self.assertEqual(flows[0].src2dst_min_piat_ms, 76)
-        self.assertEqual(flows[0].src2dst_mean_piat_ms, 444.6666666666667)
-        self.assertEqual(flows[0].src2dst_stdev_piat_ms, 398.80726017617934)
-        self.assertEqual(flows[0].src2dst_max_piat_ms, 1185)
-        self.assertEqual(flows[0].dst2src_min_piat_ms, 66)
-        self.assertEqual(flows[0].dst2src_mean_piat_ms, 599.1818181818182)
-        self.assertEqual(flows[0].dst2src_stdev_piat_ms, 384.78456782511904)
-        self.assertEqual(flows[0].dst2src_max_piat_ms, 1213)
+        print(flows[0])
+        self.assertEqual(flows[0].id, 0)
+        self.assertEqual(flows[0].bidirectional_first_seen_ms, 1434443394683.939)
+        self.assertEqual(flows[0].bidirectional_last_seen_ms, 1434443401353.81)
+        self.assertEqual(flows[0].src2dst_first_seen_ms, 1434443394683.939)
+        self.assertEqual(flows[0].src2dst_last_seen_ms, 1434443401353.81)
+        self.assertEqual(flows[0].dst2src_first_seen_ms, 1434443394717.671)
+        self.assertEqual(flows[0].dst2src_last_seen_ms, 1434443401308.882)
+        self.assertEqual(flows[0].version, 4)
+        self.assertEqual(flows[0].src_port, 42835)
+        self.assertEqual(flows[0].dst_port, 443)
+        self.assertEqual(flows[0].protocol, 6)
+        self.assertEqual(flows[0].vlan_id, 4)
+        self.assertEqual(flows[0].src_ip, '172.31.3.224')
+        self.assertEqual(flows[0].dst_ip, '216.58.212.100')
+        self.assertEqual(flows[0].bidirectional_packets, 28)
+        self.assertEqual(flows[0].bidirectional_raw_bytes, 9108)
+        self.assertEqual(flows[0].bidirectional_ip_bytes, 8716)
+        self.assertEqual(flows[0].bidirectional_duration_ms, 6669.87109375)
+        self.assertEqual(flows[0].src2dst_packets, 16)
+        self.assertEqual(flows[0].src2dst_raw_bytes, 1512)
+        self.assertEqual(flows[0].src2dst_ip_bytes, 1288)
+        self.assertEqual(flows[0].src2dst_duration_ms, 6669.87109375)
+        self.assertEqual(flows[0].dst2src_packets, 12)
+        self.assertEqual(flows[0].dst2src_raw_bytes, 7596)
+        self.assertEqual(flows[0].dst2src_ip_bytes, 7428)
+        self.assertEqual(flows[0].dst2src_duration_ms, 6591.211181640625)
+        self.assertEqual(flows[0].expiration_id, 0)
+        self.assertEqual(flows[0].bidirectional_min_raw_ps, 54)
+        self.assertEqual(flows[0].bidirectional_mean_raw_ps, 325.2857142857144)
+        self.assertEqual(flows[0].bidirectional_stdev_raw_ps, 500.14981882416123)
+        self.assertEqual(flows[0].bidirectional_max_raw_ps, 1484)
+        self.assertEqual(flows[0].src2dst_min_raw_ps, 54)
+        self.assertEqual(flows[0].src2dst_mean_raw_ps, 94.5)
+        self.assertEqual(flows[0].src2dst_stdev_raw_ps, 89.55519713189923)
+        self.assertEqual(flows[0].src2dst_max_raw_ps, 368)
+        self.assertEqual(flows[0].dst2src_min_raw_ps, 60)
+        self.assertEqual(flows[0].dst2src_mean_raw_ps, 632.9999999999999)
+        self.assertEqual(flows[0].dst2src_stdev_raw_ps, 649.8457159552985)
+        self.assertEqual(flows[0].dst2src_max_raw_ps, 1484)
+        self.assertEqual(flows[0].bidirectional_min_ip_ps, 40)
+        self.assertEqual(flows[0].bidirectional_mean_ip_ps, 311.2857142857144)
+        self.assertEqual(flows[0].bidirectional_stdev_ip_ps, 500.14981882416123)
+        self.assertEqual(flows[0].bidirectional_max_ip_ps, 1470)
+        self.assertEqual(flows[0].src2dst_min_ip_ps, 40)
+        self.assertEqual(flows[0].src2dst_mean_ip_ps, 80.49999999999999)
+        self.assertEqual(flows[0].src2dst_stdev_ip_ps, 89.55519713189922)
+        self.assertEqual(flows[0].src2dst_max_ip_ps, 354)
+        self.assertEqual(flows[0].dst2src_min_ip_ps, 46)
+        self.assertEqual(flows[0].dst2src_mean_ip_ps, 618.9999999999999)
+        self.assertEqual(flows[0].dst2src_stdev_ip_ps, 649.8457159552985)
+        self.assertEqual(flows[0].dst2src_max_ip_ps, 1470)
+        self.assertEqual(flows[0].bidirectional_min_piat_ms, 0.02197265625)
+        self.assertEqual(flows[0].bidirectional_mean_piat_ms, 247.03226273148147)
+        self.assertEqual(flows[0].bidirectional_stdev_piat_ms, 324.07404654177617)
+        self.assertEqual(flows[0].bidirectional_max_piat_ms, 994.9912109375)
+        self.assertEqual(flows[0].src2dst_min_piat_ms, 76.77099609375)
+        self.assertEqual(flows[0].src2dst_mean_piat_ms, 444.65807291666675)
+        self.assertEqual(flows[0].src2dst_stdev_piat_ms, 398.8651100386324)
+        self.assertEqual(flows[0].src2dst_max_piat_ms, 1185.243896484375)
+        self.assertEqual(flows[0].dst2src_min_piat_ms, 66.553955078125)
+        self.assertEqual(flows[0].dst2src_mean_piat_ms, 599.2010165127841)
+        self.assertEqual(flows[0].dst2src_stdev_piat_ms, 384.8916796263077)
+        self.assertEqual(flows[0].dst2src_max_piat_ms, 1213.22607421875)
+        self.assertEqual(flows[0].master_protocol, 91)
+        self.assertEqual(flows[0].app_protocol, 126)
+        self.assertEqual(flows[0].application_name, 'TLS.Google')
+        self.assertEqual(flows[0].category_name, 'Web')
+        self.assertEqual(flows[0].client_info, '')
+        self.assertEqual(flows[0].server_info, '')
+        self.assertEqual(flows[0].j3a_client, '')
+        self.assertEqual(flows[0].j3a_server, '')
+
+
+
+        # c2s/s2c min/avg/max/stddev: 54/60 94/633 368/1484 87/622]
         print("{}\t: \033[94mOK\033[0m".format(".Testing statistical_features".ljust(60, ' ')))
 
     def test_noroot_live(self):
@@ -147,7 +214,7 @@ messenger.com')
     def test_user_plugins(self):
         class feat_1(NFPlugin):
             def on_update(self, obs, entry):
-                if entry.total_packets == 1:
+                if entry.bidirectional_packets == 1:
                     entry.feat_1 == obs.length
 
         print("\n----------------------------------------------------------------------")

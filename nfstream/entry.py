@@ -42,7 +42,7 @@ class NFEntry(object):
 
     def update(self, obs, core, user, to):
         """ Update a flow from a packet  """
-        if obs.time - getattr(self, 'first_seen') >= to:
+        if obs.time - getattr(self, 'bidirectional_first_seen_ms') >= to:
             setattr(self, 'expiration_id', 1)
             return self.clean(core, user)
         else:
@@ -55,7 +55,7 @@ class NFEntry(object):
 
     def idle(self, idle_timeout, time, core, user):
         """ Check if flow is idle """
-        if time - getattr(self, 'last_seen') >= idle_timeout:
+        if time - getattr(self, 'bidirectional_last_seen_ms') >= idle_timeout:
             return self.clean(core, user)
         else:
             return

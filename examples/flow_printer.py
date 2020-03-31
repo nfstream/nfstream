@@ -28,9 +28,9 @@ try:
     for flow in flow_streamer:
         print(flow)
         try:
-            result[flow.application_name] += flow.total_packets
+            result[flow.application_name] += flow.bidirectional_packets
         except KeyError:
-            result[flow.application_name] = flow.total_packets
+            result[flow.application_name] = flow.bidirectional_packets
     print("Summary (Application Name: Packets):")
     print(result)
 except KeyboardInterrupt:

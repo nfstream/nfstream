@@ -283,7 +283,7 @@ def get_pkt_info(time, ffi, version, vlan_id, iph, iph6, ipsize, l4_packet_len, 
 
     hashval = proto + vlan_id + src_addr + dst_addr + sport + dport
 
-    return NFPacket(time=int(time), raw_size=rawsize, ip_size=ipsize, transport_size=l4_data_len,
+    return NFPacket(time=time, raw_size=rawsize, ip_size=ipsize, transport_size=l4_data_len,
                     payload_size=payload_len, nfhash=get_hash(proto, vlan_id, src_addr, dst_addr, sport, dport),
                     ip_src=src_addr, ip_dst=dst_addr, src_port=sport, dst_port=dport, protocol=proto, vlan_id=vlan_id,
                     version=version, tcp_flags=flags, ip_packet=bytes(xffi.buffer(ipcontent, ipsize)),

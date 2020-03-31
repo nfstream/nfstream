@@ -63,19 +63,49 @@ class packet_direction_setter(NFPlugin):
             obs.close(1)
 
 
-class first_seen(NFPlugin):
+class bidirectional_first_seen_ms(NFPlugin):
     """ Timestamp in milliseconds on first flow packet """
     def on_init(self, obs):
         return obs.time
 
 
-class last_seen(NFPlugin):
+class bidirectional_last_seen_ms(NFPlugin):
     """ Timestamp in milliseconds on last flow packet """
     def on_init(self, obs):
         return obs.time
 
     def on_update(self, obs, entry):
-        entry.last_seen = obs.time
+        entry.bidirectional_last_seen_ms = obs.time
+
+
+class src2dst_first_seen_ms(NFPlugin):
+    """ Timestamp in milliseconds on first flow packet (src -> dst direction)"""
+    def on_init(self, obs):
+        return obs.time
+
+
+class src2dst_last_seen_ms(NFPlugin):
+    """ Timestamp in milliseconds on last flow packet (src -> dst direction)"""
+    def on_init(self, obs):
+        return obs.time
+
+    def on_update(self, obs, entry):
+        if obs.direction == 0:
+            entry.src2dst_last_seen_ms = obs.time
+
+
+class dst2src_first_seen_ms(NFPlugin):
+    """ Timestamp in milliseconds on first flow packet (dst -> src direction)"""
+    def on_update(self, obs, entry):
+        if obs.direction == 1 and entry.dst2src_first_seen_ms == 0:
+            entry.dst2src_first_seen_ms = obs.time
+
+
+class dst2src_last_seen_ms(NFPlugin):
+    """ Timestamp in milliseconds on last flow packet (dst -> src direction)"""
+    def on_update(self, obs, entry):
+        if obs.direction == 1:
+            entry.dst2src_last_seen_ms = obs.time
 
 
 class nfhash(NFPlugin):
@@ -144,28 +174,37 @@ class dst_ip(NFPlugin):
             return str(ipaddress.IPv6Address(obs.ip_dst)).replace(':0:', '::')
 
 
-class total_packets(NFPlugin):
+class bidirectional_packets(NFPlugin):
     """ Flow bidirectional packets accumulator """
     def on_init(self, obs):
         return 1
 
     def on_update(self, obs, entry):
-        entry.total_packets += 1
+        entry.bidirectional_packets += 1
 
 
-class total_bytes(NFPlugin):
+class bidirectional_raw_bytes(NFPlugin):
     """ Flow bidirectional bytes accumulator """
     def on_init(self, obs):
         return obs.raw_size
 
     def on_update(self, obs, entry):
-        entry.total_bytes += obs.raw_size
+        entry.bidirectional_raw_bytes += obs.raw_size
 
 
-class duration(NFPlugin):
-    """ Flow total duration in milliseconds """
+class bidirectional_ip_bytes(NFPlugin):
+    """ Flow bidirectional bytes accumulator """
+    def on_init(self, obs):
+        return obs.ip_size
+
     def on_update(self, obs, entry):
-        entry.duration = obs.time - entry.first_seen
+        entry.bidirectional_ip_bytes += obs.ip_size
+
+
+class bidirectional_duration_ms(NFPlugin):
+    """ Flow bidirectional duration in milliseconds """
+    def on_update(self, obs, entry):
+        entry.bidirectional_duration_ms = obs.time - entry.bidirectional_first_seen_ms
 
 
 class src2dst_packets(NFPlugin):
@@ -178,14 +217,30 @@ class src2dst_packets(NFPlugin):
             entry.src2dst_packets += 1
 
 
-class src2dst_bytes(NFPlugin):
+class src2dst_raw_bytes(NFPlugin):
     """ Flow src -> dst packets accumulator """
     def on_init(self, obs):
         return obs.raw_size
 
     def on_update(self, obs, entry):
         if obs.direction == 0:
-            entry.src2dst_bytes += obs.raw_size
+            entry.src2dst_raw_bytes += obs.raw_size
+
+
+class src2dst_ip_bytes(NFPlugin):
+    """ Flow src -> dst packets accumulator """
+    def on_init(self, obs):
+        return obs.ip_size
+
+    def on_update(self, obs, entry):
+        if obs.direction == 0:
+            entry.src2dst_ip_bytes += obs.ip_size
+
+
+class src2dst_duration_ms(NFPlugin):
+    """ Flow src2dst duration in milliseconds """
+    def on_update(self, obs, entry):
+        entry.src2dst_duration_ms = obs.time - entry.src2dst_first_seen_ms
 
 
 class dst2src_packets(NFPlugin):
@@ -194,10 +249,26 @@ class dst2src_packets(NFPlugin):
             entry.dst2src_packets += 1
 
 
-class dst2src_bytes(NFPlugin):
+class dst2src_raw_bytes(NFPlugin):
     def on_update(self, obs, entry):
         if obs.direction == 1:
-            entry.dst2src_bytes += obs.raw_size
+            entry.dst2src_raw_bytes += obs.raw_size
+
+
+class dst2src_ip_bytes(NFPlugin):
+    def on_update(self, obs, entry):
+        if obs.direction == 1:
+            entry.dst2src_ip_bytes += obs.ip_size
+
+
+class dst2src_duration_ms(NFPlugin):
+    """ Flow dst2src duration in milliseconds """
+    def on_init(self, obs):
+        return -1
+
+    def on_update(self, obs, entry):
+        if obs.direction == 1:
+            entry.dst2src_duration_ms = obs.time - entry.dst2src_first_seen_ms
 
 
 class expiration_id(NFPlugin):
@@ -237,18 +308,18 @@ class nDPI(NFPlugin):
         f = self.user_data.new_ndpi_flow()
         s = self.user_data.new_ndpi_id()
         d = self.user_data.new_ndpi_id()
-        p = self.user_data.ndpi_detection_process_packet(f, obs.ip_packet, obs.ip_size, obs.time, s, d)
+        p = self.user_data.ndpi_detection_process_packet(f, obs.ip_packet, obs.ip_size, int(obs.time), s, d)
         # nDPI structures are maintained in a list [ndpi_flow, ndpi_src, ndpi_dst, ndpi_proto, detection_completed]
         return [f, s, d, p, 0]
 
     def on_update(self, obs, entry):
-        tcp_not_enough = (entry.protocol == 6) and (entry.total_packets <= self.user_data.max_tcp_dissections)
-        udp_not_enough = (entry.protocol == 17) and (entry.total_packets <= self.user_data.max_udp_dissections)
+        tcp_not_enough = (entry.protocol == 6) and (entry.bidirectional_packets <= self.user_data.max_tcp_dissections)
+        udp_not_enough = (entry.protocol == 17) and (entry.bidirectional_packets <= self.user_data.max_udp_dissections)
         if (tcp_not_enough or udp_not_enough) and entry.nDPI[4] == 0:
             entry.nDPI[3] = self.user_data.ndpi_detection_process_packet(entry.nDPI[0],
                                                                          obs.ip_packet,
                                                                          obs.ip_size,
-                                                                         obs.time,
+                                                                         int(obs.time),
                                                                          entry.nDPI[1],
                                                                          entry.nDPI[2])
             update_ndpi_infos(entry, entry.nDPI[0], entry.nDPI[3], self.user_data)
@@ -324,12 +395,12 @@ class j3a_server(NFPlugin):
         return ''
 
 
-class piat(NFPlugin):
+class bidirectional_piat(NFPlugin):
     def on_init(self, obs):
         return [-1, obs.time]  # [iat value, last packet timestamp]
 
     def on_update(self, obs, entry):
-        entry.piat = [obs.time - entry.piat[1], obs.time]
+        entry.bidirectional_piat = [obs.time - entry.bidirectional_piat[1], obs.time]
 
 
 class src2dst_piat(NFPlugin):
@@ -362,26 +433,66 @@ class dst2src_piat(NFPlugin):
                 entry.dst2src_piat = [obs.time - entry.dst2src_piat[1], obs.time]
 
 
-class max_piat_ms(NFPlugin):
+class bidirectional_max_piat_ms(NFPlugin):
     def on_init(self, obs):
         return -1  # we will set it as -1 as init value
 
     def on_update(self, obs, entry):
-        if entry.max_piat_ms == -1 and entry.piat[0] >= 0:
-            entry.max_piat_ms = entry.piat[0]
-        if entry.piat[0] > entry.max_piat_ms:
-            entry.max_piat_ms = entry.piat[0]
+        if entry.bidirectional_max_piat_ms == -1 and entry.bidirectional_piat[0] >= 0:
+            entry.bidirectional_max_piat_ms = entry.bidirectional_piat[0]
+        if entry.bidirectional_piat[0] > entry.bidirectional_max_piat_ms:
+            entry.bidirectional_max_piat_ms = entry.bidirectional_piat[0]
 
 
-class min_piat_ms(NFPlugin):
+class bidirectional_weldord_piat_ms(NFPlugin):
+    def on_init(self, obs):
+        return [0, 0, 0]
+
+    def on_update(self, obs, entry):
+        if entry.bidirectional_piat[0] >= 0:
+            k = entry.bidirectional_weldord_piat_ms[0] + 1
+            entry.bidirectional_weldord_piat_ms[0] = k
+            m = entry.bidirectional_weldord_piat_ms[1]
+            s = entry.bidirectional_weldord_piat_ms[2]
+            entry.bidirectional_weldord_piat_ms[1] = \
+                m + (entry.bidirectional_piat[0] - m) * 1. / entry.bidirectional_weldord_piat_ms[0]
+            entry.bidirectional_weldord_piat_ms[2] = \
+                s + (entry.bidirectional_piat[0] - m) * \
+                (entry.bidirectional_piat[0] - entry.bidirectional_weldord_piat_ms[1])
+
+
+class bidirectional_mean_piat_ms(NFPlugin):
+    def on_init(self, obs):
+        return -1
+
+    def on_update(self, obs, entry):
+        if entry.bidirectional_piat[0] >= 0:
+            entry.bidirectional_mean_piat_ms = entry.bidirectional_weldord_piat_ms[1]
+
+
+class bidirectional_stdev_piat_ms(NFPlugin):
+    def on_init(self, obs):
+        return -1
+
+    def on_update(self, obs, entry):
+        if entry.bidirectional_piat[0] >= 0:
+            if entry.bidirectional_weldord_piat_ms[0] == 1:
+                entry.bidirectional_stdev_piat_ms = 0
+            else:
+                entry.bidirectional_stdev_piat_ms = math.sqrt(
+                    entry.bidirectional_weldord_piat_ms[2]/(entry.bidirectional_weldord_piat_ms[0] - 1)
+                )
+
+
+class bidirectional_min_piat_ms(NFPlugin):
     def on_init(self, obs):
         return -1  # we will set it as -1 as init value
 
     def on_update(self, obs, entry):
-        if entry.min_piat_ms == -1 and entry.piat[0] >= 0:
-            entry.min_piat_ms = entry.piat[0]
-        if entry.piat[0] < entry.min_piat_ms:
-            entry.min_piat_ms = entry.piat[0]
+        if entry.bidirectional_min_piat_ms == -1 and entry.bidirectional_piat[0] >= 0:
+            entry.bidirectional_min_piat_ms = entry.bidirectional_piat[0]
+        if entry.bidirectional_piat[0] < entry.bidirectional_min_piat_ms:
+            entry.bidirectional_min_piat_ms = entry.bidirectional_piat[0]
 
 
 class src2dst_max_piat_ms(NFPlugin):
@@ -501,16 +612,343 @@ class dst2src_min_piat_ms(NFPlugin):
         return -1  # we will set it as -1 as init value
 
     def on_update(self, obs, entry):
-        if obs.direction == 0:
+        if obs.direction == 1:
             if entry.dst2src_min_piat_ms == -1 and entry.dst2src_piat[0] >= 0:
                 entry.dst2src_min_piat_ms = entry.dst2src_piat[0]
             if entry.dst2src_piat[0] < entry.dst2src_min_piat_ms:
                 entry.dst2src_min_piat_ms = entry.dst2src_piat[0]
 
 
+class bidirectional_min_raw_ps(NFPlugin):
+    def on_init(self, obs):
+        return obs.raw_size
+
+    def on_update(self, obs, entry):
+        if obs.raw_size < entry.bidirectional_min_raw_ps:
+            entry.bidirectional_min_raw_ps = obs.raw_size
+
+
+class bidirectional_weldord_raw_ps(NFPlugin):
+    def on_init(self, obs):
+        return [1, obs.raw_size, 0]
+
+    def on_update(self, obs, entry):
+        k = entry.bidirectional_weldord_raw_ps[0] + 1
+        entry.bidirectional_weldord_raw_ps[0] = k
+        m = entry.bidirectional_weldord_raw_ps[1]
+        s = entry.bidirectional_weldord_raw_ps[2]
+        entry.bidirectional_weldord_raw_ps[1] = \
+            m + (obs.raw_size - m) * 1. / entry.bidirectional_weldord_raw_ps[0]
+        entry.bidirectional_weldord_raw_ps[2] = \
+            s + (obs.raw_size - m) * (obs.raw_size - entry.bidirectional_weldord_raw_ps[1])
+
+
+class bidirectional_mean_raw_ps(NFPlugin):
+    def on_init(self, obs):
+        return obs.raw_size
+
+    def on_update(self, obs, entry):
+        entry.bidirectional_mean_raw_ps = entry.bidirectional_weldord_raw_ps[1]
+
+
+class bidirectional_stdev_raw_ps(NFPlugin):
+    def on_init(self, obs):
+        return 0
+
+    def on_update(self, obs, entry):
+        entry.bidirectional_stdev_raw_ps = \
+            math.sqrt(entry.bidirectional_weldord_raw_ps[2]/(entry.bidirectional_weldord_raw_ps[0] - 1))
+
+
+class bidirectional_max_raw_ps(NFPlugin):
+    def on_init(self, obs):
+        return obs.raw_size
+
+    def on_update(self, obs, entry):
+        if obs.raw_size > entry.bidirectional_max_raw_ps:
+            entry.bidirectional_max_raw_ps = obs.raw_size
+
+
+class src2dst_min_raw_ps(NFPlugin):
+    def on_init(self, obs):
+        return obs.raw_size
+
+    def on_update(self, obs, entry):
+        if obs.raw_size < entry.src2dst_min_raw_ps and obs.direction == 0:
+            entry.src2dst_min_raw_ps = obs.raw_size
+
+
+class src2dst_weldord_raw_ps(NFPlugin):
+    def on_init(self, obs):
+        return [1, obs.raw_size, 0]
+
+    def on_update(self, obs, entry):
+        if obs.direction == 0:
+            k = entry.src2dst_weldord_raw_ps[0] + 1
+            entry.src2dst_weldord_raw_ps[0] = k
+            m = entry.src2dst_weldord_raw_ps[1]
+            s = entry.src2dst_weldord_raw_ps[2]
+            entry.src2dst_weldord_raw_ps[1] = \
+                m + (obs.raw_size - m) * 1. / entry.src2dst_weldord_raw_ps[0]
+            entry.src2dst_weldord_raw_ps[2] = \
+                s + (obs.raw_size - m) * (obs.raw_size - entry.src2dst_weldord_raw_ps[1])
+
+
+class src2dst_mean_raw_ps(NFPlugin):
+    def on_init(self, obs):
+        return obs.raw_size
+
+    def on_update(self, obs, entry):
+        if obs.direction == 0:
+            entry.src2dst_mean_raw_ps = entry.src2dst_weldord_raw_ps[1]
+
+
+class src2dst_stdev_raw_ps(NFPlugin):
+    def on_init(self, obs):
+        return 0
+
+    def on_update(self, obs, entry):
+        if obs.direction == 0:
+            entry.src2dst_stdev_raw_ps = \
+                math.sqrt(entry.src2dst_weldord_raw_ps[2]/(entry.src2dst_weldord_raw_ps[0] - 1))
+
+
+class src2dst_max_raw_ps(NFPlugin):
+    def on_init(self, obs):
+        return obs.raw_size
+
+    def on_update(self, obs, entry):
+        if obs.raw_size > entry.src2dst_max_raw_ps and obs.direction == 0:
+            entry.src2dst_max_raw_ps = obs.raw_size
+
+
+class dst2src_min_raw_ps(NFPlugin):
+    def on_init(self, obs):
+        return -1
+
+    def on_update(self, obs, entry):
+        if entry.dst2src_min_raw_ps == -1 and obs.direction == 1:
+            entry.dst2src_min_raw_ps = obs.raw_size
+        if obs.raw_size < entry.dst2src_min_raw_ps and obs.direction == 1:
+            entry.dst2src_min_raw_ps = obs.raw_size
+
+
+class dst2src_weldord_raw_ps(NFPlugin):
+    def on_init(self, obs):
+        return [0, 0, 0]
+
+    def on_update(self, obs, entry):
+        if obs.direction == 1:
+            k = entry.dst2src_weldord_raw_ps[0] + 1
+            entry.dst2src_weldord_raw_ps[0] = k
+            m = entry.dst2src_weldord_raw_ps[1]
+            s = entry.dst2src_weldord_raw_ps[2]
+            entry.dst2src_weldord_raw_ps[1] = \
+                m + (obs.raw_size - m) * 1. / entry.dst2src_weldord_raw_ps[0]
+            entry.dst2src_weldord_raw_ps[2] = \
+                s + (obs.raw_size - m) * (obs.raw_size - entry.dst2src_weldord_raw_ps[1])
+
+
+class dst2src_mean_raw_ps(NFPlugin):
+    def on_init(self, obs):
+        return -1
+
+    def on_update(self, obs, entry):
+        if obs.direction == 1:
+            entry.dst2src_mean_raw_ps = entry.dst2src_weldord_raw_ps[1]
+
+
+class dst2src_stdev_raw_ps(NFPlugin):
+    def on_init(self, obs):
+        return -1
+
+    def on_update(self, obs, entry):
+        if obs.direction == 1:
+            if entry.dst2src_weldord_raw_ps[0] == 1:
+                entry.dst2src_stdev_raw_ps = 0
+            else:
+                entry.dst2src_stdev_raw_ps = \
+                    math.sqrt(entry.dst2src_weldord_raw_ps[2]/(entry.dst2src_weldord_raw_ps[0] - 1))
+
+
+class dst2src_max_raw_ps(NFPlugin):
+    def on_init(self, obs):
+        return -1
+
+    def on_update(self, obs, entry):
+        if obs.raw_size > entry.dst2src_max_raw_ps and obs.direction == 1:
+            entry.dst2src_max_raw_ps = obs.raw_size
+
+"--------------------------------------------------------------------------------"
+
+class bidirectional_min_ip_ps(NFPlugin):
+    def on_init(self, obs):
+        return obs.ip_size
+
+    def on_update(self, obs, entry):
+        if obs.ip_size < entry.bidirectional_min_ip_ps:
+            entry.bidirectional_min_ip_ps = obs.ip_size
+
+
+class bidirectional_weldord_ip_ps(NFPlugin):
+    def on_init(self, obs):
+        return [1, obs.ip_size, 0]
+
+    def on_update(self, obs, entry):
+        k = entry.bidirectional_weldord_ip_ps[0] + 1
+        entry.bidirectional_weldord_ip_ps[0] = k
+        m = entry.bidirectional_weldord_ip_ps[1]
+        s = entry.bidirectional_weldord_ip_ps[2]
+        entry.bidirectional_weldord_ip_ps[1] = \
+            m + (obs.ip_size - m) * 1. / entry.bidirectional_weldord_ip_ps[0]
+        entry.bidirectional_weldord_ip_ps[2] = \
+            s + (obs.ip_size - m) * (obs.ip_size - entry.bidirectional_weldord_ip_ps[1])
+
+
+class bidirectional_mean_ip_ps(NFPlugin):
+    def on_init(self, obs):
+        return obs.ip_size
+
+    def on_update(self, obs, entry):
+        entry.bidirectional_mean_ip_ps = entry.bidirectional_weldord_ip_ps[1]
+
+
+class bidirectional_stdev_ip_ps(NFPlugin):
+    def on_init(self, obs):
+        return 0
+
+    def on_update(self, obs, entry):
+        entry.bidirectional_stdev_ip_ps = \
+            math.sqrt(entry.bidirectional_weldord_ip_ps[2]/(entry.bidirectional_weldord_ip_ps[0] - 1))
+
+
+class bidirectional_max_ip_ps(NFPlugin):
+    def on_init(self, obs):
+        return obs.ip_size
+
+    def on_update(self, obs, entry):
+        if obs.ip_size > entry.bidirectional_max_ip_ps:
+            entry.bidirectional_max_ip_ps = obs.ip_size
+
+
+class src2dst_min_ip_ps(NFPlugin):
+    def on_init(self, obs):
+        return obs.ip_size
+
+    def on_update(self, obs, entry):
+        if obs.ip_size < entry.src2dst_min_ip_ps and obs.direction == 0:
+            entry.src2dst_min_ip_ps = obs.ip_size
+
+
+class src2dst_weldord_ip_ps(NFPlugin):
+    def on_init(self, obs):
+        return [1, obs.ip_size, 0]
+
+    def on_update(self, obs, entry):
+        if obs.direction == 0:
+            k = entry.src2dst_weldord_ip_ps[0] + 1
+            entry.src2dst_weldord_ip_ps[0] = k
+            m = entry.src2dst_weldord_ip_ps[1]
+            s = entry.src2dst_weldord_ip_ps[2]
+            entry.src2dst_weldord_ip_ps[1] = \
+                m + (obs.ip_size - m) * 1. / entry.src2dst_weldord_ip_ps[0]
+            entry.src2dst_weldord_ip_ps[2] = \
+                s + (obs.ip_size - m) * (obs.ip_size - entry.src2dst_weldord_ip_ps[1])
+
+
+class src2dst_mean_ip_ps(NFPlugin):
+    def on_init(self, obs):
+        return obs.ip_size
+
+    def on_update(self, obs, entry):
+        if obs.direction == 0:
+            entry.src2dst_mean_ip_ps = entry.src2dst_weldord_ip_ps[1]
+
+
+class src2dst_stdev_ip_ps(NFPlugin):
+    def on_init(self, obs):
+        return 0
+
+    def on_update(self, obs, entry):
+        if obs.direction == 0:
+            entry.src2dst_stdev_ip_ps = \
+                math.sqrt(entry.src2dst_weldord_ip_ps[2]/(entry.src2dst_weldord_ip_ps[0] - 1))
+
+
+class src2dst_max_ip_ps(NFPlugin):
+    def on_init(self, obs):
+        return obs.ip_size
+
+    def on_update(self, obs, entry):
+        if obs.ip_size > entry.src2dst_max_ip_ps and obs.direction == 0:
+            entry.src2dst_max_ip_ps = obs.ip_size
+
+
+class dst2src_min_ip_ps(NFPlugin):
+    def on_init(self, obs):
+        return -1
+
+    def on_update(self, obs, entry):
+        if entry.dst2src_min_ip_ps == -1 and obs.direction == 1:
+            entry.dst2src_min_ip_ps = obs.ip_size
+        if obs.ip_size < entry.dst2src_min_ip_ps and obs.direction == 1:
+            entry.dst2src_min_ip_ps = obs.ip_size
+
+
+class dst2src_weldord_ip_ps(NFPlugin):
+    def on_init(self, obs):
+        return [0, 0, 0]
+
+    def on_update(self, obs, entry):
+        if obs.direction == 1:
+            k = entry.dst2src_weldord_ip_ps[0] + 1
+            entry.dst2src_weldord_ip_ps[0] = k
+            m = entry.dst2src_weldord_ip_ps[1]
+            s = entry.dst2src_weldord_ip_ps[2]
+            entry.dst2src_weldord_ip_ps[1] = \
+                m + (obs.ip_size - m) * 1. / entry.dst2src_weldord_ip_ps[0]
+            entry.dst2src_weldord_ip_ps[2] = \
+                s + (obs.ip_size - m) * (obs.ip_size - entry.dst2src_weldord_ip_ps[1])
+
+
+class dst2src_mean_ip_ps(NFPlugin):
+    def on_init(self, obs):
+        return -1
+
+    def on_update(self, obs, entry):
+        if obs.direction == 1:
+            entry.dst2src_mean_ip_ps = entry.dst2src_weldord_ip_ps[1]
+
+
+class dst2src_stdev_ip_ps(NFPlugin):
+    def on_init(self, obs):
+        return -1
+
+    def on_update(self, obs, entry):
+        if obs.direction == 1:
+            if entry.dst2src_weldord_ip_ps[0] == 1:
+                entry.dst2src_stdev_ip_ps = 0
+            else:
+                entry.dst2src_stdev_ip_ps = \
+                    math.sqrt(entry.dst2src_weldord_ip_ps[2]/(entry.dst2src_weldord_ip_ps[0] - 1))
+
+
+class dst2src_max_ip_ps(NFPlugin):
+    def on_init(self, obs):
+        return -1
+
+    def on_update(self, obs, entry):
+        if obs.ip_size > entry.dst2src_max_ip_ps and obs.direction == 1:
+            entry.dst2src_max_ip_ps = obs.ip_size
+
+
 nfstream_core_plugins = [packet_direction_setter(volatile=True),
-                         first_seen(),
-                         last_seen(),
+                         bidirectional_first_seen_ms(),
+                         bidirectional_last_seen_ms(),
+                         src2dst_first_seen_ms(),
+                         src2dst_last_seen_ms(),
+                         dst2src_first_seen_ms(),
+                         dst2src_last_seen_ms(),
                          nfhash(volatile=True),
                          ip_src(volatile=True),
                          ip_dst(volatile=True),
@@ -521,21 +959,59 @@ nfstream_core_plugins = [packet_direction_setter(volatile=True),
                          vlan_id(),
                          src_ip(),
                          dst_ip(),
-                         total_packets(),
-                         total_bytes(),
-                         duration(),
+                         bidirectional_packets(),
+                         bidirectional_raw_bytes(),
+                         bidirectional_ip_bytes(),
+                         bidirectional_duration_ms(),
                          src2dst_packets(),
-                         src2dst_bytes(),
+                         src2dst_raw_bytes(),
+                         src2dst_ip_bytes(),
+                         src2dst_duration_ms(),
                          dst2src_packets(),
-                         dst2src_bytes(),
+                         dst2src_raw_bytes(),
+                         dst2src_ip_bytes(),
+                         dst2src_duration_ms(),
                          expiration_id()
                          ]
 
-nfstream_statistical_plugins = [piat(volatile=True),
+nfstream_statistical_plugins = [bidirectional_min_raw_ps(),
+                                bidirectional_weldord_raw_ps(volatile=True),
+                                bidirectional_mean_raw_ps(),
+                                bidirectional_stdev_raw_ps(),
+                                bidirectional_max_raw_ps(),
+                                src2dst_min_raw_ps(),
+                                src2dst_weldord_raw_ps(volatile=True),
+                                src2dst_mean_raw_ps(),
+                                src2dst_stdev_raw_ps(),
+                                src2dst_max_raw_ps(),
+                                dst2src_min_raw_ps(),
+                                dst2src_weldord_raw_ps(volatile=True),
+                                dst2src_mean_raw_ps(),
+                                dst2src_stdev_raw_ps(),
+                                dst2src_max_raw_ps(),
+                                bidirectional_min_ip_ps(),
+                                bidirectional_weldord_ip_ps(volatile=True),
+                                bidirectional_mean_ip_ps(),
+                                bidirectional_stdev_ip_ps(),
+                                bidirectional_max_ip_ps(),
+                                src2dst_min_ip_ps(),
+                                src2dst_weldord_ip_ps(volatile=True),
+                                src2dst_mean_ip_ps(),
+                                src2dst_stdev_ip_ps(),
+                                src2dst_max_ip_ps(),
+                                dst2src_min_ip_ps(),
+                                dst2src_weldord_ip_ps(volatile=True),
+                                dst2src_mean_ip_ps(),
+                                dst2src_stdev_ip_ps(),
+                                dst2src_max_ip_ps(),
+                                bidirectional_piat(volatile=True),
                                 src2dst_piat(volatile=True),
                                 dst2src_piat(volatile=True),
-                                min_piat_ms(),
-                                max_piat_ms(),
+                                bidirectional_min_piat_ms(),
+                                bidirectional_weldord_piat_ms(volatile=True),
+                                bidirectional_mean_piat_ms(),
+                                bidirectional_stdev_piat_ms(),
+                                bidirectional_max_piat_ms(),
                                 src2dst_min_piat_ms(),
                                 src2dst_weldord_piat_ms(volatile=True),
                                 src2dst_mean_piat_ms(),
