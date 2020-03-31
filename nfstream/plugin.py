@@ -779,7 +779,6 @@ class dst2src_max_raw_ps(NFPlugin):
         if obs.raw_size > entry.dst2src_max_raw_ps and obs.direction == 1:
             entry.dst2src_max_raw_ps = obs.raw_size
 
-"--------------------------------------------------------------------------------"
 
 class bidirectional_min_ip_ps(NFPlugin):
     def on_init(self, obs):
