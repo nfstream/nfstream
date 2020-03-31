@@ -120,7 +120,7 @@ messenger.com')
 
     def test_statistical_features(self):
         print("\n----------------------------------------------------------------------")
-        streamer_test = NFStreamer(source='tests/pcap/google_ssl.pcap')
+        streamer_test = NFStreamer(source='tests/pcap/google_ssl.pcap', statistics=True)
         flows = []
         for flow in streamer_test:
             flows.append(flow)
