@@ -118,6 +118,25 @@ messenger.com')
         except SystemExit:
             print("{}\t: \033[94mOK\033[0m".format(".Testing unfoud device".ljust(60, ' ')))
 
+    def test_statistical_features(self):
+        print("\n----------------------------------------------------------------------")
+        streamer_test = NFStreamer(source='tests/pcap/google_ssl.pcap')
+        flows = []
+        for flow in streamer_test:
+            flows.append(flow)
+        del streamer_test
+        self.assertEqual(flows[0].min_piat_ms, 0)
+        self.assertEqual(flows[0].max_piat_ms, 995)
+        self.assertEqual(flows[0].src2dst_min_piat_ms, 76)
+        self.assertEqual(flows[0].src2dst_mean_piat_ms, 444.6666666666667)
+        self.assertEqual(flows[0].src2dst_stdev_piat_ms, 398.80726017617934)
+        self.assertEqual(flows[0].src2dst_max_piat_ms, 1185)
+        self.assertEqual(flows[0].dst2src_min_piat_ms, 66)
+        self.assertEqual(flows[0].dst2src_mean_piat_ms, 599.1818181818182)
+        self.assertEqual(flows[0].dst2src_stdev_piat_ms, 384.78456782511904)
+        self.assertEqual(flows[0].dst2src_max_piat_ms, 1213)
+        print("{}\t: \033[94mOK\033[0m".format(".Testing statistical_features".ljust(60, ' ')))
+
     def test_noroot_live(self):
         print("\n----------------------------------------------------------------------")
         try:

@@ -693,6 +693,7 @@ class NFObserver:
             self.packet_generator = None
         self.nroots = nroots
         self.mode = source_type[1]
+        self.safety_time = 0
 
     def __iter__(self):
         if self.packet_generator is not None:
@@ -707,6 +708,10 @@ class NFObserver:
                         elif r == 0:
                             pass
                         else:
+                            if r.time >= self.safety_time:
+                                self.safety_time = r.time
+                            else:
+                                r.time = self.safety_time
                             yield r
                     except PcapException:
                         pass

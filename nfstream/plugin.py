@@ -16,7 +16,9 @@ of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Pub
 You should have received a copy of the GNU General Public License along with nfstream.
 If not, see <http://www.gnu.org/licenses/>.
 """
+
 import ipaddress
+import math
 
 
 class NFPlugin(object):
@@ -322,6 +324,190 @@ class j3a_server(NFPlugin):
         return ''
 
 
+class piat(NFPlugin):
+    def on_init(self, obs):
+        return [-1, obs.time]  # [iat value, last packet timestamp]
+
+    def on_update(self, obs, entry):
+        entry.piat = [obs.time - entry.piat[1], obs.time]
+
+
+class src2dst_piat(NFPlugin):
+    def on_init(self, obs):
+        if obs.direction == 0:
+            return [-1, obs.time]  # [iat value, last packet timestamp]
+        else:
+            return [-1, -1]
+
+    def on_update(self, obs, entry):
+        if obs.direction == 0:
+            if entry.src2dst_piat[1] == -1:
+                entry.src2dst_piat = [-1, obs.time]
+            else:
+                entry.src2dst_piat = [obs.time - entry.src2dst_piat[1], obs.time]
+
+
+class dst2src_piat(NFPlugin):
+    def on_init(self, obs):
+        if obs.direction == 1:
+            return [-1, obs.time]  # [iat value, last packet timestamp]
+        else:
+            return [-1, -1]
+
+    def on_update(self, obs, entry):
+        if obs.direction == 1:
+            if entry.dst2src_piat[1] == -1:
+                entry.dst2src_piat = [-1, obs.time]
+            else:
+                entry.dst2src_piat = [obs.time - entry.dst2src_piat[1], obs.time]
+
+
+class max_piat_ms(NFPlugin):
+    def on_init(self, obs):
+        return -1  # we will set it as -1 as init value
+
+    def on_update(self, obs, entry):
+        if entry.max_piat_ms == -1 and entry.piat[0] >= 0:
+            entry.max_piat_ms = entry.piat[0]
+        if entry.piat[0] > entry.max_piat_ms:
+            entry.max_piat_ms = entry.piat[0]
+
+
+class min_piat_ms(NFPlugin):
+    def on_init(self, obs):
+        return -1  # we will set it as -1 as init value
+
+    def on_update(self, obs, entry):
+        if entry.min_piat_ms == -1 and entry.piat[0] >= 0:
+            entry.min_piat_ms = entry.piat[0]
+        if entry.piat[0] < entry.min_piat_ms:
+            entry.min_piat_ms = entry.piat[0]
+
+
+class src2dst_max_piat_ms(NFPlugin):
+    def on_init(self, obs):
+        return -1  # we will set it as -1 as init value
+
+    def on_update(self, obs, entry):
+        if obs.direction == 0:
+            if entry.src2dst_max_piat_ms == -1 and entry.src2dst_piat[0] >= 0:
+                entry.src2dst_max_piat_ms = entry.src2dst_piat[0]
+            if entry.src2dst_piat[0] > entry.src2dst_max_piat_ms:
+                entry.src2dst_max_piat_ms = entry.src2dst_piat[0]
+
+
+class src2dst_min_piat_ms(NFPlugin):
+    def on_init(self, obs):
+        return -1  # we will set it as -1 as init value
+
+    def on_update(self, obs, entry):
+        if obs.direction == 0:
+            if entry.src2dst_min_piat_ms == -1 and entry.src2dst_piat[0] >= 0:
+                entry.src2dst_min_piat_ms = entry.src2dst_piat[0]
+            if entry.src2dst_piat[0] < entry.src2dst_min_piat_ms:
+                entry.src2dst_min_piat_ms = entry.src2dst_piat[0]
+
+
+class src2dst_weldord_piat_ms(NFPlugin):
+    def on_init(self, obs):
+        return [0, 0, 0]
+
+    def on_update(self, obs, entry):
+        if obs.direction == 0 and entry.src2dst_piat[0] >= 0:
+            k = entry.src2dst_weldord_piat_ms[0] + 1
+            entry.src2dst_weldord_piat_ms[0] = k
+            m = entry.src2dst_weldord_piat_ms[1]
+            s = entry.src2dst_weldord_piat_ms[2]
+            entry.src2dst_weldord_piat_ms[1] = m + (entry.src2dst_piat[0] - m) * 1. / entry.src2dst_weldord_piat_ms[0]
+            entry.src2dst_weldord_piat_ms[2] = s + (entry.src2dst_piat[0] - m) * (entry.src2dst_piat[0] -
+                                                                                  entry.src2dst_weldord_piat_ms[1])
+
+
+class src2dst_mean_piat_ms(NFPlugin):
+    def on_init(self, obs):
+        return -1
+
+    def on_update(self, obs, entry):
+        if obs.direction == 0 and entry.src2dst_piat[0] >= 0:
+            entry.src2dst_mean_piat_ms = entry.src2dst_weldord_piat_ms[1]
+
+
+class src2dst_stdev_piat_ms(NFPlugin):
+    def on_init(self, obs):
+        return -1
+
+    def on_update(self, obs, entry):
+        if obs.direction == 1 and entry.src2dst_piat[0] >= 0:
+            if entry.src2dst_weldord_piat_ms[0] == 1:
+                entry.src2dst_stdev_piat_ms = 0
+            else:
+                entry.src2dst_stdev_piat_ms = math.sqrt(
+                    entry.src2dst_weldord_piat_ms[2]/(entry.src2dst_weldord_piat_ms[0] - 1)
+                )
+
+
+class dst2src_max_piat_ms(NFPlugin):
+    def on_init(self, obs):
+        return -1  # we will set it as -1 as init value
+
+    def on_update(self, obs, entry):
+        if obs.direction == 0:
+            if entry.dst2src_max_piat_ms == -1 and entry.dst2src_piat[0] >= 0:
+                entry.dst2src_max_piat_ms = entry.dst2src_piat[0]
+            if entry.dst2src_piat[0] > entry.dst2src_max_piat_ms:
+                entry.dst2src_max_piat_ms = entry.dst2src_piat[0]
+
+
+class dst2src_weldord_piat_ms(NFPlugin):
+    def on_init(self, obs):
+        return [0, 0, 0]
+
+    def on_update(self, obs, entry):
+        if obs.direction == 1 and entry.dst2src_piat[0] >= 0:
+            k = entry.dst2src_weldord_piat_ms[0] + 1
+            entry.dst2src_weldord_piat_ms[0] = k
+            m = entry.dst2src_weldord_piat_ms[1]
+            s = entry.dst2src_weldord_piat_ms[2]
+            entry.dst2src_weldord_piat_ms[1] = m + (entry.dst2src_piat[0] - m) * 1. / entry.dst2src_weldord_piat_ms[0]
+            entry.dst2src_weldord_piat_ms[2] = s + (entry.dst2src_piat[0] - m) * (entry.dst2src_piat[0] -
+                                                                                  entry.dst2src_weldord_piat_ms[1])
+
+
+class dst2src_mean_piat_ms(NFPlugin):
+    def on_init(self, obs):
+        return -1
+
+    def on_update(self, obs, entry):
+        if obs.direction == 1 and entry.dst2src_piat[0] >= 0:
+            entry.dst2src_mean_piat_ms = entry.dst2src_weldord_piat_ms[1]
+
+
+class dst2src_stdev_piat_ms(NFPlugin):
+    def on_init(self, obs):
+        return -1
+
+    def on_update(self, obs, entry):
+        if obs.direction == 1 and entry.dst2src_piat[0] >= 0:
+            if entry.dst2src_weldord_piat_ms[0] == 1:
+                entry.dst2src_stdev_piat_ms = 0
+            else:
+                entry.dst2src_stdev_piat_ms = math.sqrt(
+                    entry.dst2src_weldord_piat_ms[2]/(entry.dst2src_weldord_piat_ms[0] - 1)
+                )
+
+
+class dst2src_min_piat_ms(NFPlugin):
+    def on_init(self, obs):
+        return -1  # we will set it as -1 as init value
+
+    def on_update(self, obs, entry):
+        if obs.direction == 0:
+            if entry.dst2src_min_piat_ms == -1 and entry.dst2src_piat[0] >= 0:
+                entry.dst2src_min_piat_ms = entry.dst2src_piat[0]
+            if entry.dst2src_piat[0] < entry.dst2src_min_piat_ms:
+                entry.dst2src_min_piat_ms = entry.dst2src_piat[0]
+
+
 nfstream_core_plugins = [packet_direction_setter(volatile=True),
                          first_seen(),
                          last_seen(),
@@ -344,6 +530,23 @@ nfstream_core_plugins = [packet_direction_setter(volatile=True),
                          dst2src_bytes(),
                          expiration_id()
                          ]
+
+nfstream_statistical_plugins = [piat(volatile=True),
+                                src2dst_piat(volatile=True),
+                                dst2src_piat(volatile=True),
+                                min_piat_ms(),
+                                max_piat_ms(),
+                                src2dst_min_piat_ms(),
+                                src2dst_weldord_piat_ms(volatile=True),
+                                src2dst_mean_piat_ms(),
+                                src2dst_stdev_piat_ms(),
+                                src2dst_max_piat_ms(),
+                                dst2src_min_piat_ms(),
+                                dst2src_weldord_piat_ms(volatile=True),
+                                dst2src_mean_piat_ms(),
+                                dst2src_stdev_piat_ms(),
+                                dst2src_max_piat_ms()
+                                ]
 
 ndpi_infos_plugins = [master_protocol(),
                       app_protocol(),

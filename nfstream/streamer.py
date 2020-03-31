@@ -35,7 +35,7 @@ class NFStreamer(object):
     """ Network Flow Streamer """
 
     def __init__(self, source=None, snaplen=65535, idle_timeout=30, active_timeout=300,
-                 plugins=(), dissect=True, max_tcp_dissections=10, max_udp_dissections=16):
+                 plugins=(), dissect=True, statistics=True, max_tcp_dissections=10, max_udp_dissections=16):
         self._nroots = 512
 
         valid_port_candidate_found = False
@@ -51,6 +51,7 @@ class NFStreamer(object):
                                  nroots=self._nroots,
                                  user_plugins=plugins,
                                  dissect=dissect,
+                                 statistics=statistics,
                                  max_tcp_dissections=max_tcp_dissections,
                                  max_udp_dissections=max_udp_dissections,
                                  sock_name=self.sock_name)

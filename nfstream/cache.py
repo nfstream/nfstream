@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License along with nfs
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from .plugin import nfstream_core_plugins, nfplugins_validator, ndpi_infos_plugins, nDPI
+from .plugin import nfstream_core_plugins, nfplugins_validator, ndpi_infos_plugins, nfstream_statistical_plugins, nDPI
 from collections import OrderedDict
 from .entry import NFEntry
 from .ndpi import NDPI
@@ -50,7 +50,7 @@ class NFCache(object):
     """ NFCache for entries management """
     def __init__(self, observer=None, idle_timeout=30, active_timeout=300, nroots=512,
                  core_plugins=nfstream_core_plugins, user_plugins=(),
-                 dissect=True, max_tcp_dissections=10, max_udp_dissections=16, sock_name=None):
+                 dissect=True, statistics=True, max_tcp_dissections=10, max_udp_dissections=16, sock_name=None):
         self.observer = observer
         self.mode = observer.mode
         try:
@@ -78,13 +78,21 @@ class NFCache(object):
         self.idle_scan_tick = 0
         self.idle_scan_budget = 1024
         self.stopped = False
-        if dissect:
+        if dissect and statistics:
+            self.core_plugins = core_plugins + nfstream_statistical_plugins + ndpi_infos_plugins + \
+                                [nDPI(user_data=NDPI(max_tcp_dissections=max_tcp_dissections,
+                                                     max_udp_dissections=max_udp_dissections),
+                                      volatile=True)]
+        elif dissect:
             self.core_plugins = core_plugins + ndpi_infos_plugins + \
                                 [nDPI(user_data=NDPI(max_tcp_dissections=max_tcp_dissections,
                                                      max_udp_dissections=max_udp_dissections),
                                       volatile=True)]
+        elif statistics:
+            self.core_plugins = core_plugins + nfstream_statistical_plugins
         else:
             self.core_plugins = core_plugins
+
         try:
             nfplugins_validator(user_plugins)
         except TypeError:
