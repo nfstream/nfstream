@@ -126,7 +126,6 @@ messenger.com')
         for flow in streamer_test:
             flows.append(flow)
         del streamer_test
-        print(flows[0])
         self.assertEqual(flows[0].id, 0)
         self.assertEqual(flows[0].bidirectional_first_seen_ms, 1434443394683.939)
         self.assertEqual(flows[0].bidirectional_last_seen_ms, 1434443401353.81)
@@ -198,10 +197,6 @@ messenger.com')
         self.assertEqual(flows[0].server_info, '')
         self.assertEqual(flows[0].j3a_client, '')
         self.assertEqual(flows[0].j3a_server, '')
-
-
-
-        # c2s/s2c min/avg/max/stddev: 54/60 94/633 368/1484 87/622]
         print("{}\t: \033[94mOK\033[0m".format(".Testing statistical_features".ljust(60, ' ')))
 
     def test_noroot_live(self):
