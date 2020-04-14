@@ -1024,6 +1024,7 @@ class dst2src_max_ip_ps(NFPlugin):
             entry.dst2src_max_ip_ps = obs.ip_size
 
 
+"""--------------------------------- nfstream core plugins ----------------------------------------------------------"""
 nfstream_core_plugins = [packet_direction_setter(volatile=True),
                          bidirectional_first_seen_ms(),
                          bidirectional_last_seen_ms(),
@@ -1056,6 +1057,8 @@ nfstream_core_plugins = [packet_direction_setter(volatile=True),
                          expiration_id()
                          ]
 
+
+"""--------------------------------- nfstream statistical plugins ---------------------------------------------------"""
 nfstream_statistical_plugins = [bidirectional_min_raw_ps(),
                                 bidirectional_weldord_raw_ps(volatile=True),
                                 bidirectional_mean_raw_ps(),
@@ -1106,6 +1109,8 @@ nfstream_statistical_plugins = [bidirectional_min_raw_ps(),
                                 dst2src_max_piat_ms()
                                 ]
 
+
+"""--------------------------------- nfstream nDPI plugins ----------------------------------------------------------"""
 ndpi_infos_plugins = [master_protocol(),
                       app_protocol(),
                       application_name(),
