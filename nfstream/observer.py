@@ -206,7 +206,8 @@ def get_hash(proto, vlan_id, src_addr, dst_addr, sport, dport):
     return proto, vlan_id, min(src_addr, dst_addr), max(src_addr, dst_addr), min(sport, dport), max(sport, dport)
 
 
-def get_pkt_info(time, ffi, version, vlan_id, iph, iph6, ipsize, l4_packet_len, rawsize, nroots):
+def get_pkt_info(time, ffi, version, vlan_id, iph, iph6, ipsize, l4_packet_len, rawsize, nroots,
+                 account_ip_padding_size):
     if version == 4:
         if ipsize < 20:
             return None
@@ -221,7 +222,6 @@ def get_pkt_info(time, ffi, version, vlan_id, iph, iph6, ipsize, l4_packet_len, 
         l3 = ffi.cast('uint8_t *', iph6)
     if ipsize < (l4_offset + l4_packet_len):
         return None
-
     proto = iph.protocol
     l4 = ffi.cast('uint8_t *', l3) + l4_offset
     if proto == 6 and l4_packet_len >= ffi.sizeof('struct ndpi_tcphdr'):  # TCP
@@ -283,29 +283,38 @@ def get_pkt_info(time, ffi, version, vlan_id, iph, iph6, ipsize, l4_packet_len, 
 
     hashval = proto + vlan_id + src_addr + dst_addr + sport + dport
 
-    return NFPacket(time=time, raw_size=rawsize, ip_size=ipsize, transport_size=l4_data_len,
+    if account_ip_padding_size:
+        reported_ip_size = ipsize
+    else:
+        reported_ip_size = ntohs(iph.tot_len)
+
+    return NFPacket(time=time, raw_size=rawsize, ip_size=reported_ip_size, transport_size=l4_data_len,
                     payload_size=payload_len, nfhash=get_hash(proto, vlan_id, src_addr, dst_addr, sport, dport),
                     ip_src=src_addr, ip_dst=dst_addr, src_port=sport, dst_port=dport, protocol=proto, vlan_id=vlan_id,
                     version=version, tcp_flags=flags, ip_packet=bytes(xffi.buffer(ipcontent, ipsize)),
                     root_idx=hashval % nroots)
 
 
-def get_pkt_info6(time, ffi, vlan_id, iph6, ipsize, rawsize, nroots):
+def get_pkt_info6(time, ffi, vlan_id, iph6, ipsize, rawsize, nroots, account_ip_padding_size):
     iph = ffi.new("struct ndpi_iphdr *")
     iph.version = 4
     iph.protocol = iph6.ip6_hdr.ip6_un1_nxt
+    iph.tot_len = iph6.ip6_hdr.ip6_un1_plen
     if iph.protocol == 60:
         options = ffi.cast('uint8_t *', iph6) + ffi.sizeof('struct ndpi_ipv6hdr')
         iph.protocol = options[0]
-    return get_pkt_info(time, ffi, 6, vlan_id, iph, iph6, ipsize, ntohs(iph6.ip6_hdr.ip6_un1_plen), rawsize, nroots)
+    return get_pkt_info(time, ffi, 6, vlan_id, iph, iph6, ipsize, ntohs(iph6.ip6_hdr.ip6_un1_plen), rawsize, nroots,
+                        account_ip_padding_size)
 
 
-def process_packet(ffi, time, vlan_id, iph, iph6, ipsize, rawsize, nroots):
+def process_packet(ffi, time, vlan_id, iph, iph6, ipsize, rawsize, nroots, account_ip_padding_size):
     if iph6 == ffi.NULL:
         l4_pkt_len = ntohs(iph.tot_len) - (iph.ihl * 4)
-        return get_pkt_info(time, ffi, 4, vlan_id, iph, ffi.NULL, ipsize, l4_pkt_len, rawsize, nroots)
+        return get_pkt_info(time, ffi, 4, vlan_id, iph, ffi.NULL, ipsize, l4_pkt_len, rawsize, nroots,
+                            account_ip_padding_size)
     else:
-        return get_pkt_info6(time, ffi, vlan_id, iph6, ipsize, rawsize, nroots)
+        return get_pkt_info6(time, ffi, vlan_id, iph6, ipsize, rawsize, nroots,
+                             account_ip_padding_size)
 
 
 class _PcapFfi(object):
@@ -403,7 +412,7 @@ class _PcapFfi(object):
     def ffi(self):
         return self._ffi
 
-    def _parse_packet(self, xdev, header, packet, nroots):
+    def _parse_packet(self, xdev, header, packet, nroots, account_ip_padding_size):
         # MPLS header
         mpls = self._ffi.new("union mpls *")
         # IP header
@@ -533,14 +542,15 @@ class _PcapFfi(object):
                 else:
                     return None
 
-        return process_packet(self._ffi, time, vlan_id, iph, iph6, header.caplen - ip_offset, header.caplen, nroots)
+        return process_packet(self._ffi, time, vlan_id, iph, iph6, header.caplen - ip_offset, header.caplen,
+                              nroots, account_ip_padding_size)
 
-    def _recv_packet(self, xdev, nroots=1):
+    def _recv_packet(self, xdev, nroots=1, account_ip_padding_size=False):
         phdr = self._ffi.new("struct pcap_pkthdr **")
         pdata = self._ffi.new("unsigned char **")
         rv = self._libpcap.pcap_next_ex(xdev, phdr, pdata)
         if rv == 1:
-            return self._parse_packet(xdev, phdr[0], pdata[0], nroots)
+            return self._parse_packet(xdev, phdr[0], pdata[0], nroots, account_ip_padding_size)
         elif rv == 0: # timeout; nothing to return
             return 0
         elif rv == -1:  # error on receive; raise an exception
@@ -580,8 +590,8 @@ class PcapReader(object):
     def close(self):
         self._libpcap.pcap_close(self._pcapdev.pcap)
 
-    def recv_packet(self, nroots=1):
-        return self._base._recv_packet(self._pcapdev.pcap, nroots)
+    def recv_packet(self, nroots=1, account_ip_padding_size=False):
+        return self._base._recv_packet(self._pcapdev.pcap, nroots, account_ip_padding_size)
 
 
 class PcapLiveDevice(object):
@@ -632,7 +642,7 @@ class PcapLiveDevice(object):
         with PcapLiveDevice._lock:
             PcapLiveDevice._OpenDevices[id(self)] = self._pcapdev.pcap
 
-    def recv_packet(self,  timeout=0.01, nroots=1):
+    def recv_packet(self,  timeout=0.01, nroots=1, account_ip_padding_size=False):
         if timeout is None or timeout < 0:
             timeout = None
         if self._fd >= 0:
@@ -641,11 +651,12 @@ class PcapLiveDevice(object):
             except PcapException:
                 return None
             if xread:
-                return self._base._recv_packet(self._pcapdev.pcap, nroots)
+                return self._base._recv_packet(self._pcapdev.pcap, nroots, account_ip_padding_size)
             else:
                 return None  # timeout: return nothing
         else:
-            return self._base._recv_packet(self._pcapdev.pcap, nroots) # no select, no non-blocking mode.
+            # no select, no non-blocking mode.
+            return self._base._recv_packet(self._pcapdev.pcap, nroots, account_ip_padding_size)
 
     def close(self):
         with PcapLiveDevice._lock:
@@ -675,7 +686,8 @@ def check_source_type(source):
 
 
 class NFObserver:
-    def __init__(self, source=None, snaplen=65535, promisc=1, to_ms=0, non_block=True, nroots=1):
+    def __init__(self, source=None, snaplen=65535, promisc=1, to_ms=0, non_block=True, nroots=1,
+                 account_ip_padding_size=False):
         source_type = check_source_type(source)
         source = source_type[0]
         if source_type[1] == 1:  # live interface
@@ -694,13 +706,15 @@ class NFObserver:
         self.nroots = nroots
         self.mode = source_type[1]
         self.safety_time = 0
+        self.account_ip_padding_size = account_ip_padding_size
 
     def __iter__(self):
         if self.packet_generator is not None:
             try:
                 while True:
                     try:
-                        r = self.packet_generator.recv_packet(nroots=self.nroots)
+                        r = self.packet_generator.recv_packet(nroots=self.nroots,
+                                                              account_ip_padding_size=self.account_ip_padding_size)
                         if r is None:
                             yield r  # trigger periodic cleaning
                         elif r == -2:

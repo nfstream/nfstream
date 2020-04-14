@@ -35,7 +35,8 @@ class NFStreamer(object):
     """ Network Flow Streamer """
 
     def __init__(self, source=None, snaplen=65535, idle_timeout=30, active_timeout=300,
-                 plugins=(), dissect=True, statistics=False, max_tcp_dissections=10, max_udp_dissections=16):
+                 plugins=(), dissect=True, statistics=False, max_tcp_dissections=10, max_udp_dissections=16,
+                 account_ip_padding_size=False):
         self._nroots = 512
 
         valid_port_candidate_found = False
@@ -45,7 +46,8 @@ class NFStreamer(object):
                 valid_port_candidate_found = True
                 self.sock_name = "tcp://127.0.0.1:{}".format(candidate)
         try:
-            self.cache = NFCache(observer=NFObserver(source=source, snaplen=snaplen, nroots=self._nroots),
+            self.cache = NFCache(observer=NFObserver(source=source, snaplen=snaplen, nroots=self._nroots,
+                                                     account_ip_padding_size=account_ip_padding_size),
                                  idle_timeout=idle_timeout,
                                  active_timeout=active_timeout,
                                  nroots=self._nroots,

@@ -343,7 +343,7 @@ class nDPI(NFPlugin):
         f = self.user_data.new_ndpi_flow()
         s = self.user_data.new_ndpi_id()
         d = self.user_data.new_ndpi_id()
-        p = self.user_data.ndpi_detection_process_packet(f, obs.ip_packet, obs.ip_size, int(obs.time), s, d)
+        p = self.user_data.ndpi_detection_process_packet(f, obs.ip_packet, len(obs.ip_packet), int(obs.time), s, d)
         # nDPI structures are maintained in a list [ndpi_flow, ndpi_src, ndpi_dst, ndpi_proto, detection_completed]
         return [f, s, d, p, 0]
 
@@ -353,7 +353,7 @@ class nDPI(NFPlugin):
         if (tcp_not_enough or udp_not_enough) and entry.nDPI[4] == 0:
             entry.nDPI[3] = self.user_data.ndpi_detection_process_packet(entry.nDPI[0],
                                                                          obs.ip_packet,
-                                                                         obs.ip_size,
+                                                                         len(obs.ip_packet),
                                                                          int(obs.time),
                                                                          entry.nDPI[1],
                                                                          entry.nDPI[2])
