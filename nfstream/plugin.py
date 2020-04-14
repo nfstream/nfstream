@@ -22,7 +22,18 @@ import math
 
 
 class NFPlugin(object):
+    """ NFPlugin class """
     def __init__(self, name=None, volatile=False, user_data=None):
+        """
+        NFPlugin Parameters:
+        name [default= class name]: Plugin name. Must be unique as it’s dynamically created
+                                    as a flow attribute.
+        volatile [default= False] : Volatile plugin is available only when flow is processed.
+                                    At flow expiration level, plugin is automatically removed
+                                    (will not appear as flow attribute).
+        user_data [default= None] : user_data passed to the plugin. Example: external module,
+                                    pickled sklearn model, etc.
+        """
         if name is None:
             self.name = type(self).__name__
         else:
@@ -31,19 +42,37 @@ class NFPlugin(object):
         self.volatile = volatile
 
     def on_init(self, obs):
+        """
+        on_init(self, obs): Method called at entry creation. When aggregating packets into
+                            flows, this method is called on NFEntry object creation based on
+                            first NFPacket object belonging to it.
+        """
         return 0
 
     def on_update(self, obs, entry):
+        """
+        on_update(self, obs, entry): Method called to update each entry with its belonging obs.
+                                     When aggregating packets into flows, the entry is an NFEntry
+                                     object and the obs is an NFPacket object.
+        """
         pass
 
     def on_expire(self, entry):
+        """
+        on_expire(self, entry):      Method called at entry expiration. When aggregating packets
+                                     into flows, the entry is an NFEntry
+        """
         pass
 
     def cleanup(self):
+        """
+        cleanup(self):               Method called for plugin cleanup.
+        """
         pass
 
 
 def nfplugins_validator(plugins):
+    """ nfplugins unique names validation function """
     plugin_names = []
     for plugin in plugins:
         if isinstance(plugin, NFPlugin):
@@ -184,7 +213,7 @@ class bidirectional_packets(NFPlugin):
 
 
 class bidirectional_raw_bytes(NFPlugin):
-    """ Flow bidirectional bytes accumulator """
+    """ Flow bidirectional raw bytes accumulator """
     def on_init(self, obs):
         return obs.raw_size
 
@@ -193,7 +222,7 @@ class bidirectional_raw_bytes(NFPlugin):
 
 
 class bidirectional_ip_bytes(NFPlugin):
-    """ Flow bidirectional bytes accumulator """
+    """ Flow bidirectional ip bytes accumulator """
     def on_init(self, obs):
         return obs.ip_size
 
@@ -218,7 +247,7 @@ class src2dst_packets(NFPlugin):
 
 
 class src2dst_raw_bytes(NFPlugin):
-    """ Flow src -> dst packets accumulator """
+    """ Flow src -> dst raw bytes accumulator """
     def on_init(self, obs):
         return obs.raw_size
 
@@ -228,7 +257,7 @@ class src2dst_raw_bytes(NFPlugin):
 
 
 class src2dst_ip_bytes(NFPlugin):
-    """ Flow src -> dst packets accumulator """
+    """ Flow src -> dst ip bytes accumulator """
     def on_init(self, obs):
         return obs.ip_size
 
@@ -244,18 +273,21 @@ class src2dst_duration_ms(NFPlugin):
 
 
 class dst2src_packets(NFPlugin):
+    """ Flow dst2src packets accumulator """
     def on_update(self, obs, entry):
         if obs.direction == 1:
             entry.dst2src_packets += 1
 
 
 class dst2src_raw_bytes(NFPlugin):
+    """ Flow dst -> src raw bytes accumulator """
     def on_update(self, obs, entry):
         if obs.direction == 1:
             entry.dst2src_raw_bytes += obs.raw_size
 
 
 class dst2src_ip_bytes(NFPlugin):
+    """ Flow dst -> src ip bytes accumulator """
     def on_update(self, obs, entry):
         if obs.direction == 1:
             entry.dst2src_ip_bytes += obs.ip_size
@@ -276,6 +308,7 @@ class expiration_id(NFPlugin):
 
 
 def is_ndpi_proto(entry, id):
+    """ Helper to check is entry app or master protocol ids """
     if (entry.master_protocol == id) or (entry.app_protocol == id):
         return True
     else:
@@ -283,6 +316,7 @@ def is_ndpi_proto(entry, id):
 
 
 def update_ndpi_infos(entry, ndpi_flow, ndpi_protocol, ndpi):
+    """ Updater for nDPI plugin collected informations """
     entry.app_protocol = ndpi_protocol.app_protocol
     entry.master_protocol = ndpi_protocol.master_protocol
     entry.application_name = ndpi.ndpi_protocol2name(ndpi_protocol)
@@ -304,6 +338,7 @@ def update_ndpi_infos(entry, ndpi_flow, ndpi_protocol, ndpi):
 
 
 class nDPI(NFPlugin):
+    """ nDPI plugin structure (volatile) """
     def on_init(self, obs):
         f = self.user_data.new_ndpi_flow()
         s = self.user_data.new_ndpi_id()
@@ -396,6 +431,7 @@ class j3a_server(NFPlugin):
 
 
 class bidirectional_piat(NFPlugin):
+    """ Flow bidirectional packet inter arrival time """
     def on_init(self, obs):
         return [-1, obs.time]  # [iat value, last packet timestamp]
 
@@ -404,6 +440,7 @@ class bidirectional_piat(NFPlugin):
 
 
 class src2dst_piat(NFPlugin):
+    """ Flow src -> dst packet inter arrival time """
     def on_init(self, obs):
         if obs.direction == 0:
             return [-1, obs.time]  # [iat value, last packet timestamp]
@@ -419,6 +456,7 @@ class src2dst_piat(NFPlugin):
 
 
 class dst2src_piat(NFPlugin):
+    """ Flow dst -> src packet inter arrival time """
     def on_init(self, obs):
         if obs.direction == 1:
             return [-1, obs.time]  # [iat value, last packet timestamp]
@@ -434,6 +472,7 @@ class dst2src_piat(NFPlugin):
 
 
 class bidirectional_max_piat_ms(NFPlugin):
+    """ Flow bidirectional maximum packet inter arrival time """
     def on_init(self, obs):
         return -1  # we will set it as -1 as init value
 
@@ -445,6 +484,7 @@ class bidirectional_max_piat_ms(NFPlugin):
 
 
 class bidirectional_weldord_piat_ms(NFPlugin):
+    """ Flow bidirectional packet inter arrival time welford algorithm structure (volatile) """
     def on_init(self, obs):
         return [0, 0, 0]
 
@@ -462,6 +502,7 @@ class bidirectional_weldord_piat_ms(NFPlugin):
 
 
 class bidirectional_mean_piat_ms(NFPlugin):
+    """ Flow bidirectional mean packet inter arrival time """
     def on_init(self, obs):
         return -1
 
@@ -471,6 +512,7 @@ class bidirectional_mean_piat_ms(NFPlugin):
 
 
 class bidirectional_stdev_piat_ms(NFPlugin):
+    """ Flow bidirectional packet inter arrival time standard deviation (sample stddev)"""
     def on_init(self, obs):
         return -1
 
@@ -485,6 +527,7 @@ class bidirectional_stdev_piat_ms(NFPlugin):
 
 
 class bidirectional_min_piat_ms(NFPlugin):
+    """ Flow bidirectional minimum packet inter arrival time """
     def on_init(self, obs):
         return -1  # we will set it as -1 as init value
 
@@ -496,6 +539,7 @@ class bidirectional_min_piat_ms(NFPlugin):
 
 
 class src2dst_max_piat_ms(NFPlugin):
+    """ Flow src -> dst maximum packet inter arrival time """
     def on_init(self, obs):
         return -1  # we will set it as -1 as init value
 
@@ -508,6 +552,7 @@ class src2dst_max_piat_ms(NFPlugin):
 
 
 class src2dst_min_piat_ms(NFPlugin):
+    """ Flow src -> dst minimum packet inter arrival time """
     def on_init(self, obs):
         return -1  # we will set it as -1 as init value
 
@@ -520,6 +565,7 @@ class src2dst_min_piat_ms(NFPlugin):
 
 
 class src2dst_weldord_piat_ms(NFPlugin):
+    """ Flow src -> dst packet inter arrival time welford algorithm structure (volatile) """
     def on_init(self, obs):
         return [0, 0, 0]
 
@@ -535,6 +581,7 @@ class src2dst_weldord_piat_ms(NFPlugin):
 
 
 class src2dst_mean_piat_ms(NFPlugin):
+    """ Flow src -> dst mean packet inter arrival time """
     def on_init(self, obs):
         return -1
 
@@ -544,6 +591,7 @@ class src2dst_mean_piat_ms(NFPlugin):
 
 
 class src2dst_stdev_piat_ms(NFPlugin):
+    """ Flow src -> dst packet inter arrival time standard deviation (sample stdev)"""
     def on_init(self, obs):
         return -1
 
@@ -558,6 +606,7 @@ class src2dst_stdev_piat_ms(NFPlugin):
 
 
 class dst2src_max_piat_ms(NFPlugin):
+    """ Flow dst -> src maximum packet inter arrival time """
     def on_init(self, obs):
         return -1  # we will set it as -1 as init value
 
@@ -570,6 +619,7 @@ class dst2src_max_piat_ms(NFPlugin):
 
 
 class dst2src_weldord_piat_ms(NFPlugin):
+    """ Flow dst -> src packet inter arrival time welford algorithm structure (volatile) """
     def on_init(self, obs):
         return [0, 0, 0]
 
@@ -585,6 +635,7 @@ class dst2src_weldord_piat_ms(NFPlugin):
 
 
 class dst2src_mean_piat_ms(NFPlugin):
+    """ Flow dst -> src mean packet inter arrival time """
     def on_init(self, obs):
         return -1
 
@@ -594,6 +645,7 @@ class dst2src_mean_piat_ms(NFPlugin):
 
 
 class dst2src_stdev_piat_ms(NFPlugin):
+    """ Flow dst -> src packet inter arrival time standard deviation (sample stdev)"""
     def on_init(self, obs):
         return -1
 
@@ -608,6 +660,7 @@ class dst2src_stdev_piat_ms(NFPlugin):
 
 
 class dst2src_min_piat_ms(NFPlugin):
+    """ Flow dst -> src minimum packet inter arrival time """
     def on_init(self, obs):
         return -1  # we will set it as -1 as init value
 
@@ -620,6 +673,7 @@ class dst2src_min_piat_ms(NFPlugin):
 
 
 class bidirectional_min_raw_ps(NFPlugin):
+    """ Flow bidirectional minimum raw packet size """
     def on_init(self, obs):
         return obs.raw_size
 
@@ -629,6 +683,7 @@ class bidirectional_min_raw_ps(NFPlugin):
 
 
 class bidirectional_weldord_raw_ps(NFPlugin):
+    """ Flow bidirectional raw packet size welford algorithm structure (volatile)"""
     def on_init(self, obs):
         return [1, obs.raw_size, 0]
 
@@ -644,6 +699,7 @@ class bidirectional_weldord_raw_ps(NFPlugin):
 
 
 class bidirectional_mean_raw_ps(NFPlugin):
+    """ Flow bidirectional mean raw packet size """
     def on_init(self, obs):
         return obs.raw_size
 
@@ -652,6 +708,7 @@ class bidirectional_mean_raw_ps(NFPlugin):
 
 
 class bidirectional_stdev_raw_ps(NFPlugin):
+    """ Flow bidirectional raw packet size standard deviation (sample mean) """
     def on_init(self, obs):
         return 0
 
@@ -661,6 +718,7 @@ class bidirectional_stdev_raw_ps(NFPlugin):
 
 
 class bidirectional_max_raw_ps(NFPlugin):
+    """ Flow bidirectional maximum raw packet size """
     def on_init(self, obs):
         return obs.raw_size
 
@@ -670,6 +728,7 @@ class bidirectional_max_raw_ps(NFPlugin):
 
 
 class src2dst_min_raw_ps(NFPlugin):
+    """ Flow src -> dst minimum raw packet size """
     def on_init(self, obs):
         return obs.raw_size
 
@@ -679,6 +738,7 @@ class src2dst_min_raw_ps(NFPlugin):
 
 
 class src2dst_weldord_raw_ps(NFPlugin):
+    """ Flow src -> dst raw packet size welford algorithm structure (volatile) """
     def on_init(self, obs):
         return [1, obs.raw_size, 0]
 
@@ -695,6 +755,7 @@ class src2dst_weldord_raw_ps(NFPlugin):
 
 
 class src2dst_mean_raw_ps(NFPlugin):
+    """ Flow src -> dst mean raw packet size """
     def on_init(self, obs):
         return obs.raw_size
 
@@ -704,6 +765,7 @@ class src2dst_mean_raw_ps(NFPlugin):
 
 
 class src2dst_stdev_raw_ps(NFPlugin):
+    """ Flow src -> dst raw packet size standard deviation (sample stdev)"""
     def on_init(self, obs):
         return 0
 
@@ -714,6 +776,7 @@ class src2dst_stdev_raw_ps(NFPlugin):
 
 
 class src2dst_max_raw_ps(NFPlugin):
+    """ Flow src -> dst maximum raw packet size """
     def on_init(self, obs):
         return obs.raw_size
 
@@ -723,6 +786,7 @@ class src2dst_max_raw_ps(NFPlugin):
 
 
 class dst2src_min_raw_ps(NFPlugin):
+    """ Flow dst -> src minimum raw packet size """
     def on_init(self, obs):
         return -1
 
@@ -734,6 +798,7 @@ class dst2src_min_raw_ps(NFPlugin):
 
 
 class dst2src_weldord_raw_ps(NFPlugin):
+    """ Flow dst -> src  raw packet size welford algorithm structure (volatile)"""
     def on_init(self, obs):
         return [0, 0, 0]
 
@@ -750,6 +815,7 @@ class dst2src_weldord_raw_ps(NFPlugin):
 
 
 class dst2src_mean_raw_ps(NFPlugin):
+    """ Flow dst -> src mean raw packet size """
     def on_init(self, obs):
         return -1
 
@@ -759,6 +825,7 @@ class dst2src_mean_raw_ps(NFPlugin):
 
 
 class dst2src_stdev_raw_ps(NFPlugin):
+    """ Flow dst -> src raw packet size standard deviation (sample stdev) """
     def on_init(self, obs):
         return -1
 
@@ -772,6 +839,7 @@ class dst2src_stdev_raw_ps(NFPlugin):
 
 
 class dst2src_max_raw_ps(NFPlugin):
+    """ Flow dst -> src maximum raw packet size """
     def on_init(self, obs):
         return -1
 
@@ -781,6 +849,7 @@ class dst2src_max_raw_ps(NFPlugin):
 
 
 class bidirectional_min_ip_ps(NFPlugin):
+    """ Flow bidirectional minimum ip packet size """
     def on_init(self, obs):
         return obs.ip_size
 
@@ -790,6 +859,7 @@ class bidirectional_min_ip_ps(NFPlugin):
 
 
 class bidirectional_weldord_ip_ps(NFPlugin):
+    """ Flow bidirectional ip packet size welford algorithm structure (volatile) """
     def on_init(self, obs):
         return [1, obs.ip_size, 0]
 
@@ -805,6 +875,7 @@ class bidirectional_weldord_ip_ps(NFPlugin):
 
 
 class bidirectional_mean_ip_ps(NFPlugin):
+    """ Flow bidirectional mean ip packet size """
     def on_init(self, obs):
         return obs.ip_size
 
@@ -813,6 +884,7 @@ class bidirectional_mean_ip_ps(NFPlugin):
 
 
 class bidirectional_stdev_ip_ps(NFPlugin):
+    """ Flow bidirectional ip packet size standard deviation (sample stdev) """
     def on_init(self, obs):
         return 0
 
@@ -822,6 +894,7 @@ class bidirectional_stdev_ip_ps(NFPlugin):
 
 
 class bidirectional_max_ip_ps(NFPlugin):
+    """ Flow bidirectional maximum ip packet size """
     def on_init(self, obs):
         return obs.ip_size
 
@@ -831,6 +904,7 @@ class bidirectional_max_ip_ps(NFPlugin):
 
 
 class src2dst_min_ip_ps(NFPlugin):
+    """ Flow src -> dst minimum ip packet size """
     def on_init(self, obs):
         return obs.ip_size
 
@@ -840,6 +914,7 @@ class src2dst_min_ip_ps(NFPlugin):
 
 
 class src2dst_weldord_ip_ps(NFPlugin):
+    """ Flow src -> dst ip packet size welford algorithm structure (volatile) """
     def on_init(self, obs):
         return [1, obs.ip_size, 0]
 
@@ -856,6 +931,7 @@ class src2dst_weldord_ip_ps(NFPlugin):
 
 
 class src2dst_mean_ip_ps(NFPlugin):
+    """ Flow src -> dst mean ip packet size """
     def on_init(self, obs):
         return obs.ip_size
 
@@ -865,6 +941,7 @@ class src2dst_mean_ip_ps(NFPlugin):
 
 
 class src2dst_stdev_ip_ps(NFPlugin):
+    """ Flow src -> dst ip packet size standard deviation (sample stdev) """
     def on_init(self, obs):
         return 0
 
@@ -875,6 +952,7 @@ class src2dst_stdev_ip_ps(NFPlugin):
 
 
 class src2dst_max_ip_ps(NFPlugin):
+    """ Flow src -> dst maximum ip packet size """
     def on_init(self, obs):
         return obs.ip_size
 
@@ -884,6 +962,7 @@ class src2dst_max_ip_ps(NFPlugin):
 
 
 class dst2src_min_ip_ps(NFPlugin):
+    """ Flow dst -> src minimum ip packet size """
     def on_init(self, obs):
         return -1
 
@@ -895,6 +974,7 @@ class dst2src_min_ip_ps(NFPlugin):
 
 
 class dst2src_weldord_ip_ps(NFPlugin):
+    """ Flow dst -> src ip packet size welford algorithm structure (volatile) """
     def on_init(self, obs):
         return [0, 0, 0]
 
@@ -911,6 +991,7 @@ class dst2src_weldord_ip_ps(NFPlugin):
 
 
 class dst2src_mean_ip_ps(NFPlugin):
+    """ Flow dst -> src mean ip packet size """
     def on_init(self, obs):
         return -1
 
@@ -920,6 +1001,7 @@ class dst2src_mean_ip_ps(NFPlugin):
 
 
 class dst2src_stdev_ip_ps(NFPlugin):
+    """ Flow dst -> src ip packet size standard deviation (sample stdev) """
     def on_init(self, obs):
         return -1
 
@@ -933,6 +1015,7 @@ class dst2src_stdev_ip_ps(NFPlugin):
 
 
 class dst2src_max_ip_ps(NFPlugin):
+    """ Flow dst -> src maximum ip packet size """
     def on_init(self, obs):
         return -1
 
