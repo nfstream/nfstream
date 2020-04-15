@@ -126,7 +126,6 @@ messenger.com')
         for flow in streamer_test:
             flows.append(flow)
         del streamer_test
-        print(flows[0])
         self.assertEqual(flows[0].id, 0)
         self.assertEqual(flows[0].bidirectional_first_seen_ms, 1434443394683.939)
         self.assertEqual(flows[0].bidirectional_last_seen_ms, 1434443401353.81)
@@ -231,7 +230,6 @@ messenger.com')
         for flow in streamer_test:
             flows.append(flow)
         del streamer_test
-        print(flows[0])
         self.assertEqual(flows[0].id, 0)
         self.assertEqual(flows[0].bidirectional_first_seen_ms, 1434443394683.939)
         self.assertEqual(flows[0].bidirectional_last_seen_ms, 1434443401353.81)

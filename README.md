@@ -5,6 +5,7 @@
 doing practical, **real world** network data analysis in Python. Additionally, it has
 the broader goal of becoming **a common network data processing framework for researchers** providing data reproducibility across experiments.
 
+**Project Website:** **https://nfstream.github.io/**
 <table>
 <tr>
   <td><b>Live Demo Notebook</b></td>
@@ -152,7 +153,7 @@ NFEntry(
 )
 
  ```
-* nfstream also extracts more than 60 flow statistical features
+* nfstream also extracts [**60+ flow statistical features**][stat_feat]
 
 ```python
 from nfstream import NFStreamer
@@ -360,3 +361,4 @@ This project is licensed under the GPLv3 License - see the [**License**][license
 [reliable]: http://people.ac.upc.edu/pbarlet/papers/ground-truth.pam2014.pdf
 [repo]: https://nfstream.github.io/
 [demo]: https://mybinder.org/v2/gh/aouinizied/nfstream-tutorials/master?filepath=demo_notebook.ipynb
+[stat_feat]: https://nfstream.github.io/docs/api#statistical-features
