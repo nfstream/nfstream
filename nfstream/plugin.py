@@ -708,7 +708,7 @@ class bidirectional_mean_raw_ps(NFPlugin):
 
 
 class bidirectional_stdev_raw_ps(NFPlugin):
-    """ Flow bidirectional raw packet size standard deviation (sample mean) """
+    """ Flow bidirectional raw packet size standard deviation (sample stddev) """
     def on_init(self, obs):
         return 0
 
