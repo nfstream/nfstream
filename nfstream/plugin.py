@@ -1024,6 +1024,268 @@ class dst2src_max_ip_ps(NFPlugin):
             entry.dst2src_max_ip_ps = obs.ip_size
 
 
+class bidirectional_syn_packets(NFPlugin):
+    """ Flow bidirectional syn packet accumulators """
+    def on_init(self, obs):
+        if obs.tcpflags.syn == 1:
+            return 1
+        else:
+            return 0
+
+    def on_update(self, obs, entry):
+        if obs.tcpflags.syn == 1:
+            entry.bidirectional_syn_packets += 1
+
+
+class bidirectional_cwr_packets(NFPlugin):
+    """ Flow bidirectional cwr packet accumulators """
+    def on_init(self, obs):
+        if obs.tcpflags.cwr == 1:
+            return 1
+        else:
+            return 0
+
+    def on_update(self, obs, entry):
+        if obs.tcpflags.cwr == 1:
+            entry.bidirectional_cwr_packets += 1
+
+
+class bidirectional_ece_packets(NFPlugin):
+    """ Flow bidirectional ece packet accumulators """
+    def on_init(self, obs):
+        if obs.tcpflags.ece == 1:
+            return 1
+        else:
+            return 0
+
+    def on_update(self, obs, entry):
+        if obs.tcpflags.ece == 1:
+            entry.bidirectional_ece_packets += 1
+
+
+class bidirectional_urg_packets(NFPlugin):
+    """ Flow bidirectional urg packet accumulators """
+    def on_init(self, obs):
+        if obs.tcpflags.urg == 1:
+            return 1
+        else:
+            return 0
+
+    def on_update(self, obs, entry):
+        if obs.tcpflags.urg == 1:
+            entry.bidirectional_urg_packets += 1
+
+
+class bidirectional_ack_packets(NFPlugin):
+    """ Flow bidirectional ack packet accumulators """
+    def on_init(self, obs):
+        if obs.tcpflags.ack == 1:
+            return 1
+        else:
+            return 0
+
+    def on_update(self, obs, entry):
+        if obs.tcpflags.ack == 1:
+            entry.bidirectional_ack_packets += 1
+
+
+class bidirectional_psh_packets(NFPlugin):
+    """ Flow bidirectional psh packet accumulators """
+    def on_init(self, obs):
+        if obs.tcpflags.psh == 1:
+            return 1
+        else:
+            return 0
+
+    def on_update(self, obs, entry):
+        if obs.tcpflags.psh == 1:
+            entry.bidirectional_psh_packets += 1
+
+
+class bidirectional_rst_packets(NFPlugin):
+    """ Flow bidirectional rst packet accumulators """
+    def on_init(self, obs):
+        if obs.tcpflags.rst == 1:
+            return 1
+        else:
+            return 0
+
+    def on_update(self, obs, entry):
+        if obs.tcpflags.rst == 1:
+            entry.bidirectional_rst_packets += 1
+
+
+class bidirectional_fin_packets(NFPlugin):
+    """ Flow bidirectional fin packet accumulators """
+    def on_init(self, obs):
+        if obs.tcpflags.fin == 1:
+            return 1
+        else:
+            return 0
+
+    def on_update(self, obs, entry):
+        if obs.tcpflags.fin == 1:
+            entry.bidirectional_fin_packets += 1
+
+class src2dst_syn_packets(NFPlugin):
+    """ Flow src2dst syn packet accumulators """
+    def on_init(self, obs):
+        if obs.tcpflags.syn == 1:
+            return 1
+        else:
+            return 0
+
+    def on_update(self, obs, entry):
+        if obs.direction == 0 and obs.tcpflags.syn == 1:
+            entry.src2dst_syn_packets += 1
+
+
+class src2dst_cwr_packets(NFPlugin):
+    """ Flow src2dst cwr packet accumulators """
+    def on_init(self, obs):
+        if obs.tcpflags.cwr == 1:
+            return 1
+        else:
+            return 0
+
+    def on_update(self, obs, entry):
+        if obs.direction == 0 and obs.tcpflags.cwr == 1:
+            entry.src2dst_cwr_packets += 1
+
+
+class src2dst_ece_packets(NFPlugin):
+    """ Flow src2dst ece packet accumulators """
+    def on_init(self, obs):
+        if obs.tcpflags.ece == 1:
+            return 1
+        else:
+            return 0
+
+    def on_update(self, obs, entry):
+        if obs.direction == 0 and obs.tcpflags.ece == 1:
+            entry.src2dst_ece_packets += 1
+
+
+class src2dst_urg_packets(NFPlugin):
+    """ Flow src2dst urg packet accumulators """
+    def on_init(self, obs):
+        if obs.tcpflags.urg == 1:
+            return 1
+        else:
+            return 0
+
+    def on_update(self, obs, entry):
+        if obs.direction == 0 and obs.tcpflags.urg == 1:
+            entry.src2dst_urg_packets += 1
+
+
+class src2dst_ack_packets(NFPlugin):
+    """ Flow src2dst ack packet accumulators """
+    def on_init(self, obs):
+        if obs.tcpflags.ack == 1:
+            return 1
+        else:
+            return 0
+
+    def on_update(self, obs, entry):
+        if obs.direction == 0 and obs.tcpflags.ack == 1:
+            entry.src2dst_ack_packets += 1
+
+
+class src2dst_psh_packets(NFPlugin):
+    """ Flow src2dst psh packet accumulators """
+    def on_init(self, obs):
+        if obs.tcpflags.psh == 1:
+            return 1
+        else:
+            return 0
+
+    def on_update(self, obs, entry):
+        if obs.direction == 0 and obs.tcpflags.psh == 1:
+            entry.src2dst_psh_packets += 1
+
+
+class src2dst_rst_packets(NFPlugin):
+    """ Flow src2dst rst packet accumulators """
+    def on_init(self, obs):
+        if obs.tcpflags.rst == 1:
+            return 1
+        else:
+            return 0
+
+    def on_update(self, obs, entry):
+        if obs.direction == 0 and obs.tcpflags.rst == 1:
+            entry.src2dst_rst_packets += 1
+
+
+class src2dst_fin_packets(NFPlugin):
+    """ Flow src2dst fin packet accumulators """
+    def on_init(self, obs):
+        if obs.tcpflags.fin == 1:
+            return 1
+        else:
+            return 0
+
+    def on_update(self, obs, entry):
+        if obs.direction == 0 and obs.tcpflags.fin == 1:
+            entry.src2dst_fin_packets += 1
+
+
+class dst2src_syn_packets(NFPlugin):
+    """ Flow dst2src syn packet accumulators """
+    def on_update(self, obs, entry):
+        if obs.direction == 1 and obs.tcpflags.syn == 1:
+            entry.dst2src_syn_packets += 1
+
+
+class dst2src_cwr_packets(NFPlugin):
+    """ Flow dst2src cwr packet accumulators """
+    def on_update(self, obs, entry):
+        if obs.direction == 1 and obs.tcpflags.cwr == 1:
+            entry.dst2src_cwr_packets += 1
+
+
+class dst2src_ece_packets(NFPlugin):
+    """ Flow dst2src ece packet accumulators """
+    def on_update(self, obs, entry):
+        if obs.direction == 1 and obs.tcpflags.ece == 1:
+            entry.dst2src_ece_packets += 1
+
+
+class dst2src_urg_packets(NFPlugin):
+    """ Flow dst2src urg packet accumulators """
+    def on_update(self, obs, entry):
+        if obs.direction == 1 and obs.tcpflags.urg == 1:
+            entry.dst2src_urg_packets += 1
+
+
+class dst2src_ack_packets(NFPlugin):
+    def on_update(self, obs, entry):
+        if obs.direction == 1 and obs.tcpflags.ack == 1:
+            entry.dst2src_ack_packets += 1
+
+
+class dst2src_psh_packets(NFPlugin):
+    """ Flow dst2src psh packet accumulators """
+    def on_update(self, obs, entry):
+        if obs.direction == 1 and obs.tcpflags.psh == 1:
+            entry.dst2src_psh_packets += 1
+
+
+class dst2src_rst_packets(NFPlugin):
+    """ Flow dst2src rst packet accumulators """
+    def on_update(self, obs, entry):
+        if obs.direction == 1 and obs.tcpflags.rst == 1:
+            entry.dst2src_rst_packets += 1
+
+
+class dst2src_fin_packets(NFPlugin):
+    """ Flow dst2src fin packet accumulators """
+    def on_update(self, obs, entry):
+        if obs.direction == 1 and obs.tcpflags.fin == 1:
+            entry.dst2src_fin_packets += 1
+
+
 """--------------------------------- nfstream core plugins ----------------------------------------------------------"""
 nfstream_core_plugins = [packet_direction_setter(volatile=True),
                          bidirectional_first_seen_ms(),
@@ -1106,9 +1368,32 @@ nfstream_statistical_plugins = [bidirectional_min_raw_ps(),
                                 dst2src_weldord_piat_ms(volatile=True),
                                 dst2src_mean_piat_ms(),
                                 dst2src_stdev_piat_ms(),
-                                dst2src_max_piat_ms()
+                                dst2src_max_piat_ms(),
+                                bidirectional_syn_packets(),
+                                bidirectional_cwr_packets(),
+                                bidirectional_ece_packets(),
+                                bidirectional_urg_packets(),
+                                bidirectional_ack_packets(),
+                                bidirectional_psh_packets(),
+                                bidirectional_rst_packets(),
+                                bidirectional_fin_packets(),
+                                src2dst_syn_packets(),
+                                src2dst_cwr_packets(),
+                                src2dst_ece_packets(),
+                                src2dst_urg_packets(),
+                                src2dst_ack_packets(),
+                                src2dst_psh_packets(),
+                                src2dst_rst_packets(),
+                                src2dst_fin_packets(),
+                                dst2src_syn_packets(),
+                                dst2src_cwr_packets(),
+                                dst2src_ece_packets(),
+                                dst2src_urg_packets(),
+                                dst2src_ack_packets(),
+                                dst2src_psh_packets(),
+                                dst2src_rst_packets(),
+                                dst2src_fin_packets()
                                 ]
-
 
 """--------------------------------- nfstream nDPI plugins ----------------------------------------------------------"""
 ndpi_infos_plugins = [master_protocol(),
