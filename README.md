@@ -5,13 +5,20 @@
 doing practical, **real world** network data analysis in Python. Additionally, it has
 the broader goal of becoming **a common network data processing framework for researchers** providing data reproducibility across experiments.
 
-**Project Website:** **https://nfstream.github.io/**
 <table>
 <tr>
   <td><b>Live Demo Notebook</b></td>
   <td>
     <a href="https://mybinder.org/v2/gh/aouinizied/nfstream-tutorials/master?filepath=demo_notebook.ipynb">
     <img src="https://mybinder.org/badge_logo.svg" alt="live notebook" />
+    </a>
+  </td>
+</tr>
+<tr>
+  <td><b>Project Website</b></td>
+  <td>
+    <a href="https://nfstream.github.io">
+    <img src="https://img.shields.io/badge/website-nfstream.github.io-blue" alt="website" />
     </a>
   </td>
 </tr>
