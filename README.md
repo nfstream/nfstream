@@ -154,9 +154,9 @@ NFEntry(
 
 ```python
 from nfstream import NFStreamer
-my_awesome_streamer = NFStreamer(source="facebook.pcap", statistics=True) # or network interface (source="eth0")
+my_awesome_streamer = NFStreamer(source="facebook.pcap", statistics=True)
 for flow in my_awesome_streamer:
-    print(flow)  # print it, append to pandas Dataframe or whatever you want :)!
+    print(flow)
 ```
 
 ```python
