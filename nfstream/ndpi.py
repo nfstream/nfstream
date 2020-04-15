@@ -1338,7 +1338,7 @@ def check_structures_size(flow_struct_defined, flow_struct_loaded,
 
 class NDPI():
     """ ndpi module main class """
-    def __init__(self, libpath=None, max_tcp_dissections=10, max_udp_dissections=16):
+    def __init__(self, libpath=None, max_tcp_dissections=10, max_udp_dissections=16, enable_guess=True):
         self._ffi = cffi.FFI()
         if libpath is None:
             self._ndpi = self._ffi.dlopen(dirname(abspath(__file__)) + '/libs/libndpi.so')
@@ -1370,6 +1370,7 @@ class NDPI():
         self.NULL = self._ffi.NULL
         self.max_tcp_dissections = max_tcp_dissections
         self.max_udp_dissections = max_udp_dissections
+        self.enable_guess = enable_guess
 
     def new_ndpi_flow(self):
         """ Create a new nDPI flow object """
@@ -1389,7 +1390,7 @@ class NDPI():
 
     def ndpi_detection_giveup(self, flow):
         """ Giveup detection function """
-        return self._ndpi.ndpi_detection_giveup(self._mod, flow, 1, self._ffi.new("uint8_t*", 0))
+        return self._ndpi.ndpi_detection_giveup(self._mod, flow, self.enable_guess, self._ffi.new("uint8_t*", 0))
 
     def ndpi_flow_free(self, flow):
         """ Free nDPI flow object """

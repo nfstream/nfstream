@@ -50,7 +50,8 @@ class NFCache(object):
     """ NFCache for entries management """
     def __init__(self, observer=None, idle_timeout=30, active_timeout=300, nroots=512,
                  core_plugins=nfstream_core_plugins, user_plugins=(),
-                 dissect=True, statistics=True, max_tcp_dissections=10, max_udp_dissections=16, sock_name=None):
+                 dissect=True, statistics=True, max_tcp_dissections=10, max_udp_dissections=16,
+                 sock_name=None, enable_guess=True):
         self.observer = observer
         self.mode = observer.mode
         try:
@@ -81,12 +82,14 @@ class NFCache(object):
         if dissect and statistics:
             self.core_plugins = core_plugins + nfstream_statistical_plugins + ndpi_infos_plugins + \
                                 [nDPI(user_data=NDPI(max_tcp_dissections=max_tcp_dissections,
-                                                     max_udp_dissections=max_udp_dissections),
+                                                     max_udp_dissections=max_udp_dissections,
+                                                     enable_guess=enable_guess),
                                       volatile=True)]
         elif dissect:
             self.core_plugins = core_plugins + ndpi_infos_plugins + \
                                 [nDPI(user_data=NDPI(max_tcp_dissections=max_tcp_dissections,
-                                                     max_udp_dissections=max_udp_dissections),
+                                                     max_udp_dissections=max_udp_dissections,
+                                                     enable_guess=enable_guess),
                                       volatile=True)]
         elif statistics:
             self.core_plugins = core_plugins + nfstream_statistical_plugins

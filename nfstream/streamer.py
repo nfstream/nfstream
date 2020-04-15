@@ -32,7 +32,7 @@ class NFStreamer(object):
     """ Network Flow Streamer """
     def __init__(self, source=None, snaplen=65535, idle_timeout=30, active_timeout=300,
                  plugins=(), dissect=True, statistics=False, max_tcp_dissections=10, max_udp_dissections=16,
-                 account_ip_padding_size=False):
+                 account_ip_padding_size=False, enable_guess=True):
         NFStreamer.streamer_id += 1
         now = str(tm.time())
         self._nroots = 512
@@ -50,7 +50,8 @@ class NFStreamer(object):
                                  statistics=statistics,
                                  max_tcp_dissections=max_tcp_dissections,
                                  max_udp_dissections=max_udp_dissections,
-                                 sock_name=self.sock_name)
+                                 sock_name=self.sock_name,
+                                 enable_guess=enable_guess)
         except OSError as ose:
             sys.exit(ose)
         except ValueError as ve:
