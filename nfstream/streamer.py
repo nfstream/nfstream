@@ -21,30 +21,24 @@ from .observer import NFObserver
 from threading import Thread
 from random import randrange
 import pandas as pd
-import socket
+import time as tm
 import zmq
 import sys
-
-
-def port_in_use(port):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        return s.connect_ex(('localhost', port)) == 0
+import os
 
 
 class NFStreamer(object):
+    streamer_id = 0  # class id generator
     """ Network Flow Streamer """
-
     def __init__(self, source=None, snaplen=65535, idle_timeout=30, active_timeout=300,
                  plugins=(), dissect=True, statistics=False, max_tcp_dissections=10, max_udp_dissections=16,
                  account_ip_padding_size=False):
+        NFStreamer.streamer_id += 1
+        now = str(tm.time())
         self._nroots = 512
-
-        valid_port_candidate_found = False
-        while not valid_port_candidate_found:
-            candidate = randrange(49152, 65536, 1)
-            if not port_in_use(candidate):
-                valid_port_candidate_found = True
-                self.sock_name = "tcp://127.0.0.1:{}".format(candidate)
+        self.sock_name = "ipc:///tmp/nfstream-{pid}-{streamerid}-{ts}".format(pid=os.getpid(),
+                                                                              streamerid=NFStreamer.streamer_id,
+                                                                              ts=now)
         try:
             self.cache = NFCache(observer=NFObserver(source=source, snaplen=snaplen, nroots=self._nroots,
                                                      account_ip_padding_size=account_ip_padding_size),
