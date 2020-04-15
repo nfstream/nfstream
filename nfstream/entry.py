@@ -31,12 +31,12 @@ class NFEntry(object):
     def clean(self, core, user):
         """ Volatile attributes cleaner """
         for plugin in core:
+            plugin.on_expire(self)
             if plugin.volatile:
-                plugin.on_expire(self)
                 delattr(self, plugin.name)
         for plugin in user:
+            plugin.on_expire(self)
             if plugin.volatile:
-                plugin.on_expire(self)
                 delattr(self, plugin.name)
         return self
 
