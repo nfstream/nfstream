@@ -105,66 +105,76 @@ the broader goal of becoming **a common network data processing framework for re
 * Dealing with a big pcap file and just want to aggregate it as network flows? **nfstream** make this path easier in few lines:
 
 ```python
-   from nfstream import NFStreamer
-   my_awesome_streamer = NFStreamer(source="facebook.pcap") # or network interface (source="eth0")
-   for flow in my_awesome_streamer:
-       print(flow)  # print it, append to pandas Dataframe or whatever you want :)!
+from nfstream import NFStreamer
+my_awesome_streamer = NFStreamer(source="facebook.pcap") # or network interface (source="eth0")
+for flow in my_awesome_streamer:
+    print(flow)  # print it, append to pandas Dataframe or whatever you want :)!
 ```
 
 ```python
-    NFEntry(
-        id=0,
-        first_seen=1472393122365,
-        last_seen=1472393123665,
-        version=4,
-        src_port=52066,
-        dst_port=443,
-        protocol=6,
-        vlan_id=0,
-        src_ip='192.168.43.18',
-        dst_ip='66.220.156.68',
-        total_packets=19,
-        total_bytes=5745,
-        duration=1300,
-        src2dst_packets=9,
-        src2dst_bytes=1345,
-        dst2src_packets=10,
-        dst2src_bytes=4400,
-        expiration_id=0,
-        master_protocol=91,
-        app_protocol=119,
-        application_name='TLS.Facebook',
-        category_name='SocialNetwork',
-        client_info='facebook.com',
-        server_info='*.facebook.com,*.facebook.net,*.fb.com,*.fbcdn.net,*.fbsbx.com,*.m.facebook.com,*.messenger.com,*.xx.fbcdn.net,*.xy.fbcdn.net,*.xz.fbcdn.net,facebook.com,fb.com,messenger.com',
-        j3a_client='bfcc1a3891601edb4f137ab7ab25b840',
-        j3a_server='2d1eb5817ece335c24904f516ad5da12'
-    )
+NFEntry(
+    id=0,
+    bidirectional_first_seen_ms=1472393122365.661,
+    bidirectional_last_seen_ms=1472393123665.163,
+    src2dst_first_seen_ms=1472393122365.661,
+    src2dst_last_seen_ms=1472393123408.152,
+    dst2src_first_seen_ms=1472393122668.038,
+    dst2src_last_seen_ms=1472393123665.163,
+    version=4,
+    src_port=52066,
+    dst_port=443,
+    protocol=6,
+    vlan_id=4,
+    src_ip='192.168.43.18',
+    dst_ip='66.220.156.68',
+    bidirectional_packets=19,
+    bidirectional_raw_bytes=5745,
+    bidirectional_ip_bytes=5479,
+    bidirectional_duration_ms=1299.502197265625,
+    src2dst_packets=9, src2dst_raw_bytes=1345,
+    src2dst_ip_bytes=1219,
+    src2dst_duration_ms=1299.502197265625,
+    dst2src_packets=10,
+    dst2src_raw_bytes=4400,
+    dst2src_ip_bytes=4260,
+    dst2src_duration_ms=997.125,
+    expiration_id=0,
+    master_protocol=91,
+    app_protocol=119,
+    application_name='TLS.Facebook',
+    category_name='SocialNetwork',
+    client_info='facebook.com',
+    server_info='*.facebook.com,*.facebook.net,*.fb.com,*.fbcdn.net,*.fbsbx.com,*.m.facebook.com,*.messenger.com,*.xx.fbcdn.net,*.xy.fbcdn.net,*.xz.fbcdn.net,facebook.com,fb.com,messenger.com',
+    j3a_client='bfcc1a3891601edb4f137ab7ab25b840',
+    j3a_server='2d1eb5817ece335c24904f516ad5da12'
+)
+
  ```
 * From pcap to Pandas DataFrame?
 
 ```python
-    my_dataframe = NFStreamer(source='devil.pcap').to_pandas()
-    my_dataframe.head(5)
+my_dataframe = NFStreamer(source='devil.pcap').to_pandas()
+my_dataframe.head(5)
 ```
 * Didn't find a specific flow feature? add a plugin to **nfstream** in few lines:
 
 ```python
-    from nfstream import NFPlugin
+from nfstream import NFPlugin
     
-    class ack_count(NFPlugin):
-        def on_init(self, pkt): # flow creation with the first packet
-	    if pkt.tcpflags.ack == 1:
-	        return 1
-	    else:
-	        return 0
-	def on_update(self, pkt, flow): # flow update with each packet belonging to the flow
-	    if pkt.tcpflags.ack == 1:
-	        flow.ack_count += 1
+class packet_with_666_size(NFPlugin):
+    def on_init(self, pkt): # flow creation with the first packet
+        if pkt.raw_size == 666:
+            return 1
+        else:
+            return 0
+	
+    def on_update(self, pkt, flow): # flow update with each packet belonging to the flow
+        if pkt.pkt.raw_size == 666:
+            flow.packet_with_666_size += 1
 		
-    streamer_awesome = NFStreamer(source='devil.pcap', plugins=[ack_count()])
-    for flow in streamer_awesome:
-       print(flow.ack_count) # see your dynamically created metric in generated flows
+streamer_awesome = NFStreamer(source='devil.pcap', plugins=[packet_with_666_size()])
+for flow in streamer_awesome:
+    print(flow.packet_with_666_size) # see your dynamically created metric in generated flows
 ```
 
 * More example and details are provided on the official [**documentation**][documentation].
@@ -177,7 +187,7 @@ the broader goal of becoming **a common network data processing framework for re
 
 Binary installers for the latest released version are available:
 ```bash
-    python3 -m pip install nfstream
+python3 -m pip install nfstream
 ```
 
 ### Build from sources
@@ -187,21 +197,21 @@ If you want to build **nfstream** from sources on your local machine:
 #### On Linux
 
 ```bash
-    sudo apt-get install autoconf automake libtool pkg-config libpcap-dev
-    git clone https://github.com/aouinizied/nfstream.git
-    cd nfstream
-    python3 -m pip install -r requirements.txt
-    python3 setup.py bdist_wheel
+sudo apt-get install autoconf automake libtool pkg-config libpcap-dev
+git clone https://github.com/aouinizied/nfstream.git
+cd nfstream
+python3 -m pip install -r requirements.txt
+python3 setup.py bdist_wheel
 ```
 
 #### On MacOS
 
 ```bash
-    brew install autoconf automake libtool pkg-config
-    git clone https://github.com/aouinizied/nfstream.git
-    cd nfstream
-    python3 -m pip install -r requirements.txt
-    python3 setup.py bdist_wheel
+brew install autoconf automake libtool pkg-config
+git clone https://github.com/aouinizied/nfstream.git
+cd nfstream
+python3 -m pip install -r requirements.txt
+python3 setup.py bdist_wheel
 ```
 
 ## Contributing
