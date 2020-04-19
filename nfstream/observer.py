@@ -52,9 +52,13 @@ struct pcap_if {
 
 typedef struct pcap_if pcap_if_t;
 
-struct pcap_pkthdr {
+struct timeval {
     long tv_sec;
     long tv_usec;
+};
+
+struct pcap_pkthdr {
+    struct timeval ts;
     unsigned int caplen;
     unsigned int len;
 };
@@ -421,7 +425,7 @@ class _PcapFfi(object):
         iph6 = self._ffi.new("struct ndpi_ipv6hdr *")
         # lengths and offsets
         eth_offset, ether_type, wifi_len, pyld_eth_len, ip_offset, frag_off, vlan_id = 0, 0, 0, 0, 0, 0, 0
-        time = (header.tv_sec * TICK_RESOLUTION) + (header.tv_usec / (1000000 / TICK_RESOLUTION))
+        time = (header.ts.tv_sec * TICK_RESOLUTION) + (header.ts.tv_usec / (1000000 / TICK_RESOLUTION))
         dlt = self._libpcap.pcap_datalink(xdev)
         datalink_check = True
         while datalink_check:
@@ -489,7 +493,8 @@ class _PcapFfi(object):
                     vlan_id = ((packet[ip_offset] << 8) + packet[ip_offset + 1]) & 0xFFF
                     ether_type = (packet[ip_offset + 2] << 8) + packet[ip_offset + 3]
                     ip_offset += 4
-                    while ether_type == 0x8100 and ip_offset < header.caplen:  # Double tagging for 802.1Q
+                    while ether_type == 0x8100 and self._ffi.cast('unsigned', ip_offset) < header.caplen:
+                        # Double tagging for 802.1Q
                         vlan_id = ((packet[ip_offset] << 8) + packet[ip_offset + 1]) & 0xFFF
                         ether_type = (packet[ip_offset + 2] << 8) + packet[ip_offset + 3]
                         ip_offset += 4
@@ -520,7 +525,7 @@ class _PcapFfi(object):
                 if (ether_type == 0x0800) and (header.caplen >= ip_offset):  # work on Ethernet packets that contain IP
                     frag_off = ntohs(iph.frag_off)
                     if header.caplen < header.len:
-                        print("WARNING: packet capture size is smaller than packet size,")
+                        print("WARNING: packet capture size is smaller than packet size (header.caplen < header.len).")
                 if iph.version == 4:
                     ip_len = iph.ihl * 4
                     iph6 = self._ffi.NULL
