@@ -341,10 +341,10 @@ class _PcapFfi(object):
         if "win" in sys.platform[:3]:
             raise PcapException('Windows OS is not currently supported.')
         elif sys.platform == 'darwin':
-            self._ffi.cdef(cc_libpcap_structure.replace('apple_additional', 'char comment[256];'), override=True)
+            self._ffi.cdef(cc_libpcap_structure, override=True)
             libname = '/libs/libpcap.so'
         else:
-            self._ffi.cdef(cc_libpcap_structure.replace('apple_additional', ''), override=True)
+            self._ffi.cdef(cc_libpcap_structure, override=True)
             libname = '/libs/libpcap.so'
         try:
             self._ffi.cdef(cc_libpcap_apis, override=True)
