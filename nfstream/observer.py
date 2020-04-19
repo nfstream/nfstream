@@ -182,7 +182,7 @@ def fcf_from_ds(fc):
 
 
 def get_flags(d, p):
-    if p == 6:
+    if p == 6 and d is not None:
         return tcpflags(syn=int(d.syn),
                         cwr=int(d.cwr),
                         ece=int(d.ece),
