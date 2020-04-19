@@ -103,7 +103,7 @@ the broader goal of becoming **a common network data processing framework for re
 
 ## Main Features
 
-* **Performance:** **nfstream** is designed to be fast (x10 faster with pypy3 support) with a small CPU and memory footprint.
+* **Performance:** **nfstream** is designed to be fast (x10 faster with [**PyPy**][pypy] support) with a small CPU and memory footprint.
 * **Layer-7 visibility:** **nfstream** deep packet inspection engine is based on [**nDPI**][ndpi]. It allows nfstream to perform [**reliable**][reliable] encrypted applications identification and metadata extraction (e.g. TLS, QUIC, TOR, HTTP, SSH, DNS, etc.).
 * **Flexibility:** add a flow feature in 2 lines as an [**NFPlugin**][nfplugin].
 * **Machine Learning oriented:** add your trained model as an [**NFPlugin**][nfplugin]. 
@@ -369,3 +369,4 @@ This project is licensed under the GPLv3 License - see the [**License**][license
 [repo]: https://nfstream.github.io/
 [demo]: https://mybinder.org/v2/gh/aouinizied/nfstream-tutorials/master?filepath=demo_notebook.ipynb
 [stat_feat]: https://nfstream.github.io/docs/api#statistical-features
+[pypy]: https://www.pypy.org/
