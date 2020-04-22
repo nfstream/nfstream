@@ -7,10 +7,10 @@ the broader goal of becoming **a common network data processing framework for re
 
 <table>
 <tr>
-  <td><b>Live Demo Notebook</b></td>
+  <td><b>Live Notebook</b></td>
   <td>
     <a href="https://mybinder.org/v2/gh/aouinizied/nfstream-tutorials/master?filepath=demo_notebook.ipynb">
-    <img src="https://mybinder.org/badge_logo.svg" alt="live notebook" />
+    <img src="https://img.shields.io/badge/notebook-launch-blue?logo=jupyter&style=for-the-badge" alt="live notebook" />
     </a>
   </td>
 </tr>
@@ -18,76 +18,7 @@ the broader goal of becoming **a common network data processing framework for re
   <td><b>Project Website</b></td>
   <td>
     <a href="https://nfstream.github.io">
-    <img src="https://img.shields.io/badge/website-nfstream.github.io-blue" alt="website" />
-    </a>
-  </td>
-</tr>
-<tr>
-  <td><b>Latest Release</b></td>
-  <td>
-    <a href="https://pypi.python.org/pypi/nfstream">
-    <img src="https://img.shields.io/pypi/v/nfstream.svg" alt="latest release" />
-    </a>
-  </td>
-</tr>
-<tr>
-  <td><b>Citation</b></td>
-  <td>
-    <a href="https://zenodo.org/badge/latestdoi/216051909">
-    <img src="https://zenodo.org/badge/216051909.svg" alt="DOI" />
-    </a>
-  </td>
-</tr>
-<tr>
-  <td><b>Downloads</b></td>
-  <td>
-    <a href="https://pepy.tech/project/nfstream">
-    <img src="https://pepy.tech/badge/nfstream" alt="downloads" />
-    </a>
-  </td>
-</tr>
-<tr>
-  <td><b>Supported Platforms</b></td>
-  <td>
-    <a href="https://github.com/aouinizied/nfstream/actions?query=workflow%3Abuild">
-    <img src="https://raw.githubusercontent.com/wiki/ryanoasis/nerd-fonts/screenshots/v1.0.x/linux-pass-sm.png" alt="Linux" />
-    </a>
-    <a href="https://github.com/aouinizied/nfstream/actions?query=workflow%3Abuild">
-    <img src="https://raw.githubusercontent.com/wiki/ryanoasis/nerd-fonts/screenshots/v1.0.x/mac-pass-sm.png" alt="MacOS" />
-  </td>
-</tr>
-<tr>
-  <td><b>Supported Versions</b></td>
-  <td>
-    <a href="https://github.com/aouinizied/nfstream/actions?query=workflow%3Abuild">
-    <img src="https://img.shields.io/badge/python3-%3E%3D3.6-blue" alt="python3" />
-    </a>
-    <a href="https://github.com/aouinizied/nfstream/actions?query=workflow%3Abuild">
-    <img src="https://img.shields.io/badge/pypy3-%3E%3D7.1-blue" alt="pypy3" />
-    </a>
-  </td>
-</tr>
-<tr>
-  <td><b>Build Status</b></td>
-  <td>
-    <a href="https://github.com/aouinizied/nfstream/actions?query=workflow%3Abuild">
-    <img src="https://github.com/aouinizied/nfstream/workflows/build/badge.svg" alt="Github WorkFlows" />
-    </a>
-  </td>
-</tr>
-<tr>
-  <td><b>Code Quality</b></td>
-  <td>
-    <a href="https://lgtm.com/projects/g/aouinizied/nfstream/context:python">
-    <img src="https://img.shields.io/lgtm/grade/python/github/aouinizied/nfstream.svg?logo=lgtm&logoWidth=18)" alt="Quality" />
-    </a>
-  </td>
-</tr>
-<tr>
-  <td><b>Code Coverage</b></td>
-  <td>
-    <a href="https://codecov.io/gh/aouinizied/nfstream/">
-    <img src="https://codecov.io/gh/aouinizied/nfstream/branch/master/graph/badge.svg" alt="Coverage" />
+    <img src="https://img.shields.io/website?down_color=red&down_message=down&label=nfstream.github.io&logo=github&up_color=blue&up_message=up&url=https%3A%2F%2Fnfstream.github.io%2F&style=for-the-badge" alt="website" />
     </a>
   </td>
 </tr>
@@ -95,10 +26,59 @@ the broader goal of becoming **a common network data processing framework for re
   <td><b>Discussion Channel</b></td>
   <td>
     <a href="https://gitter.im/nfstream/community">
-    <img src="https://badges.gitter.im/gitterHQ/gitter.png" alt="Gitter" />
+    <img src="https://img.shields.io/gitter/room/aouinizied/nfstream?color=blue&logo=gitter&style=for-the-badge" alt="Gitter" />
     </a>
   </td>
-</tr>	
+</tr>
+<tr>
+  <td><b>Latest Release</b></td>
+  <td>
+    <a href="https://pypi.python.org/pypi/nfstream">
+    <img src="https://img.shields.io/pypi/v/nfstream.svg?logo=pypi&style=for-the-badge" alt="latest release" />
+    </a>
+  </td>
+</tr>
+
+<tr>
+  <td><b>Supported Versions</b></td>
+  <td>
+    <a href="https://github.com/aouinizied/nfstream/actions?query=workflow%3Abuild">
+    <img src="https://img.shields.io/pypi/pyversions/nfstream?logo=python&style=for-the-badge" alt="python3" />
+    </a>
+  </td>
+</tr>
+<tr>
+  <td><b>Build Status</b></td>
+  <td>
+    <a href="https://github.com/aouinizied/nfstream/actions?query=workflow%3Abuild">
+    <img src="https://img.shields.io/github/workflow/status/aouinizied/nfstream/build/master?logo=github&style=for-the-badge" alt="Github WorkFlows" />
+    </a>
+  </td>
+</tr>
+<tr>
+  <td><b>Code Quality</b></td>
+  <td>
+    <a href="https://lgtm.com/projects/g/aouinizied/nfstream/context:python">
+    <img src="https://img.shields.io/lgtm/grade/python/github/aouinizied/nfstream.svg?logo=lgtm&style=for-the-badge&logoWidth=18)" alt="Quality" />
+    </a>
+  </td>
+</tr>
+<tr>
+  <td><b>Code Coverage</b></td>
+  <td>
+    <a href="https://codecov.io/gh/aouinizied/nfstream/">
+    <img src="https://img.shields.io/codecov/c/github/aouinizied/nfstream?color=brightgreen&logo=codecov&style=for-the-badge" alt="Coverage" />
+    </a>
+  </td>
+</tr>
+<tr>
+  <td><b>Project License</b></td>
+  <td>
+    <a href="https://github.com/aouinizied/nfstream/blob/master/LICENSE">
+    <img src="https://img.shields.io/pypi/l/nfstream?logo=gnu&style=for-the-badge" alt="License" />
+    </a>
+  </td>
+</tr>
 </table>
 
 ## Main Features
@@ -315,7 +295,7 @@ python3 -m pip install nfstream
 
 If you want to build **nfstream** from sources on your local machine:
 
-#### On Linux
+#### ![linux](https://raw.githubusercontent.com/wiki/ryanoasis/nerd-fonts/screenshots/v1.0.x/linux-pass-sm.png) Linux
 
 ```bash
 sudo apt-get install autoconf automake libtool pkg-config libpcap-dev
@@ -325,7 +305,7 @@ python3 -m pip install -r requirements.txt
 python3 setup.py bdist_wheel
 ```
 
-#### On MacOS
+#### ![osx](https://raw.githubusercontent.com/wiki/ryanoasis/nerd-fonts/screenshots/v1.0.x/mac-pass-sm.png) MacOS
 
 ```bash
 brew install autoconf automake libtool pkg-config
