@@ -19,7 +19,6 @@ If not, see <http://www.gnu.org/licenses/>.
 from .cache import NFCache
 from .observer import NFObserver
 from threading import Thread
-from random import randrange
 import pandas as pd
 import time as tm
 import zmq
