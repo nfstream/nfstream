@@ -301,12 +301,16 @@ def get_pkt_info(time, ffi, version, vlan_id, iph, iph6, ipsize, l4_packet_len, 
 
 def get_pkt_info6(time, ffi, vlan_id, iph6, ipsize, rawsize, nroots, account_ip_padding_size):
     iph = ffi.new("struct ndpi_iphdr *")
+
     iph.version = 4
-    iph.protocol = iph6.ip6_hdr.ip6_un1_nxt
     iph.tot_len = iph6.ip6_hdr.ip6_un1_plen
-    if iph.protocol == 60:
-        options = ffi.cast('uint8_t *', iph6) + ffi.sizeof('struct ndpi_ipv6hdr')
-        iph.protocol = options[0]
+    proto = iph6.ip6_hdr.ip6_un1_nxt
+    ret = handle_ipv6_extension_headers(ffi.cast('uint8_t *', iph6) + ffi.sizeof('struct ndpi_ipv6hdr'),
+                                        ntohs(iph6.ip6_hdr.ip6_un1_plen),
+                                        iph6.ip6_hdr.ip6_un1_nxt)
+    if ret[0] != 0:
+        proto = ret[1]
+    iph.protocol = proto
     return get_pkt_info(time, ffi, 6, vlan_id, iph, iph6, ipsize, ntohs(iph6.ip6_hdr.ip6_un1_plen), rawsize, nroots,
                         account_ip_padding_size)
 
@@ -319,6 +323,41 @@ def process_packet(ffi, time, vlan_id, iph, iph6, ipsize, rawsize, nroots, accou
     else:
         return get_pkt_info6(time, ffi, vlan_id, iph6, ipsize, rawsize, nroots,
                              account_ip_padding_size)
+
+
+def handle_ipv6_extension_headers(l4, l4_len, nxt):
+    """ handle_ipv6_extension_headers: handle extension headers in IPv6 packets, ret: 0 for success, 1 upon failure """
+    transport_layer = l4
+    transport_layer_len = l4_len
+    nxt_hdr = nxt
+    while (nxt_hdr == 0 or
+           nxt_hdr == 0 or
+           nxt_hdr == 0 or
+           nxt_hdr == 0 or
+           nxt_hdr == 0 or
+           nxt_hdr == 0):
+        if nxt_hdr == 59:  # no next header
+            return 1, nxt_hdr
+        if nxt_hdr == 44:  # fragment extension header has fixed size of 8 bytes
+            # and the first byte is the next header type
+            if transport_layer_len < 8:
+                return 1, nxt_hdr
+            nxt_hdr = transport_layer[0]
+            transport_layer_len -= 8
+            transport_layer += 8
+        # the other extension headers have one byte for the next header type and one byte for the *
+        # extension header length in 8 byte steps minus the first 8 bytes
+        if transport_layer_len < 2:
+            return 1, nxt_hdr
+        ehdr_len = transport_layer[1]
+        ehdr_len *= 8
+        ehdr_len += 8
+        if transport_layer_len < ehdr_len:
+            return 1, nxt_hdr
+        nxt_hdr = transport_layer[0]
+        transport_layer_len -= ehdr_len
+        transport_layer += ehdr_len
+    return 0, 0
 
 
 class _PcapFfi(object):
@@ -535,14 +574,21 @@ class _PcapFfi(object):
                             ip_check = True
                     if (frag_off & 0x1FFF) != 0:
                         return None
+
                 elif iph.version == 6:
                     if header.caplen < (ip_offset + self._ffi.sizeof('struct ndpi_ipv6hdr')):
                         return None  # too short for IPv6 header
                     iph6 = self._ffi.cast('struct ndpi_ipv6hdr *', packet + ip_offset)
-                    ip_len = self._ffi.sizeof('struct ndpi_ipv6hdr')
-                    if iph6.ip6_hdr.ip6_un1_nxt == 60:  # IPv6 destination option
-                        options = self._ffi.cast('uint8_t *', packet + (ip_offset + ip_len))
-                        ip_len += 8 * (options[1] + 1)
+                    ip_len = ntohs(iph6.ip6_hdr.ip6_un1_plen)
+                    if header.caplen < (ip_offset +
+                                        self._ffi.sizeof('struct ndpi_ipv6hdr') +
+                                        ntohs(iph6.ip6_hdr.ip6_un1_plen)):
+                        return None  # too short for IPv6 payload
+                    if handle_ipv6_extension_headers(self._ffi.cast('uint8_t *', iph6) +
+                                                     self._ffi.sizeof('struct ndpi_ipv6hdr'),
+                                                     ip_len,
+                                                     iph6.ip6_hdr.ip6_un1_nxt)[0] != 0:
+                        return None
                     iph = self._ffi.NULL
                 else:
                     return None
