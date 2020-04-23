@@ -350,6 +350,16 @@ messenger.com')
         del streamer_test
         print("{}\t: \033[94mOK\033[0m".format(".Testing adding user plugins".ljust(60, ' ')))
 
+    def test_entry_conversion(self):
+        print("\n----------------------------------------------------------------------")
+        streamer_test = NFStreamer(source='tests/pcap/facebook.pcap')
+        for flow in streamer_test:
+            print(flow)
+            print(flow.to_namedtuple())
+            print(flow.to_json())
+        del streamer_test
+        print("{}\t: \033[94mOK\033[0m".format(".Testing entry format conversion".ljust(60, ' ')))
+
 
 if __name__ == '__main__':
     unittest.main()

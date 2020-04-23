@@ -94,9 +94,23 @@ the broader goal of becoming **a common network data processing framework for re
 
 ```python
 from nfstream import NFStreamer
-my_awesome_streamer = NFStreamer(source="facebook.pcap") # or network interface (source="eth0")
+my_awesome_streamer = NFStreamer(source="facebook.pcap", # or network interface (source="eth0")
+                                 snaplen=65535,
+                                 idle_timeout=30,
+                                 active_timeout=300,
+                                 plugins=(),
+                                 dissect=True,
+                                 max_tcp_dissections=10,
+                                 max_udp_dissections=16,
+                                 statistics=False,
+                                 account_ip_padding_size=False,
+                                 enable_guess=True
+)
+
 for flow in my_awesome_streamer:
-    print(flow)  # print it, append to pandas Dataframe or whatever you want :)!
+    print(flow)  # print it.
+    print(flow.to_namedtuple()) # convert it to a named tuple.
+    print(flow.to_json()) # convert it to json.
 ```
 
 ```python

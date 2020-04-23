@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License along with nfs
 If not, see <http://www.gnu.org/licenses/>.
 """
 from collections import namedtuple
+import json
 
 
 class NFEntry(object):
@@ -67,3 +68,9 @@ class NFEntry(object):
     def to_namedtuple(self):
         """ Convert NFEntry to namedtuple """
         return namedtuple(type(self).__name__, self.__dict__.keys())(*self.__dict__.values())
+
+    def to_json(self):
+        """ Convert NFEntry to json """
+        return json.dumps(self.__dict__)
+
+

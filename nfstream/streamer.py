@@ -86,4 +86,5 @@ class NFStreamer(object):
         for flow in self:
             data.append(flow.to_namedtuple())
         df = pd.DataFrame(data=data)
+        del data
         return df
