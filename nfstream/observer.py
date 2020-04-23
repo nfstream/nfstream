@@ -295,7 +295,7 @@ def get_pkt_info(time, ffi, version, vlan_id, iph, iph6, ipsize, l4_packet_len, 
     return NFPacket(time=time, raw_size=rawsize, ip_size=reported_ip_size, transport_size=l4_data_len,
                     payload_size=payload_len, nfhash=get_hash(proto, vlan_id, src_addr, dst_addr, sport, dport),
                     ip_src=src_addr, ip_dst=dst_addr, src_port=sport, dst_port=dport, protocol=proto, vlan_id=vlan_id,
-                    version=version, tcp_flags=flags, ip_packet=bytes(xffi.buffer(ipcontent, ipsize)),
+                    version=version, tcp_flags=flags, ip_packet=bytes(ffi.buffer(ipcontent, ipsize)),
                     root_idx=hashval % nroots)
 
 
@@ -628,9 +628,8 @@ class PcapReader(object):
         errbuf = self._ffi.new("char []", 128)
         pcap = self._libpcap.pcap_open_offline(bytes(filename, 'utf-8'), errbuf)
         if pcap == self._ffi.NULL:
-            raise PcapException(
-                "Failed to open pcap file for reading: {}: {}".format(filename, self._ffi.string(errbuf)))
-
+            raise PcapException("Failed to open pcap file for reading: {}: {}".format(filename,
+                                                                                      self._ffi.string(errbuf)))
         dl = self._libpcap.pcap_datalink(pcap)
         try:
             dl = Dlt(dl)
@@ -717,7 +716,6 @@ class PcapLiveDevice(object):
 
 
 _PcapFfi()  # instantiate singleton
-xffi = _PcapFfi.instance().ffi
 
 
 def check_source_type(source):
