@@ -331,11 +331,11 @@ def handle_ipv6_extension_headers(l4, l4_len, nxt):
     transport_layer_len = l4_len
     nxt_hdr = nxt
     while (nxt_hdr == 0 or
-           nxt_hdr == 0 or
-           nxt_hdr == 0 or
-           nxt_hdr == 0 or
-           nxt_hdr == 0 or
-           nxt_hdr == 0):
+           nxt_hdr == 43 or
+           nxt_hdr == 44 or
+           nxt_hdr == 60 or
+           nxt_hdr == 135 or
+           nxt_hdr == 59):
         if nxt_hdr == 59:  # no next header
             return 1, nxt_hdr
         if nxt_hdr == 44:  # fragment extension header has fixed size of 8 bytes
