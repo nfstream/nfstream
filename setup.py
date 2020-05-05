@@ -38,7 +38,10 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 def setup_libpcap():
     os.chdir('nfstream/')
-    subprocess.check_call(['make'])
+    if sys.platform == 'darwin':
+        subprocess.check_call(['clang -I. -shared -Wl,-install_name,observer -o observer.so -fPIC observer.c -lpcap'])
+    else:
+        subprocess.check_call(['gcc -I. -shared -Wl,-soname,observer -o observer.so -fPIC observer.c -lpcap'])
     os.chdir('..')
 
 
