@@ -1,6 +1,12 @@
 CFLAGS=-I. -shared -Wl,
 LDFLAGS=$(CFILE) -lpcap
-SHARE = -soname,observer
+ifeq ($(UNAME), Darwin)
+	SONAME_OPTION	=	-install_name
+else
+	SONAME_OPTION    =   -soname
+endif
+
+SHARE = ${SONAME_OPTION},observer
 SO=observer.so
 OBJS = observer.o
 CFILE = observer.c
