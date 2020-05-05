@@ -42,19 +42,19 @@ def setup_libpcap():
         subprocess.check_call(['clang',
                                '-I.',
                                '-shared',
-                               '-Wl,-install_name,observer',
-                               '-o','observer.so',
+                               '-Wl,-install_name,observer_cc',
+                               '-o','observer_cc.so',
                                '-fPIC',
-                               'observer.c',
+                               'observer_cc.c',
                                '-lpcap'])
     else:
         subprocess.check_call(['gcc',
                                '-I.',
                                '-shared',
-                               '-Wl,-soname,observer',
-                               '-o', 'observer.so',
+                               '-Wl,-soname,observer_cc',
+                               '-o', 'observer_cc.so',
                                '-fPIC',
-                               'observer.c',
+                               'observer_cc.c',
                                '-lpcap'])
     os.chdir('..')
 

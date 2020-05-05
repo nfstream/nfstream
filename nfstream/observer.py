@@ -101,7 +101,7 @@ class NFObserver:
     def __init__(self, source=None, snaplen=65535, promisc=1, to_ms=0, bpf_filter=None,
                  nroots=1, account_ip_padding_size=False, decode_tunnels=False):
         self._ffi = cffi.FFI()
-        self._lib = self._ffi.dlopen(dirname(abspath(__file__)) + '/observer.so')
+        self._lib = self._ffi.dlopen(dirname(abspath(__file__)) + '/observer_cc.so')
         self._ffi.cdef(cc_observer_headers)
         self._ffi.cdef(cc_observer_apis, override=True)
         if not isinstance(source, str):
