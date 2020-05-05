@@ -124,7 +124,7 @@ class NFObserver:
                 if isinstance(bpf_filter, str):
                     rs = self._lib.observer_configure(handler, bytes(bpf_filter, 'utf-8'))
                     if rs > 0:
-                        OSError("Failed to setup BPF filter: {}. Please use a valid one.".format(bpf_filter))
+                        raise OSError("Failed to setup BPF filter: {}. Please use a valid one.".format(bpf_filter))
                 elif bpf_filter is None:
                     pass
                 else:
