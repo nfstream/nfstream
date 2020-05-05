@@ -19,7 +19,6 @@ If not, see <http://www.gnu.org/licenses/>.
 from .cache import NFCache
 from .observer import NFObserver
 from threading import Thread
-import pandas as pd
 import time as tm
 import zmq
 import sys
@@ -79,12 +78,3 @@ class NFStreamer(object):
                         self.cache.stopped = True
         except RuntimeError:
             return None
-
-    def to_pandas(self):
-        """ streamer to pandas function """
-        data = []
-        for flow in self:
-            data.append(flow.to_namedtuple())
-        df = pd.DataFrame(data=data)
-        del data
-        return df
