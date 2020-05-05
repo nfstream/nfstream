@@ -14,6 +14,18 @@ You should have received a copy of the GNU General Public License along with nfs
 If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <stdlib.h>
+
+#ifdef WIN32
+#include <winsock2.h> /* winsock.h is included automatically */
+#include <process.h>
+#include <io.h>
+#else
+#include <unistd.h>
+#include <netinet/in.h>
+#include <math.h>
+#include <float.h>
+#endif
 
 #include <pcap.h>
 #include <stdint.h>
