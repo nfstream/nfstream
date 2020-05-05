@@ -67,6 +67,9 @@ def setup_ndpi():
                            'dev',
                            'https://github.com/ntop/nDPI.git'])
     os.chdir('nDPI/')
+    subprocess.check_call(['git',
+                           'checkout',
+                           '4148c5e065d32128eea17c0e228e372ad72eef82'])
     subprocess.check_call(['./autogen.sh'])
     os.chdir('src/')
     os.chdir('lib/')
