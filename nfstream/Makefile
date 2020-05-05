@@ -1,4 +1,3 @@
-CC=gcc
 CFLAGS=-I. -shared -Wl,
 LDFLAGS=$(CFILE) -lpcap
 SHARE = -soname,observer

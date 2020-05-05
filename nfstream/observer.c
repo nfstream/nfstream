@@ -439,6 +439,9 @@ int observer_configure(pcap_t * pcap_handle, char * bpf_filter) {
 	return 0;
     }
   }
+  else {
+    return 0;
+  }
 }
 
 
@@ -1085,6 +1088,6 @@ int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int account_ip
   return rv_handle;
 }
 
-int observer_close(pcap_t * pcap_handle) {
+void observer_close(pcap_t * pcap_handle) {
   pcap_close(pcap_handle);
 }
