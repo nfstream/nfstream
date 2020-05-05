@@ -86,7 +86,7 @@ def nfplugins_validator(plugins):
 class packet_direction_setter(NFPlugin):
     """ Setter for packet direction (volatile) """
     def on_update(self, obs, entry):
-        if (entry.ip_src == obs.ip_src) and (entry.src_port == obs.src_port):
+        if (entry.src_ip == obs.src_ip) and (entry.src_port == obs.src_port):
             obs.close(0)
         else:
             obs.close(1)
@@ -143,16 +143,16 @@ class nfhash(NFPlugin):
         return obs.nfhash
 
 
-class ip_src(NFPlugin):
-    """ Integer value of IP source (volatile) """
+class src_ip(NFPlugin):
+    """ str value of IP source (volatile) """
     def on_init(self, obs):
-        return obs.ip_src
+        return obs.src_ip
 
 
-class ip_dst(NFPlugin):
-    """ Integer value of IP source (volatile) """
+class dst_ip(NFPlugin):
+    """ str value of IP source (volatile) """
     def on_init(self, obs):
-        return obs.ip_dst
+        return obs.dst_ip
 
 
 class version(NFPlugin):
@@ -183,24 +183,6 @@ class vlan_id(NFPlugin):
     """ VLAN identifier """
     def on_init(self, obs):
         return obs.version
-
-
-class src_ip(NFPlugin):
-    """ String representation of ip source """
-    def on_init(self, obs):
-        if obs.version == 4:
-            return str(ipaddress.IPv4Address(obs.ip_src))
-        else:
-            return str(ipaddress.IPv6Address(obs.ip_src)).replace(':0:', '::')
-
-
-class dst_ip(NFPlugin):
-    """ String representation of ip destination """
-    def on_init(self, obs):
-        if obs.version == 4:
-            return str(ipaddress.IPv4Address(obs.ip_dst))
-        else:
-            return str(ipaddress.IPv6Address(obs.ip_dst)).replace(':0:', '::')
 
 
 class bidirectional_packets(NFPlugin):
@@ -343,7 +325,7 @@ class nDPI(NFPlugin):
         f = self.user_data.new_ndpi_flow()
         s = self.user_data.new_ndpi_id()
         d = self.user_data.new_ndpi_id()
-        p = self.user_data.ndpi_detection_process_packet(f, obs.ip_packet, len(obs.ip_packet), int(obs.time), s, d)
+        p = self.user_data.ndpi_detection_process_packet(f, obs.ip_packet, len(obs.ip_packet), obs.time, s, d)
         # nDPI structures are maintained in a list [ndpi_flow, ndpi_src, ndpi_dst, ndpi_proto, detection_completed]
         return [f, s, d, p, 0]
 
@@ -354,7 +336,7 @@ class nDPI(NFPlugin):
             entry.nDPI[3] = self.user_data.ndpi_detection_process_packet(entry.nDPI[0],
                                                                          obs.ip_packet,
                                                                          len(obs.ip_packet),
-                                                                         int(obs.time),
+                                                                         obs.time,
                                                                          entry.nDPI[1],
                                                                          entry.nDPI[2])
             update_ndpi_infos(entry, entry.nDPI[0], entry.nDPI[3], self.user_data)
@@ -1295,15 +1277,13 @@ nfstream_core_plugins = [packet_direction_setter(volatile=True),
                          dst2src_first_seen_ms(),
                          dst2src_last_seen_ms(),
                          nfhash(volatile=True),
-                         ip_src(volatile=True),
-                         ip_dst(volatile=True),
+                         src_ip(),
+                         dst_ip(),
                          version(),
                          src_port(),
                          dst_port(),
                          protocol(),
                          vlan_id(),
-                         src_ip(),
-                         dst_ip(),
                          bidirectional_packets(),
                          bidirectional_raw_bytes(),
                          bidirectional_ip_bytes(),

@@ -1,2 +1,2 @@
-include nfstream/libs/libndpi.so
-include nfstream/libs/libpcap.so
+include nfstream/libndpi.so
+include nfstream/observer.so

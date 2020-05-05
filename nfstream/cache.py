@@ -137,7 +137,7 @@ class NFCache(object):
             plugin.cleanup()
         for plugin in self.user_plugins:
             plugin.cleanup()
-        self.observer.packet_generator.close()  # close generator
+        self.observer.close()  # close generator
         self.producer.send_pyobj(None)
 
     def consume(self, obs):
