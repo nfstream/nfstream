@@ -1,2 +1,2 @@
 include nfstream/libndpi.so
-include nfstream/observer.so
+include nfstream/observer_cc.so
