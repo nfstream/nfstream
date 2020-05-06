@@ -34,6 +34,7 @@ class NFStreamer(object):
                  account_ip_padding_size=False, enable_guess=True, decode_tunnels=True, bpf_filter=None, promisc=True
                  ):
         NFStreamer.streamer_id += 1
+        self._source = source
         now = str(tm.time())
         self._nroots = 100
         self.sock_name = "ipc:///tmp/nfstream-{pid}-{streamerid}-{ts}".format(pid=os.getpid(),
@@ -84,12 +85,37 @@ class NFStreamer(object):
         except RuntimeError:
             return None
 
+    def to_csv(self, sep=";", path=None):
+        if path is None:
+            output_path = str(self._source) + '.csv'
+        else:
+            output_path = path
+        if os.path.exists(output_path):
+            sys.exit("Output file exists: {}. Please specify a valid file path.".format(output_path))
+        else:
+            total_flows = 0
+            with open(output_path, 'ab') as f:
+                for flow in self:
+                    try:
+                        if total_flows == 0:  # header creation
+                            header = sep.join([str(i) for i in flow.keys()]) + "\n"
+                            f.write(header.encode('utf-8'))
+                        values = sep.join([str(i) for i in flow.values()]) + "\n"
+                        f.write(values.encode('utf-8'))
+                        total_flows = total_flows + 1
+                    except KeyboardInterup:
+                        if not self._stopped:
+                            self._stopped = True
+                            self.cache.stopped = True
+        return total_flows
+
     def to_pandas(self):
         """ streamer to pandas function """
-        data = []
-        for flow in self:
-            data.append(flow.to_namedtuple())
-        df = pd.DataFrame(data=data)
-        del data
-        return df
+        temp_file_path = self.sock_name.replace("ipc:///tmp/", "") + ".csv"
+        total_flows = self.to_csv(path=temp_file_path)
+        df = pd.read_csv(temp_file_path, sep=";")
+        if os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
+        if total_flows == df.shape[0]:
+            return df
 

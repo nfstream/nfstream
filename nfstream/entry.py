@@ -73,4 +73,10 @@ class NFEntry(object):
         """ Convert NFEntry to json """
         return json.dumps(self.__dict__)
 
+    def values(self):
+        return list(self.__dict__.values())
+
+    def keys(self):
+        return list(self.__dict__)
+
 
