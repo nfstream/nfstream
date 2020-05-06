@@ -17,8 +17,8 @@ You should have received a copy of the GNU General Public License along with nfs
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-import unittest
 from nfstream import NFStreamer, NFPlugin
+import unittest
 import os
 import csv
 
@@ -375,6 +375,15 @@ messenger.com')
         self.assertEqual(count, 1)
         del streamer_test
         print("{}\t: \033[94mOK\033[0m".format(".Testing BPF filtering".ljust(60, ' ')))
+
+    def test_to_pandas(self):
+        print("\n----------------------------------------------------------------------")
+        df = NFStreamer(source='tests/pcap/facebook.pcap', statistics=True,
+                                 bpf_filter="src port 52066 or dst port 52066").to_pandas()
+        self.assertEqual(df["src_port"][0], 52066)
+        self.assertEqual(df.shape[0], 1)
+        self.assertEqual(df.shape[1], 95)
+        print("{}\t: \033[94mOK\033[0m".format(".Testing to Pandas".ljust(60, ' ')))
 
 
 if __name__ == '__main__':
