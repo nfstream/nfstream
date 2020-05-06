@@ -82,9 +82,6 @@ class TestMethods(unittest.TestCase):
                 ok_files.append(test_case_name)
                 print("{}\t: \033[94mOK\033[0m".format(test_case_name.ljust(60, ' ')))
             else:
-                print(result)
-                print("---------------------")
-                print(ground_truth_ndpi[test_case_name])
                 ko_files.append(test_case_name)
                 print("{}\t: \033[31mKO\033[0m".format(test_case_name.ljust(60, ' ')))
             del streamer_test
