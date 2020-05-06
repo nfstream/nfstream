@@ -14,6 +14,8 @@ You should have received a copy of the GNU General Public License along with nfs
 If not, see <http://www.gnu.org/licenses/>.
 */
 
+/* Parsing functions and logic within this file are mainly based on nDPI source code <https://github.com/ntop/nDPI>*/
+
 #include <stdlib.h>
 
 #ifdef WIN32
@@ -107,7 +109,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define nfstream_max(a,b)   ((a > b) ? a : b)
 #define BAD_FCS                         0x50    /* 0101 0000 */
 #define GTP_U_V1_PORT                  2152
-#define NDPI_CAPWAP_DATA_PORT          5247
+#define NFSTREAM_CAPWAP_DATA_PORT          5247
 #define TZSP_PORT                      37008
 #ifndef DLT_LINUX_SLL
 #define DLT_LINUX_SLL  113
@@ -358,9 +360,7 @@ typedef union
 {
   u_int32_t ipv4;
   u_int8_t ipv4_u_int8_t[4];
-#ifdef NDPI_DETECTION_SUPPORT_IPV6
   struct nfstream_in6_addr ipv6;
-#endif
 } nfstream_ip_addr_t;
 
 
@@ -1029,7 +1029,7 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
 	    }
 	  }
 	}
-      } else if(sport == NDPI_CAPWAP_DATA_PORT) {
+      } else if(sport == NFSTREAM_CAPWAP_DATA_PORT) {
 	/* We dissect ONLY CAPWAP traffic */
 	u_int offset           = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
 
@@ -1076,6 +1076,7 @@ pcap_t * observer_open(const u_char * pcap_file, u_int snaplen, int promisc, int
     if (pcap_handle != NULL) status = pcap_setnonblock(pcap_handle, 1, errbuf_set);
   }
   if (status == 0) {
+    return pcap_handle;
     return pcap_handle;
   } else {
     return NULL;
