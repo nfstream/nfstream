@@ -330,9 +330,19 @@ messenger.com')
     def test_noroot_live(self):
         print("\n----------------------------------------------------------------------")
         try:
-            streamer_test = NFStreamer(idle_timeout=0)
+            streamer_test = NFStreamer(source="lo", idle_timeout=0)
         except SystemExit:
             print("{}\t: \033[94mOK\033[0m".format(".Testing live capture (noroot)".ljust(60, ' ')))
+
+    def test_bad_observer_args(self):
+        print("\n----------------------------------------------------------------------")
+        try:
+            streamer_test = NFStreamer(source=1, promisc=53, snaplen="wrong", bpf_filter=False,
+                                       account_ip_padding_size="toto",
+                                       decode_tunnels=22)
+        except SystemExit as e:
+            self.assertEqual(str(e).count("\n"), 6)
+        print("{}\t: \033[94mOK\033[0m".format(".Testing parameters handling".ljust(60, ' ')))
 
     def test_user_plugins(self):
         class feat_1(NFPlugin):

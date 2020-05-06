@@ -97,26 +97,31 @@ class NFPacket(object):
         object.__setattr__(self, "closed", True)
 
 
+def validate_parameters(source, promisc, snaplen, bpf_filter, account_ip_padding_size, decode_tunnels):
+    errors = ""
+    if not isinstance(source, str):
+        errors = errors + "\nPlease specify a pcap file path or a valid network interface name as source."
+    if not isinstance(promisc, bool):
+        errors = errors + "\nPlease specify a valid promisc parameter (possible values: True, False)."
+    if not isinstance(snaplen, int) or (isinstance(snaplen, int) and snaplen <= 0):
+        errors = errors + "\nPlease specify a valid snaplen parameter (positive integer)."
+    if not isinstance(bpf_filter, str) and bpf_filter is not None:
+        errors = errors + "\nPlease specify a valid bpf_filter string format."
+    if not isinstance(account_ip_padding_size, bool):
+        errors = errors + "\nPlease specify a valid account_ip_padding_size parameter (possible values: True, False)."
+    if not isinstance(decode_tunnels, bool):
+        errors = errors + "\nPlease specify a valid decode_tunnels parameter (possible values: True, False)."
+    return errors
+
+
 class NFObserver:
     """ NFObserver module main class """
     def __init__(self, source=None, snaplen=65535, promisc=True, to_ms=0, bpf_filter=None,
                  nroots=1, account_ip_padding_size=False, decode_tunnels=False):
-        if not isinstance(source, str):
-            raise OSError("Please specify a pcap file path or a valid network interface name as source.")
-        if not isinstance(promisc, bool):
-            raise OSError("Please specify a valid promisc parameter (possible values: True, False).")
-        if not isinstance(snaplen, int) or (isinstance(snaplen, int) and snaplen <= 0):
-            raise OSError("Please specify a valid snaplen parameter (positive integer).")
-        if not isinstance(to_ms, int) or (isinstance(to_ms, int) and to_ms < 0):
-            raise OSError("Please specify a valid to_ms parameter (positive integer).")
-        if not isinstance(nroots, int) or (isinstance(nroots, int) and nroots <= 0):
-            raise OSError("Please specify a valid nroots parameter (positive integer).")
-        if not isinstance(bpf_filter, str) and bpf_filter is not None:
-            raise OSError("Please specify a valid bpf_filter string format.")
-        if not isinstance(account_ip_padding_size, bool):
-            raise OSError("Please specify a valid account_ip_padding_size parameter (possible values: True, False).")
-        if not isinstance(decode_tunnels, bool):
-            raise OSError("Please specify a valid decode_tunnels parameter (possible values: True, False).")
+        errors = validate_parameters(source, promisc, snaplen, bpf_filter, account_ip_padding_size,
+                                     decode_tunnels)
+        if errors is not '':
+            raise OSError(errors)
         self._ffi = cffi.FFI()
         self._lib = self._ffi.dlopen(dirname(abspath(__file__)) + '/observer_cc.so')
         self._ffi.cdef(cc_observer_headers)
