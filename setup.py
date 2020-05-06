@@ -107,11 +107,11 @@ class BuildNdpiCommand(build_ext):
 
 needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
 pytest_runner = ['pytest-runner'] if needs_pytest else []
-
 python_requires = '>=3.6'
 install_requires = ['cffi>=1.14.0',
                     'pyzmq>=19.0.0',
-                    'pandas>=1.0.1']
+                    'pandas>=1.0.3',
+                    'psutil>=5.7.0']
 
 try:
     from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
