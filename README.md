@@ -48,6 +48,14 @@ the broader goal of becoming **a common network data processing framework for re
   </td>
 </tr>
 <tr>
+  <td><b>Project License</b></td>
+  <td>
+    <a href="https://github.com/aouinizied/nfstream/blob/master/LICENSE">
+    <img src="https://img.shields.io/pypi/l/nfstream?logo=gnu&style=for-the-badge&color=blue" alt="License" />
+    </a>
+  </td>
+</tr>
+<tr>
   <td><b>Build Status</b></td>
   <td>
     <a href="https://github.com/aouinizied/nfstream/actions?query=workflow%3Abuild">
@@ -68,14 +76,6 @@ the broader goal of becoming **a common network data processing framework for re
   <td>
     <a href="https://codecov.io/gh/aouinizied/nfstream/">
     <img src="https://img.shields.io/codecov/c/github/aouinizied/nfstream?color=brightgreen&logo=codecov&style=for-the-badge" alt="Coverage" />
-    </a>
-  </td>
-</tr>
-<tr>
-  <td><b>Project License</b></td>
-  <td>
-    <a href="https://github.com/aouinizied/nfstream/blob/master/LICENSE">
-    <img src="https://img.shields.io/pypi/l/nfstream?logo=gnu&style=for-the-badge" alt="License" />
     </a>
   </td>
 </tr>
