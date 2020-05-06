@@ -36,26 +36,51 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 
-def setup_libpcap():
+def setup_observer_cc():
     os.chdir('nfstream/')
+    print("\nSetting up observer_cc. Platform: {plat}, Byteorder: {bo}".format(plat=sys.platform, bo=sys.byteorder))
+    subprocess.check_call(['git',
+                           'clone',
+                           '--branch',
+                           'libpcap-1.9.1',
+                           'https://github.com/the-tcpdump-group/libpcap.git'])
+    os.chdir('libpcap/')
+    if sys.platform == 'darwin':
+        subprocess.check_call(['./configure', 'CC=clang', '--enable-ipv6', '--disable-universal', '--enable-dbus=no',
+                               '--without-libnl'])
+        subprocess.check_call(['make'])
+    else:
+        subprocess.check_call(['./configure', 'CC=gcc', '--enable-ipv6', '--disable-universal', '--enable-dbus=no',
+                               '--without-libnl'])
+        subprocess.check_call(['make'])
+    os.chdir('..')
     if sys.platform == 'darwin':
         subprocess.check_call(['clang',
-                               '-I.',
                                '-shared',
-                               '-Wl,-install_name,observer_cc',
-                               '-o','observer_cc.so',
+                               '-o',
+                               'observer_cc.so',
+                               '-g',
                                '-fPIC',
-                               'observer_cc.c',
-                               '-lpcap'])
+                               '-DPIC',
+                               '-I/libpcap',
+                               '-O2',
+                               '-Wno-unused-value',
+                               '-fno-omit-frame-pointer',
+                               'observer_cc.c', 'libpcap/libpcap.A.dylib'])
     else:
         subprocess.check_call(['gcc',
-                               '-I.',
                                '-shared',
-                               '-Wl,-soname,observer_cc',
-                               '-o', 'observer_cc.so',
+                               '-o',
+                               'observer_cc.so',
+                               '-g',
                                '-fPIC',
-                               'observer_cc.c',
-                               '-lpcap'])
+                               '-DPIC',
+                               '-I/libpcap',
+                               '-O2',
+                               '-Wno-unused-value',
+                               '-fno-omit-frame-pointer',
+                               'observer_cc.c', 'libpcap/libpcap.a'])
+    shutil.rmtree('libpcap/', ignore_errors=True)
     os.chdir('..')
 
 
@@ -100,7 +125,7 @@ class BuildNdpiCommand(build_ext):
         if os.name != 'posix':  # Windows case
             pass
         else:
-            setup_libpcap()
+            setup_observer_cc()
             setup_ndpi()
         build_ext.run(self)
 
