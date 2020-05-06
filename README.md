@@ -286,7 +286,7 @@ class packet_with_666_size(NFPlugin):
             return 0
 	
     def on_update(self, pkt, flow): # flow update with each packet belonging to the flow
-        if pkt.pkt.raw_size == 666:
+        if pkt.raw_size == 666:
             flow.packet_with_666_size += 1
 		
 streamer_awesome = NFStreamer(source='devil.pcap', plugins=[packet_with_666_size()])
@@ -294,6 +294,57 @@ for flow in streamer_awesome:
     print(flow.packet_with_666_size) # see your dynamically created metric in generated flows
 ```
 
+### Run your Machine Learning models
+
+In the following, we want to run an early classification of flows based on a trained machine learning model than takes 
+as features the 3 first packets size of a flow.
+
+#### Computing required features
+
+```python
+from nfstream import NFPlugin
+
+class feat_1(NFPlugin):
+    def on_init(self, obs):
+        entry.feat_1 == obs.raw_size
+
+class feat_2(NFPlugin):
+    def on_update(self, obs, entry):
+        if entry.bidirectional_packets == 2:
+            entry.feat_2 == obs.raw_size
+
+class feat_3(NFPlugin):
+    def on_update(self, obs, entry):
+        if entry.bidirectional_packets == 3:
+            entry.feat_3 == obs.raw_size
+```
+
+#### Trained model mrediction
+
+```python
+class model_prediction(NFPlugin):
+    def on_update(self, obs, entry):
+        if entry.bidirectional_packets == 3:
+            entry.model_prediction = self.user_data.predict_proba([entry.feat_1,
+                                                                   entry.feat_2,
+                                                                   entry.feat_3])
+            # optionally we can force NFStreamer to immediately expires the flow
+            # entry.expiration_id = -1
+```
+
+#### Start your ML powered streamer
+
+```python
+my_model = function_to_load_your_model() # or whatever
+ml_streamer = NFStreamer(source='devil.pcap',
+                         plugins=[feat_1(volatile=True),
+                                  feat_2(volatile=True),
+                                  feat_3(volatile=True),
+                                  model_prediction(user_data=my_model)
+                                  ])
+for flow in ml_streamer:
+     print(flow.model_prediction) # now you will see your trained model prediction.
+```
 * More example and details are provided on the official [**documentation**][documentation].
 * You can test nfstream without installation using our [**live demo notebook**][demo].
 
