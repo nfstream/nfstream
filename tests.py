@@ -98,7 +98,7 @@ class TestMethods(unittest.TestCase):
 
     def test_flow_metadata_extraction(self):
         print("\n----------------------------------------------------------------------")
-        streamer_test = NFStreamer(source='tests/pcap/facebook.pcap')
+        streamer_test = NFStreamer(source='tests/pcap/facebook.pcap', bpf_filter="src port 52066 or dst port 52066")
         flows = []
         for flow in streamer_test:
             flows.append(flow)
@@ -379,7 +379,7 @@ messenger.com')
     def test_to_pandas(self):
         print("\n----------------------------------------------------------------------")
         df = NFStreamer(source='tests/pcap/facebook.pcap', statistics=True,
-                                 bpf_filter="src port 52066 or dst port 52066").to_pandas()
+                        bpf_filter="src port 52066 or dst port 52066").to_pandas()
         self.assertEqual(df["src_port"][0], 52066)
         self.assertEqual(df.shape[0], 1)
         self.assertEqual(df.shape[1], 95)

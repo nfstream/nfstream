@@ -44,7 +44,8 @@ typedef struct nf_packet {
 """
 
 cc_observer_apis = """
-pcap_t *observer_open(const uint8_t * pcap_file, unsigned snaplen, int promisc, int to_ms, char *errbuf, int mode);
+pcap_t *observer_open(const uint8_t * pcap_file, unsigned snaplen, int promisc, int to_ms, char *errbuf, 
+                      char *errbuf_set, int mode);
 int observer_configure(pcap_t * pcap_handle, char * bpf_filter);
 int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int nroots, int decode_tunnels);
 void observer_close(pcap_t *);
@@ -137,10 +138,13 @@ class NFObserver:
 
         if self.mode in [0, 1]:
             error_buffer = self._ffi.new("char []", 128)
+            error_buffer_setter = self._ffi.new("char []", 128)
             handler = self._lib.observer_open(bytes(source, 'utf-8'), snaplen, int(promisc), to_ms,
-                                              error_buffer, self.mode)
+                                              error_buffer, error_buffer_setter, self.mode)
+
             if handler == self._ffi.NULL:
-                raise OSError(self._ffi.string(error_buffer).decode('ascii', 'ignore'))
+                raise OSError(self._ffi.string(error_buffer).decode('ascii', 'ignore') + "\n" +
+                              self._ffi.string(error_buffer_setter).decode('ascii', 'ignore'))
             else:
                 # Once we have a valid handler, we move to BPF filtering configuration.
                 if isinstance(bpf_filter, str):
@@ -162,14 +166,14 @@ class NFObserver:
         rv = self._lib.observer_next(self.cap, nf_packet, self.nroots, self.decode_tunnels)
         return rv, nf_packet
 
-    def build_nf_packet(self, pkt):
+    def build_nf_packet(self, time, pkt):
         if self.account_ip_padding_size:
             rs_ip_size = pkt.ip_size
         else:
             rs_ip_size = pkt.ip_size_from_header
         src_ip = self._ffi.string(pkt.src_name).decode('utf-8', errors='ignore')
         dst_ip = self._ffi.string(pkt.dst_name).decode('utf-8', errors='ignore')
-        return NFPacket(time=pkt.time,
+        return NFPacket(time=time,
                         raw_size=pkt.raw_size,
                         ip_size=rs_ip_size,
                         transport_size=pkt.transport_size,
@@ -202,9 +206,10 @@ class NFObserver:
                         if pkt.consumable == 1:
                             if pkt.time >= self.safety_time:
                                 self.safety_time = pkt.time
+                                tm = pkt.time
                             else:
-                                pkt.time = self.safety_time
-                            yield self.build_nf_packet(pkt)
+                                tm = self.safety_time
+                            yield self.build_nf_packet(tm, pkt)
                         else:
                             yield None
         except KeyboardInterrupt:
