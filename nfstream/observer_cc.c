@@ -421,6 +421,7 @@ typedef struct nf_packet {
   u_int16_t payload_size;
   u_int16_t ip_size_from_header;
   u_int8_t *ip_content;
+  u_int64_t hashval;
 } nf_packet_t;
 
 
@@ -595,6 +596,7 @@ int get_nf_packet_info(const u_int8_t version,
   nf_pkt->transport_size = l4_data_len;
   nf_pkt->payload_size = *payload_len;
   nf_pkt->ip_size = ipsize;
+  nf_pkt->hashval = nf_pkt->protocol + nf_pkt->vlan_id + iph->saddr + iph->daddr + nf_pkt->src_port + nf_pkt->dst_port;
 
 
   if(version == IPVERSION) {

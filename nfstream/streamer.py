@@ -30,7 +30,8 @@ class NFStreamer(object):
     """ Network Flow Streamer """
     def __init__(self, source=None, snaplen=65535, idle_timeout=30, active_timeout=300,
                  plugins=(), dissect=True, statistics=False, max_tcp_dissections=10, max_udp_dissections=16,
-                 account_ip_padding_size=False, enable_guess=True):
+                 account_ip_padding_size=False, enable_guess=True, decode_tunnels=False, bpf_filter=None, promisc=True
+                 ):
         NFStreamer.streamer_id += 1
         now = str(tm.time())
         self._nroots = 512
@@ -39,7 +40,10 @@ class NFStreamer(object):
                                                                               ts=now)
         try:
             self.cache = NFCache(observer=NFObserver(source=source, snaplen=snaplen, nroots=self._nroots,
-                                                     account_ip_padding_size=account_ip_padding_size),
+                                                     account_ip_padding_size=account_ip_padding_size,
+                                                     decode_tunnels=decode_tunnels,
+                                                     bpf_filter=bpf_filter,
+                                                     promisc=promisc),
                                  idle_timeout=idle_timeout,
                                  active_timeout=active_timeout,
                                  nroots=self._nroots,

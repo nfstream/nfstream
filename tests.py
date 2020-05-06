@@ -353,15 +353,21 @@ messenger.com')
         del streamer_test
         print("{}\t: \033[94mOK\033[0m".format(".Testing adding user plugins".ljust(60, ' ')))
 
-    def test_entry_conversion(self):
+    def test_bpf_filter(self):
         print("\n----------------------------------------------------------------------")
-        streamer_test = NFStreamer(source='tests/pcap/facebook.pcap')
+        streamer_test = NFStreamer(source='tests/pcap/facebook.pcap',
+                                   statistics=True,
+                                   bpf_filter="src port 52066 or dst port 52066")
+        count = 0
         for flow in streamer_test:
             print(flow)
             print(flow.to_namedtuple())
             print(flow.to_json())
+            count = count + 1
+            self.assertEqual(flow.src_port, 52066)
+        self.assertEqual(count, 1)
         del streamer_test
-        print("{}\t: \033[94mOK\033[0m".format(".Testing entry format conversion".ljust(60, ' ')))
+        print("{}\t: \033[94mOK\033[0m".format(".Testing BPF filtering".ljust(60, ' ')))
 
 
 if __name__ == '__main__':

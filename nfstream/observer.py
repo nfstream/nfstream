@@ -38,6 +38,7 @@ typedef struct nf_packet {
   uint16_t payload_size;
   uint16_t ip_size_from_header;
   uint8_t *ip_content;
+  uint64_t hashval;
 } nf_packet_t;
 
 """
@@ -98,14 +99,29 @@ class NFPacket(object):
 
 class NFObserver:
     """ NFObserver module main class """
-    def __init__(self, source=None, snaplen=65535, promisc=1, to_ms=0, bpf_filter=None,
+    def __init__(self, source=None, snaplen=65535, promisc=True, to_ms=0, bpf_filter=None,
                  nroots=1, account_ip_padding_size=False, decode_tunnels=False):
+        if not isinstance(source, str):
+            raise OSError("Please specify a pcap file path or a valid network interface name as source.")
+        if not isinstance(promisc, bool):
+            raise OSError("Please specify a valid promisc parameter (possible values: True, False).")
+        if not isinstance(snaplen, int) or (isinstance(snaplen, int) and snaplen <= 0):
+            raise OSError("Please specify a valid snaplen parameter (positive integer).")
+        if not isinstance(to_ms, int) or (isinstance(to_ms, int) and to_ms < 0):
+            raise OSError("Please specify a valid to_ms parameter (positive integer).")
+        if not isinstance(nroots, int) or (isinstance(nroots, int) and nroots <= 0):
+            raise OSError("Please specify a valid nroots parameter (positive integer).")
+        if not isinstance(bpf_filter, str) and bpf_filter is not None:
+            raise OSError("Please specify a valid bpf_filter string format.")
+        if not isinstance(account_ip_padding_size, bool):
+            raise OSError("Please specify a valid account_ip_padding_size parameter (possible values: True, False).")
+        if not isinstance(decode_tunnels, bool):
+            raise OSError("Please specify a valid decode_tunnels parameter (possible values: True, False).")
         self._ffi = cffi.FFI()
         self._lib = self._ffi.dlopen(dirname(abspath(__file__)) + '/observer_cc.so')
         self._ffi.cdef(cc_observer_headers)
         self._ffi.cdef(cc_observer_apis, override=True)
-        if not isinstance(source, str):
-            raise OSError("Please specify a pcap file path or a valid network interface name as source.")
+
         if source in net_if_addrs().keys():
             self.mode = 1  # we found source in device interfaces and set mode to live.
         elif ".pcap" in source[-5:] and isfile(source):
@@ -116,7 +132,8 @@ class NFObserver:
 
         if self.mode in [0, 1]:
             error_buffer = self._ffi.new("char []", 128)
-            handler = self._lib.observer_open(bytes(source, 'utf-8'), snaplen, promisc, to_ms, error_buffer, self.mode)
+            handler = self._lib.observer_open(bytes(source, 'utf-8'), snaplen, int(promisc), to_ms,
+                                              error_buffer, self.mode)
             if handler == self._ffi.NULL:
                 raise OSError(self._ffi.string(error_buffer).decode('ascii', 'ignore'))
             else:
@@ -163,7 +180,7 @@ class NFObserver:
                         tcp_flags=tcpflags(syn=pkt.syn, cwr=pkt.cwr, ece=pkt.ece, urg=pkt.urg, ack=pkt.ack, psh=pkt.psh,
                                            rst=pkt.rst, fin=pkt.fin),
                         ip_packet=bytes(self._ffi.buffer(pkt.ip_content, pkt.ip_size)),
-                        root_idx=1)
+                        root_idx=pkt.hashval % self.nroots)
 
     def __iter__(self):
         while True:
