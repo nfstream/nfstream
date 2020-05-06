@@ -116,7 +116,7 @@ def validate_parameters(source, promisc, snaplen, bpf_filter, account_ip_padding
 
 class NFObserver:
     """ NFObserver module main class """
-    def __init__(self, source=None, snaplen=65535, promisc=True, to_ms=0, bpf_filter=None,
+    def __init__(self, source=None, snaplen=65535, promisc=True, to_ms=1, bpf_filter=None,
                  nroots=1, account_ip_padding_size=False, decode_tunnels=False):
         errors = validate_parameters(source, promisc, snaplen, bpf_filter, account_ip_padding_size,
                                      decode_tunnels)
@@ -188,9 +188,9 @@ class NFObserver:
                         root_idx=pkt.hashval % self.nroots)
 
     def __iter__(self):
-        while True:
-            rv, pkt = self.next_nf_packet()
-            try:
+        try:
+            while True:
+                rv, pkt = self.next_nf_packet()
                 if rv == -2:
                     raise KeyboardInterrupt
                 elif rv == -1:
@@ -200,11 +200,15 @@ class NFObserver:
                 else:
                     if rv == 1:
                         if pkt.consumable == 1:
+                            if pkt.time >= self.safety_time:
+                                self.safety_time = pkt.time
+                            else:
+                                pkt.time = self.safety_time
                             yield self.build_nf_packet(pkt)
                         else:
                             yield None
-            except KeyboardInterrupt:
-                return
+        except KeyboardInterrupt:
+            return
 
     def close(self):
         self._lib.observer_close(self.cap)

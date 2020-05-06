@@ -1067,13 +1067,20 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
  */
 pcap_t * observer_open(const u_char * pcap_file, u_int snaplen, int promisc, int to_ms, char *errbuf, int mode) {
   pcap_t * pcap_handle = NULL;
+  int status = 0;
+
   if (mode == 0) {
     pcap_handle = pcap_open_offline((char*)pcap_file, errbuf);
   }
   if (mode == 1) {
     pcap_handle = pcap_open_live((char*)pcap_file, snaplen, promisc, to_ms, errbuf);
+    status = pcap_setnonblock(pcap_handle, 1, errbuf);
   }
-  return pcap_handle;
+  if (status == 0) {
+    return pcap_handle;
+  } else {
+    return NULL;
+  }
 }
 
 

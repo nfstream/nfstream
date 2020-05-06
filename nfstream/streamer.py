@@ -35,7 +35,7 @@ class NFStreamer(object):
                  ):
         NFStreamer.streamer_id += 1
         now = str(tm.time())
-        self._nroots = 512
+        self._nroots = 100
         self.sock_name = "ipc:///tmp/nfstream-{pid}-{streamerid}-{ts}".format(pid=os.getpid(),
                                                                               streamerid=NFStreamer.streamer_id,
                                                                               ts=now)
