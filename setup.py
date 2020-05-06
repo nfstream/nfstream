@@ -66,7 +66,7 @@ def setup_observer_cc():
                                '-O2',
                                '-Wno-unused-value',
                                '-fno-omit-frame-pointer',
-                               'observer_cc.c', 'libpcap/libpcap.A.dylib'])
+                               'observer_cc.c', 'libpcap/libpcap.a'])
     else:
         subprocess.check_call(['gcc',
                                '-shared',
