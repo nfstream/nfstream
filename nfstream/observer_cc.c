@@ -619,17 +619,17 @@ int get_nf_packet_info(const u_int8_t version,
  * get_nf_packet_info6: Convert IPv6 headers to IPv4.
  */
 static int get_nf_packet_info6(u_int16_t vlan_id,
-                                nfstream_packet_tunnel tunnel_type,
-                                const struct nfstream_ipv6hdr *iph6,
-                                u_int16_t ip_offset,
-                                u_int16_t ipsize,
-                                struct nfstream_tcphdr **tcph,
-                                struct nfstream_udphdr **udph,
-                                u_int16_t *sport, u_int16_t *dport,
-                                u_int8_t *proto,
-                                u_int8_t **payload,
-                                u_int16_t *payload_len,
-                                struct timeval when, struct nf_packet *nf_pkt) {
+                               nfstream_packet_tunnel tunnel_type,
+                               const struct nfstream_ipv6hdr *iph6,
+                               u_int16_t ip_offset,
+                               u_int16_t ipsize,
+                               struct nfstream_tcphdr **tcph,
+                               struct nfstream_udphdr **udph,
+                               u_int16_t *sport, u_int16_t *dport,
+                               u_int8_t *proto,
+                               u_int8_t **payload,
+                               u_int16_t *payload_len,
+                               struct timeval when, struct nf_packet *nf_pkt) {
   struct nfstream_iphdr iph;
   memset(&iph, 0, sizeof(iph));
   iph.version = IPVERSION;
@@ -651,18 +651,21 @@ static int get_nf_packet_info6(u_int16_t vlan_id,
 }
 
 
+/**
+ * process_packet: Packet information parsing function..
+ */
 int parse_packet(const u_int64_t time,
-					   u_int16_t vlan_id,
-					   nfstream_packet_tunnel tunnel_type,
-					   const struct nfstream_iphdr *iph,
-					   struct nfstream_ipv6hdr *iph6,
-					   u_int16_t ip_offset,
-					   u_int16_t ipsize,
-					   u_int16_t rawsize,
-					   const struct pcap_pkthdr *header,
-					   const u_char *packet,
-					   struct timeval when,
-					   struct nf_packet *nf_pkt) {
+                 u_int16_t vlan_id,
+                 nfstream_packet_tunnel tunnel_type,
+                 const struct nfstream_iphdr *iph,
+                 struct nfstream_ipv6hdr *iph6,
+                 u_int16_t ip_offset,
+                 u_int16_t ipsize,
+                 u_int16_t rawsize,
+                 const struct pcap_pkthdr *header,
+                 const u_char *packet,
+                 struct timeval when,
+                 struct nf_packet *nf_pkt) {
   u_int8_t proto;
   struct nfstream_tcphdr *tcph = NULL;
   struct nfstream_udphdr *udph = NULL;
@@ -1097,6 +1100,10 @@ int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int account_ip
   return rv_handle;
 }
 
+
+/**
+ * observer_close: Close observer handle.
+ */
 void observer_close(pcap_t * pcap_handle) {
   pcap_close(pcap_handle);
 }
