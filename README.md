@@ -114,6 +114,8 @@ for flow in my_awesome_streamer:
     print(flow)  # print it.
     print(flow.to_namedtuple()) # convert it to a named tuple.
     print(flow.to_json()) # convert it to json.
+    print(flow.keys()) # get flow keys.
+    print(flow.values()) # get flow values.
 ```
 
 ```python
@@ -270,8 +272,14 @@ NFEntry(id=0,
 * From pcap to Pandas DataFrame?
 
 ```python
-my_dataframe = NFStreamer(source='devil.pcap').to_pandas()
+flows_count = NFStreamer(source='devil.pcap').to_pandas()
 my_dataframe.head(5)
+```
+
+* From pcap to csv file?
+
+```python
+flows_rows_count = NFStreamer(source='devil.pcap').to_csv(path="devil.pcap.csv", sep=";")
 ```
 * Didn't find a specific flow feature? add a plugin to **nfstream** in few lines:
 
