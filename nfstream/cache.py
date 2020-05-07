@@ -48,7 +48,7 @@ class LRU(OrderedDict):
 
 class NFCache(object):
     """ NFCache for entries management """
-    def __init__(self, observer=None, idle_timeout=30, active_timeout=300, nroots=512,
+    def __init__(self, observer=None, idle_timeout=30, active_timeout=300, nroots=100,
                  core_plugins=nfstream_core_plugins, user_plugins=(),
                  dissect=True, statistics=True, max_tcp_dissections=10, max_udp_dissections=16,
                  sock_name=None, enable_guess=True):
