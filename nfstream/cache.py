@@ -154,13 +154,13 @@ class NFCache(object):
                     del self._roots[obs.root_idx][obs.nfhash]
                     self.active_entries -= 1
                 else:  # active expiration
-                    parent_id = entry.id
                     self.producer.send_pyobj(entry)
                     del self._roots[obs.root_idx][obs.nfhash]
                     self._roots[obs.root_idx][obs.nfhash] = NFEntry(obs,
                                                                     self.core_plugins,
                                                                     self.user_plugins,
-                                                                    parent_id)
+                                                                    self.idx_generator)
+                    self.idx_generator += 1
         except KeyError:  # create entry
             self._roots[obs.root_idx][obs.nfhash] = NFEntry(obs,
                                                             self.core_plugins,
