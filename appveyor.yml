@@ -7,7 +7,8 @@ matrix:
 
 install:
   - cd ..
-  - ls
+  - git clone --branch libpcap-1.9.1 https://github.com/the-tcpdump-group/libpcap.git
+  - cd libpcap
   - cinst winflexbison
   - win_flex --version
   - win_bison --version
@@ -25,8 +26,6 @@ environment:
 
 build_script:
   - ls
-  - git clone --branch libpcap-1.9.1 https://github.com/the-tcpdump-group/libpcap.git
-  - cd libpcap
   - type NUL >.devel
   - md build
   - cd build
