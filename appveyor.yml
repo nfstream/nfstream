@@ -5,7 +5,7 @@ matrix:
 
 install:
   - cd ..
-  - git clone -q --depth=5 --branch=libpcap-1.9 https://github.com/the-tcpdump-group/libpcap.git
+  - git clone -q --depth=5 --branch=libpcap-1.9 https://github.com/aouinizied/libpcap.git
   - cd libpcap
   - cinst winflexbison
   - win_flex --version
@@ -25,11 +25,9 @@ environment:
       MINGW_ROOT: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0
 
 build_script:
-  #
-  # Appveyor defaults to cmd.exe, so use cmd.exe syntax.
-  #
   - dir
   - type NUL >.devel
+  - copy c:\projects\nfstream\nfstream\observer_cc.c c:\projects\libpcap\testprogs\observer_cc.c
   - md build
   - cd build
   # Remove the default MinGW path
@@ -43,4 +41,4 @@ build_script:
   - cmake -DPacket_ROOT=c:\projects\libpcap\Win32\%SDK% -G"%GENERATOR%" ..
   - if NOT "%GENERATOR%"=="MinGW Makefiles" msbuild /m /nologo /p:Configuration=Release pcap.sln
   - if "%GENERATOR%"=="MinGW Makefiles" mingw32-make
-  - dir
+  - mingw32-make testprogs
