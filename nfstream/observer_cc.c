@@ -22,6 +22,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <winsock2.h> /* winsock.h is included automatically */
 #include <process.h>
 #include <io.h>
+#ifndef IPPROTO_IPIP
+#define IPPROTO_IPIP  4
+#endif
 #else
 #include <unistd.h>
 #include <netinet/in.h>
