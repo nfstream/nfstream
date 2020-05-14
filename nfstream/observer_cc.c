@@ -22,7 +22,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <winsock2.h> /* winsock.h is included automatically */
 #include <process.h>
 #include <io.h>
-#include <sys/types.h>
 #else
 #include <unistd.h>
 #include <netinet/in.h>
@@ -128,9 +127,9 @@ typedef enum {
 PACK_ON
 struct nfstream_chdlc
 {
-  u_int8_t addr;          /* 0x0F (Unicast) - 0x8F (Broadcast) */
-  u_int8_t ctrl;          /* always 0x00                       */
-  u_int16_t proto_code;   /* protocol type (e.g. 0x0800 IP)    */
+  uint8_t addr;          /* 0x0F (Unicast) - 0x8F (Broadcast) */
+  uint8_t ctrl;          /* always 0x00                       */
+  uint16_t proto_code;   /* protocol type (e.g. 0x0800 IP)    */
 } PACK_OFF;
 
 
@@ -141,20 +140,20 @@ struct nfstream_slarp
      address replies  (0x01)
      keep-alive       (0x02)
   */
-  u_int32_t slarp_type;
-  u_int32_t addr_1;
-  u_int32_t addr_2;
+  uint32_t slarp_type;
+  uint32_t addr_1;
+  uint32_t addr_2;
 } PACK_OFF;
 
 
 PACK_ON
 struct nfstream_cdp
 {
-  u_int8_t version;
-  u_int8_t ttl;
-  u_int16_t checksum;
-  u_int16_t type;
-  u_int16_t length;
+  uint8_t version;
+  uint8_t ttl;
+  uint16_t checksum;
+  uint16_t type;
+  uint16_t length;
 } PACK_OFF;
 
 
@@ -163,68 +162,68 @@ struct nfstream_ethhdr
 {
   u_char h_dest[6];       /* destination eth addr */
   u_char h_source[6];     /* source ether addr    */
-  u_int16_t h_proto;      /* data length (<= 1500) or type ID proto (>=1536) */
+  uint16_t h_proto;      /* data length (<= 1500) or type ID proto (>=1536) */
 } PACK_OFF;
 
 
 PACK_ON
 struct nfstream_arphdr {
-  u_int16_t ar_hrd;/* Format of hardware address.  */
-  u_int16_t ar_pro;/* Format of protocol address.  */
-  u_int8_t  ar_hln;/* Length of hardware address.  */
-  u_int8_t  ar_pln;/* Length of protocol address.  */
-  u_int16_t ar_op;/* ARP opcode (command).  */
+  uint16_t ar_hrd;/* Format of hardware address.  */
+  uint16_t ar_pro;/* Format of protocol address.  */
+  uint8_t  ar_hln;/* Length of hardware address.  */
+  uint8_t  ar_pln;/* Length of protocol address.  */
+  uint16_t ar_op;/* ARP opcode (command).  */
   u_char arp_sha[6];/* sender hardware address */
-  u_int32_t arp_spa;/* sender protocol address */
+  uint32_t arp_spa;/* sender protocol address */
   u_char arp_tha[6];/* target hardware address */
-  u_int32_t arp_tpa;/* target protocol address */
+  uint32_t arp_tpa;/* target protocol address */
 } PACK_OFF;
 
 
 PACK_ON
 struct nfstream_dhcphdr {
-  u_int8_t      msgType;
-  u_int8_t      htype;
-  u_int8_t      hlen;
-  u_int8_t      hops;
-  u_int32_t     xid;/* 4 */
-  u_int16_t     secs;/* 8 */
-  u_int16_t     flags;
-  u_int32_t     ciaddr;/* 12 */
-  u_int32_t     yiaddr;/* 16 */
-  u_int32_t     siaddr;/* 20 */
-  u_int32_t     giaddr;/* 24 */
-  u_int8_t      chaddr[16]; /* 28 */
-  u_int8_t      sname[64]; /* 44 */
-  u_int8_t      file[128]; /* 108 */
-  u_int32_t     magic; /* 236 */
-  u_int8_t      options[308];
+  uint8_t      msgType;
+  uint8_t      htype;
+  uint8_t      hlen;
+  uint8_t      hops;
+  uint32_t     xid;/* 4 */
+  uint16_t     secs;/* 8 */
+  uint16_t     flags;
+  uint32_t     ciaddr;/* 12 */
+  uint32_t     yiaddr;/* 16 */
+  uint32_t     siaddr;/* 20 */
+  uint32_t     giaddr;/* 24 */
+  uint8_t      chaddr[16]; /* 28 */
+  uint8_t      sname[64]; /* 44 */
+  uint8_t      file[128]; /* 108 */
+  uint32_t     magic; /* 236 */
+  uint8_t      options[308];
 } PACK_OFF;
 
 
 PACK_ON
 struct nfstream_mdns_rsp_entry {
-  u_int16_t rsp_type, rsp_class;
-  u_int32_t ttl;
-  u_int16_t data_len;
+  uint16_t rsp_type, rsp_class;
+  uint32_t ttl;
+  uint16_t data_len;
 } PACK_OFF;
 
 
 PACK_ON
 struct nfstream_snap_extension
 {
-  u_int16_t   oui;
-  u_int8_t    oui2;
-  u_int16_t   proto_ID;
+  uint16_t   oui;
+  uint8_t    oui2;
+  uint16_t   proto_ID;
 } PACK_OFF;
 
 
 PACK_ON
 struct nfstream_llc_header_snap
 {
-  u_int8_t    dsap;
-  u_int8_t    ssap;
-  u_int8_t    ctrl;
+  uint8_t    dsap;
+  uint8_t    ssap;
+  uint8_t    ctrl;
   struct nfstream_snap_extension snap;
 } PACK_OFF;
 
@@ -232,25 +231,25 @@ struct nfstream_llc_header_snap
 PACK_ON
 struct nfstream_radiotap_header
 {
-  u_int8_t  version;         /* set to 0 */
-  u_int8_t  pad;
-  u_int16_t len;
-  u_int32_t present;
-  u_int64_t MAC_timestamp;
-  u_int8_t flags;
+  uint8_t  version;         /* set to 0 */
+  uint8_t  pad;
+  uint16_t len;
+  uint32_t present;
+  uint64_t MAC_timestamp;
+  uint8_t flags;
 } PACK_OFF;
 
 
 PACK_ON
 struct nfstream_wifi_header
 {
-  u_int16_t fc;
-  u_int16_t duration;
+  uint16_t fc;
+  uint16_t duration;
   u_char rcvr[6];
   u_char trsm[6];
   u_char dest[6];
-  u_int16_t seq_ctrl;
-  /* u_int64_t ccmp - for data encryption only - check fc.flag */
+  uint16_t seq_ctrl;
+  /* uint64_t ccmp - for data encryption only - check fc.flag */
 } PACK_OFF;
 
 
@@ -260,9 +259,9 @@ struct nfstream_mpls_header
   /* Before using this strcut to parse an MPLS header, you will need to convert
    * the 4-byte data to the correct endianess with ntohl(). */
 #if defined(__LITTLE_ENDIAN__)
-  u_int32_t ttl:8, s:1, exp:3, label:20;
+  uint32_t ttl:8, s:1, exp:3, label:20;
 #elif defined(__BIG_ENDIAN__)
-  u_int32_t label:20, exp:3, s:1, ttl:8;
+  uint32_t label:20, exp:3, s:1, ttl:8;
 #else
 # error "Byte order must be defined"
 #endif
@@ -272,41 +271,41 @@ struct nfstream_mpls_header
 PACK_ON
 struct nfstream_iphdr {
 #if defined(__LITTLE_ENDIAN__)
-  u_int8_t ihl:4, version:4;
+  uint8_t ihl:4, version:4;
 #elif defined(__BIG_ENDIAN__)
-  u_int8_t version:4, ihl:4;
+  uint8_t version:4, ihl:4;
 #else
 # error "Byte order must be defined"
 #endif
-  u_int8_t tos;
-  u_int16_t tot_len;
-  u_int16_t id;
-  u_int16_t frag_off;
-  u_int8_t ttl;
-  u_int8_t protocol;
-  u_int16_t check;
-  u_int32_t saddr;
-  u_int32_t daddr;
+  uint8_t tos;
+  uint16_t tot_len;
+  uint16_t id;
+  uint16_t frag_off;
+  uint8_t ttl;
+  uint8_t protocol;
+  uint16_t check;
+  uint32_t saddr;
+  uint32_t daddr;
 } PACK_OFF;
 
 
 PACK_ON
 struct nfstream_in6_addr {
   union {
-    u_int8_t   u6_addr8[16];
-    u_int16_t  u6_addr16[8];
-    u_int32_t  u6_addr32[4];
-    u_int64_t  u6_addr64[2];
+    uint8_t   u6_addr8[16];
+    uint16_t  u6_addr16[8];
+    uint32_t  u6_addr32[4];
+    uint64_t  u6_addr64[2];
   } u6_addr;  /* 128-bit IP6 address */
 } PACK_OFF;
 
 
 PACK_ON
 struct nfstream_ip6_hdrctl {
-  u_int32_t ip6_un1_flow;
-  u_int16_t ip6_un1_plen;
-  u_int8_t ip6_un1_nxt;
-  u_int8_t ip6_un1_hlim;
+  uint32_t ip6_un1_flow;
+  uint16_t ip6_un1_plen;
+  uint8_t ip6_un1_nxt;
+  uint8_t ip6_un1_hlim;
 } PACK_OFF;
 
 
@@ -321,65 +320,65 @@ struct nfstream_ipv6hdr {
 PACK_ON
 struct nfstream_tcphdr
 {
-  u_int16_t source;
-  u_int16_t dest;
-  u_int32_t seq;
-  u_int32_t ack_seq;
+  uint16_t source;
+  uint16_t dest;
+  uint32_t seq;
+  uint32_t ack_seq;
 #if defined(__LITTLE_ENDIAN__)
-  u_int16_t res1:4, doff:4, fin:1, syn:1, rst:1, psh:1, ack:1, urg:1, ece:1, cwr:1;
+  uint16_t res1:4, doff:4, fin:1, syn:1, rst:1, psh:1, ack:1, urg:1, ece:1, cwr:1;
 #elif defined(__BIG_ENDIAN__)
-  u_int16_t doff:4, res1:4, cwr:1, ece:1, urg:1, ack:1, psh:1, rst:1, syn:1, fin:1;
+  uint16_t doff:4, res1:4, cwr:1, ece:1, urg:1, ack:1, psh:1, rst:1, syn:1, fin:1;
 #else
 # error "Byte order must be defined"
 #endif
-  u_int16_t window;
-  u_int16_t check;
-  u_int16_t urg_ptr;
+  uint16_t window;
+  uint16_t check;
+  uint16_t urg_ptr;
 } PACK_OFF;
 
 
 PACK_ON
 struct nfstream_udphdr
 {
-  u_int16_t source;
-  u_int16_t dest;
-  u_int16_t len;
-  u_int16_t check;
+  uint16_t source;
+  uint16_t dest;
+  uint16_t len;
+  uint16_t check;
 } PACK_OFF;
 
 PACK_ON
 struct nfstream_dns_packet_header {
-  u_int16_t tr_id;
-  u_int16_t flags;
-  u_int16_t num_queries;
-  u_int16_t num_answers;
-  u_int16_t authority_rrs;
-  u_int16_t additional_rrs;
+  uint16_t tr_id;
+  uint16_t flags;
+  uint16_t num_queries;
+  uint16_t num_answers;
+  uint16_t authority_rrs;
+  uint16_t additional_rrs;
 } PACK_OFF;
 
 typedef union
 {
-  u_int32_t ipv4;
-  u_int8_t ipv4_u_int8_t[4];
+  uint32_t ipv4;
+  uint8_t ipv4_uint8_t[4];
   struct nfstream_in6_addr ipv6;
 } nfstream_ip_addr_t;
 
 
 PACK_ON
 struct nfstream_icmphdr {
-  u_int8_t type;/* message type */
-  u_int8_t code;/* type sub-code */
-  u_int16_t checksum;
+  uint8_t type;/* message type */
+  uint8_t code;/* type sub-code */
+  uint16_t checksum;
   union {
     struct {
-      u_int16_t id;
-      u_int16_t sequence;
+      uint16_t id;
+      uint16_t sequence;
     } echo; /* echo datagram */
 
-    u_int32_t gateway; /* gateway address */
+    uint32_t gateway; /* gateway address */
     struct {
-      u_int16_t _unused;
-      u_int16_t mtu;
+      uint16_t _unused;
+      uint16_t mtu;
     } frag;/* path mtu discovery */
   } un;
 } PACK_OFF;
@@ -400,29 +399,29 @@ struct nfstream_icmp6hdr {
 
 PACK_ON
 struct nfstream_vxlanhdr {
-  u_int16_t flags;
-  u_int16_t groupPolicy;
-  u_int32_t vni;
+  uint16_t flags;
+  uint16_t groupPolicy;
+  uint32_t vni;
 } PACK_OFF;
 
 
 typedef struct nf_packet {
-  u_int8_t consumable;
-  u_int64_t time;
-  u_int16_t src_port;
-  u_int16_t dst_port;
-  u_int8_t protocol;
-  u_int16_t vlan_id;
+  uint8_t consumable;
+  uint64_t time;
+  uint16_t src_port;
+  uint16_t dst_port;
+  uint8_t protocol;
+  uint16_t vlan_id;
   char src_name[48], dst_name[48];
-  u_int8_t ip_version;
-  u_int16_t fin:1, syn:1, rst:1, psh:1, ack:1, urg:1, ece:1, cwr:1; /* TCP Flags */
-  u_int16_t raw_size;
-  u_int16_t ip_size;
-  u_int16_t transport_size;
-  u_int16_t payload_size;
-  u_int16_t ip_size_from_header;
-  u_int8_t *ip_content;
-  u_int64_t hashval;
+  uint8_t ip_version;
+  uint16_t fin:1, syn:1, rst:1, psh:1, ack:1, urg:1, ece:1, cwr:1; /* TCP Flags */
+  uint16_t raw_size;
+  uint16_t ip_size;
+  uint16_t transport_size;
+  uint16_t payload_size;
+  uint16_t ip_size_from_header;
+  uint8_t *ip_content;
+  uint64_t hashval;
 } nf_packet_t;
 
 
@@ -450,10 +449,10 @@ int observer_configure(pcap_t * pcap_handle, char * bpf_filter) {
 /**
  * nfstream_handle_ipv6_extension_headers: Handle IPv6 extensions header.
  */
-int nfstream_handle_ipv6_extension_headers(const u_int8_t **l4ptr, u_int16_t *l4len, u_int8_t *nxt_hdr)
+int nfstream_handle_ipv6_extension_headers(const uint8_t **l4ptr, uint16_t *l4len, uint8_t *nxt_hdr)
 {
     while ((*nxt_hdr == 0 || *nxt_hdr == 43 || *nxt_hdr == 44 || *nxt_hdr == 60 || *nxt_hdr == 135 || *nxt_hdr == 59)) {
-        u_int16_t ehdr_len;
+        uint16_t ehdr_len;
         // no next header
         if (*nxt_hdr == 59) {
             return (1);
@@ -491,25 +490,25 @@ int nfstream_handle_ipv6_extension_headers(const u_int8_t **l4ptr, u_int16_t *l4
 /**
  * get_nf_packet_info: Build nf_packet structure.
  */
-int get_nf_packet_info(const u_int8_t version,
-                       u_int16_t vlan_id,
+int get_nf_packet_info(const uint8_t version,
+                       uint16_t vlan_id,
                        nfstream_packet_tunnel tunnel_type,
                        const struct nfstream_iphdr *iph,
                        const struct nfstream_ipv6hdr *iph6,
-                       u_int16_t ip_offset,
-                       u_int16_t ipsize,
-                       u_int16_t l4_packet_len,
+                       uint16_t ip_offset,
+                       uint16_t ipsize,
+                       uint16_t l4_packet_len,
                        struct nfstream_tcphdr **tcph,
                        struct nfstream_udphdr **udph,
-                       u_int16_t *sport, u_int16_t *dport,
-                       u_int8_t *proto,
-                       u_int8_t **payload,
-                       u_int16_t *payload_len,
+                       uint16_t *sport, uint16_t *dport,
+                       uint8_t *proto,
+                       uint8_t **payload,
+                       uint16_t *payload_len,
                        struct timeval when, struct nf_packet *nf_pkt) {
 
-  u_int32_t idx, l4_offset, hashval;
-  const u_int8_t *l3, *l4;
-  u_int32_t l4_data_len = 0XFEEDFACE;
+  uint32_t idx, l4_offset, hashval;
+  const uint8_t *l3, *l4;
+  uint32_t l4_data_len = 0XFEEDFACE;
 
   if(version == IPVERSION) {
     if(ipsize < 20) {
@@ -526,7 +525,7 @@ int get_nf_packet_info(const u_int8_t version,
 
 
     l4_offset = iph->ihl * 4;
-    l3 = (const u_int8_t*)iph;
+    l3 = (const uint8_t*)iph;
   } else {
     l4_offset = sizeof(struct nfstream_ipv6hdr);
     if(sizeof(struct nfstream_ipv6hdr) > ipsize) {
@@ -535,7 +534,7 @@ int get_nf_packet_info(const u_int8_t version,
     }
 
 
-    l3 = (const u_int8_t*)iph6;
+    l3 = (const uint8_t*)iph6;
   }
   if(ipsize < l4_offset + l4_packet_len) {
     nf_pkt->consumable = 0;
@@ -545,14 +544,14 @@ int get_nf_packet_info(const u_int8_t version,
 
   *proto = iph->protocol;
 
-  l4 =& ((const u_int8_t *) l3)[l4_offset];
+  l4 =& ((const uint8_t *) l3)[l4_offset];
 
   if(*proto == IPPROTO_TCP && l4_packet_len >= sizeof(struct nfstream_tcphdr)) {
-    u_int tcp_len;
+    uint tcp_len;
     *tcph = (struct nfstream_tcphdr *)l4;
     *sport = (*tcph)->source, *dport = (*tcph)->dest;
     tcp_len = nfstream_min(4*(*tcph)->doff, l4_packet_len);
-    *payload = (u_int8_t*)&l4[tcp_len];
+    *payload = (uint8_t*)&l4[tcp_len];
     *payload_len = nfstream_max(0, l4_packet_len-4*(*tcph)->doff);
     l4_data_len = l4_packet_len - sizeof(struct nfstream_tcphdr);
     nf_pkt->fin = (*tcph)->fin;
@@ -566,18 +565,18 @@ int get_nf_packet_info(const u_int8_t version,
   } else if(*proto == IPPROTO_UDP && l4_packet_len >= sizeof(struct nfstream_udphdr)) {
     *udph = (struct nfstream_udphdr *)l4;
     *sport = (*udph)->source, *dport = (*udph)->dest;
-    *payload = (u_int8_t*)&l4[sizeof(struct nfstream_udphdr)];
+    *payload = (uint8_t*)&l4[sizeof(struct nfstream_udphdr)];
     *payload_len = (l4_packet_len > sizeof(struct nfstream_udphdr)) ? l4_packet_len-sizeof(struct nfstream_udphdr) : 0;
     l4_data_len = l4_packet_len - sizeof(struct nfstream_udphdr);
     nf_pkt->fin = nf_pkt->syn = nf_pkt->rst = nf_pkt->psh = nf_pkt->ack = nf_pkt->urg = nf_pkt->ece = nf_pkt->cwr = 0;
   } else if(*proto == IPPROTO_ICMP) {
-    *payload = (u_int8_t*)&l4[sizeof(struct nfstream_icmphdr )];
+    *payload = (uint8_t*)&l4[sizeof(struct nfstream_icmphdr )];
     *payload_len = (l4_packet_len > sizeof(struct nfstream_icmphdr)) ? l4_packet_len-sizeof(struct nfstream_icmphdr) : 0;
     l4_data_len = l4_packet_len - sizeof(struct nfstream_icmphdr);
     *sport = *dport = 0;
     nf_pkt->fin = nf_pkt->syn = nf_pkt->rst = nf_pkt->psh = nf_pkt->ack = nf_pkt->urg = nf_pkt->ece = nf_pkt->cwr = 0;
   } else if(*proto == IPPROTO_ICMPV6) {
-    *payload = (u_int8_t*)&l4[sizeof(struct nfstream_icmp6hdr)];
+    *payload = (uint8_t*)&l4[sizeof(struct nfstream_icmp6hdr)];
     *payload_len = (l4_packet_len > sizeof(struct nfstream_icmp6hdr)) ? l4_packet_len-sizeof(struct nfstream_icmp6hdr) : 0;
     l4_data_len = l4_packet_len - sizeof(struct nfstream_icmp6hdr);
     *sport = *dport = 0;
@@ -619,26 +618,26 @@ int get_nf_packet_info(const u_int8_t version,
 /**
  * get_nf_packet_info6: Convert IPv6 headers to IPv4.
  */
-static int get_nf_packet_info6(u_int16_t vlan_id,
+static int get_nf_packet_info6(uint16_t vlan_id,
                                nfstream_packet_tunnel tunnel_type,
                                const struct nfstream_ipv6hdr *iph6,
-                               u_int16_t ip_offset,
-                               u_int16_t ipsize,
+                               uint16_t ip_offset,
+                               uint16_t ipsize,
                                struct nfstream_tcphdr **tcph,
                                struct nfstream_udphdr **udph,
-                               u_int16_t *sport, u_int16_t *dport,
-                               u_int8_t *proto,
-                               u_int8_t **payload,
-                               u_int16_t *payload_len,
+                               uint16_t *sport, uint16_t *dport,
+                               uint8_t *proto,
+                               uint8_t **payload,
+                               uint16_t *payload_len,
                                struct timeval when, struct nf_packet *nf_pkt) {
   struct nfstream_iphdr iph;
   memset(&iph, 0, sizeof(iph));
   iph.version = IPVERSION;
   iph.saddr = iph6->ip6_src.u6_addr.u6_addr32[2] + iph6->ip6_src.u6_addr.u6_addr32[3];
   iph.daddr = iph6->ip6_dst.u6_addr.u6_addr32[2] + iph6->ip6_dst.u6_addr.u6_addr32[3];
-  u_int8_t l4proto = iph6->ip6_hdr.ip6_un1_nxt;
-  u_int16_t ip_len = ntohs(iph6->ip6_hdr.ip6_un1_plen);
-  const u_int8_t *l4ptr = (((const u_int8_t *) iph6) + sizeof(struct nfstream_ipv6hdr));
+  uint8_t l4proto = iph6->ip6_hdr.ip6_un1_nxt;
+  uint16_t ip_len = ntohs(iph6->ip6_hdr.ip6_un1_plen);
+  const uint8_t *l4ptr = (((const uint8_t *) iph6) + sizeof(struct nfstream_ipv6hdr));
   if(nfstream_handle_ipv6_extension_headers(&l4ptr, &ip_len, &l4proto) != 0) {
     nf_pkt->consumable = 0;
     return 0;
@@ -655,23 +654,23 @@ static int get_nf_packet_info6(u_int16_t vlan_id,
 /**
  * process_packet: Packet information parsing function..
  */
-int parse_packet(const u_int64_t time,
-                 u_int16_t vlan_id,
+int parse_packet(const uint64_t time,
+                 uint16_t vlan_id,
                  nfstream_packet_tunnel tunnel_type,
                  const struct nfstream_iphdr *iph,
                  struct nfstream_ipv6hdr *iph6,
-                 u_int16_t ip_offset,
-                 u_int16_t ipsize,
-                 u_int16_t rawsize,
+                 uint16_t ip_offset,
+                 uint16_t ipsize,
+                 uint16_t rawsize,
                  const struct pcap_pkthdr *header,
                  const u_char *packet,
                  struct timeval when,
                  struct nf_packet *nf_pkt) {
-  u_int8_t proto;
+  uint8_t proto;
   struct nfstream_tcphdr *tcph = NULL;
   struct nfstream_udphdr *udph = NULL;
-  u_int16_t sport, dport, payload_len = 0;
-  u_int8_t *payload;
+  uint16_t sport, dport, payload_len = 0;
+  uint8_t *payload;
   nf_pkt->time = time;
   nf_pkt->raw_size = rawsize;
 
@@ -709,21 +708,21 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
   struct nfstream_ipv6hdr *iph6;
   nfstream_packet_tunnel tunnel_type = nfstream_no_tunnel;
   /* lengths and offsets */
-  u_int16_t eth_offset = 0;
-  u_int16_t radio_len;
-  u_int16_t fc;
-  u_int16_t type = 0;
+  uint16_t eth_offset = 0;
+  uint16_t radio_len;
+  uint16_t fc;
+  uint16_t type = 0;
   int wifi_len = 0;
   int pyld_eth_len = 0;
   int check;
-  u_int64_t time;
-  u_int16_t ip_offset = 0, ip_len;
-  u_int16_t frag_off = 0, vlan_id = 0;
-  u_int8_t proto = 0, recheck_type;
-  /*u_int32_t label;*/
+  uint64_t time;
+  uint16_t ip_offset = 0, ip_len;
+  uint16_t frag_off = 0, vlan_id = 0;
+  uint8_t proto = 0, recheck_type;
+  /*uint32_t label;*/
 
   /* counters */
-  u_int8_t vlan_packet = 0;
+  uint8_t vlan_packet = 0;
 
   /* setting time */
   time = ((uint64_t) header->ts.tv_sec) * TICK_RESOLUTION + header->ts.tv_usec / (1000000 / TICK_RESOLUTION);
@@ -740,7 +739,7 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
   }
   switch(datalink_type) {
   case DLT_NULL:
-    if(ntohl(*((u_int32_t*)&packet[eth_offset])) == 2)
+    if(ntohl(*((uint32_t*)&packet[eth_offset])) == 2)
       type = ETH_P_IP;
     else
       type = ETH_P_IPV6;
@@ -905,7 +904,7 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
   }
 
   if(iph->version == IPVERSION) {
-    ip_len = ((u_int16_t)iph->ihl * 4);
+    ip_len = ((uint16_t)iph->ihl * 4);
     iph6 = NULL;
 
     if(iph->protocol == IPPROTO_IPV6 || iph->protocol == IPPROTO_IPIP) {
@@ -931,7 +930,7 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
       return 0;
     }
 
-    const u_int8_t *l4ptr = (((const u_int8_t *) iph6) + sizeof(struct nfstream_ipv6hdr));
+    const uint8_t *l4ptr = (((const uint8_t *) iph6) + sizeof(struct nfstream_ipv6hdr));
     if(nfstream_handle_ipv6_extension_headers(&l4ptr, &ip_len, &proto) != 0) {
       nf_pkt->consumable = 0;
       return 0;
@@ -945,7 +944,7 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
 
     iph = NULL;
   } else {
-    static u_int8_t ipv4_warning_used = 0;
+    static uint8_t ipv4_warning_used = 0;
 
   v4_warning:
     nf_pkt->consumable = 0;
@@ -958,13 +957,13 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
       return 0;/* Too short for UDP header*/
     } else {
       struct nfstream_udphdr *udp = (struct nfstream_udphdr *)&packet[ip_offset+ip_len];
-      u_int16_t sport = ntohs(udp->source), dport = ntohs(udp->dest);
+      uint16_t sport = ntohs(udp->source), dport = ntohs(udp->dest);
 
       if((sport == GTP_U_V1_PORT) || (dport == GTP_U_V1_PORT)) {
 	/* Check if it's GTPv1 */
-	u_int offset = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
-	u_int8_t flags = packet[offset];
-	u_int8_t message_type = packet[offset+1];
+	uint offset = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
+	uint8_t flags = packet[offset];
+	uint8_t message_type = packet[offset+1];
 
 	tunnel_type = nfstream_gtp_tunnel;
 
@@ -993,21 +992,21 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
       return 0;
 	}
 
-	u_int offset           = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
-	u_int8_t version       = packet[offset];
-	u_int8_t ts_type       = packet[offset+1];
-	u_int16_t encapsulates = ntohs(*((u_int16_t*)&packet[offset+2]));
+	uint offset           = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
+	uint8_t version       = packet[offset];
+	uint8_t ts_type       = packet[offset+1];
+	uint16_t encapsulates = ntohs(*((uint16_t*)&packet[offset+2]));
 
 	tunnel_type = nfstream_tzsp_tunnel;
 
 	if((version == 1) && (ts_type == 0) && (encapsulates == 1)) {
-	  u_int8_t stop = 0;
+	  uint8_t stop = 0;
 
 	  offset += 4;
 
 	  while((!stop) && (offset < header->caplen)) {
-	    u_int8_t tag_type = packet[offset];
-	    u_int8_t tag_len;
+	    uint8_t tag_type = packet[offset];
+	    uint8_t tag_len;
 
 	    switch(tag_type) {
 	    case 0: /* PADDING Tag */
@@ -1035,13 +1034,13 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
 	}
       } else if(sport == NFSTREAM_CAPWAP_DATA_PORT) {
 	/* We dissect ONLY CAPWAP traffic */
-	u_int offset           = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
+	uint offset           = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
 
 	if((offset+1) < header->caplen) {
 	  uint8_t preamble = packet[offset];
 
 	  if((preamble & 0x0F) == 0) { /* CAPWAP header */
-	    u_int16_t msg_len = (packet[offset+1] & 0xF8) >> 1;
+	    uint16_t msg_len = (packet[offset+1] & 0xF8) >> 1;
 
 	    offset += msg_len;
 
@@ -1050,7 +1049,7 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
 
 	      offset += 24;
 	      /* LLC header is 8 bytes */
-	      type = ntohs((u_int16_t)*((u_int16_t*)&packet[offset+6]));
+	      type = ntohs((uint16_t)*((uint16_t*)&packet[offset+6]));
 
 	      ip_offset = offset + 8;
 
@@ -1069,7 +1068,7 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
 /**
  * observer_open: Open a pcap file or a specified device.
  */
-pcap_t * observer_open(const u_char * pcap_file, u_int snaplen, int promisc, int to_ms, char *errbuf, char *errbuf_set, int mode) {
+pcap_t * observer_open(const u_char * pcap_file, uint snaplen, int promisc, int to_ms, char *errbuf, char *errbuf_set, int mode) {
   pcap_t * pcap_handle = NULL;
   int status = 0;
   if (mode == 0) {
