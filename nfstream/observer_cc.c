@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <winsock2.h> /* winsock.h is included automatically */
 #include <process.h>
 #include <io.h>
+#include <sys/types.h>
 #else
 #include <unistd.h>
 #include <netinet/in.h>
