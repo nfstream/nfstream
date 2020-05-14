@@ -1,0 +1,16 @@
+version: 5.1.{build}
+
+clone_depth: 5
+
+matrix:
+  fast_finish: true
+
+install:
+  - ls
+
+environment:
+  matrix:
+    - GENERATOR: "MinGW Makefiles"
+
+build_script:
+  - echo "success"
