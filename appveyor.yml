@@ -20,34 +20,15 @@ install:
 environment:
   matrix:
     - GENERATOR: "MinGW Makefiles"
-      SDK: WpdPack
-      MINGW_ROOT: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0
-    - GENERATOR: "MinGW Makefiles"
       SDK: npcap-sdk-0.1
       MINGW_ROOT: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0
-    - GENERATOR: "Visual Studio 12 2013"
-      SDK: WpdPack
-    - GENERATOR: "Visual Studio 12 2013 Win64"
-      SDK: WpdPack
-    - GENERATOR: "Visual Studio 12 2013"
-      SDK: npcap-sdk-0.1
-    - GENERATOR: "Visual Studio 12 2013 Win64"
-      SDK: npcap-sdk-0.1
 
 build_script:
-  #
-  # Appveyor defaults to cmd.exe, so use cmd.exe syntax.
-  #
   - type NUL >.devel
   - md build
   - cd build
-  # Remove the default MinGW path
-  - if "%GENERATOR%"=="MinGW Makefiles" set PATH=%PATH:C:\MinGW\bin;=%
-  # Add the specified MinGW path
-  - if "%GENERATOR%"=="MinGW Makefiles" set PATH=%MINGW_ROOT%\mingw64\bin;%PATH%
-  # Remove the path to Git, so that we don't pick up its sh.exe, as
-  # that breaks MinGW builds - CMake checks for that and fails in the
-  # configuration stage
+  - set PATH=%PATH:C:\MinGW\bin;=%
+  - set PATH=%MINGW_ROOT%\mingw64\bin;%PATH%
   - if "%GENERATOR%"=="MinGW Makefiles" set PATH=%PATH:C:\Program Files\Git\usr\bin;=%
   - cmake -DPacket_ROOT=c:\projects\libpcap\Win32\%SDK% -G"%GENERATOR%" ..
   - if NOT "%GENERATOR%"=="MinGW Makefiles" msbuild /m /nologo /p:Configuration=Release pcap.sln
