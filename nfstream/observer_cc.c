@@ -547,7 +547,7 @@ int get_nf_packet_info(const uint8_t version,
   l4 =& ((const uint8_t *) l3)[l4_offset];
 
   if(*proto == IPPROTO_TCP && l4_packet_len >= sizeof(struct nfstream_tcphdr)) {
-    uint tcp_len;
+    u_int tcp_len;
     *tcph = (struct nfstream_tcphdr *)l4;
     *sport = (*tcph)->source, *dport = (*tcph)->dest;
     tcp_len = nfstream_min(4*(*tcph)->doff, l4_packet_len);
@@ -961,7 +961,7 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
 
       if((sport == GTP_U_V1_PORT) || (dport == GTP_U_V1_PORT)) {
 	/* Check if it's GTPv1 */
-	uint offset = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
+	u_int offset = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
 	uint8_t flags = packet[offset];
 	uint8_t message_type = packet[offset+1];
 
@@ -992,7 +992,7 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
       return 0;
 	}
 
-	uint offset           = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
+	u_int offset           = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
 	uint8_t version       = packet[offset];
 	uint8_t ts_type       = packet[offset+1];
 	uint16_t encapsulates = ntohs(*((uint16_t*)&packet[offset+2]));
@@ -1034,7 +1034,7 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
 	}
       } else if(sport == NFSTREAM_CAPWAP_DATA_PORT) {
 	/* We dissect ONLY CAPWAP traffic */
-	uint offset           = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
+	u_int offset           = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
 
 	if((offset+1) < header->caplen) {
 	  uint8_t preamble = packet[offset];
@@ -1068,7 +1068,7 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
 /**
  * observer_open: Open a pcap file or a specified device.
  */
-pcap_t * observer_open(const u_char * pcap_file, uint snaplen, int promisc, int to_ms, char *errbuf, char *errbuf_set, int mode) {
+pcap_t * observer_open(const u_char * pcap_file, u_int snaplen, int promisc, int to_ms, char *errbuf, char *errbuf_set, int mode) {
   pcap_t * pcap_handle = NULL;
   int status = 0;
   if (mode == 0) {
