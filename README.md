@@ -327,7 +327,7 @@ class feat_3(NFPlugin):
             entry.feat_3 == obs.raw_size
 ```
 
-#### Trained model mrediction
+#### Trained model prediction
 
 ```python
 class model_prediction(NFPlugin):
