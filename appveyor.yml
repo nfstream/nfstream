@@ -63,15 +63,13 @@ build_script:
   - cmake -DPacket_ROOT=c:\projects\libpcap\Win32\%SDK% -G"%GENERATOR%" ..
   - if NOT "%GENERATOR%"=="MinGW Makefiles" msbuild /m /nologo /p:Configuration=Release pcap.sln
   - if "%GENERATOR%"=="MinGW Makefiles" mingw32-make
-  - mingw32-make testprogs
-  - cd testprogs
   - cd
   - dir
-  - copy libobserver_cc.dll.a c:\projects\nfstream\nfstream\observer_cc.so
+  #- copy libobserver_cc.dll.a c:\projects\nfstream\nfstream\observer_cc.so
   - cd ..
-  - cd ..
+  - cd
   - cd ..
   - cd nfstream
   - dir
   - python -m pip install -r requirements.txt
-  - "python -c \"from nfstream import NFObserver; src = str(55); obs=NFObserver(source=src)\""
+  #- "python -c \"from nfstream import NFObserver; src = str(55); obs=NFObserver(source=src)\""
