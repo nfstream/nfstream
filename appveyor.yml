@@ -60,9 +60,10 @@ build_script:
   - cd testprogs
   - cd
   - dir
+  - copy libobserver_cc.dll.a c:\projects\nfstream\nfstream\observer_cc.so
   - cd ..
   - cd ..
   - cd ..
   - cd nfstream
   - dir
-#  - "python -c \"from nfstream import NFObserver; src = str(55); obs=NFObserver(source=src)\""
+  - "python -c \"from nfstream import NFObserver; src = str(55); obs=NFObserver(source=src)\""
