@@ -385,10 +385,10 @@ messenger.com')
         self.assertEqual(df.shape[1], 95)
         print("{}\t: \033[94mOK\033[0m".format(".Testing to Pandas".ljust(60, ' ')))
 
-    def test_observer(self):
+    def test_init_observer(self):
         print("\n----------------------------------------------------------------------")
-        observer = NFObserver(source='tests/pcap/facebook.pcap')
-        print("{}\t: \033[94mOK\033[0m".format(".Testing observer".ljust(60, ' ')))
+        observer = NFObserver(source='tests/pcap/facebook.pcap', bpf_filter="src port 52066 or dst port 52066")
+        print("{}\t: \033[94mOK\033[0m".format(".Testing init observer".ljust(60, ' ')))
 
 
 if __name__ == '__main__':
