@@ -17,10 +17,11 @@ install:
 
 environment:
   matrix:
+    #- GENERATOR: "MinGW Makefiles"
+    #  SDK: WpdPack
+    #  MINGW_ROOT: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0
     - GENERATOR: "MinGW Makefiles"
-      SDK: WpdPack
-      MINGW_ROOT: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0
-    - GENERATOR: "MinGW Makefiles"
+      TOXENV: py37
       SDK: npcap-sdk-0.1
       MINGW_ROOT: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0
 
@@ -41,7 +42,5 @@ build_script:
   - if NOT "%GENERATOR%"=="MinGW Makefiles" msbuild /m /nologo /p:Configuration=Release pcap.sln
   - if "%GENERATOR%"=="MinGW Makefiles" mingw32-make
   - mingw32-make testprogs
-  - cd
-  - cd ..
-  - cd
   - dir
+  - python -V

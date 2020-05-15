@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License along with nfs
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from nfstream import NFStreamer, NFPlugin
+from nfstream import NFStreamer, NFPlugin, NFObserver
 import unittest
 import os
 import csv
@@ -384,6 +384,11 @@ messenger.com')
         self.assertEqual(df.shape[0], 1)
         self.assertEqual(df.shape[1], 95)
         print("{}\t: \033[94mOK\033[0m".format(".Testing to Pandas".ljust(60, ' ')))
+
+    def test_observer(self):
+        print("\n----------------------------------------------------------------------")
+        observer = NFObserver(source='tests/pcap/facebook.pcap')
+        print("{}\t: \033[94mOK\033[0m".format(".Testing observer".ljust(60, ' ')))
 
 
 if __name__ == '__main__':
