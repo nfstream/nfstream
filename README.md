@@ -112,7 +112,7 @@ my_awesome_streamer = NFStreamer(source="facebook.pcap", # or network interface 
 
 for flow in my_awesome_streamer:
     print(flow)  # print it.
-    print(flow.to_namedtuple()) # convert it to a named tuple.
+    print(flow.to_namedtuple()) # convert it to a namedtuple.
     print(flow.to_json()) # convert it to json.
     print(flow.keys()) # get flow keys.
     print(flow.values()) # get flow values.
