@@ -42,6 +42,6 @@ build_script:
   - if "%GENERATOR%"=="MinGW Makefiles" mingw32-make
   - mingw32-make testprogs
   - cd
-  - dir
   - cd ..
+  - cd
   - dir
