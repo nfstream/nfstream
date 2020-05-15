@@ -66,4 +66,5 @@ build_script:
   - cd ..
   - cd nfstream
   - dir
+  - python -m pip install -r requirements.txt
   - "python -c \"from nfstream import NFObserver; src = str(55); obs=NFObserver(source=src)\""
