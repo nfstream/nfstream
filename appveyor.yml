@@ -65,11 +65,11 @@ build_script:
   - if "%GENERATOR%"=="MinGW Makefiles" mingw32-make
   - cd
   - dir
-  #- copy libobserver_cc.dll.a c:\projects\nfstream\nfstream\observer_cc.so
+  - copy libpcap.a c:\projects\nfstream\nfstream\observer_cc.so
   - cd ..
   - cd
   - cd ..
   - cd nfstream
   - dir
   - python -m pip install -r requirements.txt
-  #- "python -c \"from nfstream import NFObserver; src = str(55); obs=NFObserver(source=src)\""
+  - "python -c \"from nfstream import NFObserver; src = str(55); obs=NFObserver(source=src)\""
