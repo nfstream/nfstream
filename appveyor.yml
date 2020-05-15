@@ -25,7 +25,6 @@ environment:
       MINGW_ROOT: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0
 
 build_script:
-  - dir
   - type NUL >.devel
   - copy c:\projects\nfstream\nfstream\observer_cc.c c:\projects\libpcap\testprogs\observer_cc.c
   - md build
@@ -42,3 +41,6 @@ build_script:
   - if NOT "%GENERATOR%"=="MinGW Makefiles" msbuild /m /nologo /p:Configuration=Release pcap.sln
   - if "%GENERATOR%"=="MinGW Makefiles" mingw32-make
   - mingw32-make testprogs
+  - cd ..
+  - cd run
+  - dir
