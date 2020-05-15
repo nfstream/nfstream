@@ -15,6 +15,13 @@ environment:
       SDK: npcap-sdk-0.1
       MINGW_ROOT: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0
 
+    - PYTHON: "C:\\Python36"
+      PYTHON_VERSION: "3.6.x" # currently 3.6.5
+      PYTHON_ARCH: "32"
+      GENERATOR: "MinGW Makefiles"
+      SDK: npcap-sdk-0.1
+      MINGW_ROOT: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0
+
 install:
   - ps: if ($env:APPVEYOR_PULL_REQUEST_NUMBER -and $env:APPVEYOR_BUILD_NUMBER -ne ((Invoke-RestMethod `
       https://ci.appveyor.com/api/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/history?recordsNumber=50).builds | `
