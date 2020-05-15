@@ -41,5 +41,5 @@ build_script:
   - if NOT "%GENERATOR%"=="MinGW Makefiles" msbuild /m /nologo /p:Configuration=Release pcap.sln
   - if "%GENERATOR%"=="MinGW Makefiles" mingw32-make
   - mingw32-make testprogs
-  - cd
+  - cd testprogs
   - dir
