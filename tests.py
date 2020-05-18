@@ -347,18 +347,39 @@ messenger.com')
     def test_user_plugins(self):
         class feat_1(NFPlugin):
             def on_update(self, obs, entry):
-                if entry.bidirectional_packets == 1:
-                    entry.feat_1 == obs.length
+                if entry.bidirectional_packets == 4:
+                    entry.feat_1 = obs.ip_size
 
         print("\n----------------------------------------------------------------------")
-        streamer_test = NFStreamer(source='tests/pcap/facebook.pcap', plugins=[feat_1()])
+        streamer_test = NFStreamer(source='tests/pcap/facebook.pcap',
+                                   plugins=[feat_1()],
+                                   bpf_filter="src port 52066 or dst port 52066")
+        rs = []
         for flow in streamer_test:
-            if flow.id == 0:
-                self.assertEqual(flow.feat_1, 0)
-            else:
-                self.assertEqual(flow.feat_1, 0)
+            rs.append(flow)
+        self.assertEqual(rs[0].feat_1, 248)
+        self.assertEqual(len(rs), 1)
         del streamer_test
         print("{}\t: \033[94mOK\033[0m".format(".Testing adding user plugins".ljust(60, ' ')))
+
+    def test_custom_expiration(self):
+        class custom_expire(NFPlugin):
+            def on_update(self, obs, entry):
+                if entry.bidirectional_packets == 10:
+                    entry.expiration_id = -1
+                    entry.custom_expire = True
+
+        print("\n----------------------------------------------------------------------")
+        streamer_test = NFStreamer(source='tests/pcap/facebook.pcap',
+                                   plugins=[custom_expire(volatile=True)],
+                                   bpf_filter="src port 52066 or dst port 52066")
+        rs = []
+        for flow in streamer_test:
+            rs.append(flow)
+        self.assertEqual(rs[0].expiration_id, -1)
+        self.assertEqual(len(rs), 2)
+        del streamer_test
+        print("{}\t: \033[94mOK\033[0m".format(".Testing custom expiration".ljust(60, ' ')))
 
     def test_bpf_filter(self):
         print("\n----------------------------------------------------------------------")

@@ -51,7 +51,7 @@ class NFEntry(object):
                 plugin.on_update(obs, self)
             for plugin in user:  # for each NFCache core plugin, we update
                 plugin.on_update(obs, self)
-            if getattr(self, 'expiration_id') < -1:  # custom export
+            if getattr(self, 'expiration_id') < 0:  # custom export
                 return self.clean(core, user)
 
     def idle(self, idle_timeout, time, core, user):
