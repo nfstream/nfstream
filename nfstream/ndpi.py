@@ -1402,7 +1402,10 @@ class NDPI():
 
     def get_str_field(self, ptr):
         """ Get fixed string size attribute """
-        return self._ffi.string(ptr).decode('utf-8', errors='ignore')
+        if ptr == self._ffi.NULL:
+            return ''
+        else:
+            return self._ffi.string(ptr).decode('utf-8', errors='ignore')
 
     def get_buffer_field(self, ptr, l):
         """ Get variable string size attribute """
