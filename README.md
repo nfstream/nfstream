@@ -314,17 +314,17 @@ from nfstream import NFPlugin
 
 class feat_1(NFPlugin):
     def on_init(self, obs):
-        entry.feat_1 == obs.raw_size
+        entry.feat_1 = obs.raw_size
 
 class feat_2(NFPlugin):
     def on_update(self, obs, entry):
         if entry.bidirectional_packets == 2:
-            entry.feat_2 == obs.raw_size
+            entry.feat_2 = obs.raw_size
 
 class feat_3(NFPlugin):
     def on_update(self, obs, entry):
         if entry.bidirectional_packets == 3:
-            entry.feat_3 == obs.raw_size
+            entry.feat_3 = obs.raw_size
 ```
 
 #### Trained model prediction
