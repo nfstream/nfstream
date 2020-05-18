@@ -1406,7 +1406,7 @@ class NDPI():
 
     def get_buffer_field(self, ptr, l):
         """ Get variable string size attribute """
-        return bytes(self._ffi.buffer(ptr, l)).decode('utf-8', errors='ignore')
+        return self._ffi.string(ptr, l).decode('utf-8', errors='ignore')
 
     def ndpi_protocol2name(self, proto):
         """ Convert nDPI protocol object to readable name """
