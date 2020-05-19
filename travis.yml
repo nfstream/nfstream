@@ -2,26 +2,6 @@ matrix:
   include:
     - os: linux
       language: python
-      python: "pypy3"
-      env: PYTHON=/home/travis/virtualenv/pypy3.6-7.1.1/bin
-      addons:
-        apt:
-          packages:
-            - autogen
-            - autoconf
-            - automake
-            - libtool
-            - pkg-config
-            - libpcap-dev
-            - libusb-1.0-0-dev
-            - libdbus-glib-1-dev
-            - libbluetooth-dev
-            - libnl-genl-3-dev
-            - flex
-            - bison
-
-    - os: linux
-      language: python
       python: '3.6'
       env: PYTHON=/home/travis/virtualenv/python3.6.7/bin
       addons:
