@@ -107,15 +107,24 @@ class NFStreamer(object):
                         if not self._stopped:
                             self._stopped = True
                             self.cache.stopped = True
-        return total_flows
+                return total_flows
 
     def to_pandas(self):
         """ streamer to pandas function """
         temp_file_path = self.sock_name.replace("ipc:///tmp/", "") + ".csv"
-        total_flows = self.to_csv(path=temp_file_path)
-        df = pd.read_csv(temp_file_path, sep=";")
+        total_flows = self.to_csv(path=temp_file_path, sep="|")
+        df = pd.read_csv(temp_file_path,
+                         sep="|",
+                         low_memory=False,
+                         skip_blank_lines=True,
+                         lineterminator="\n",
+                         error_bad_lines=False)
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
         if total_flows == df.shape[0]:
+            return df
+        else:
+            print("WARNING: {} flows ignored by pandas type conversion. Consider using to_csv() "
+                  "method if drops are critical.".format(abs(df.shape[0]-total_flows)))
             return df
 
