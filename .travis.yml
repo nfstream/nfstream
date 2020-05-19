@@ -1,6 +1,7 @@
 matrix:
   include:
     - os: linux
+      arch: arm64
       language: python
       python: '3.6'
       env: PYTHON=/home/travis/virtualenv/python3.6.7/bin
@@ -21,6 +22,7 @@ matrix:
             - bison
 
     - os: linux
+      arch: arm64
       language: python
       python: '3.7'
       env: PYTHON=/home/travis/virtualenv/python3.7.1/bin
@@ -41,6 +43,7 @@ matrix:
             - bison
 
     - os: linux
+      arch: arm64
       language: python
       python: '3.8'
       env: PYTHON=/home/travis/virtualenv/python3.8.0/bin
@@ -62,6 +65,7 @@ matrix:
 
 
 install:
+  - ls /home/travis/virtualenv/
   - pip3 install --upgrade pip setuptools wheel
   - pip3 install wheel twine setuptools codecov
   - pip3 install -r requirements.txt

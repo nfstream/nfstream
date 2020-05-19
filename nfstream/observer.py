@@ -121,7 +121,7 @@ class NFObserver:
                  nroots=1, account_ip_padding_size=False, decode_tunnels=False):
         errors = validate_parameters(source, promisc, snaplen, bpf_filter, account_ip_padding_size,
                                      decode_tunnels)
-        if errors is not '':
+        if errors != '':
             raise OSError(errors)
         self._ffi = cffi.FFI()
         self._lib = self._ffi.dlopen(dirname(abspath(__file__)) + '/observer_cc.so')
