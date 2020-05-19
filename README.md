@@ -336,7 +336,7 @@ class model_prediction(NFPlugin):
             entry.model_prediction = self.user_data.predict_proba([entry.feat_1,
                                                                    entry.feat_2,
                                                                    entry.feat_3])
-            # optionally we can force NFStreamer to immediately expires the flow
+            # optionally we can trigger NFStreamer to immediately expires the flow
             # entry.expiration_id = -1
 ```
 
