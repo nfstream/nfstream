@@ -70,11 +70,8 @@ matrix:
 install:
   - sudo chown -Rv $USER:$GROUP ~/.cache/pip/wheels
   - pip3 install --upgrade pip
-  - pip3 install -U setuptools
-  - pip3 install -U wheel
-  - pip3 install -U twine
-  - pip3 install -U codecov
-  - pip3 install -r $TRAVIS_BUILD_DIR/requirements.txt
+  - pip3 install --upgrade setuptools wheel twine codecov
+  - pip3 install -v -r requirements.txt
   - python3 setup.py bdist_wheel
   - ls dist/
 
