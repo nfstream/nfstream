@@ -3,6 +3,7 @@ matrix:
     - os: linux
       arch: arm64
       language: python
+      cache: pip
       python: '3.6'
       env: PYTHON=/home/travis/virtualenv/python3.6.7/bin
       addons:
@@ -24,6 +25,7 @@ matrix:
     - os: linux
       arch: arm64
       language: python
+      cache: pip
       python: '3.7'
       env: PYTHON=/home/travis/virtualenv/python3.7.1/bin
       addons:
@@ -45,6 +47,7 @@ matrix:
     - os: linux
       arch: arm64
       language: python
+      cache: pip
       python: '3.8'
       env: PYTHON=/home/travis/virtualenv/python3.8.0/bin
       addons:
