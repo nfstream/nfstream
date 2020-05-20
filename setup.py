@@ -64,8 +64,7 @@ def setup_observer_cc():
                                '-DPIC',
                                '-I/libpcap',
                                '-O2',
-                               '-Wno-unused-value',
-                               '-fno-omit-frame-pointer',
+                               '-Wall',
                                'observer_cc.c', 'libpcap/libpcap.a'])
     else:
         subprocess.check_call(['gcc',
@@ -77,8 +76,7 @@ def setup_observer_cc():
                                '-DPIC',
                                '-I/libpcap',
                                '-O2',
-                               '-Wno-unused-value',
-                               '-fno-omit-frame-pointer',
+                               '-Wall',
                                'observer_cc.c', 'libpcap/libpcap.a'])
     shutil.rmtree('libpcap/', ignore_errors=True)
     os.chdir('..')

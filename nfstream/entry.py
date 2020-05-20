@@ -56,7 +56,7 @@ class NFEntry(object):
 
     def idle(self, idle_timeout, time, core, user):
         """ Check if flow is idle """
-        if time - getattr(self, 'bidirectional_last_seen_ms') >= idle_timeout:
+        if (time - idle_timeout) > getattr(self, 'bidirectional_last_seen_ms'):
             return self.clean(core, user)
         else:
             return

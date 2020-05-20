@@ -551,7 +551,7 @@ int get_nf_packet_info(const uint8_t version,
                        uint16_t *payload_len,
                        struct timeval when, struct nf_packet *nf_pkt) {
 
-  uint32_t idx, l4_offset, hashval;
+  uint32_t l4_offset;
   const uint8_t *l3, *l4;
   uint32_t l4_data_len = 0XFEEDFACE;
 
@@ -764,10 +764,6 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
   uint16_t ip_offset = 0, ip_len;
   uint16_t frag_off = 0, vlan_id = 0;
   uint8_t proto = 0, recheck_type;
-  /*uint32_t label;*/
-
-  /* counters */
-  uint8_t vlan_packet = 0;
 
   /* setting time */
   time = ((uint64_t) header->ts.tv_sec) * TICK_RESOLUTION + header->ts.tv_usec / (1000000 / TICK_RESOLUTION);
@@ -893,7 +889,6 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
     vlan_id = ((packet[ip_offset] << 8) + packet[ip_offset+1]) & 0xFFF;
     type = (packet[ip_offset+2] << 8) + packet[ip_offset+3];
     ip_offset += 4;
-    vlan_packet = 1;
 
     // double tagging for 802.1Q
     while((type == 0x8100) && (((bpf_u_int32)ip_offset) < header->caplen)) {
@@ -989,8 +984,6 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
 
     iph = NULL;
   } else {
-    static uint8_t ipv4_warning_used = 0;
-
   v4_warning:
     nf_pkt->consumable = 0;
     return 0;
@@ -1141,6 +1134,8 @@ int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int account_ip
   int rv_handle = pcap_next_ex(pcap_handle, &hdr, &data);
   if (rv_handle == 1) {
     int rv_processor = process_packet(pcap_handle, hdr, data, decode_tunnels, nf_pkt);
+    /* Extra check to ensure pkt.consumable is correctly set */
+    if (rv_processor != nf_pkt->consumable) printf("WARNING: mismatching packet parser return value!\n");
   }
   return rv_handle;
 }

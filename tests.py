@@ -66,7 +66,7 @@ class TestMethods(unittest.TestCase):
         ok_files = []
         ko_files = []
         for test_file in files:
-            streamer_test = NFStreamer(source=test_file, idle_timeout=60000, active_timeout=60000)
+            streamer_test = NFStreamer(source=test_file, idle_timeout=31556952, active_timeout=31556952)
             test_case_name = test_file.split('/')[-1]
             result = {}
             for flow in streamer_test:
