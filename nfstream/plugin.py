@@ -18,6 +18,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 import math
+import ipaddress
 
 
 class NFPlugin(object):
@@ -146,6 +147,18 @@ class src_ip(NFPlugin):
     """ str value of IP source (volatile) """
     def on_init(self, obs):
         return obs.src_ip
+
+
+class src_ip_type(NFPlugin):
+    """ src_ip private or public """
+    def on_init(self, obs):
+        return int(ipaddress.ip_address(obs.src_ip).is_private)
+
+
+class dst_ip_type(NFPlugin):
+    """ dst_ip type: private or public """
+    def on_init(self, obs):
+        return int(ipaddress.ip_address(obs.dst_ip).is_private)
 
 
 class dst_ip(NFPlugin):
@@ -1278,7 +1291,9 @@ nfstream_core_plugins = [packet_direction_setter(volatile=True),
                          dst2src_last_seen_ms(),
                          nfhash(volatile=True),
                          src_ip(),
+                         src_ip_type(),
                          dst_ip(),
+                         dst_ip_type(),
                          version(),
                          src_port(),
                          dst_port(),
