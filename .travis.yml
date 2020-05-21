@@ -91,9 +91,9 @@ after_success:
   - python3 -m codecov
   - |
     if [ "${TRAVIS_PULL_REQUEST}" = "false" ] && [ ! -z "$TRAVIS_TAG" ]; then
-      echo "we are in condition 1"
+      python3 -m twine --skip-existing dist/*.whl
     fi
   - |
     if [ "${TRAVIS_PULL_REQUEST}" = "false" ] && [ -z "$TRAVIS_TAG" ]; then
-      echo "we are in condition 2"
+      python3 -m twine --skip-existing dist/*.whl
     fi
