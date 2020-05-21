@@ -93,3 +93,7 @@ after_success:
     if [ "${TRAVIS_PULL_REQUEST}" = "false" ] && [ -n "${TRAVIS_TAG}" ]; then
       python3 -m twine --skip-existing dist/*.whl
     fi
+  - |
+    if [ "${TRAVIS_PULL_REQUEST}" = "false" ] && [ -z "${TRAVIS_TAG}" ]; then
+      echo "here we go"
+    fi
