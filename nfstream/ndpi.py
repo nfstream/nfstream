@@ -1427,3 +1427,4 @@ class NDPI():
     def ndpi_exit_detection_module(self):
         """ Exit function for nDPI module """
         self._ndpi.ndpi_exit_detection_module(self._mod)
+        self._ffi.dlclose(self._ndpi)

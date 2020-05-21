@@ -217,3 +217,5 @@ class NFObserver:
 
     def close(self):
         self._lib.observer_close(self.cap)
+        self._ffi.dlclose(self._lib)
+
