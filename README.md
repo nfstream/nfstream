@@ -61,6 +61,9 @@ the broader goal of becoming **a common network data processing framework for re
     <a href="https://github.com/aouinizied/nfstream/actions?query=workflow%3Abuild">
     <img src="https://img.shields.io/github/workflow/status/aouinizied/nfstream/build/master?logo=github&style=for-the-badge" alt="Github WorkFlows" />
     </a>
+    <a href="https://travis-ci.org/github/aouinizied/nfstream">
+    <img src="https://img.shields.io/travis/aouinizied/nfstream?logo=travis&style=for-the-badge" alt="Travis CI" />
+    </a>
   </td>
 </tr>
 <tr>
