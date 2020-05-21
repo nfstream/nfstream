@@ -193,6 +193,6 @@ setup(
         'Topic :: Scientific/Engineering :: Artificial Intelligence'
     ],
     project_urls={
-        'GitHub': 'https://nfstream.github.io',
+        'GitHub': 'https://github.com/aouinizied/nfstream',
     }
 )
