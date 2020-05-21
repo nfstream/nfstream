@@ -95,5 +95,5 @@ after_success:
     fi
   - |
     if [ "${TRAVIS_PULL_REQUEST}" = "false" ] && [ -z "${TRAVIS_TAG}" ]; then
-      echo "here we go"
+      echo "${TRAVIS_TAG}"
     fi
