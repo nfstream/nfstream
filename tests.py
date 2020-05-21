@@ -402,11 +402,20 @@ messenger.com')
     def test_to_pandas(self):
         print("\n----------------------------------------------------------------------")
         df = NFStreamer(source='tests/pcap/facebook.pcap', statistics=True,
-                        bpf_filter="src port 52066 or dst port 52066").to_pandas()
+                        bpf_filter="src port 52066 or dst port 52066").to_pandas(ip_anonymization=False)
         self.assertEqual(df["src_port"][0], 52066)
         self.assertEqual(df.shape[0], 1)
         self.assertEqual(df.shape[1], 97)
         print("{}\t: \033[94mOK\033[0m".format(".Testing to Pandas".ljust(60, ' ')))
+
+    def test_to_pandas_anonymized(self):
+        print("\n----------------------------------------------------------------------")
+        df = NFStreamer(source='tests/pcap/ethereum.pcap',
+                        idle_timeout=31556952,
+                        active_timeout=31556952).to_pandas(ip_anonymization=True)
+        self.assertEqual(df.shape[0], 74)
+        self.assertEqual(df.shape[1], 37)
+        print("{}\t: \033[94mOK\033[0m".format(".Testing to Pandas ip_anonymization=True".ljust(60, ' ')))
 
     def test_init_observer(self):
         print("\n----------------------------------------------------------------------")

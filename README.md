@@ -276,14 +276,14 @@ NFEntry(id=0,
 * From pcap to Pandas DataFrame?
 
 ```python
-flows_count = NFStreamer(source='devil.pcap').to_pandas()
+flows_count = NFStreamer(source='devil.pcap').to_pandas(ip_anonymization=False)
 my_dataframe.head(5)
 ```
 
 * From pcap to csv file?
 
 ```python
-flows_rows_count = NFStreamer(source='devil.pcap').to_csv(path="devil.pcap.csv", sep=";")
+flows_rows_count = NFStreamer(source='devil.pcap').to_csv(path="devil.pcap.csv", sep="|", ip_anonymization=False)
 ```
 * Didn't find a specific flow feature? add a plugin to **nfstream** in few lines:
 

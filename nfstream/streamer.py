@@ -19,6 +19,8 @@ If not, see <http://www.gnu.org/licenses/>.
 from .cache import NFCache
 from .observer import NFObserver
 from threading import Thread
+import secrets
+from siphash import siphash_64
 import pandas as pd
 import time as tm
 import zmq
@@ -85,7 +87,7 @@ class NFStreamer(object):
         except RuntimeError:
             return None
 
-    def to_csv(self, sep=";", path=None):
+    def to_csv(self, sep="|", path=None, ip_anonymization=False):
         if path is None:
             output_path = str(self._source) + '.csv'
         else:
@@ -94,14 +96,23 @@ class NFStreamer(object):
             sys.exit("Output file exists: {}. Please specify a valid file path.".format(output_path))
         else:
             total_flows = 0
+            crypto_key = secrets.token_bytes(16)
             with open(output_path, 'ab') as f:
                 for flow in self:
                     try:
                         if total_flows == 0:  # header creation
                             header = sep.join([str(i) for i in flow.keys()]) + "\n"
+                            src_ip_index = flow.keys().index("src_ip")
+                            dst_ip_index = flow.keys().index("dst_ip")
                             f.write(header.encode('utf-8'))
-                        values = sep.join([str(i) for i in flow.values()]) + "\n"
-                        f.write(values.encode('utf-8'))
+                        values = flow.values()
+                        if ip_anonymization:
+                            values[src_ip_index] = int.from_bytes(siphash_64(crypto_key, values[src_ip_index].encode()),
+                                                                  sys.byteorder)
+                            values[dst_ip_index] = int.from_bytes(siphash_64(crypto_key, values[dst_ip_index].encode()),
+                                                                  sys.byteorder)
+                        to_export = sep.join([str(i) for i in values]) + "\n"
+                        f.write(to_export.encode('utf-8'))
                         total_flows = total_flows + 1
                     except KeyboardInterup:
                         if not self._stopped:
@@ -109,10 +120,10 @@ class NFStreamer(object):
                             self.cache.stopped = True
                 return total_flows
 
-    def to_pandas(self):
+    def to_pandas(self, ip_anonymization=False):
         """ streamer to pandas function """
         temp_file_path = self.sock_name.replace("ipc:///tmp/", "") + ".csv"
-        total_flows = self.to_csv(path=temp_file_path, sep="|")
+        total_flows = self.to_csv(path=temp_file_path, sep="|", ip_anonymization=ip_anonymization)
         df = pd.read_csv(temp_file_path,
                          sep="|",
                          low_memory=False,
