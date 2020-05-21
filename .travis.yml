@@ -78,11 +78,11 @@ matrix:
 # install it
 install:
   - sudo chown -Rv $USER:$GROUP ~/.cache/pip/wheels
-  - pip3 install --upgrade pip
-  - pip3 install --upgrade setuptools wheel twine codecov
-  - pip3 install -v -r requirements.txt
+  - python3 -m pip install --upgrade pip
+  - python3 -m pip install --upgrade setuptools wheel twine codecov
+  - python3 -m pip install -r requirements.txt
   - python3 setup.py bdist_wheel
   - ls dist/
 
 script:
-  - coverage run tests.py
+  - python3 -m coverage run tests.py
