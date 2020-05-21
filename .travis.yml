@@ -89,8 +89,5 @@ script:
 
 after_success:
   - python3 -m codecov
-  - if [ $TRAVIS_TAG == true ]; then
-      echo "# Tag Found";
-      else
-      echo "Skip deploy";
-      fi
+  - if [ $TRAVIS_TAG == true ]; then python3 -m twine --skip-existing dist/*.whl ; fi
+  - if [ $TRAVIS_TAG == false ]; then python3 -m twine --skip-existing dist/*.whl ; fi
