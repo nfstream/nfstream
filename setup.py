@@ -134,7 +134,8 @@ python_requires = '>=3.6'
 install_requires = ['cffi>=1.14.0',
                     'pyzmq>=19.0.0',
                     'pandas>=1.0.3',
-                    'psutil>=5.7.0']
+                    'psutil>=5.7.0',
+                    'siphash-cffi>=0.1.4']
 
 try:
     from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
