@@ -3,9 +3,12 @@ matrix:
     - os: linux
       arch: arm64
       language: python
-      cache: pip
       python: '3.6'
-      env: PYTHON=/home/travis/virtualenv/python3.6.7/bin
+      env: PYTHON=/home/travis/virtualenv/python3.6.9/bin
+      cache:
+        directories:
+          - $HOME/.pip-cache/
+          - /home/travis/virtualenv/python3.6.9/lib/python3.6/site-packages
       addons:
         apt:
           packages:
@@ -25,9 +28,12 @@ matrix:
     - os: linux
       arch: arm64
       language: python
-      cache: pip
       python: '3.7'
-      env: PYTHON=/home/travis/virtualenv/python3.7.1/bin
+      env: PYTHON=/home/travis/virtualenv/python3.7.5/bin
+      cache:
+        directories:
+          - $HOME/.pip-cache/
+          - /home/travis/virtualenv/python3.7.5/lib/python3.7/site-packages
       addons:
         apt:
           packages:
@@ -47,9 +53,12 @@ matrix:
     - os: linux
       arch: arm64
       language: python
-      cache: pip
       python: '3.8'
       env: PYTHON=/home/travis/virtualenv/python3.8.0/bin
+      cache:
+        directories:
+          - $HOME/.pip-cache/
+          - /home/travis/virtualenv/python3.8.0/lib/python3.8/site-packages
       addons:
         apt:
           packages:
