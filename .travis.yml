@@ -28,6 +28,31 @@ matrix:
     - os: linux
       arch: arm64
       language: python
+      python: 'pypy3'
+      env: PYTHON=/home/travis/virtualenv/pypy3.6-7.1.1/bin
+      cache:
+        directories:
+          - $HOME/.pip-cache/
+          - /home/travis/virtualenv/pypy3.6-7.1.1/lib/pypy3.6/site-packages
+      addons:
+        apt:
+          packages:
+            - autogen
+            - autoconf
+            - automake
+            - libtool
+            - pkg-config
+            - libpcap-dev
+            - libusb-1.0-0-dev
+            - libdbus-glib-1-dev
+            - libbluetooth-dev
+            - libnl-genl-3-dev
+            - flex
+            - bison
+
+    - os: linux
+      arch: arm64
+      language: python
       python: '3.7'
       env: PYTHON=/home/travis/virtualenv/python3.7.5/bin
       cache:
@@ -75,7 +100,6 @@ matrix:
             - flex
             - bison
 
-# install it
 install:
   - sudo chown -Rv $USER:$GROUP ~/.cache/pip/wheels
   - python3 -m pip install --upgrade pip
