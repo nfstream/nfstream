@@ -21,7 +21,6 @@ from nfstream import NFStreamer, NFPlugin, NFObserver
 import unittest
 import os
 import csv
-import time
 
 
 def get_files_list(path):
