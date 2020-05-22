@@ -194,7 +194,7 @@ class protocol(NFPlugin):
 class vlan_id(NFPlugin):
     """ VLAN identifier """
     def on_init(self, obs):
-        return obs.version
+        return obs.vlan_id
 
 
 class bidirectional_packets(NFPlugin):
@@ -339,27 +339,37 @@ class nDPI(NFPlugin):
         s = self.user_data.new_ndpi_id()
         d = self.user_data.new_ndpi_id()
         p = self.user_data.ndpi_detection_process_packet(f, obs.ip_packet, len(obs.ip_packet), obs.time, s, d)
+        tcp_enough = (obs.protocol == 6) and (1 > self.user_data.max_tcp_dissections)
+        udp_enough = (obs.protocol == 17) and (1 > self.user_data.max_udp_dissections)
+        enough_packets = tcp_enough or udp_enough
+        if enough_packets or p.app_protocol != 0:
+            if not enough_packets and self.user_data.ndpi_extra_dissection_possible(f):
+                return [f, s, d, p, 0]
+            else:
+                return [f, s, d, p, 1]
+        else:
+            return [f, s, d, p, 0]
         # nDPI structures are maintained in a list [ndpi_flow, ndpi_src, ndpi_dst, ndpi_proto, detection_completed]
-        return [f, s, d, p, 0]
 
     def on_update(self, obs, entry):
-        tcp_not_enough = (entry.protocol == 6) and (entry.bidirectional_packets <= self.user_data.max_tcp_dissections)
-        udp_not_enough = (entry.protocol == 17) and (entry.bidirectional_packets <= self.user_data.max_udp_dissections)
-        if (tcp_not_enough or udp_not_enough) and entry.nDPI[4] == 0:
+        tcp_enough = (entry.protocol == 6) and (entry.bidirectional_packets > self.user_data.max_tcp_dissections)
+        udp_enough = (entry.protocol == 17) and (entry.bidirectional_packets > self.user_data.max_udp_dissections)
+        enough_packets = tcp_enough or udp_enough
+        if entry.nDPI[4] == 0:
             entry.nDPI[3] = self.user_data.ndpi_detection_process_packet(entry.nDPI[0],
                                                                          obs.ip_packet,
                                                                          len(obs.ip_packet),
                                                                          obs.time,
                                                                          entry.nDPI[1],
                                                                          entry.nDPI[2])
-            update_ndpi_infos(entry, entry.nDPI[0], entry.nDPI[3], self.user_data)
-        elif entry.nDPI[4] == 0:  # we reached max and still not detected
-            if entry.nDPI[3].app_protocol == 0:
-                entry.nDPI[3] = self.user_data.ndpi_detection_giveup(entry.nDPI[0])
-                entry.nDPI[4] = 1
-                update_ndpi_infos(entry, entry.nDPI[0], entry.nDPI[3], self.user_data)
-        else:
-            pass
+            if enough_packets or entry.nDPI[3].app_protocol != 0:
+                if not enough_packets and self.user_data.ndpi_extra_dissection_possible(entry.nDPI[0]):
+                    pass
+                else:
+                    entry.nDPI[4] = 1
+                    if entry.nDPI[3].app_protocol == 0:
+                        entry.nDPI[3] = self.user_data.ndpi_detection_giveup(entry.nDPI[0])
+        update_ndpi_infos(entry, entry.nDPI[0], entry.nDPI[3], self.user_data)
 
     def on_expire(self, entry):
         # flow expires and we failed to detect it.

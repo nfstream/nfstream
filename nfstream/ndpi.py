@@ -288,11 +288,26 @@ typedef enum {
 } ndpi_packet_tunnel;
 
 typedef enum {
-  ndpi_url_no_problem = 0,
-  ndpi_url_possible_xss,
-  ndpi_url_possible_sql_injection,
-  ndpi_url_possible_rce_injection
-} ndpi_url_risk;
+  NDPI_NO_RISK = 0,
+  NDPI_URL_POSSIBLE_XSS,
+  NDPI_URL_POSSIBLE_SQL_INJECTION,
+  NDPI_URL_POSSIBLE_RCE_INJECTION,
+  NDPI_BINARY_APPLICATION_TRANSFER,
+  NDPI_KNOWN_PROTOCOL_ON_NON_STANDARD_PORT,
+  NDPI_TLS_SELFSIGNED_CERTIFICATE,
+  NDPI_TLS_OBSOLETE_VERSION,
+  NDPI_TLS_WEAK_CIPHER,
+  NDPI_TLS_CERTIFICATE_EXPIRED,
+  NDPI_TLS_CERTIFICATE_MISMATCH,
+  NDPI_HTTP_SUSPICIOUS_USER_AGENT,
+  NDPI_HTTP_NUMERIC_IP_HOST,
+  NDPI_HTTP_SUSPICIOUS_URL,
+  NDPI_HTTP_SUSPICIOUS_HEADER,
+  /* Leave this as last member */
+  NDPI_MAX_RISK
+} ndpi_risk_enum;
+
+typedef uint32_t ndpi_risk;
 
 /* NDPI_VISIT */
 typedef enum {
@@ -711,6 +726,7 @@ struct ndpi_packet_struct {
   struct ndpi_int_one_line_struct forwarded_line;
   struct ndpi_int_one_line_struct referer_line;
   struct ndpi_int_one_line_struct content_line;
+  struct ndpi_int_one_line_struct content_disposition_line;
   struct ndpi_int_one_line_struct accept_line;
   struct ndpi_int_one_line_struct user_agent_line;
   struct ndpi_int_one_line_struct http_url_name;
@@ -851,6 +867,7 @@ typedef struct ndpi_proto_defaults {
   uint8_t can_have_a_subprotocol;
   uint16_t protoId, protoIdx;
   uint16_t master_tcp_protoId[2], master_udp_protoId[2]; /* The main protocols on which this sub-protocol sits on */
+  uint16_t tcp_default_ports[5], udp_default_ports[5];
   ndpi_protocol_breed_t protoBreed;
   void (*func) (struct ndpi_detection_module_struct *, struct ndpi_flow_struct *flow);
 } ndpi_proto_defaults_t;
@@ -973,13 +990,14 @@ struct ndpi_detection_module_struct {
 
   /* NDPI_PROTOCOL_STUN and subprotocols */
   struct ndpi_lru_cache *stun_cache;
-
+  
+  /* NDPI_PROTOCOL_MSTEAMS */
+  struct ndpi_lru_cache *msteams_cache;
+  
   ndpi_proto_defaults_t proto_defaults[512];
 
   uint8_t direction_detect_disable:1, /* disable internal detection of packet direction */
     _pad:7;
-
-  void *hyperscan; /* Intel Hyperscan */
 };
 
 #define NDPI_CIPHER_SAFE                        0
@@ -1028,6 +1046,9 @@ struct ndpi_flow_struct {
   struct ndpi_id_struct *server_id;
   /* HTTP host or DNS query */
   uint8_t host_server_name[240];
+  uint8_t initial_binary_bytes[8], initial_binary_bytes_len;
+  uint8_t risk_checked;
+  uint32_t risk; /* Issues found with this flow [bitmask of ndpi_risk] */
 
   /*
     This structure below will not stay inside the protos
@@ -1073,8 +1094,8 @@ struct ndpi_flow_struct {
     struct {
       struct {
       uint16_t ssl_version, server_names_len;
-      char client_requested_server_name[64], *server_names, server_organization[64],
-      *alpn, *tls_supported_versions;
+      char client_requested_server_name[64], *server_names,
+      *alpn, *tls_supported_versions, *issuerDN, *subjectDN;
       uint32_t notBefore, notAfter;
       char ja3_client[33], ja3_server[33];
       uint16_t server_cipher;
@@ -1217,10 +1238,6 @@ struct ndpi_flow_struct {
   /* NDPI_PROTOCOL_CSGO */
   uint8_t csgo_strid[18],csgo_state,csgo_s2;
   uint32_t csgo_id2;
-
-  /* NDPI_PROTOCOL_1KXUN || NDPI_PROTOCOL_IQIYI */
-  uint16_t kxun_counter, iqiyi_counter;
-
   /* internal structures to save functions calls */
   struct ndpi_packet_struct packet;
   struct ndpi_flow_struct *flow;
@@ -1229,14 +1246,14 @@ struct ndpi_flow_struct {
 };
 
 typedef struct {
-  char *string_to_match, *string2_to_match, *pattern_to_match, *proto_name;
+  char *string_to_match, *proto_name;
   int protocol_id;
   ndpi_protocol_category_t protocol_category;
   ndpi_protocol_breed_t protocol_breed;
 } ndpi_protocol_match;
 
 typedef struct {
-  char *string_to_match, *hyperscan_string_to_match;
+  char *string_to_match;
   ndpi_protocol_category_t protocol_category;
 } ndpi_category_match;
 
@@ -1316,6 +1333,7 @@ uint32_t ndpi_detection_get_sizeof_ndpi_flow_struct(void);
 uint32_t ndpi_detection_get_sizeof_ndpi_id_struct(void);
 uint32_t ndpi_detection_get_sizeof_ndpi_flow_tcp_struct(void);
 uint32_t ndpi_detection_get_sizeof_ndpi_flow_udp_struct(void);
+uint8_t ndpi_extra_dissection_possible(struct ndpi_detection_module_struct *ndpi_struct, struct ndpi_flow_struct *flow); 
 """
 
 
@@ -1338,7 +1356,7 @@ def check_structures_size(flow_struct_defined, flow_struct_loaded,
 
 class NDPI():
     """ ndpi module main class """
-    def __init__(self, libpath=None, max_tcp_dissections=10, max_udp_dissections=16, enable_guess=True):
+    def __init__(self, libpath=None, max_tcp_dissections=80, max_udp_dissections=16, enable_guess=True):
         self._ffi = cffi.FFI()
         if libpath is None:
             self._ndpi = self._ffi.dlopen(dirname(abspath(__file__)) + '/libndpi.so')
@@ -1386,7 +1404,8 @@ class NDPI():
 
     def ndpi_detection_process_packet(self, flow, packet, packetlen, current_tick, src, dst):
         """ Main detection processing function """
-        return self._ndpi.ndpi_detection_process_packet(self._mod, flow, packet, packetlen, current_tick, src, dst)
+        p = self._ndpi.ndpi_detection_process_packet(self._mod, flow, packet, packetlen, current_tick, src, dst)
+        return p
 
     def ndpi_detection_giveup(self, flow):
         """ Giveup detection function """
@@ -1407,12 +1426,12 @@ class NDPI():
         else:
             return self._ffi.string(ptr).decode('utf-8', errors='ignore')
 
-    def get_buffer_field(self, ptr, l):
+    def get_buffer_field(self, ptr, li):
         """ Get variable string size attribute """
         if ptr == self._ffi.NULL:
             return ''
         else:
-            return self._ffi.string(ptr, l).decode('utf-8', errors='ignore')
+            return self._ffi.string(ptr, li).decode('utf-8', errors='ignore')
 
     def ndpi_protocol2name(self, proto):
         """ Convert nDPI protocol object to readable name """
@@ -1423,6 +1442,9 @@ class NDPI():
     def ndpi_category_get_name(self, category):
         """ Convert nDPI protocol object to readable name """
         return self._ffi.string(self._ndpi.ndpi_category_get_name(self._mod, category)).decode('utf-8', errors='ignore')
+
+    def ndpi_extra_dissection_possible(self, flow):
+        return self._ndpi.ndpi_extra_dissection_possible(self._mod, flow)
 
     def ndpi_exit_detection_module(self):
         """ Exit function for nDPI module """

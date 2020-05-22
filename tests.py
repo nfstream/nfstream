@@ -21,6 +21,7 @@ from nfstream import NFStreamer, NFPlugin, NFObserver
 import unittest
 import os
 import csv
+import time
 
 
 def get_files_list(path):
@@ -29,6 +30,7 @@ def get_files_list(path):
         for file in f:
             if '.pcap' in file:
                 files.append(os.path.join(r, file))
+    files.sort()
     return files
 
 
@@ -83,6 +85,9 @@ class TestMethods(unittest.TestCase):
                 print("{}\t: \033[94mOK\033[0m".format(test_case_name.ljust(60, ' ')))
             else:
                 ko_files.append(test_case_name)
+                print(ground_truth_ndpi[test_case_name])
+                print("********************************")
+                print(result)
                 print("{}\t: \033[31mKO\033[0m".format(test_case_name.ljust(60, ' ')))
             del streamer_test
         self.assertEqual(len(files), len(ok_files))
@@ -137,7 +142,7 @@ messenger.com')
         self.assertEqual(flows[0].src_port, 42835)
         self.assertEqual(flows[0].dst_port, 443)
         self.assertEqual(flows[0].protocol, 6)
-        self.assertEqual(flows[0].vlan_id, 4)
+        self.assertEqual(flows[0].vlan_id, 0)
         self.assertEqual(flows[0].src_ip, '172.31.3.224')
         self.assertEqual(flows[0].dst_ip, '216.58.212.100')
         self.assertEqual(flows[0].bidirectional_packets, 28)
@@ -241,7 +246,7 @@ messenger.com')
         self.assertEqual(flows[0].src_port, 42835)
         self.assertEqual(flows[0].dst_port, 443)
         self.assertEqual(flows[0].protocol, 6)
-        self.assertEqual(flows[0].vlan_id, 4)
+        self.assertEqual(flows[0].vlan_id, 0)
         self.assertEqual(flows[0].src_ip, '172.31.3.224')
         self.assertEqual(flows[0].src_ip_type, 1)
         self.assertEqual(flows[0].dst_ip, '216.58.212.100')

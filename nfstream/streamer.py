@@ -32,7 +32,7 @@ class NFStreamer(object):
     streamer_id = 0  # class id generator
     """ Network Flow Streamer """
     def __init__(self, source=None, snaplen=65535, idle_timeout=30, active_timeout=300,
-                 plugins=(), dissect=True, statistics=False, max_tcp_dissections=10, max_udp_dissections=16,
+                 plugins=(), dissect=True, statistics=False, max_tcp_dissections=80, max_udp_dissections=16,
                  account_ip_padding_size=False, enable_guess=True, decode_tunnels=True, bpf_filter=None, promisc=True
                  ):
         NFStreamer.streamer_id += 1
