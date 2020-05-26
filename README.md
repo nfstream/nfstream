@@ -1,5 +1,5 @@
 <p align="center"><a href="https://nfstream.github.io/"><img width=35% alt="" src="https://raw.githubusercontent.com/aouinizied/nfstream/master/logo_main.png?raw=true"></a></p>
-<h1 align="center">nfstream: a flexible network data analysis framework</h1>
+<h1 align="center">NFStream: a Flexible Network Data Analysis Framework</h1>
 
 [**nfstream**][repo] is a Python package providing fast, flexible, and expressive data structures designed to make working with **online** or **offline** network data both easy and intuitive. It aims to be the fundamental high-level building block for
 doing practical, **real world** network data analysis in Python. Additionally, it has
