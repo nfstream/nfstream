@@ -1099,6 +1099,10 @@ struct ndpi_flow_struct {
       uint32_t notBefore, notAfter;
       char ja3_client[33], ja3_server[33];
       uint16_t server_cipher;
+      struct {
+        uint16_t cipher_suite;
+        char *esni;
+      } encrypted_sni;
       ndpi_cipher_weakness server_unsafe_cipher;
       } ssl;
 
