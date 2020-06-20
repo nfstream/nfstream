@@ -177,7 +177,7 @@ class NFObserver:
                         raw_size=pkt.raw_size,
                         ip_size=rs_ip_size,
                         transport_size=pkt.transport_size,
-                        payload_size=pkt.transport_size,
+                        payload_size=pkt.payload_size,
                         nfhash=get_hash(pkt.protocol, pkt.vlan_id, src_ip, dst_ip, pkt.src_port, pkt.dst_port),
                         src_ip=src_ip,
                         dst_ip=dst_ip,
