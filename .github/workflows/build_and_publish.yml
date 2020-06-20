@@ -48,8 +48,9 @@ jobs:
     - name: Install ubuntu Prerequisites
       if: startsWith(matrix.os, 'ubuntu')
       run: |
+        sudo apt-get update
         sudo apt-get install autoconf automake libtool pkg-config libpcap-dev
-        sudo apt-get install libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison
+        sudo apt-get install libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison
     - name: Installing macOS prerequisites
       if: startsWith(matrix.os, 'macOS')
       run: |
