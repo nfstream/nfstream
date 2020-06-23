@@ -133,7 +133,6 @@ pytest_runner = ['pytest-runner'] if needs_pytest else []
 python_requires = '>=3.6'
 install_requires = ['cffi>=1.14.0',
                     'pyzmq>=19.0.0',
-                    'numpy<=1.18.5',
                     'pandas>=1.0.3',
                     'psutil>=5.7.0',
                     'siphash-cffi>=0.1.4']
