@@ -1,5 +1,5 @@
 pyzmq>=19.0.0
 cffi>=1.14.0
 psutil>=5.7.0
-pandas>=1.0.3
+pandas==1.0.3
 siphash-cffi>=0.1.4
