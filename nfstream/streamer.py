@@ -69,7 +69,8 @@ class NFStreamer(object):
         self._stopped = False
 
     def __iter__(self):
-        self._consumer = zmq.Context().socket(zmq.PULL)
+        self.ctx = zmq.Context()
+        self._consumer = self.ctx.socket(zmq.PULL)
         try:
             self._producer.start()
             self._consumer.connect(self.sock_name)
@@ -84,6 +85,8 @@ class NFStreamer(object):
                     if not self._stopped:
                         self._stopped = True
                         self.cache.stopped = True
+            self._consumer.close()
+            self.ctx.destroy()
         except RuntimeError:
             return None
 

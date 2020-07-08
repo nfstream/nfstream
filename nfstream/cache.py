@@ -55,7 +55,8 @@ class NFCache(object):
         self.observer = observer
         self.mode = observer.mode
         try:
-            self.producer = zmq.Context().socket(zmq.PUSH)
+            self.ctx = zmq.Context()
+            self.producer = self.ctx.socket(zmq.PUSH)
             self.producer.bind(sock_name)
         except zmq.error.ZMQError:
             raise OSError("NFStreamer failed to bind socket (producer).")
@@ -139,6 +140,8 @@ class NFCache(object):
             plugin.cleanup()
         self.observer.close()  # close generator
         self.producer.send_pyobj(None)
+        self.producer.close()
+        self.ctx.destroy()
 
     def consume(self, obs):
         """ consume an observable and produce entry """
