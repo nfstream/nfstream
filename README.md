@@ -382,8 +382,9 @@ If you want to build **nfstream** from sources on your local machine:
 #### ![linux](https://raw.githubusercontent.com/wiki/ryanoasis/nerd-fonts/screenshots/v1.0.x/linux-pass-sm.png) Linux
 
 ```bash
-sudo apt-get install autoconf automake libtool pkg-config libpcap-dev
-sudo apt-get install libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison
+sudo apt-get update
+sudo apt-get install autoconf automake libtool pkg-config libpcap-dev flex bison
+sudo apt-get install libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev
 git clone https://github.com/aouinizied/nfstream.git
 cd nfstream
 python3 -m pip install -r requirements.txt
