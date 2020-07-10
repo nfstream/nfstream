@@ -905,7 +905,7 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
     mpls.u32 = ntohl(mpls.u32);
     type = ETH_P_IP, ip_offset += 4;
 
-    while(!mpls.mpls.s) {
+    while(!mpls.mpls.s && (((bpf_u_int32)ip_offset) + 4 < header->caplen)) {
       mpls.u32 = *((uint32_t *) &packet[ip_offset]);
       mpls.u32 = ntohl(mpls.u32);
       ip_offset += 4;
