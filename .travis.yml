@@ -77,7 +77,6 @@ matrix:
 
 install:
   - ls /home/travis/virtualenv/
-  - sudo chown -Rv $USER:$GROUP ~/.cache/pip/wheels
   - python3 -m pip install --upgrade pip
   - python3 -m pip install --upgrade setuptools wheel twine codecov
   - python3 -m pip install -r requirements.txt
