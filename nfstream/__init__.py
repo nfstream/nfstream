@@ -28,4 +28,4 @@ from .observer import NFObserver
 
 __author__ = """Zied Aouini"""
 __email__ = 'aouinizied@gmail.com'
-__version__ = '5.1.5'
+__version__ = '5.1.6'
