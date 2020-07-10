@@ -104,7 +104,7 @@ my_awesome_streamer = NFStreamer(source="facebook.pcap", # or network interface 
                                  plugins=(),
                                  dissect=True,
                                  max_tcp_dissections=10,
-                                 max_udp_dissections=16,
+                                 max_udp_dissections=80,
                                  statistics=False,
                                  account_ip_padding_size=False,
                                  enable_guess=True,
