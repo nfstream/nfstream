@@ -323,7 +323,7 @@ from nfstream import NFPlugin
 
 class feat_1(NFPlugin):
     def on_init(self, obs):
-        entry.feat_1 = obs.raw_size
+        return obs.raw_size
 
 class feat_2(NFPlugin):
     def on_update(self, obs, entry):
