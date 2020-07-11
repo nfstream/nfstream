@@ -279,7 +279,7 @@ NFEntry(id=0,
 * From pcap to Pandas DataFrame?
 
 ```python
-flows_count = NFStreamer(source='devil.pcap').to_pandas(ip_anonymization=False)
+my_dataframe = NFStreamer(source='devil.pcap').to_pandas(ip_anonymization=False)
 my_dataframe.head(5)
 ```
 
