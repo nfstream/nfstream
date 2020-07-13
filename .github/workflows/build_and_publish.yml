@@ -10,7 +10,7 @@ on:
     types: [created]
   schedule:
     # nightly build at 00:00.
-    - cron:  '0 0 * * *'
+    - cron:  '0 10 * * *'
     
 jobs:
   test:
