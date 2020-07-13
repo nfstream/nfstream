@@ -406,11 +406,6 @@ python3 setup.py bdist_wheel
 Please read [**Contributing**][contribute] for details on our code of conduct, and the process for submitting pull
 requests to us.
 
-
-## Authors
-
-[**Zied Aouini**][linkedin] created **nfstream** and [**these fine people**][contributors] have contributed.
-
 ## Ethics
 
 **nfstream** is intended for network data research and forensics.
@@ -426,7 +421,6 @@ This project is licensed under the GPLv3 License - see the [**License**][license
 [license]: https://github.com/aouinizied/nfstream/blob/master/LICENSE
 [contribute]: https://nfstream.github.io/docs/community
 [contributors]: https://github.com/aouinizied/nfstream/graphs/contributors
-[linkedin]: https://www.linkedin.com/in/dr-zied-aouini
 [github]: https://github.com/aouinizied
 [documentation]: https://nfstream.github.io/
 [ndpi]: https://nfstream.github.io/docs/visibility
