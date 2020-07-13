@@ -863,6 +863,10 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
       break;
 
     /* Check ether_type from LLC */
+    if(header->caplen < (eth_offset + wifi_len + radio_len + sizeof(struct nfstream_llc_header_snap))) {
+      nf_pkt->consumable = 0;
+      return 0;
+    }
     llc = (struct nfstream_llc_header_snap*)(packet + eth_offset + wifi_len + radio_len);
     if(llc->dsap == SNAP)
       type = ntohs(llc->snap.proto_ID);
