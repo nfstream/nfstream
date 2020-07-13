@@ -9,8 +9,8 @@ on:
   release:
     types: [created]
   schedule:
-    # CI run every day (except weekends) at 22.
-    - cron:  '0 22 * * 1-5'
+    # nightly build at 00:00.
+    - cron:  '0 0 * * *'
     
 jobs:
   test:
