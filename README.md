@@ -17,8 +17,8 @@ the broader goal of becoming **a common network data processing framework for re
 <tr>
   <td><b>Project Website</b></td>
   <td>
-    <a href="https://nfstream.github.io">
-    <img src="https://img.shields.io/website?down_color=red&down_message=down&label=nfstream.github.io&logo=github&up_color=blue&up_message=up&url=https%3A%2F%2Fnfstream.github.io%2F&style=for-the-badge" alt="website" />
+    <a href="https://www.nfstream.org/">
+    <img src="https://img.shields.io/website?down_color=red&down_message=down&label=nfstream.org&logo=github&up_color=blue&up_message=up&url=https%3A%2F%2Fnfstream.org%2F&style=for-the-badge" alt="website" />
     </a>
   </td>
 </tr>
@@ -419,14 +419,14 @@ As with any packet monitoring tool, **NFStream** could potentially be misused.
 This project is licensed under the LGPLv3 License - see the [**License**][license] file for details
 
 [license]: https://github.com/aouinizied/nfstream/blob/master/LICENSE.md
-[contribute]: https://nfstream.github.io/docs/community
+[contribute]: https://nfstream.org/docs/community
 [contributors]: https://github.com/aouinizied/nfstream/graphs/contributors
 [github]: https://github.com/aouinizied
-[documentation]: https://nfstream.github.io/
-[ndpi]: https://nfstream.github.io/docs/visibility
-[nfplugin]: https://nfstream.github.io/docs/api#nfplugin
+[documentation]: https://nfstream.org/
+[ndpi]: https://nfstream.org/docs/visibility
+[nfplugin]: https://nfstream.org/docs/api#nfplugin
 [reliable]: http://people.ac.upc.edu/pbarlet/papers/ground-truth.pam2014.pdf
-[repo]: https://nfstream.github.io/
+[repo]: https://nfstream.org/
 [demo]: https://mybinder.org/v2/gh/aouinizied/nfstream-tutorials/master?filepath=demo_notebook.ipynb
-[stat_feat]: https://nfstream.github.io/docs/api#statistical-features
+[stat_feat]: https://nfstream.org/docs/api#statistical-features
 [pypy]: https://www.pypy.org/

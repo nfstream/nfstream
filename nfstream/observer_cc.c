@@ -2,7 +2,7 @@
 file: observer_cc.c
 This file is part of nfstream.
 
-Copyright (C) 2019-20 - Zied Aouini <aouinizied@gmail.com>
+Copyright (C) 2019-20 - nfstream.org
 
 nfstream is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -13,9 +13,6 @@ of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Pub
 You should have received a copy of the GNU General Public License along with nfstream.
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-/* Parsing functions and logic within this file are mainly based on nDPI source code <https://github.com/ntop/nDPI>*/
-
 
 #include <stdlib.h>
 
