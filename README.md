@@ -1,7 +1,7 @@
-<p align="center"><a href="https://nfstream.github.io/"><img width=35% alt="" src="https://raw.githubusercontent.com/aouinizied/nfstream/master/logo_main.png?raw=true"></a></p>
-<h1 align="center">NFStream: a Flexible Network Data Analysis Framework</h1>
+![NFStream Logo](https://raw.githubusercontent.com/aouinizied/nfstream/master/logo_main.png?raw=true)
 
-[**nfstream**][repo] is a Python package providing fast, flexible, and expressive data structures designed to make working with **online** or **offline** network data both easy and intuitive. It aims to be the fundamental high-level building block for
+--------------------------------------------------------------------------------
+[**NFStream**][repo] is a Python package providing fast, flexible, and expressive data structures designed to make working with **online** or **offline** network data both easy and intuitive. It aims to be the fundamental high-level building block for
 doing practical, **real world** network data analysis in Python. Additionally, it has
 the broader goal of becoming **a common network data processing framework for researchers** providing data reproducibility across experiments.
 
@@ -86,18 +86,18 @@ the broader goal of becoming **a common network data processing framework for re
 
 ## Main Features
 
-* **Performance:** **nfstream** is designed to be fast (x10 faster with [**PyPy**][pypy] support) with a small CPU and memory footprint.
-* **Layer-7 visibility:** **nfstream** deep packet inspection engine is based on [**nDPI**][ndpi]. It allows nfstream to perform [**reliable**][reliable] encrypted applications identification and metadata extraction (e.g. TLS, QUIC, TOR, HTTP, SSH, DNS, etc.).
+* **Performance:** **NFStream** is designed to be fast (x10 faster with [**PyPy**][pypy] support) with a small CPU and memory footprint.
+* **Layer-7 visibility:** **NFStream** deep packet inspection engine is based on [**nDPI**][ndpi]. It allows NFStream to perform [**reliable**][reliable] encrypted applications identification and metadata extraction (e.g. TLS, QUIC, TOR, HTTP, SSH, DNS, etc.).
 * **Flexibility:** add a flow feature in 2 lines as an [**NFPlugin**][nfplugin].
 * **Machine Learning oriented:** add your trained model as an [**NFPlugin**][nfplugin]. 
 
 ## How to use it?
 
-* Dealing with a big pcap file and just want to aggregate it as network flows? **nfstream** make this path easier in few lines:
+* Dealing with a big pcap file and just want to aggregate it as network flows? **NFStream** make this path easier in few lines:
 
 ```python
 from nfstream import NFStreamer
-my_awesome_streamer = NFStreamer(source="facebook.pcap", # or network interface (source="eth0")
+my_awesome_streamer = NFStreamer(source="facebook.pcap", # or network interface
                                  snaplen=65535,
                                  idle_timeout=30,
                                  active_timeout=300,
@@ -164,7 +164,7 @@ NFEntry(id=0,
         j3a_server='2d1eb5817ece335c24904f516ad5da12')
 
  ```
-* nfstream also extracts [**60+ flow statistical features**][stat_feat]
+* NFStream also extracts [**60+ flow statistical features**][stat_feat]
 
 ```python
 from nfstream import NFStreamer
@@ -290,7 +290,7 @@ flows_rows_count = NFStreamer(source='devil.pcap').to_csv(path="devil.pcap.csv",
                                                           sep="|",
                                                           ip_anonymization=False)
 ```
-* Didn't find a specific flow feature? add a plugin to **nfstream** in few lines:
+* Didn't find a specific flow feature? add a plugin to **NFStream** in few lines:
 
 ```python
 from nfstream import NFPlugin
@@ -363,7 +363,7 @@ for flow in ml_streamer:
      print(flow.model_prediction) # now you will see your trained model prediction.
 ```
 * More example and details are provided on the official [**documentation**][documentation].
-* You can test nfstream without installation using our [**live demo notebook**][demo].
+* You can test NFStream without installation using our [**live demo notebook**][demo].
 
 ## Installation
 
@@ -377,7 +377,7 @@ python3 -m pip install nfstream
 
 ### Build from sources
 
-If you want to build **nfstream** from sources on your local machine:
+If you want to build **NFStream** from sources on your local machine:
 
 #### ![linux](https://raw.githubusercontent.com/wiki/ryanoasis/nerd-fonts/screenshots/v1.0.x/linux-pass-sm.png) Linux
 
@@ -408,17 +408,17 @@ requests to us.
 
 ## Ethics
 
-**nfstream** is intended for network data research and forensics.
+**NFStream** is intended for network data research and forensics.
 Researchers and network data scientists can use these framework to build reliable datasets, train and evaluate
 network applied machine learning models.
-As with any packet monitoring tool, **nfstream** could potentially be misused.
+As with any packet monitoring tool, **NFStream** could potentially be misused.
 **Do not run it on any network of which you are not the owner or the administrator**.
 
 ## License
 
-This project is licensed under the GPLv3 License - see the [**License**][license] file for details
+This project is licensed under the LGPLv3 License - see the [**License**][license] file for details
 
-[license]: https://github.com/aouinizied/nfstream/blob/master/LICENSE
+[license]: https://github.com/aouinizied/nfstream/blob/master/LICENSE.md
 [contribute]: https://nfstream.github.io/docs/community
 [contributors]: https://github.com/aouinizied/nfstream/graphs/contributors
 [github]: https://github.com/aouinizied
