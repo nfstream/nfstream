@@ -1,4 +1,4 @@
-![NFStream Logo](https://raw.githubusercontent.com/aouinizied/nfstream/master/logo_nfstream.png?raw=true)
+![NFStream Logo](https://raw.githubusercontent.com/aouinizied/nfstream/master/nfstream_logo.png?raw=true)
 
 --------------------------------------------------------------------------------
 [**NFStream**][repo] is a Python package providing fast, flexible, and expressive data structures designed to make working with **online** or **offline** network data both easy and intuitive. It aims to be the fundamental high-level building block for
