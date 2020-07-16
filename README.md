@@ -418,7 +418,7 @@ As with any packet monitoring tool, **NFStream** could potentially be misused.
 
 This project is licensed under the LGPLv3 License - see the [**License**][license] file for details
 
-[license]: https://github.com/aouinizied/nfstream/blob/master/LICENSE.md
+[license]: https://github.com/aouinizied/nfstream/blob/master/LICENSE
 [contribute]: https://nfstream.org/docs/community
 [contributors]: https://github.com/aouinizied/nfstream/graphs/contributors
 [github]: https://github.com/aouinizied
