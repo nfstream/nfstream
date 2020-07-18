@@ -33,7 +33,7 @@ class NFStreamer(object):
     """ Network Flow Streamer """
     def __init__(self, source=None, snaplen=65535, idle_timeout=30, active_timeout=300,
                  plugins=(), dissect=True, statistics=False, max_tcp_dissections=80, max_udp_dissections=16,
-                 account_ip_padding_size=False, enable_guess=True, decode_tunnels=True, bpf_filter=None, promisc=True
+                 enable_guess=True, decode_tunnels=True, bpf_filter=None, promisc=True
                  ):
         NFStreamer.streamer_id += 1
         self._source = source
@@ -44,7 +44,6 @@ class NFStreamer(object):
                                                                               ts=now)
         try:
             self.cache = NFCache(observer=NFObserver(source=source, snaplen=snaplen, nroots=self._nroots,
-                                                     account_ip_padding_size=account_ip_padding_size,
                                                      decode_tunnels=decode_tunnels,
                                                      bpf_filter=bpf_filter,
                                                      promisc=promisc),
@@ -117,7 +116,7 @@ class NFStreamer(object):
                         to_export = sep.join([str(i) for i in values]) + "\n"
                         f.write(to_export.encode('utf-8'))
                         total_flows = total_flows + 1
-                    except KeyboardInterup:
+                    except KeyboardInterrupt:
                         if not self._stopped:
                             self._stopped = True
                             self.cache.stopped = True
@@ -127,18 +126,21 @@ class NFStreamer(object):
         """ streamer to pandas function """
         temp_file_path = self.sock_name.replace("ipc:///tmp/", "") + ".csv"
         total_flows = self.to_csv(path=temp_file_path, sep="|", ip_anonymization=ip_anonymization)
-        df = pd.read_csv(temp_file_path,
-                         sep="|",
-                         low_memory=False,
-                         skip_blank_lines=True,
-                         lineterminator="\n",
-                         error_bad_lines=False)
+        if total_flows >= 0:
+            df = pd.read_csv(temp_file_path,
+                             sep="|",
+                             low_memory=False,
+                             skip_blank_lines=True,
+                             lineterminator="\n",
+                             error_bad_lines=False)
+            if total_flows != df.shape[0]:
+                print("WARNING: {} flows ignored by pandas type conversion. Consider using to_csv() "
+                      "method if drops are critical.".format(abs(df.shape[0] - total_flows)))
+        else:
+            df = None
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
-        if total_flows == df.shape[0]:
-            return df
-        else:
-            print("WARNING: {} flows ignored by pandas type conversion. Consider using to_csv() "
-                  "method if drops are critical.".format(abs(df.shape[0]-total_flows)))
-            return df
+        return df
+
+
 

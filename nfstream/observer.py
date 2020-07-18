@@ -36,7 +36,7 @@ typedef struct nf_packet {
   uint16_t ip_size;
   uint16_t transport_size;
   uint16_t payload_size;
-  uint16_t ip_size_from_header;
+  uint16_t ip_content_len;
   uint8_t *ip_content;
   uint64_t hashval;
 } nf_packet_t;
@@ -98,7 +98,7 @@ class NFPacket(object):
         object.__setattr__(self, "closed", True)
 
 
-def validate_parameters(source, promisc, snaplen, bpf_filter, account_ip_padding_size, decode_tunnels):
+def validate_parameters(source, promisc, snaplen, bpf_filter, decode_tunnels):
     errors = ""
     if not isinstance(source, str):
         errors = errors + "\nPlease specify a pcap file path or a valid network interface name as source."
@@ -108,8 +108,6 @@ def validate_parameters(source, promisc, snaplen, bpf_filter, account_ip_padding
         errors = errors + "\nPlease specify a valid snaplen parameter (positive integer)."
     if not isinstance(bpf_filter, str) and bpf_filter is not None:
         errors = errors + "\nPlease specify a valid bpf_filter string format."
-    if not isinstance(account_ip_padding_size, bool):
-        errors = errors + "\nPlease specify a valid account_ip_padding_size parameter (possible values: True, False)."
     if not isinstance(decode_tunnels, bool):
         errors = errors + "\nPlease specify a valid decode_tunnels parameter (possible values: True, False)."
     return errors
@@ -118,9 +116,8 @@ def validate_parameters(source, promisc, snaplen, bpf_filter, account_ip_padding
 class NFObserver:
     """ NFObserver module main class """
     def __init__(self, source=None, snaplen=65535, promisc=True, to_ms=1, bpf_filter=None,
-                 nroots=1, account_ip_padding_size=False, decode_tunnels=False):
-        errors = validate_parameters(source, promisc, snaplen, bpf_filter, account_ip_padding_size,
-                                     decode_tunnels)
+                 nroots=1, decode_tunnels=False):
+        errors = validate_parameters(source, promisc, snaplen, bpf_filter, decode_tunnels)
         if errors != '':
             raise OSError(errors)
         self._ffi = cffi.FFI()
@@ -158,7 +155,6 @@ class NFObserver:
                 self.cap = handler
         self.nroots = nroots
         self.safety_time = 0
-        self.account_ip_padding_size = account_ip_padding_size
         self.decode_tunnels = int(decode_tunnels)
 
     def next_nf_packet(self):
@@ -167,15 +163,11 @@ class NFObserver:
         return rv, nf_packet
 
     def build_nf_packet(self, time, pkt):
-        if self.account_ip_padding_size:
-            rs_ip_size = pkt.ip_size
-        else:
-            rs_ip_size = pkt.ip_size_from_header
         src_ip = self._ffi.string(pkt.src_name).decode('utf-8', errors='ignore')
         dst_ip = self._ffi.string(pkt.dst_name).decode('utf-8', errors='ignore')
         return NFPacket(time=time,
                         raw_size=pkt.raw_size,
-                        ip_size=rs_ip_size,
+                        ip_size=pkt.ip_size,
                         transport_size=pkt.transport_size,
                         payload_size=pkt.payload_size,
                         nfhash=get_hash(pkt.protocol, pkt.vlan_id, src_ip, dst_ip, pkt.src_port, pkt.dst_port),
@@ -188,7 +180,7 @@ class NFObserver:
                         version=pkt.ip_version,
                         tcp_flags=tcpflags(syn=pkt.syn, cwr=pkt.cwr, ece=pkt.ece, urg=pkt.urg, ack=pkt.ack, psh=pkt.psh,
                                            rst=pkt.rst, fin=pkt.fin),
-                        ip_packet=bytes(self._ffi.buffer(pkt.ip_content, pkt.ip_size)),
+                        ip_packet=bytes(self._ffi.buffer(pkt.ip_content, pkt.ip_content_len)),
                         root_idx=pkt.hashval % self.nroots)
 
     def __iter__(self):

@@ -461,7 +461,7 @@ typedef struct nf_packet {
   uint16_t ip_size;
   uint16_t transport_size;
   uint16_t payload_size;
-  uint16_t ip_size_from_header;
+  uint16_t ip_content_len;
   uint8_t *ip_content;
   uint64_t hashval;
 } nf_packet_t;
@@ -547,7 +547,6 @@ int get_nf_packet_info(const uint8_t version,
                        uint8_t **payload,
                        uint16_t *payload_len,
                        struct timeval when, struct nf_packet *nf_pkt) {
-
   uint32_t l4_offset;
   const uint8_t *l3, *l4;
   uint32_t l4_data_len = 0XFEEDFACE;
@@ -559,12 +558,10 @@ int get_nf_packet_info(const uint8_t version,
     }
 
 
-    if((iph->ihl * 4) > ipsize || ipsize < ntohs(iph->tot_len)
-       /* || (iph->frag_off & htons(0x1FFF)) != 0 */) {
+    if((iph->ihl * 4) > ipsize) {
          nf_pkt->consumable = 0;
          return 0;
        }
-
 
     l4_offset = iph->ihl * 4;
     l3 = (const uint8_t*)iph;
@@ -578,7 +575,7 @@ int get_nf_packet_info(const uint8_t version,
 
     l3 = (const uint8_t*)iph6;
   }
-  if(ipsize < l4_offset + l4_packet_len) {
+  if(nfstream_max(ntohs(iph->tot_len) , ipsize)< l4_offset + l4_packet_len) {
     nf_pkt->consumable = 0;
     return 0;
   }
@@ -637,19 +634,19 @@ int get_nf_packet_info(const uint8_t version,
   nf_pkt->ip_version = version;
   nf_pkt->transport_size = l4_data_len;
   nf_pkt->payload_size = *payload_len;
-  nf_pkt->ip_size = ipsize;
+  nf_pkt->ip_content_len = ipsize;
   nf_pkt->hashval = nf_pkt->protocol + nf_pkt->vlan_id + iph->saddr + iph->daddr + nf_pkt->src_port + nf_pkt->dst_port;
 
 
   if(version == IPVERSION) {
 	inet_ntop(AF_INET, &iph->saddr, nf_pkt->src_name, sizeof(nf_pkt->src_name));
 	inet_ntop(AF_INET, &iph->daddr, nf_pkt->dst_name, sizeof(nf_pkt->dst_name));
-	nf_pkt->ip_size_from_header = ntohs(iph->tot_len);
+	nf_pkt->ip_size= ntohs(iph->tot_len);
 	nf_pkt->ip_content = (uint8_t *)iph;
   } else {
 	inet_ntop(AF_INET6, &iph6->ip6_src, nf_pkt->src_name, sizeof(nf_pkt->src_name));
 	inet_ntop(AF_INET6, &iph6->ip6_dst, nf_pkt->dst_name, sizeof(nf_pkt->dst_name));
-	nf_pkt->ip_size_from_header = ntohs(iph6->ip6_hdr.ip6_un1_plen);
+	nf_pkt->ip_size = ntohs(iph->tot_len);
 	nf_pkt->ip_content = (uint8_t *)iph6;
   }
   nf_pkt->consumable = 1;
@@ -685,6 +682,7 @@ static int get_nf_packet_info6(uint16_t vlan_id,
     return 0;
   }
   iph.protocol = l4proto;
+  iph.tot_len = iph6->ip6_hdr.ip6_un1_plen;
   return(get_nf_packet_info(6, vlan_id, tunnel_type,
 			    &iph, iph6, ip_offset, ipsize,
 			    ntohs(iph6->ip6_hdr.ip6_un1_plen),
@@ -1100,7 +1098,7 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
       }
     }
   }
-  return parse_packet(time, vlan_id, tunnel_type, iph, iph6, ip_offset, header->caplen - ip_offset, header->caplen, header, packet, header->ts, nf_pkt);
+  return parse_packet(time, vlan_id, tunnel_type, iph, iph6, ip_offset, header->caplen - ip_offset, header->len, header, packet, header->ts, nf_pkt);
 }
 
 

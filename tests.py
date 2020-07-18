@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License along with nfs
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from nfstream import NFStreamer, NFPlugin, NFObserver
+from nfstream import NFStreamer, NFPlugin
 import unittest
 import os
 import csv
@@ -84,11 +84,16 @@ class TestMethods(unittest.TestCase):
                 print("{}\t: \033[94mOK\033[0m".format(test_case_name.ljust(60, ' ')))
             else:
                 ko_files.append(test_case_name)
-                print(ground_truth_ndpi[test_case_name])
+                print(dict(sorted(ground_truth_ndpi[test_case_name].items(),
+                                  key=lambda x: x[0].lower())
+                           )
+                      )
                 print("********************************")
-                print(result)
+                print(dict(sorted(result.items(),
+                                  key=lambda x: x[0].lower())
+                           )
+                      )
                 print("{}\t: \033[31mKO\033[0m".format(test_case_name.ljust(60, ' ')))
-            del streamer_test
         self.assertEqual(len(files), len(ok_files))
 
     def test_expiration_management(self):
@@ -123,111 +128,7 @@ messenger.com')
         except SystemExit:
             print("{}\t: \033[94mOK\033[0m".format(".Testing unfoud device".ljust(60, ' ')))
 
-    def test_statistical_features_with_pad(self):
-        print("\n----------------------------------------------------------------------")
-        streamer_test = NFStreamer(source='tests/pcap/google_ssl.pcap', statistics=True, account_ip_padding_size=True)
-        flows = []
-        for flow in streamer_test:
-            flows.append(flow)
-        del streamer_test
-        self.assertEqual(flows[0].id, 0)
-        self.assertEqual(flows[0].bidirectional_first_seen_ms, 1434443394683)
-        self.assertEqual(flows[0].bidirectional_last_seen_ms, 1434443401353)
-        self.assertEqual(flows[0].src2dst_first_seen_ms, 1434443394683)
-        self.assertEqual(flows[0].src2dst_last_seen_ms, 1434443401353)
-        self.assertEqual(flows[0].dst2src_first_seen_ms, 1434443394717)
-        self.assertEqual(flows[0].dst2src_last_seen_ms, 1434443401308)
-        self.assertEqual(flows[0].version, 4)
-        self.assertEqual(flows[0].src_port, 42835)
-        self.assertEqual(flows[0].dst_port, 443)
-        self.assertEqual(flows[0].protocol, 6)
-        self.assertEqual(flows[0].vlan_id, 0)
-        self.assertEqual(flows[0].src_ip, '172.31.3.224')
-        self.assertEqual(flows[0].dst_ip, '216.58.212.100')
-        self.assertEqual(flows[0].bidirectional_packets, 28)
-        self.assertEqual(flows[0].bidirectional_raw_bytes, 9108)
-        self.assertEqual(flows[0].bidirectional_ip_bytes, 8716)
-        self.assertEqual(flows[0].bidirectional_duration_ms, 6670)
-        self.assertEqual(flows[0].src2dst_packets, 16)
-        self.assertEqual(flows[0].src2dst_raw_bytes, 1512)
-        self.assertEqual(flows[0].src2dst_ip_bytes, 1288)
-        self.assertEqual(flows[0].src2dst_duration_ms, 6670)
-        self.assertEqual(flows[0].dst2src_packets, 12)
-        self.assertEqual(flows[0].dst2src_raw_bytes, 7596)
-        self.assertEqual(flows[0].dst2src_ip_bytes, 7428)
-        self.assertEqual(flows[0].dst2src_duration_ms, 6591)
-        self.assertEqual(flows[0].expiration_id, 0)
-        self.assertEqual(flows[0].bidirectional_min_raw_ps, 54)
-        self.assertEqual(flows[0].bidirectional_mean_raw_ps, 325.2857142857144)
-        self.assertEqual(flows[0].bidirectional_stdev_raw_ps, 500.14981882416123)
-        self.assertEqual(flows[0].bidirectional_max_raw_ps, 1484)
-        self.assertEqual(flows[0].src2dst_min_raw_ps, 54)
-        self.assertEqual(flows[0].src2dst_mean_raw_ps, 94.5)
-        self.assertEqual(flows[0].src2dst_stdev_raw_ps, 89.55519713189923)
-        self.assertEqual(flows[0].src2dst_max_raw_ps, 368)
-        self.assertEqual(flows[0].dst2src_min_raw_ps, 60)
-        self.assertEqual(flows[0].dst2src_mean_raw_ps, 632.9999999999999)
-        self.assertEqual(flows[0].dst2src_stdev_raw_ps, 649.8457159552985)
-        self.assertEqual(flows[0].dst2src_max_raw_ps, 1484)
-        self.assertEqual(flows[0].bidirectional_min_ip_ps, 40)
-        self.assertEqual(flows[0].bidirectional_mean_ip_ps, 311.2857142857144)
-        self.assertEqual(flows[0].bidirectional_stdev_ip_ps, 500.14981882416123)
-        self.assertEqual(flows[0].bidirectional_max_ip_ps, 1470)
-        self.assertEqual(flows[0].src2dst_min_ip_ps, 40)
-        self.assertEqual(flows[0].src2dst_mean_ip_ps, 80.49999999999999)
-        self.assertEqual(flows[0].src2dst_stdev_ip_ps, 89.55519713189922)
-        self.assertEqual(flows[0].src2dst_max_ip_ps, 354)
-        self.assertEqual(flows[0].dst2src_min_ip_ps, 46)
-        self.assertEqual(flows[0].dst2src_mean_ip_ps, 618.9999999999999)
-        self.assertEqual(flows[0].dst2src_stdev_ip_ps, 649.8457159552985)
-        self.assertEqual(flows[0].dst2src_max_ip_ps, 1470)
-        self.assertEqual(flows[0].bidirectional_min_piat_ms, 0)
-        self.assertEqual(flows[0].bidirectional_mean_piat_ms, 247.037037037037)
-        self.assertEqual(flows[0].bidirectional_stdev_piat_ms, 324.04599406227237)
-        self.assertEqual(flows[0].bidirectional_max_piat_ms, 995)
-        self.assertEqual(flows[0].src2dst_min_piat_ms, 76)
-        self.assertEqual(flows[0].src2dst_mean_piat_ms, 444.6666666666667)
-        self.assertEqual(flows[0].src2dst_stdev_piat_ms, 398.80726017617934)
-        self.assertEqual(flows[0].src2dst_max_piat_ms, 1185)
-        self.assertEqual(flows[0].dst2src_min_piat_ms, 66)
-        self.assertEqual(flows[0].dst2src_mean_piat_ms, 599.1818181818182)
-        self.assertEqual(flows[0].dst2src_stdev_piat_ms, 384.78456782511904)
-        self.assertEqual(flows[0].dst2src_max_piat_ms, 1213)
-        self.assertEqual(flows[0].master_protocol, 91)
-        self.assertEqual(flows[0].app_protocol, 126)
-        self.assertEqual(flows[0].application_name, 'TLS.Google')
-        self.assertEqual(flows[0].category_name, 'Web')
-        self.assertEqual(flows[0].client_info, '')
-        self.assertEqual(flows[0].server_info, '')
-        self.assertEqual(flows[0].j3a_client, '')
-        self.assertEqual(flows[0].j3a_server, '')
-        self.assertEqual(flows[0].bidirectional_syn_packets, 2)
-        self.assertEqual(flows[0].bidirectional_cwr_packets, 0)
-        self.assertEqual(flows[0].bidirectional_ece_packets, 0)
-        self.assertEqual(flows[0].bidirectional_urg_packets, 0)
-        self.assertEqual(flows[0].bidirectional_ack_packets, 27)
-        self.assertEqual(flows[0].bidirectional_psh_packets, 8)
-        self.assertEqual(flows[0].bidirectional_rst_packets, 0)
-        self.assertEqual(flows[0].bidirectional_fin_packets, 2)
-        self.assertEqual(flows[0].src2dst_syn_packets, 1)
-        self.assertEqual(flows[0].src2dst_cwr_packets, 0)
-        self.assertEqual(flows[0].src2dst_ece_packets, 0)
-        self.assertEqual(flows[0].src2dst_urg_packets, 0)
-        self.assertEqual(flows[0].src2dst_ack_packets, 15)
-        self.assertEqual(flows[0].src2dst_psh_packets, 4)
-        self.assertEqual(flows[0].src2dst_rst_packets, 0)
-        self.assertEqual(flows[0].src2dst_fin_packets, 1)
-        self.assertEqual(flows[0].dst2src_syn_packets, 1)
-        self.assertEqual(flows[0].dst2src_cwr_packets, 0)
-        self.assertEqual(flows[0].dst2src_ece_packets, 0)
-        self.assertEqual(flows[0].dst2src_urg_packets, 0)
-        self.assertEqual(flows[0].dst2src_ack_packets, 12)
-        self.assertEqual(flows[0].dst2src_psh_packets, 4)
-        self.assertEqual(flows[0].dst2src_rst_packets, 0)
-        self.assertEqual(flows[0].dst2src_fin_packets, 1)
-        print("{}\t: \033[94mOK\033[0m".format(".Testing statistical features with ip padding".ljust(60, ' ')))
-
-    def test_statistical_features_without_pad(self):
+    def test_statistical_features(self):
         print("\n----------------------------------------------------------------------")
         streamer_test = NFStreamer(source='tests/pcap/google_ssl.pcap', statistics=True)
         flows = []
@@ -331,7 +232,7 @@ messenger.com')
         self.assertEqual(flows[0].dst2src_psh_packets, 4)
         self.assertEqual(flows[0].dst2src_rst_packets, 0)
         self.assertEqual(flows[0].dst2src_fin_packets, 1)
-        print("{}\t: \033[94mOK\033[0m".format(".Testing statistical features without ip padding".ljust(60, ' ')))
+        print("{}\t: \033[94mOK\033[0m".format(".Testing statistical features".ljust(60, ' ')))
 
     def test_noroot_live(self):
         print("\n----------------------------------------------------------------------")
@@ -343,11 +244,9 @@ messenger.com')
     def test_bad_observer_args(self):
         print("\n----------------------------------------------------------------------")
         try:
-            streamer_test = NFStreamer(source=1, promisc=53, snaplen="wrong", bpf_filter=False,
-                                       account_ip_padding_size="toto",
-                                       decode_tunnels=22)
+            streamer_test = NFStreamer(source=1, promisc=53, snaplen="wrong", bpf_filter=False, decode_tunnels=22)
         except SystemExit as e:
-            self.assertEqual(str(e).count("\n"), 6)
+            self.assertEqual(str(e).count("\n"), 5)
         print("{}\t: \033[94mOK\033[0m".format(".Testing parameters handling".ljust(60, ' ')))
 
     def test_user_plugins(self):
@@ -420,11 +319,6 @@ messenger.com')
         self.assertEqual(df.shape[0], 74)
         self.assertEqual(df.shape[1], 37)
         print("{}\t: \033[94mOK\033[0m".format(".Testing to Pandas ip_anonymization=True".ljust(60, ' ')))
-
-    def test_init_observer(self):
-        print("\n----------------------------------------------------------------------")
-        observer = NFObserver(source='tests/pcap/facebook.pcap', bpf_filter="src port 52066 or dst port 52066")
-        print("{}\t: \033[94mOK\033[0m".format(".Testing init observer".ljust(60, ' ')))
 
 
 if __name__ == '__main__':
