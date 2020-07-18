@@ -86,7 +86,7 @@ the broader goal of becoming **a common network data processing framework for re
 
 ## Main Features
 
-* **Performance:** **NFStream** is designed to be fast (x10 faster with [**PyPy**][pypy] support) with a small CPU and memory footprint.
+* **Performance:** **NFStream** is designed to be fast (with native [**PyPy**][pypy] support) with a small CPU and memory footprint.
 * **Layer-7 visibility:** **NFStream** deep packet inspection engine is based on [**nDPI**][ndpi]. It allows NFStream to perform [**reliable**][reliable] encrypted applications identification and metadata extraction (e.g. TLS, QUIC, TOR, HTTP, SSH, DNS, etc.).
 * **Flexibility:** add a flow feature in 2 lines as an [**NFPlugin**][nfplugin].
 * **Machine Learning oriented:** add your trained model as an [**NFPlugin**][nfplugin]. 
