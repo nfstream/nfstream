@@ -26,7 +26,7 @@ path = sys.argv[1]
 output_file_name = path + ".csv"
 print("nfstream processing started. Use Ctrl+C to interrupt and save.")
 start = datetime.datetime.now()
-total_flows = NFStreamer(source=path, statistics=True).to_csv(path=output_file_name, sep=";")
+total_flows = NFStreamer(source=path, statistics=True).to_csv(path=output_file_name)
 end = datetime.datetime.now()
 print("\nnfstream processed {} flows and saved them in file: {}".format(total_flows, output_file_name))
 print("Processing time: {}".format(end - start))
