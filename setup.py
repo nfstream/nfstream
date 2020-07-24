@@ -39,6 +39,7 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 def setup_observer_cc():
     os.chdir('nfstream/')
     print("\nSetting up observer_cc. Platform: {plat}, Byteorder: {bo}".format(plat=sys.platform, bo=sys.byteorder))
+    # compile libpcap and ship it with observer
     subprocess.check_call(['git',
                            'clone',
                            '--branch',
@@ -54,6 +55,18 @@ def setup_observer_cc():
                                '--without-libnl'])
         subprocess.check_call(['make'])
     os.chdir('..')
+    # add libzmq and ship it with observer
+    zmq_binaries_dir = os.__file__.replace("os.py", "site-packages/pyzmq.libs/")
+    zmq_binaries_filename = [filename for filename in os.listdir(zmq_binaries_dir) if filename.startswith("libzmq")][0]
+    full_zmq_binaries_path = zmq_binaries_dir + zmq_binaries_filename
+    subprocess.check_call(['git',
+                           'clone',
+                           '--branch',
+                           'v4.3.2',
+                           'https://github.com/zeromq/libzmq.git'])
+    os.chdir('libzmq/')
+    subprocess.check_call(['./autogen.sh'])
+    os.chdir('..')
     if sys.platform == 'darwin':
         subprocess.check_call(['clang',
                                '-shared',
@@ -63,9 +76,10 @@ def setup_observer_cc():
                                '-fPIC',
                                '-DPIC',
                                '-I/libpcap',
+                               '-I/libzmq/include',
                                '-O2',
                                '-Wall',
-                               'observer_cc.c', 'libpcap/libpcap.a'])
+                               'observer_cc.c', 'libpcap/libpcap.a', full_zmq_binaries_path])
     else:
         subprocess.check_call(['gcc',
                                '-shared',
@@ -75,10 +89,12 @@ def setup_observer_cc():
                                '-fPIC',
                                '-DPIC',
                                '-I/libpcap',
+                               '-I/libzmq/include',
                                '-O2',
                                '-Wall',
-                               'observer_cc.c', 'libpcap/libpcap.a'])
+                               'observer_cc.c', 'libpcap/libpcap.a', full_zmq_binaries_path])
     shutil.rmtree('libpcap/', ignore_errors=True)
+    shutil.rmtree('libzmq/', ignore_errors=True)
     os.chdir('..')
 
 
