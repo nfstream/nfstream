@@ -56,7 +56,10 @@ def setup_observer_cc():
         subprocess.check_call(['make'])
     os.chdir('..')
     # add libzmq and ship it with observer
-    zmq_binaries_dir = os.__file__.replace("os.py", "site-packages/pyzmq.libs/")
+    if sys.platform == 'darwin':
+        zmq_binaries_dir = os.__file__.replace("os.py", "site-packages/zmq/")
+    else:
+        zmq_binaries_dir = os.__file__.replace("os.py", "site-packages/pyzmq.libs/")
     zmq_binaries_filename = [filename for filename in os.listdir(zmq_binaries_dir) if filename.startswith("libzmq")][0]
     full_zmq_binaries_path = zmq_binaries_dir + zmq_binaries_filename
     subprocess.check_call(['git',
