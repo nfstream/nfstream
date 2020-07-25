@@ -4,7 +4,7 @@ __pycache__/
 *$py.class
 
 # C extensions
-# *.so
+*.so
 
 # Distribution / packaging
 .Python
@@ -46,6 +46,7 @@ coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/
+tests/result
 
 # Translations
 *.mo
@@ -93,6 +94,9 @@ venv.bak/
 # Spyder project settings
 .spyderproject
 .spyproject
+
+# Pycharm files
+.idea
 
 # Rope project settings
 .ropeproject
