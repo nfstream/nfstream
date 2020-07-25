@@ -1108,8 +1108,9 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
  */
 pcap_t * observer_open(const u_char * pcap_file, u_int snaplen, int promisc, int to_ms, char *errbuf, char *errbuf_set, int mode) {
   pcap_t * pcap_handle = NULL;
-  void *context = zmq_ctx_new();
-  void *publisher = zmq_socket(context, ZMQ_PUB);
+  int major, minor, patch;
+  zmq_version(&major, &minor, &patch);
+  printf("Current ØMQ version is %d.%d.%d\n", major, minor, patch);
   int status = 0;
   if (mode == 0) {
     pcap_handle = pcap_open_offline((char*)pcap_file, errbuf);
