@@ -38,11 +38,8 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 def setup_observer_cc():
     os.chdir('nfstream/')
-    print("*********")
-    print(os.uname().machine)
-    print("*********")
     platform_compiler = "gcc"
-    zmq_lib_path = "/usr/lib/x86_64-linux-gnu/libzmq.so"
+    zmq_lib_path = "/usr/lib/{}-linux-gnu/libzmq.so".format(os.uname().machine)
     if sys.platform == 'darwin':
         platform_compiler = "clang"
         zmq_lib_path = "/usr/local/lib/libzmq.dylib"
