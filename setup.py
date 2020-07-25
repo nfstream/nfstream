@@ -56,12 +56,13 @@ def setup_observer_cc():
         subprocess.check_call(['make'])
     os.chdir('..')
     # add libzmq and ship it with observer
-    if sys.platform == 'darwin':
+    if sys.platform == 'darwin':  # on darwin we pick it after brew install
         zmq_binaries_dir = "/usr/local/lib/"
-    else:
+    else:  # on linux we pick it from installed pyzmq package
         zmq_binaries_dir = os.__file__.replace("os.py", "site-packages/pyzmq.libs/")
     zmq_binaries_filename = [filename for filename in os.listdir(zmq_binaries_dir) if filename.startswith("libzmq")][0]
     full_zmq_binaries_path = zmq_binaries_dir + zmq_binaries_filename
+    print(full_zmq_binaries_path)
     if sys.platform == 'darwin':
         subprocess.check_call(['clang',
                                '-shared',
@@ -70,8 +71,6 @@ def setup_observer_cc():
                                '-g',
                                '-fPIC',
                                '-DPIC',
-                               '-I/libpcap',
-                               '-I/libzmq/include',
                                '-O2',
                                '-Wall',
                                'observer_cc.c', 'libpcap/libpcap.a', full_zmq_binaries_path])
@@ -83,8 +82,6 @@ def setup_observer_cc():
                                '-g',
                                '-fPIC',
                                '-DPIC',
-                               '-I/libpcap',
-                               '-I/libzmq/include',
                                '-O2',
                                '-Wall',
                                'observer_cc.c', 'libpcap/libpcap.a', full_zmq_binaries_path])
