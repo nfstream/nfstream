@@ -17,9 +17,9 @@ You should have received a copy of the GNU General Public License along with nfs
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-import math
 import ipaddress
-from typing import List, Tuple, Optional
+import math
+from typing import List, Optional
 
 import numpy as np
 
