@@ -57,8 +57,7 @@ def setup_observer_cc():
     os.chdir('..')
     # add libzmq and ship it with observer
     if sys.platform == 'darwin':
-        print([filename for filename in os.listdir("/usr/local/lib/")])
-        zmq_binaries_dir = os.__file__.replace("os.py", "site-packages/zmq/")
+        zmq_binaries_dir = "/usr/local/lib/"
     else:
         zmq_binaries_dir = os.__file__.replace("os.py", "site-packages/pyzmq.libs/")
     zmq_binaries_filename = [filename for filename in os.listdir(zmq_binaries_dir) if filename.startswith("libzmq")][0]
