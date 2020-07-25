@@ -62,14 +62,6 @@ def setup_observer_cc():
         zmq_binaries_dir = os.__file__.replace("os.py", "site-packages/pyzmq.libs/")
     zmq_binaries_filename = [filename for filename in os.listdir(zmq_binaries_dir) if filename.startswith("libzmq")][0]
     full_zmq_binaries_path = zmq_binaries_dir + zmq_binaries_filename
-    subprocess.check_call(['git',
-                           'clone',
-                           '--branch',
-                           'v4.3.2',
-                           'https://github.com/zeromq/libzmq.git'])
-    os.chdir('libzmq/')
-    subprocess.check_call(['./autogen.sh'])
-    os.chdir('..')
     if sys.platform == 'darwin':
         subprocess.check_call(['clang',
                                '-shared',
