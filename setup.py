@@ -56,9 +56,9 @@ def setup_observer_cc():
         subprocess.check_call(['make'])
     os.chdir('..')
     if sys.platform == 'darwin':
-        zmq_lib_path = "/usr/local/lib/libzmq.a"
+        zmq_lib_path = "/usr/local/lib/libzmq.dylib"
     else:
-        zmq_lib_path = "/usr/lib/x86_64-linux-gnu/libzmq.a"
+        zmq_lib_path = "/usr/lib/x86_64-linux-gnu/libzmq.so"
     if sys.platform == 'darwin':
         subprocess.check_call(['clang',
                                '-shared',
