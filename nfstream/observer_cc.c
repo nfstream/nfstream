@@ -1110,7 +1110,6 @@ pcap_t * observer_open(const u_char * pcap_file, u_int snaplen, int promisc, int
   pcap_t * pcap_handle = NULL;
   int major, minor, patch;
   zmq_version(&major, &minor, &patch);
-  printf("Current ØMQ version is %d.%d.%d\n", major, minor, patch);
   int status = 0;
   if (mode == 0) {
     pcap_handle = pcap_open_offline((char*)pcap_file, errbuf);
