@@ -38,53 +38,23 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 def setup_observer_cc():
     os.chdir('nfstream/')
+    platform_compiler = "gcc"
+    zmq_lib_path = "/usr/lib/x86_64-linux-gnu/libzmq.so"
+    if sys.platform == 'darwin':
+        platform_compiler = "clang"
+        zmq_lib_path = "/usr/local/lib/libzmq.dylib"
     print("\nSetting up observer_cc. Platform: {plat}, Byteorder: {bo}".format(plat=sys.platform, bo=sys.byteorder))
     # compile libpcap and ship it with observer
-    subprocess.check_call(['git',
-                           'clone',
-                           '--branch',
-                           'libpcap-1.9.1',
+    # we compile libpcap instead of copying the .so from to ensure 1.9.1 version on both mac OS and Linux
+    subprocess.check_call(['git', 'clone', '--branch', 'libpcap-1.9.1',
                            'https://github.com/the-tcpdump-group/libpcap.git'])
     os.chdir('libpcap/')
-    if sys.platform == 'darwin':
-        subprocess.check_call(['./configure', 'CC=clang', '--enable-ipv6', '--disable-universal', '--enable-dbus=no',
-                               '--without-libnl'])
-        subprocess.check_call(['make'])
-    else:
-        subprocess.check_call(['./configure', 'CC=gcc', '--enable-ipv6', '--disable-universal', '--enable-dbus=no',
-                               '--without-libnl'])
-        subprocess.check_call(['make'])
+    subprocess.check_call(['./configure', 'CC={}'.format(platform_compiler), '--enable-ipv6', '--disable-universal',
+                           '--enable-dbus=no', '--without-libnl'])
+    subprocess.check_call(['make'])
     os.chdir('..')
-    if sys.platform == 'darwin':
-        zmq_lib_path = "/usr/local/lib/libzmq.dylib"
-    else:
-        zmq_lib_path = "/usr/lib/x86_64-linux-gnu/libzmq.so"
-    if sys.platform == 'darwin':
-        subprocess.check_call(['clang',
-                               '-shared',
-                               '-o',
-                               'observer_cc.so',
-                               '-g',
-                               '-fPIC',
-                               '-DPIC',
-                               '-O2',
-                               '-Wall',
-                               'observer_cc.c',
-                               'libpcap/libpcap.a',
-                               zmq_lib_path])
-    else:
-        subprocess.check_call(['gcc',
-                               '-shared',
-                               '-o',
-                               'observer_cc.so',
-                               '-g',
-                               '-fPIC',
-                               '-DPIC',
-                               '-O2',
-                               '-Wall',
-                               'observer_cc.c',
-                               'libpcap/libpcap.a',
-                               zmq_lib_path])
+    subprocess.check_call([platform_compiler, '-shared', '-o', 'observer_cc.so', '-g', '-fPIC', '-DPIC', '-O2', '-Wall',
+                           'observer_cc.c', 'libpcap/libpcap.a', zmq_lib_path])
     shutil.rmtree('libpcap/', ignore_errors=True)
     shutil.rmtree('libzmq/', ignore_errors=True)
     os.chdir('..')
@@ -92,11 +62,7 @@ def setup_observer_cc():
 
 def setup_ndpi():
     print("\nSetting up nDPI. Platform: {plat}, Byteorder: {bo}".format(plat=sys.platform, bo=sys.byteorder))
-    subprocess.check_call(['git',
-                           'clone',
-                           '--branch',
-                           'dev',
-                           'https://github.com/ntop/nDPI.git'])
+    subprocess.check_call(['git', 'clone', '--branch', 'dev', 'https://github.com/ntop/nDPI.git'])
     os.chdir('nDPI/')
     subprocess.check_call(['./autogen.sh'])
     os.chdir('src/')
