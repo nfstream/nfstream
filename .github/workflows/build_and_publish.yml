@@ -51,6 +51,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install autoconf automake libtool pkg-config libpcap-dev libzmq3-dev
         sudo apt-get install libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison
+        ls /usr/lib/
     - name: Installing macOS prerequisites
       if: startsWith(matrix.os, 'macOS')
       run: |
