@@ -21,9 +21,6 @@ jobs:
       matrix:
         os: ["ubuntu-latest", "macOS-latest"]
         python-version: [pypy3, 3.8, 3.7, 3.6]
-        env:
-          OS: ${{ matrix.os }}
-          PYTHON: ${{ matrix.python-version }}
 
     steps:
     - uses: actions/checkout@v1
@@ -72,9 +69,6 @@ jobs:
         coverage run tests.py
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        env_vars: OS,PYTHON
     - name: Publish on Pypi
       if: startsWith(github.ref, 'refs/tags/')
       env:
