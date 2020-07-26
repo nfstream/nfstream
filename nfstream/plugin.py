@@ -1294,7 +1294,7 @@ class dst2src_fin_packets(NFPlugin):
             entry.dst2src_fin_packets += 1
 
 
-class raw_packets_matrix(NFPlugin):
+class bidirectional_packets_matrix(NFPlugin):
     """
     WARNING: do not use with .to_pandas() method, rather process the matrix
     in the loop, since it will break the DataFrame's row structure.
@@ -1398,13 +1398,13 @@ class raw_packets_matrix(NFPlugin):
         return self._fill_flow_stats(obs, raw_feature_matrix)
 
     def on_update(self, obs, entry):
-        if entry.bidirectional_packets > self.packet_limit:
-            return entry.raw_packets_matrix
-        return self._fill_flow_stats(obs, entry.raw_packets_matrix, counter=entry.bidirectional_packets - 1)
+        if entry.bidirectional_packets <= self.packet_limit:
+            self._fill_flow_stats(obs, entry.bidirectional_packets_matrix, counter=entry.bidirectional_packets - 1)
 
     def on_expire(self, entry):
         # rm unfilled matrix rows
-        entry.raw_packets_matrix = entry.raw_packets_matrix[entry.raw_packets_matrix[:, self.ts_idx] > 0]
+        unfilled_indexer = entry.bidirectional_packets_matrix[:, self.ts_idx] > 0
+        entry.bidirectional_packets_matrix = entry.bidirectional_packets_matrix[unfilled_indexer]
 
 
 """--------------------------------- nfstream core plugins ----------------------------------------------------------"""
