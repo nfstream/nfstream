@@ -23,7 +23,7 @@ import ipaddress
 
 class NFPlugin(object):
     """ NFPlugin class """
-    def __init__(self, name=None, volatile=False, user_data=None):
+    def __init__(self, name=None, volatile=False, **kwargs):
         """
         NFPlugin Parameters:
         name [default= class name]: Plugin name. Must be unique as it’s dynamically created
@@ -31,15 +31,15 @@ class NFPlugin(object):
         volatile [default= False] : Volatile plugin is available only when flow is processed.
                                     At flow expiration level, plugin is automatically removed
                                     (will not appear as flow attribute).
-        user_data [default= None] : user_data passed to the plugin. Example: external module,
-                                    pickled sklearn model, etc.
+        kwargs : user defined named arguments that will be stored as Plugin attributes
         """
         if name is None:
             self.name = type(self).__name__
         else:
             self.name = name
-        self.user_data = user_data
         self.volatile = volatile
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
     def on_init(self, obs):
         """
@@ -335,15 +335,15 @@ def update_ndpi_infos(entry, ndpi_flow, ndpi_protocol, ndpi):
 class nDPI(NFPlugin):
     """ nDPI plugin structure (volatile) """
     def on_init(self, obs):
-        f = self.user_data.new_ndpi_flow()
-        s = self.user_data.new_ndpi_id()
-        d = self.user_data.new_ndpi_id()
-        p = self.user_data.ndpi_detection_process_packet(f, obs.ip_packet, len(obs.ip_packet), obs.time, s, d)
-        tcp_enough = (obs.protocol == 6) and (1 > self.user_data.max_tcp_dissections)
-        udp_enough = (obs.protocol == 17) and (1 > self.user_data.max_udp_dissections)
+        f = self.ndpi.new_ndpi_flow()
+        s = self.ndpi.new_ndpi_id()
+        d = self.ndpi.new_ndpi_id()
+        p = self.ndpi.ndpi_detection_process_packet(f, obs.ip_packet, len(obs.ip_packet), obs.time, s, d)
+        tcp_enough = (obs.protocol == 6) and (1 > self.ndpi.max_tcp_dissections)
+        udp_enough = (obs.protocol == 17) and (1 > self.ndpi.max_udp_dissections)
         enough_packets = tcp_enough or udp_enough
         if enough_packets or p.app_protocol != 0:
-            if not enough_packets and self.user_data.ndpi_extra_dissection_possible(f):
+            if not enough_packets and self.ndpi.ndpi_extra_dissection_possible(f):
                 return [f, s, d, p, 0]
             else:
                 return [f, s, d, p, 1]
@@ -352,43 +352,43 @@ class nDPI(NFPlugin):
         # nDPI structures are maintained in a list [ndpi_flow, ndpi_src, ndpi_dst, ndpi_proto, detection_completed]
 
     def on_update(self, obs, entry):
-        tcp_enough = (entry.protocol == 6) and (entry.bidirectional_packets > self.user_data.max_tcp_dissections)
-        udp_enough = (entry.protocol == 17) and (entry.bidirectional_packets > self.user_data.max_udp_dissections)
+        tcp_enough = (entry.protocol == 6) and (entry.bidirectional_packets > self.ndpi.max_tcp_dissections)
+        udp_enough = (entry.protocol == 17) and (entry.bidirectional_packets > self.ndpi.max_udp_dissections)
         enough_packets = tcp_enough or udp_enough
         if entry.nDPI[4] == 0:
-            entry.nDPI[3] = self.user_data.ndpi_detection_process_packet(entry.nDPI[0],
+            entry.nDPI[3] = self.ndpi.ndpi_detection_process_packet(entry.nDPI[0],
                                                                          obs.ip_packet,
                                                                          len(obs.ip_packet),
                                                                          obs.time,
                                                                          entry.nDPI[1],
                                                                          entry.nDPI[2])
             if enough_packets or entry.nDPI[3].app_protocol != 0:
-                if not enough_packets and self.user_data.ndpi_extra_dissection_possible(entry.nDPI[0]):
+                if not enough_packets and self.ndpi.ndpi_extra_dissection_possible(entry.nDPI[0]):
                     pass
                 else:
                     entry.nDPI[4] = 1
                     if entry.nDPI[3].app_protocol == 0:
-                        entry.nDPI[3] = self.user_data.ndpi_detection_giveup(entry.nDPI[0])
-        update_ndpi_infos(entry, entry.nDPI[0], entry.nDPI[3], self.user_data)
+                        entry.nDPI[3] = self.ndpi.ndpi_detection_giveup(entry.nDPI[0])
+        update_ndpi_infos(entry, entry.nDPI[0], entry.nDPI[3], self.ndpi)
 
     def on_expire(self, entry):
         # flow expires and we failed to detect it.
         if entry.nDPI[3].app_protocol == 0 and entry.nDPI[4] == 0:
-            entry.nDPI[3] = self.user_data.ndpi_detection_giveup(entry.nDPI[0])
-        update_ndpi_infos(entry, entry.nDPI[0], entry.nDPI[3], self.user_data)
+            entry.nDPI[3] = self.ndpi.ndpi_detection_giveup(entry.nDPI[0])
+        update_ndpi_infos(entry, entry.nDPI[0], entry.nDPI[3], self.ndpi)
         # Freeing allocated memory
-        if entry.nDPI[0] != self.user_data.NULL:
-            self.user_data.ndpi_flow_free(entry.nDPI[0])
-            entry.nDPI[0] = self.user_data.NULL
-        if entry.nDPI[1] != self.user_data.NULL:
-            self.user_data.ndpi_free(entry.nDPI[1])
-            entry.nDPI[1] = self.user_data.NULL
-        if entry.nDPI[2] != self.user_data.NULL:
-            self.user_data.ndpi_free(entry.nDPI[2])
-            entry.nDPI[2] = self.user_data.NULL
+        if entry.nDPI[0] != self.ndpi.NULL:
+            self.ndpi.ndpi_flow_free(entry.nDPI[0])
+            entry.nDPI[0] = self.ndpi.NULL
+        if entry.nDPI[1] != self.ndpi.NULL:
+            self.ndpi.ndpi_free(entry.nDPI[1])
+            entry.nDPI[1] = self.ndpi.NULL
+        if entry.nDPI[2] != self.ndpi.NULL:
+            self.ndpi.ndpi_free(entry.nDPI[2])
+            entry.nDPI[2] = self.ndpi.NULL
 
     def cleanup(self):
-        self.user_data.ndpi_exit_detection_module()
+        self.ndpi.ndpi_exit_detection_module()
 
 
 class app_protocol(NFPlugin):
