@@ -17,10 +17,14 @@ You should have received a copy of the GNU General Public License along with nfs
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from nfstream import NFStreamer, NFPlugin
 import unittest
 import os
 import csv
+
+import numpy as np
+
+from nfstream import NFStreamer, NFPlugin
+from nfstream.plugin import bidirectional_packets_matrix
 
 
 def get_files_list(path):
@@ -320,7 +324,44 @@ messenger.com')
         self.assertEqual(df.shape[1], 37)
         print("{}\t: \033[94mOK\033[0m".format(".Testing to Pandas ip_anonymization=True".ljust(60, ' ')))
 
+    def test_raw_feature_parsing(self):
+        streamer = NFStreamer(
+            source='tests/pcap/skype.pcap',
+            idle_timeout=60,
+            active_timeout=60,
+            plugins=[bidirectional_packets_matrix(packet_limit=5)],
+            statistics=False
+        )
+
+        for entry in streamer:
+            assert isinstance(entry.bidirectional_packets_matrix, np.ndarray)
+            assert entry.bidirectional_packets_matrix.shape[1] == 6
+
+    def test_raw_feature_parsing_customized(self):
+        streamer = NFStreamer(
+            source='tests/pcap/skype.pcap',
+            idle_timeout=60,
+            active_timeout=60,
+            plugins=[bidirectional_packets_matrix(packet_limit=5,
+                                                  payload_len=False,
+                                                  tcp_flag=False,
+                                                  ip_proto=False,
+                                                  custom_extractors=[
+                                                      lambda x: 1,
+                                                      lambda x: x.direction,
+                                                  ])],
+            statistics=False
+        )
+
+        for entry in streamer:
+            assert isinstance(entry.bidirectional_packets_matrix, np.ndarray)
+            # we have 3 mandatory + 2 custom features
+            assert entry.bidirectional_packets_matrix.shape[1] == 5
+            # this is our constant function
+            assert entry.bidirectional_packets_matrix[0, 3] == 1
+            # first observation's direction is always 0
+            assert entry.bidirectional_packets_matrix[0, 4] == 0
+
 
 if __name__ == '__main__':
     unittest.main()
-

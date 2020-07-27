@@ -17,8 +17,11 @@ You should have received a copy of the GNU General Public License along with nfs
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-import math
 import ipaddress
+import math
+from typing import List, Optional
+
+import numpy as np
 
 
 class NFPlugin(object):
@@ -1289,6 +1292,119 @@ class dst2src_fin_packets(NFPlugin):
     def on_update(self, obs, entry):
         if obs.direction == 1 and obs.tcpflags.fin == 1:
             entry.dst2src_fin_packets += 1
+
+
+class bidirectional_packets_matrix(NFPlugin):
+    """
+    WARNING: do not use with .to_pandas() method, rather process the matrix
+    in the loop, since it will break the DataFrame's row structure.
+
+    The plugins assembles a matrix with per-packet features of size (M, N),
+    where M is the number of found packets upper-bounded by packet_limit,
+    N is the number of active raw packet features.
+
+    The mandatory packet-features has the following indexing order:
+    0) timestamp, 1) packet direction (bool: is_client) and 2) IP packet len.
+
+    Column-indexes of the optional (payload size, TCP flag and IP protocol)
+    and custom features increment in the order of default args and provided extractors respectively.
+
+    Optionally, one can provide custom extractors that accepts NFPacket instances as an arg
+    to extract a specific packet-feature not provided here, e.g.:
+
+            import dpkt
+
+            def tcp_window_value(obs):
+                if obs.protocol == 6 and obs.version == 4:
+                    packet = dpkt.ip.IP(obs.ip_packet)
+                    try:
+                        return packet.data.win
+                    except AttributeError:
+                        pass
+                return 0
+
+            packet_plugin = raw_packets_matrix(packet_limit=10, custom_extractors=[tcp_window_value]
+
+    The matrix is initialized with zeros, which are further replaced as flow packets are processed.
+    Upon flow export, the shape of matrix is truncated to the number of actually seen packets.
+
+    One can further access column-index info either by using the ordering info from above,
+    or via instantiating the plugin with the same args used during extraction and accessing
+    its attributes with "_idx" suffix.
+
+    """
+
+    def __init__(self,
+                 packet_limit: int,
+                 payload_len: bool = True,
+                 tcp_flag: bool = True,
+                 ip_proto: bool = True,
+                 custom_extractors: Optional[List[callable]] = None,
+                 ):
+        super().__init__()
+        self.packet_limit = packet_limit
+        # timestamp
+        self.ts_idx = 0
+        # packet direction
+        self.is_client_idx = 1
+        # length of IP packet
+        self.ip_len_idx = 2
+
+        # so far we have 3 mandatory features
+        self._active_feature_count = 3
+
+        # here go optional features
+        if payload_len:
+            self.payload_len_idx = self._active_feature_count
+            self._active_feature_count += 1
+        else:
+            self.payload_len_idx = None
+
+        if tcp_flag:
+            self.tcp_flag_idx = self._active_feature_count
+            self._active_feature_count += 1
+        else:
+            self.tcp_flag_idx = None
+
+        if ip_proto:
+            self.ip_proto_idx = self._active_feature_count
+            self._active_feature_count += 1
+        else:
+            self.ip_proto_idx = None
+
+        self._active_builtin_features_count = self._active_feature_count
+        if custom_extractors:
+            self._custom_extractors = custom_extractors
+            self._active_feature_count += len(custom_extractors)
+
+    def _fill_flow_stats(self, obs, raw_feature_matrix, counter=0):
+        raw_feature_matrix[counter, self.ts_idx] = obs.time
+        raw_feature_matrix[counter, self.is_client_idx] = 1 if obs.direction == 0 else 0
+        raw_feature_matrix[counter, self.ip_len_idx] = obs.ip_size
+        if self.payload_len_idx is not None:
+            raw_feature_matrix[counter, self.payload_len_idx] = obs.payload_size
+        if self.tcp_flag_idx is not None:
+            # the byte field is converted to a single integer
+            raw_feature_matrix[counter, self.tcp_flag_idx] = int(''.join(str(i) for i in obs.tcpflags), 2)
+        if self.ip_proto_idx is not None:
+            raw_feature_matrix[counter, self.ip_proto_idx] = obs.protocol
+        if self._active_builtin_features_count < self._active_feature_count:
+            for idx, handler in enumerate(self._custom_extractors):
+                raw_feature_matrix[counter, self._active_builtin_features_count + idx] = handler(obs)
+        return raw_feature_matrix
+
+    def on_init(self, obs):
+        raw_feature_matrix = np.zeros((self.packet_limit, self._active_feature_count))
+        return self._fill_flow_stats(obs, raw_feature_matrix)
+
+    def on_update(self, obs, entry):
+        if entry.bidirectional_packets <= self.packet_limit:
+            self._fill_flow_stats(obs, entry.bidirectional_packets_matrix, counter=entry.bidirectional_packets - 1)
+
+    def on_expire(self, entry):
+        # rm unfilled matrix rows
+        unfilled_indexer = entry.bidirectional_packets_matrix[:, self.ts_idx] > 0
+        entry.bidirectional_packets_matrix = entry.bidirectional_packets_matrix[unfilled_indexer]
 
 
 """--------------------------------- nfstream core plugins ----------------------------------------------------------"""
