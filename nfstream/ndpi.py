@@ -150,7 +150,7 @@ extern union mpls {
   uint32_t u32;
   struct ndpi_mpls_header mpls;
 } mpls;
-  
+
 /* ++++++++++++++++++++++++ IP header ++++++++++++++++++++++++ */
 struct ndpi_iphdr {
   uint8_t ihl:4, version:4;
@@ -265,6 +265,9 @@ struct tinc_cache_entry {
 """
 
 cc_ndpi_stuctures = """
+
+#define NDPI_MAX_NUM_DISSECTED_TLS_BLOCKS      32
+
 typedef enum {
   NDPI_LOG_ERROR,
   NDPI_LOG_TRACE,
@@ -306,6 +309,9 @@ typedef enum {
   NDPI_TLS_NOT_CARRYING_HTTPS,
   NDPI_SUSPICIOUS_DGA_DOMAIN,
   NDPI_MALFORMED_PACKET,
+  NDPI_SSH_OBSOLETE_CLIENT_VERSION_OR_CIPHER,
+  NDPI_SSH_OBSOLETE_SERVER_VERSION_OR_CIPHER,
+  NDPI_SMB_INSECURE_VERSION,
   /* Leave this as last member */
   NDPI_MAX_RISK
 } ndpi_risk_enum;
@@ -576,7 +582,8 @@ struct ndpi_flow_tcp_struct {
 
     /* NDPI_PROTOCOL_TLS */
     uint8_t hello_processed:1, certificate_processed:1, subprotocol_detected:1, fingerprint_set:1, _pad:4; 
-    uint8_t sha1_certificate_fingerprint[20];
+    uint8_t sha1_certificate_fingerprint[20], num_tls_blocks;
+    uint16_t tls_blocks_len[NDPI_MAX_NUM_DISSECTED_TLS_BLOCKS];
   } tls;
 
   /* NDPI_PROTOCOL_POSTGRES */
@@ -889,7 +896,10 @@ struct ndpi_detection_module_struct {
   NDPI_PROTOCOL_BITMASK generic_http_packet_bitmask;
 
   uint32_t current_ts;
+
   uint32_t ticks_per_second;
+
+  uint16_t num_tls_blocks_to_follow;
 
   char custom_category_labels[NUM_CUSTOM_CATEGORIES][CUSTOM_CATEGORY_LABEL_LEN];
   /* callback function buffer */
@@ -973,10 +983,10 @@ struct ndpi_detection_module_struct {
 
   /* NDPI_PROTOCOL_STUN and subprotocols */
   struct ndpi_lru_cache *stun_cache;
-  
+
   /* NDPI_PROTOCOL_MSTEAMS */
   struct ndpi_lru_cache *msteams_cache;
-  
+
   ndpi_proto_defaults_t proto_defaults[512];
 
   uint8_t direction_detect_disable:1, /* disable internal detection of packet direction */
@@ -1031,7 +1041,7 @@ struct ndpi_flow_struct {
   uint8_t host_server_name[240];
   uint8_t initial_binary_bytes[8], initial_binary_bytes_len;
   uint8_t risk_checked;
-  uint32_t risk; /* Issues found with this flow [bitmask of ndpi_risk] */
+  ndpi_risk risk; /* Issues found with this flow [bitmask of ndpi_risk] */
 
   /*
     This structure below will not stay inside the protos
@@ -1341,6 +1351,7 @@ def check_structures_size(flow_struct_defined, flow_struct_loaded,
 
 class NDPI():
     """ ndpi module main class """
+
     def __init__(self, libpath=None, max_tcp_dissections=80, max_udp_dissections=16, enable_guess=True):
         self._ffi = cffi.FFI()
         if libpath is None:
