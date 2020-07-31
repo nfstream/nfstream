@@ -42,7 +42,7 @@ the broader goal of becoming **a common network data processing framework for re
 <tr>
   <td><b>Supported Versions</b></td>
   <td>
-    <a href="https://github.com/aouinizied/nfstream/actions?query=workflow%3Abuild">
+    <a href="https://github.com/nfstream/nfstream/actions?query=workflow%3Abuild">
     <img src="https://img.shields.io/pypi/pyversions/nfstream?logo=python&style=for-the-badge" alt="python3" />
     </a>
   </td>
@@ -50,7 +50,7 @@ the broader goal of becoming **a common network data processing framework for re
 <tr>
   <td><b>Project License</b></td>
   <td>
-    <a href="https://github.com/aouinizied/nfstream/blob/master/LICENSE">
+    <a href="https://github.com/nfstream/nfstream/blob/master/LICENSE">
     <img src="https://img.shields.io/pypi/l/nfstream?logo=gnu&style=for-the-badge&color=blue" alt="License" />
     </a>
   </td>
@@ -58,18 +58,18 @@ the broader goal of becoming **a common network data processing framework for re
 <tr>
   <td><b>Build Status</b></td>
   <td>
-    <a href="https://github.com/aouinizied/nfstream/actions?query=workflow%3Abuild">
-    <img src="https://img.shields.io/github/workflow/status/aouinizied/nfstream/build/master?logo=github&style=for-the-badge" alt="Github WorkFlows" />
+    <a href="https://github.com/nfstream/nfstream/actions?query=workflow%3Abuild">
+    <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build/master?logo=github&style=for-the-badge" alt="Github WorkFlows" />
     </a>
-    <a href="https://travis-ci.org/github/aouinizied/nfstream">
-    <img src="https://img.shields.io/travis/aouinizied/nfstream?logo=travis&style=for-the-badge" alt="Travis CI" />
+    <a href="https://travis-ci.org/github/nfstream/nfstream">
+    <img src="https://img.shields.io/travis/nfstream/nfstream?logo=travis&style=for-the-badge" alt="Travis CI" />
     </a>
   </td>
 </tr>
 <tr>
   <td><b>Code Quality</b></td>
   <td>
-    <a href="https://lgtm.com/projects/g/aouinizied/nfstream/context:python">
+    <a href="https://lgtm.com/projects/g/nfstream/nfstream/context:python">
     <img src="https://img.shields.io/lgtm/grade/python/github/aouinizied/nfstream.svg?logo=lgtm&style=for-the-badge&logoWidth=18)" alt="Quality" />
     </a>
   </td>
@@ -77,8 +77,8 @@ the broader goal of becoming **a common network data processing framework for re
 <tr>
   <td><b>Code Coverage</b></td>
   <td>
-    <a href="https://codecov.io/gh/aouinizied/nfstream/">
-    <img src="https://img.shields.io/codecov/c/github/aouinizied/nfstream?color=brightgreen&logo=codecov&style=for-the-badge" alt="Coverage" />
+    <a href="https://codecov.io/gh/nfstream/nfstream/">
+    <img src="https://img.shields.io/codecov/c/github/nfstream/nfstream?color=brightgreen&logo=codecov&style=for-the-badge" alt="Coverage" />
     </a>
   </td>
 </tr>
@@ -384,7 +384,7 @@ If you want to build **NFStream** from sources on your local machine:
 sudo apt-get update
 sudo apt-get install autoconf automake libtool pkg-config libpcap-dev flex bison
 sudo apt-get install libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev
-git clone https://github.com/aouinizied/nfstream.git
+git clone https://github.com/nfstream/nfstream.git
 cd nfstream
 python3 -m pip install -r requirements.txt
 python3 setup.py bdist_wheel
@@ -394,7 +394,7 @@ python3 setup.py bdist_wheel
 
 ```bash
 brew install autoconf automake libtool pkg-config
-git clone https://github.com/aouinizied/nfstream.git
+git clone https://github.com/nfstream/nfstream.git
 cd nfstream
 python3 -m pip install -r requirements.txt
 python3 setup.py bdist_wheel
@@ -417,10 +417,9 @@ As with any packet monitoring tool, **NFStream** could potentially be misused.
 
 This project is licensed under the LGPLv3 License - see the [**License**][license] file for details
 
-[license]: https://github.com/aouinizied/nfstream/blob/master/LICENSE
+[license]: https://github.com/nfstream/nfstream/blob/master/LICENSE
 [contribute]: https://nfstream.org/docs/community
-[contributors]: https://github.com/aouinizied/nfstream/graphs/contributors
-[github]: https://github.com/aouinizied
+[contributors]: https://github.com/nfstream/nfstream/graphs/contributors
 [documentation]: https://nfstream.org/
 [ndpi]: https://nfstream.org/docs/visibility
 [nfplugin]: https://nfstream.org/docs/api#nfplugin
