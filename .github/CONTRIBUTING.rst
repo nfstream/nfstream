@@ -13,7 +13,7 @@ Types of contribution
 
 **Report bugs**
 
-Report bugs at https://github.com/aouinizied/nfstream/issues.
+Report bugs at https://github.com/nfstream/nfstream/issues.
 
 If you are reporting a bug, please include:
 
@@ -40,7 +40,7 @@ articles, and such.
 
 **Submit feedback**
 
-The best way to send feedback is to file an issue at https://github.com/aouinizied/nfstream/issues.
+The best way to send feedback is to file an issue at https://github.com/nfstream/nfstream/issues.
 
 If you are proposing a feature:
 
@@ -65,7 +65,7 @@ Ready to contribute? Here's how to set up nfstream for local development.
     $ cd nfstream
     $ virtualenv venv-nfstream-py36 -p /usr/bin/python3.6
     $ source venv-nfstream-py36/bin/activate
-    $ python setup.py develop
+    $ python setup.py bdist_wheel
 
 4. Create a branch for local development::
 
@@ -95,7 +95,7 @@ Before you submit a pull request, check that it meets these guidelines:
    your new functionality into a function with a docstring, and add the
    feature to the list in README.rst.
 3. The pull request should work for 3.6 and 3.7 and 3.8 Check
-   https://travis-ci.org/aouinizied/nfstream/pull_requests
+   https://travis-ci.org/nfstream/nfstream/pull_requests
    and make sure that the tests pass for all supported Python versions.
 
 *********
