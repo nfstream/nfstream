@@ -1,4 +1,4 @@
-![NFStream Logo](https://raw.githubusercontent.com/aouinizied/nfstream/master/nfstream_logo_dark.png?raw=true)
+![NFStream Logo](https://raw.githubusercontent.com/nfstream/nfstream/master/nfstream_logo_dark.png?raw=true)
 
 --------------------------------------------------------------------------------
 [**NFStream**][repo] is a Python package providing fast, flexible, and expressive data structures designed to make working with **online** or **offline** network data both easy and intuitive. It aims to be the fundamental high-level building block for
@@ -9,7 +9,7 @@ the broader goal of becoming **a common network data processing framework for re
 <tr>
   <td><b>Live Notebook</b></td>
   <td>
-    <a href="https://mybinder.org/v2/gh/aouinizied/nfstream-tutorials/master?filepath=demo_notebook.ipynb">
+    <a href="https://mybinder.org/v2/gh/nfstream/nfstream-tutorials/master?filepath=demo_notebook.ipynb">
     <img src="https://img.shields.io/badge/notebook-launch-blue?logo=jupyter&style=for-the-badge" alt="live notebook" />
     </a>
   </td>
@@ -70,7 +70,7 @@ the broader goal of becoming **a common network data processing framework for re
   <td><b>Code Quality</b></td>
   <td>
     <a href="https://lgtm.com/projects/g/nfstream/nfstream/context:python">
-    <img src="https://img.shields.io/lgtm/grade/python/github/aouinizied/nfstream.svg?logo=lgtm&style=for-the-badge&logoWidth=18)" alt="Quality" />
+    <img src="https://img.shields.io/lgtm/grade/python/github/nfstream/nfstream.svg?logo=lgtm&style=for-the-badge&logoWidth=18)" alt="Quality" />
     </a>
   </td>
 </tr>
@@ -425,6 +425,6 @@ This project is licensed under the LGPLv3 License - see the [**License**][licens
 [nfplugin]: https://nfstream.org/docs/api#nfplugin
 [reliable]: http://people.ac.upc.edu/pbarlet/papers/ground-truth.pam2014.pdf
 [repo]: https://nfstream.org/
-[demo]: https://mybinder.org/v2/gh/aouinizied/nfstream-tutorials/master?filepath=demo_notebook.ipynb
+[demo]: https://mybinder.org/v2/gh/nfstream/nfstream/master?filepath=demo_notebook.ipynb
 [stat_feat]: https://nfstream.org/docs/api#statistical-features
 [pypy]: https://www.pypy.org/
