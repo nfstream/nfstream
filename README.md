@@ -26,7 +26,7 @@ the broader goal of becoming **a common network data processing framework for re
   <td><b>Discussion Channel</b></td>
   <td>
     <a href="https://gitter.im/nfstream/community">
-    <img src="https://img.shields.io/gitter/room/aouinizied/nfstream?color=blue&logo=gitter&style=for-the-badge" alt="Gitter" />
+    <img src="https://img.shields.io/badge/chat-on%20gitter-blue?color=blue&logo=gitter&style=for-the-badge" alt="Gitter" />
     </a>
   </td>
 </tr>
