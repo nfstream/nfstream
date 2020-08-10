@@ -312,6 +312,8 @@ typedef enum {
   NDPI_SSH_OBSOLETE_CLIENT_VERSION_OR_CIPHER,
   NDPI_SSH_OBSOLETE_SERVER_VERSION_OR_CIPHER,
   NDPI_SMB_INSECURE_VERSION,
+  NDPI_TLS_SUSPICIOUS_ESNI_USAGE,
+  NDPI_BLACKLISTED_HOST,
   /* Leave this as last member */
   NDPI_MAX_RISK
 } ndpi_risk_enum;
@@ -820,7 +822,13 @@ typedef enum {
   NDPI_PROTOCOL_CATEGORY_SHOPPING,
   NDPI_PROTOCOL_CATEGORY_PRODUCTIVITY,
   NDPI_PROTOCOL_CATEGORY_FILE_SHARING,
-
+  
+  /*
+  The category below is used by sites who are used
+  to test connectivity 
+  */
+  NDPI_PROTOCOL_CATEGORY_CONNECTIVITY_CHECK,
+  
   /* Some custom categories */
   CUSTOM_CATEGORY_MINING           = 99,
   CUSTOM_CATEGORY_MALWARE          = 100,
