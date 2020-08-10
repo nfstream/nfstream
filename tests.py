@@ -121,8 +121,8 @@ class TestMethods(unittest.TestCase):
 *.m.facebook.com,*.messenger.com,*.xx.fbcdn.net,*.xy.fbcdn.net,*.xz.fbcdn.net,facebook.com,fb.com,\
 messenger.com')
         self.assertEqual(flows[0].client_info, 'facebook.com')
-        self.assertEqual(flows[0].j3a_client, 'bfcc1a3891601edb4f137ab7ab25b840')
-        self.assertEqual(flows[0].j3a_server, '2d1eb5817ece335c24904f516ad5da12')
+        self.assertEqual(flows[0].ja3_client, 'bfcc1a3891601edb4f137ab7ab25b840')
+        self.assertEqual(flows[0].ja3_server, '2d1eb5817ece335c24904f516ad5da12')
         print("{}\t: \033[94mOK\033[0m".format(".Testing metadata extraction".ljust(60, ' ')))
 
     def test_unfound_device(self):
@@ -210,8 +210,8 @@ messenger.com')
         self.assertEqual(flows[0].category_name, 'Web')
         self.assertEqual(flows[0].client_info, '')
         self.assertEqual(flows[0].server_info, '')
-        self.assertEqual(flows[0].j3a_client, '')
-        self.assertEqual(flows[0].j3a_server, '')
+        self.assertEqual(flows[0].ja3_client, '')
+        self.assertEqual(flows[0].ja3_server, '')
         self.assertEqual(flows[0].bidirectional_syn_packets, 2)
         self.assertEqual(flows[0].bidirectional_cwr_packets, 0)
         self.assertEqual(flows[0].bidirectional_ece_packets, 0)

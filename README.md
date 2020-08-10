@@ -159,8 +159,8 @@ NFEntry(id=0,
                      *.fbcdn.net,*.fbsbx.com,*.m.facebook.com,\
                      *.messenger.com,*.xx.fbcdn.net,*.xy.fbcdn.net,\
                      *.xz.fbcdn.net,facebook.com,fb.com,messenger.com',
-        j3a_client='bfcc1a3891601edb4f137ab7ab25b840',
-        j3a_server='2d1eb5817ece335c24904f516ad5da12')
+        ja3_client='bfcc1a3891601edb4f137ab7ab25b840',
+        ja3_server='2d1eb5817ece335c24904f516ad5da12')
 
  ```
 * NFStream also extracts [**60+ flow statistical features**][stat_feat]

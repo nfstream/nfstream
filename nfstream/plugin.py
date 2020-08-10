@@ -329,8 +329,8 @@ def update_ndpi_infos(entry, ndpi_flow, ndpi_protocol, ndpi):
         if ndpi_flow.protos.stun_ssl.ssl.server_names_len > 0:
             entry.server_info = ndpi.get_buffer_field(ndpi_flow.protos.stun_ssl.ssl.server_names,
                                                       ndpi_flow.protos.stun_ssl.ssl.server_names_len)
-        entry.j3a_client = ndpi.get_str_field(ndpi_flow.protos.stun_ssl.ssl.ja3_client)
-        entry.j3a_server = ndpi.get_str_field(ndpi_flow.protos.stun_ssl.ssl.ja3_server)
+        entry.ja3_client = ndpi.get_str_field(ndpi_flow.protos.stun_ssl.ssl.ja3_client)
+        entry.ja3_server = ndpi.get_str_field(ndpi_flow.protos.stun_ssl.ssl.ja3_server)
     else:
         pass
 
@@ -426,14 +426,14 @@ class server_info(NFPlugin):
         return ''
 
 
-class j3a_client(NFPlugin):
-    """ client j3a fingerprint """
+class ja3_client(NFPlugin):
+    """ client ja3 fingerprint """
     def on_init(self, obs):
         return ''
 
 
-class j3a_server(NFPlugin):
-    """ server j3a information """
+class ja3_server(NFPlugin):
+    """ server ja3 information """
     def on_init(self, obs):
         return ''
 
@@ -1523,6 +1523,6 @@ ndpi_infos_plugins = [master_protocol(),
                       category_name(),
                       client_info(),
                       server_info(),
-                      j3a_client(),
-                      j3a_server()
+                      ja3_client(),
+                      ja3_server()
                       ]
