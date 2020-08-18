@@ -72,7 +72,6 @@ extern unsigned long waitForNextEvent(unsigned long ulDelay /* ms */);
 #endif
 
 #include <pcap.h>
-#include <zmq.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -464,7 +463,6 @@ typedef struct nf_packet {
   uint16_t payload_size;
   uint16_t ip_content_len;
   uint8_t *ip_content;
-  uint64_t hashval;
 } nf_packet_t;
 
 
@@ -547,7 +545,7 @@ int get_nf_packet_info(const uint8_t version,
                        uint8_t *proto,
                        uint8_t **payload,
                        uint16_t *payload_len,
-                       struct timeval when, struct nf_packet *nf_pkt) {
+                       struct timeval when, struct nf_packet *nf_pkt, int n_roots, int root_idx) {
   uint32_t l4_offset;
   const uint8_t *l3, *l4;
   uint32_t l4_data_len = 0XFEEDFACE;
@@ -636,7 +634,14 @@ int get_nf_packet_info(const uint8_t version,
   nf_pkt->transport_size = l4_data_len;
   nf_pkt->payload_size = *payload_len;
   nf_pkt->ip_content_len = ipsize;
-  nf_pkt->hashval = nf_pkt->protocol + nf_pkt->vlan_id + iph->saddr + iph->daddr + nf_pkt->src_port + nf_pkt->dst_port;
+  uint64_t hashval = 0;
+  hashval = nf_pkt->protocol + nf_pkt->vlan_id + iph->saddr + iph->daddr + nf_pkt->src_port + nf_pkt->dst_port;
+  if ((hashval % n_roots) == root_idx) {
+      nf_pkt->consumable = 1;
+  } else {
+     nf_pkt->consumable = 0;
+     return 0;
+  }
 
 
   if(version == IPVERSION) {
@@ -669,7 +674,7 @@ static int get_nf_packet_info6(uint16_t vlan_id,
                                uint8_t *proto,
                                uint8_t **payload,
                                uint16_t *payload_len,
-                               struct timeval when, struct nf_packet *nf_pkt) {
+                               struct timeval when, struct nf_packet *nf_pkt, int n_roots, int root_idx) {
   struct nfstream_iphdr iph;
   memset(&iph, 0, sizeof(iph));
   iph.version = IPVERSION;
@@ -688,7 +693,7 @@ static int get_nf_packet_info6(uint16_t vlan_id,
 			    &iph, iph6, ip_offset, ipsize,
 			    ntohs(iph6->ip6_hdr.ip6_un1_plen),
 			    tcph, udph, sport, dport, proto, payload,
-			    payload_len, when, nf_pkt));
+			    payload_len, when, nf_pkt, n_roots, root_idx));
 }
 
 
@@ -706,7 +711,9 @@ int parse_packet(const uint64_t time,
                  const struct pcap_pkthdr *header,
                  const u_char *packet,
                  struct timeval when,
-                 struct nf_packet *nf_pkt) {
+                 struct nf_packet *nf_pkt,
+                 int n_roots,
+                 int root_idx) {
   uint8_t proto;
   struct nfstream_tcphdr *tcph = NULL;
   struct nfstream_udphdr *udph = NULL;
@@ -717,17 +724,18 @@ int parse_packet(const uint64_t time,
 
   if(iph)
     return get_nf_packet_info(IPVERSION, vlan_id, tunnel_type, iph, NULL, ip_offset, ipsize, ntohs(iph->tot_len) - (iph->ihl * 4),
-			      &tcph, &udph, &sport, &dport, &proto, &payload, &payload_len, when, nf_pkt);
+			      &tcph, &udph, &sport, &dport, &proto, &payload, &payload_len, when, nf_pkt, n_roots, root_idx);
   else
     return get_nf_packet_info6(vlan_id, tunnel_type, iph6, ip_offset, ipsize, &tcph, &udph, &sport, &dport, &proto,
-                        &payload, &payload_len, when, nf_pkt);
+                        &payload, &payload_len, when, nf_pkt, n_roots, root_idx);
 }
 
 
 /**
  * process_packet: Main packet processing function.
  */
-int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const u_char *packet, int decode_tunnels, struct nf_packet *nf_pkt) {
+int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const u_char *packet, int decode_tunnels,
+                   struct nf_packet *nf_pkt, int n_roots, int root_idx) {
   /* --- Ethernet header --- */
   const struct nfstream_ethhdr *ethernet;
   /* --- LLC header --- */
@@ -1099,7 +1107,8 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
       }
     }
   }
-  return parse_packet(time, vlan_id, tunnel_type, iph, iph6, ip_offset, header->caplen - ip_offset, header->len, header, packet, header->ts, nf_pkt);
+  return parse_packet(time, vlan_id, tunnel_type, iph, iph6, ip_offset, header->caplen - ip_offset, header->len,
+                      header, packet, header->ts, nf_pkt, n_roots, root_idx);
 }
 
 
@@ -1108,8 +1117,6 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
  */
 pcap_t * observer_open(const u_char * pcap_file, u_int snaplen, int promisc, int to_ms, char *errbuf, char *errbuf_set, int mode) {
   pcap_t * pcap_handle = NULL;
-  int major, minor, patch;
-  zmq_version(&major, &minor, &patch);
   int status = 0;
   if (mode == 0) {
     pcap_handle = pcap_open_offline((char*)pcap_file, errbuf);
@@ -1130,12 +1137,12 @@ pcap_t * observer_open(const u_char * pcap_file, u_int snaplen, int promisc, int
 /**
  * observer_next: Get next packet informations from pcap handle.
  */
-int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int account_ip_padding_size, int nroots, int decode_tunnels) {
+int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tunnels, int n_roots, int root_idx) {
   struct pcap_pkthdr *hdr;
   const u_char *data;
   int rv_handle = pcap_next_ex(pcap_handle, &hdr, &data);
   if (rv_handle == 1) {
-    int rv_processor = process_packet(pcap_handle, hdr, data, decode_tunnels, nf_pkt);
+    int rv_processor = process_packet(pcap_handle, hdr, data, decode_tunnels, nf_pkt, n_roots, root_idx);
     /* Extra check to ensure pkt.consumable is correctly set */
     if (rv_processor != nf_pkt->consumable) printf("WARNING: mismatching packet parser return value!\n");
   }

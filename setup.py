@@ -2,19 +2,18 @@
 # -*- coding: utf-8 -*-
 
 """
-file: setup.py
-This file is part of nfstream.
-
-Copyright (C) 2019-20 - nfstream.org
-
-nfstream is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-
-nfstream is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
-of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along with nfstream.
+------------------------------------------------------------------------------------------------------------------------
+setup.py
+Copyright (C) 2019-20 - NFStream Developers
+This file is part of NFStream, a Flexible Network Data Analysis Framework (https://www.nfstream.org/).
+NFStream is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+version.
+NFStream is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
+You should have received a copy of the GNU Lesser General Public License along with NFStream.
 If not, see <http://www.gnu.org/licenses/>.
+------------------------------------------------------------------------------------------------------------------------
 """
 
 import sys
@@ -39,10 +38,8 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 def setup_observer_cc():
     os.chdir('nfstream/')
     platform_compiler = "gcc"
-    zmq_lib_path = "/usr/lib/{}-linux-gnu/libzmq.so".format(os.uname().machine)
     if sys.platform == 'darwin':
         platform_compiler = "clang"
-        zmq_lib_path = "/usr/local/lib/libzmq.dylib"
     print("\nSetting up observer_cc. Platform: {plat}, Byteorder: {bo}".format(plat=sys.platform, bo=sys.byteorder))
     # compile libpcap and ship it with observer
     # we compile libpcap instead of copying the .so from to ensure 1.9.1 version on both mac OS and Linux
@@ -54,9 +51,8 @@ def setup_observer_cc():
     subprocess.check_call(['make'])
     os.chdir('..')
     subprocess.check_call([platform_compiler, '-shared', '-o', 'observer_cc.so', '-g', '-fPIC', '-DPIC', '-O2', '-Wall',
-                           'observer_cc.c', 'libpcap/libpcap.a', zmq_lib_path])
+                           'observer_cc.c', 'libpcap/libpcap.a'])
     shutil.rmtree('libpcap/', ignore_errors=True)
-    shutil.rmtree('libzmq/', ignore_errors=True)
     os.chdir('..')
 
 

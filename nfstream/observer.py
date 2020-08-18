@@ -1,17 +1,19 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 """
-file: observer.py
-This file is part of nfstream.
-
-Copyright (C) 2019-20 - nfstream.org
-
-nfstream is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-
-nfstream is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
-of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along with nfstream.
+------------------------------------------------------------------------------------------------------------------------
+observer.py
+Copyright (C) 2019-20 - NFStream Developers
+This file is part of NFStream, a Flexible Network Data Analysis Framework (https://www.nfstream.org/).
+NFStream is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+version.
+NFStream is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
+You should have received a copy of the GNU Lesser General Public License along with NFStream.
 If not, see <http://www.gnu.org/licenses/>.
+------------------------------------------------------------------------------------------------------------------------
 """
 
 from os.path import abspath, dirname, isfile
@@ -38,7 +40,6 @@ typedef struct nf_packet {
   uint16_t payload_size;
   uint16_t ip_content_len;
   uint8_t *ip_content;
-  uint64_t hashval;
 } nf_packet_t;
 
 """
@@ -47,7 +48,7 @@ cc_observer_apis = """
 pcap_t *observer_open(const uint8_t * pcap_file, unsigned snaplen, int promisc, int to_ms, char *errbuf, 
                       char *errbuf_set, int mode);
 int observer_configure(pcap_t * pcap_handle, char * bpf_filter);
-int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int nroots, int decode_tunnels);
+int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tunnels, int n_roots, int root_idx);
 void observer_close(pcap_t *);
 """
 
@@ -62,7 +63,7 @@ def get_hash(proto, vlan_id, src_addr, dst_addr, sport, dport):
 class NFPacket(object):
     def __init__(self, time, raw_size, ip_size, transport_size, payload_size,
                  nfhash, src_ip, dst_ip, src_port, dst_port, protocol, vlan_id,
-                 version, tcp_flags, ip_packet, root_idx):
+                 version, tcp_flags, ip_packet):
         object.__setattr__(self, "time", time)
         object.__setattr__(self, "raw_size", raw_size)
         object.__setattr__(self, "ip_size", ip_size)
@@ -78,7 +79,6 @@ class NFPacket(object):
         object.__setattr__(self, "version", version)
         object.__setattr__(self, "tcpflags", tcp_flags)
         object.__setattr__(self, "ip_packet", ip_packet)
-        object.__setattr__(self, "root_idx", root_idx)
         object.__setattr__(self, "direction", 0)
         object.__setattr__(self, "closed", False)
 
@@ -116,7 +116,7 @@ def validate_parameters(source, promisc, snaplen, bpf_filter, decode_tunnels):
 class NFObserver:
     """ NFObserver module main class """
     def __init__(self, source=None, snaplen=65535, promisc=True, to_ms=1, bpf_filter=None,
-                 nroots=1, decode_tunnels=False):
+                 nroots=1, root_idx=0, decode_tunnels=False):
         errors = validate_parameters(source, promisc, snaplen, bpf_filter, decode_tunnels)
         if errors != '':
             raise OSError(errors)
@@ -154,12 +154,13 @@ class NFObserver:
                     raise OSError("Please specify a pcap file path or a valid network interface name as source.")
                 self.cap = handler
         self.nroots = nroots
+        self.root_idx = root_idx
         self.safety_time = 0
         self.decode_tunnels = int(decode_tunnels)
 
     def next_nf_packet(self):
         nf_packet = self._ffi.new("struct nf_packet *")
-        rv = self._lib.observer_next(self.cap, nf_packet, self.nroots, self.decode_tunnels)
+        rv = self._lib.observer_next(self.cap, nf_packet, self.decode_tunnels, self.nroots, self.root_idx)
         return rv, nf_packet
 
     def build_nf_packet(self, time, pkt):
@@ -180,8 +181,7 @@ class NFObserver:
                         version=pkt.ip_version,
                         tcp_flags=tcpflags(syn=pkt.syn, cwr=pkt.cwr, ece=pkt.ece, urg=pkt.urg, ack=pkt.ack, psh=pkt.psh,
                                            rst=pkt.rst, fin=pkt.fin),
-                        ip_packet=bytes(self._ffi.buffer(pkt.ip_content, pkt.ip_content_len)),
-                        root_idx=pkt.hashval % self.nroots)
+                        ip_packet=bytes(self._ffi.buffer(pkt.ip_content, pkt.ip_content_len)))
 
     def __iter__(self):
         try:
