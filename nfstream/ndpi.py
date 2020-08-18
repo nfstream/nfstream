@@ -1360,7 +1360,7 @@ def check_structures_size(flow_struct_defined, flow_struct_loaded,
     return errors
 
 
-class NDPI():
+class NDPI(object):
     """ ndpi module main class """
 
     def __init__(self, libpath=None, max_tcp_dissections=80, max_udp_dissections=16, enable_guess=True):
