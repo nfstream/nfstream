@@ -20,6 +20,7 @@ multiprocessing.set_start_method("fork")
 from .observer import NFObserver
 from siphash import siphash_64
 from .cache import NFCache
+import psutil
 import pandas as pd
 import time as tm
 import secrets
@@ -49,11 +50,16 @@ class NFStreamer(object):
         self._source = source
         now = str(tm.time())
         if njobs <= 0:
-            self.n_caches = multiprocessing.cpu_count() - 2
+            self.n_caches = psutil.cpu_count(logical=False) - 1
         elif njobs == 1:
             self.n_caches = 1
         else:
-            self.n_caches = njobs - 2
+            if njobs <= psutil.cpu_count(logical=False):
+                self.n_caches = njobs - 1
+            else:
+                self.n_caches = psutil.cpu_count(logical=False) - 1
+        if self.n_caches == 0:
+            self.n_caches = 1
         print("Running {} parallel caching jobs.".format(self.n_caches))
         self.caches = []
         self.n_terminated = 0
