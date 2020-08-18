@@ -157,15 +157,15 @@ class NFCache(Process):
                     nf_send_flow(producer, entry)
                     del self._roots[obs.nfhash]
                     self._roots[obs.nfhash] = NFEntry(obs,
-                                                                    self.core_plugins,
-                                                                    self.user_plugins,
-                                                                    self.idx_generator)
+                                                      self.core_plugins,
+                                                      self.user_plugins,
+                                                      self.idx_generator)
                     self.idx_generator += 1
         except KeyError:  # create entry
             self._roots[obs.nfhash] = NFEntry(obs,
-                                                            self.core_plugins,
-                                                            self.user_plugins,
-                                                            self.idx_generator)
+                                              self.core_plugins,
+                                              self.user_plugins,
+                                              self.idx_generator)
             self.active_entries += 1
             self.idx_generator += 1
 

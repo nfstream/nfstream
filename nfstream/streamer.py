@@ -43,34 +43,29 @@ class NFStreamer(object):
     def __init__(self, source=None, decode_tunnels=True, bpf_filter=None, promisc=True, snaplen=65535,
                  idle_timeout=30, active_timeout=300, plugins=(),
                  dissect=True, statistics=False, max_tcp_dissections=80, max_udp_dissections=16, enable_guess=True,
-                 njobs=1
+                 njobs=--1
                  ):
         NFStreamer.streamer_id += 1
         self._source = source
         now = str(tm.time())
-        if njobs < 0:
-            n_caches = multiprocessing.cpu_count() - 1
+        if njobs <= 0:
+            self.n_caches = multiprocessing.cpu_count() - 2
         elif njobs == 1:
-            n_caches = 1
+            self.n_caches = 1
         else:
-            n_caches = njobs - 1
-        self.n_caches = n_caches
+            self.n_caches = njobs - 2
         self.caches = []
         self.n_terminated = 0
-        sock_name = "ipc:///tmp/nfstream-{pid}-{streamerid}-{ts}".format(pid=os.getpid(),
-                                                                         streamerid=NFStreamer.streamer_id,
-                                                                         ts=now)
-        self._sock_name = sock_name
-        self.ctx = zmq.Context()
-        self._consumer = self.ctx.socket(zmq.PULL)
-        self._consumer.bind(sock_name)
+        self._sock_name = "ipc:///tmp/nfstream-{pid}-{streamerid}-{ts}".format(pid=os.getpid(),
+                                                                               streamerid=NFStreamer.streamer_id,
+                                                                               ts=now)
         try:
             for i in range(self.n_caches):
                 self.caches.append(NFCache(observer=NFObserver(source=source, snaplen=snaplen,
                                                                decode_tunnels=decode_tunnels,
                                                                bpf_filter=bpf_filter,
                                                                promisc=promisc,
-                                                               nroots=n_caches,
+                                                               nroots=self.n_caches,
                                                                root_idx=i
                                                                ),
                                            idle_timeout=idle_timeout,
@@ -80,7 +75,7 @@ class NFStreamer(object):
                                            statistics=statistics,
                                            max_tcp_dissections=max_tcp_dissections,
                                            max_udp_dissections=max_udp_dissections,
-                                           sock_name=sock_name,
+                                           sock_name=self._sock_name,
                                            enable_guess=enable_guess))
                 self.caches[i].daemon = True  # demonize cache
 
@@ -92,21 +87,16 @@ class NFStreamer(object):
             sys.exit(te)
         self._stopped = False
 
-    def nf_receive_flow(self):
-        while True:
-            try:
-                flow = self._consumer.recv_pyobj(flags=zmq.NOBLOCK)
-                return flow
-            except zmq.Again:
-                pass
-
     def __iter__(self):
+        self.ctx = zmq.Context()
+        self._consumer = self.ctx.socket(zmq.PULL)
+        self._consumer.bind(self._sock_name)
         try:
             for i in range(self.n_caches):
                 self.caches[i].start()
             while True:
                 try:
-                    flow = self.nf_receive_flow()
+                    flow = nf_receive_flow(self._consumer)
                     if flow is None:
                         self.n_terminated += 1
                         if self.n_terminated == self.n_caches:
