@@ -15,7 +15,8 @@ You should have received a copy of the GNU Lesser General Public License along w
 If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 """
-from multiprocessing import cpu_count
+import multiprocessing
+multiprocessing.set_start_method("fork")
 from .observer import NFObserver
 from siphash import siphash_64
 from .cache import NFCache
@@ -48,7 +49,7 @@ class NFStreamer(object):
         self._source = source
         now = str(tm.time())
         if njobs == -1:
-            self.n_caches = cpu_count() - 1
+            self.n_caches = multiprocessing.cpu_count() - 1
         else:
             self.n_caches = njobs - 1
         self.caches = []
