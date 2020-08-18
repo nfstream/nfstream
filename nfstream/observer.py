@@ -113,7 +113,7 @@ def validate_parameters(source, promisc, snaplen, bpf_filter, decode_tunnels):
     return errors
 
 
-class NFObserver:
+class NFObserver(object):
     """ NFObserver module main class """
     def __init__(self, source=None, snaplen=65535, promisc=True, to_ms=1, bpf_filter=None,
                  nroots=1, root_idx=0, decode_tunnels=False):
