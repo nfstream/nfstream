@@ -43,7 +43,7 @@ class NFStreamer(object):
     def __init__(self, source=None, decode_tunnels=True, bpf_filter=None, promisc=True, snaplen=65535,
                  idle_timeout=30, active_timeout=300, plugins=(),
                  dissect=True, statistics=False, max_tcp_dissections=80, max_udp_dissections=16, enable_guess=True,
-                 njobs=--1
+                 njobs=-1
                  ):
         NFStreamer.streamer_id += 1
         self._source = source
@@ -54,6 +54,7 @@ class NFStreamer(object):
             self.n_caches = 1
         else:
             self.n_caches = njobs - 2
+        print("Running {} parallel caching jobs.".format(self.n_caches))
         self.caches = []
         self.n_terminated = 0
         self._sock_name = "ipc:///tmp/nfstream-{pid}-{streamerid}-{ts}".format(pid=os.getpid(),
