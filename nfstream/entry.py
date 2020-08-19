@@ -40,9 +40,12 @@ class NFEntry(object):
                 delattr(self, plugin.name)
         return self
 
-    def update(self, obs, core, user, to):
+    def update(self, obs, core, user, to, it):
         """ Update a flow from a packet  """
-        if obs.time - getattr(self, 'bidirectional_first_seen_ms') >= to:
+        if obs.time - getattr(self, 'bidirectional_last_seen_ms') >= it:
+            setattr(self, 'expiration_id', 0)
+            return self.clean(core, user)
+        elif obs.time - getattr(self, 'bidirectional_first_seen_ms') >= to:
             setattr(self, 'expiration_id', 1)
             return self.clean(core, user)
         else:

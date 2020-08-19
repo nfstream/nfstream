@@ -1154,5 +1154,6 @@ int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tun
  * observer_close: Close observer handle.
  */
 void observer_close(pcap_t * pcap_handle) {
+  pcap_breakloop(pcap_handle);
   pcap_close(pcap_handle);
 }

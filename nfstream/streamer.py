@@ -24,18 +24,8 @@ import psutil
 import pandas as pd
 import time as tm
 import secrets
-import zmq
 import sys
 import os
-
-
-def nf_receive_flow(channel):
-    while True:
-        try:
-            flow = channel.recv_pyobj(flags=zmq.NOBLOCK)
-            return flow
-        except zmq.Again:
-            pass
 
 
 class NFStreamer(object):
@@ -44,7 +34,7 @@ class NFStreamer(object):
     def __init__(self, source=None, decode_tunnels=True, bpf_filter=None, promisc=True, snaplen=65535,
                  idle_timeout=30, active_timeout=300, plugins=(),
                  dissect=True, statistics=False, max_tcp_dissections=80, max_udp_dissections=16, enable_guess=True,
-                 njobs=-1
+                 njobs=4
                  ):
         NFStreamer.streamer_id += 1
         self._source = source
@@ -56,18 +46,20 @@ class NFStreamer(object):
         else:
             if njobs <= psutil.cpu_count(logical=False):
                 self.n_caches = njobs - 1
-            else:
+            else:  # avoid contention
                 self.n_caches = psutil.cpu_count(logical=False) - 1
         if self.n_caches == 0:
             self.n_caches = 1
-        print("Running {} parallel caching jobs.".format(self.n_caches))
         self.caches = []
+        self.channel = multiprocessing.Queue()
+        self.caches_status = []
         self.n_terminated = 0
-        self._sock_name = "ipc:///tmp/nfstream-{pid}-{streamerid}-{ts}".format(pid=os.getpid(),
-                                                                               streamerid=NFStreamer.streamer_id,
-                                                                               ts=now)
+        self.uid = "nfstream-{pid}-{streamerid}-{ts}".format(pid=os.getpid(),
+                                                             streamerid=NFStreamer.streamer_id,
+                                                             ts=now)
         try:
             for i in range(self.n_caches):
+                self.caches_status.append(True)
                 self.caches.append(NFCache(observer=NFObserver(source=source, snaplen=snaplen,
                                                                decode_tunnels=decode_tunnels,
                                                                bpf_filter=bpf_filter,
@@ -82,8 +74,7 @@ class NFStreamer(object):
                                            statistics=statistics,
                                            max_tcp_dissections=max_tcp_dissections,
                                            max_udp_dissections=max_udp_dissections,
-                                           sock_name=self._sock_name,
-                                           enable_guess=enable_guess))
+                                           enable_guess=enable_guess, channel=self.channel))
                 self.caches[i].daemon = True  # demonize cache
 
         except OSError as ose:
@@ -95,15 +86,12 @@ class NFStreamer(object):
         self._stopped = False
 
     def __iter__(self):
-        self.ctx = zmq.Context()
-        self._consumer = self.ctx.socket(zmq.PULL)
-        self._consumer.bind(self._sock_name)
         try:
             for i in range(self.n_caches):
                 self.caches[i].start()
             while True:
                 try:
-                    flow = nf_receive_flow(self._consumer)
+                    flow = self.channel.get()
                     if flow is None:
                         self.n_terminated += 1
                         if self.n_terminated == self.n_caches:
@@ -115,8 +103,9 @@ class NFStreamer(object):
                         self._stopped = True
             for i in range(self.n_caches):
                 self.caches[i].join()
-            self._consumer.close()
-            self.ctx.destroy()
+            self.channel.close()
+            self.channel.join_thread()
+
         except RuntimeError:
             return None
 
@@ -154,7 +143,7 @@ class NFStreamer(object):
 
     def to_pandas(self, ip_anonymization=False):
         """ streamer to pandas function """
-        temp_file_path = self._sock_name.replace("ipc:///tmp/", "") + ".csv"
+        temp_file_path = self.uid + ".csv"
         total_flows = self.to_csv(path=temp_file_path, sep="|", ip_anonymization=ip_anonymization)
         if total_flows >= 0:
             df = pd.read_csv(temp_file_path,

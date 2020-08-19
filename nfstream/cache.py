@@ -22,17 +22,6 @@ from .entry import NFEntry
 from .ndpi import NDPI
 from multiprocessing import Process
 import time as tm
-import zmq
-
-
-def nf_send_flow(channel, flow):
-    sent = False
-    while not sent:
-        try:
-            channel.send_pyobj(flow, flags=zmq.NOBLOCK)
-            sent = True
-        except zmq.Again:
-            sent = False
 
 
 class LRU(OrderedDict):
@@ -61,7 +50,7 @@ class NFCache(Process):
     def __init__(self, observer=None, idle_timeout=30, active_timeout=300,
                  core_plugins=nfstream_core_plugins, user_plugins=(),
                  dissect=True, statistics=True, max_tcp_dissections=10, max_udp_dissections=16,
-                 sock_name=None, enable_guess=True):
+                 enable_guess=True, channel=None):
         super().__init__()
         self.observer = observer
         self.mode = observer.mode
@@ -80,7 +69,6 @@ class NFCache(Process):
         self.idle_scan_period = 10
         self.idle_scan_tick = 0
         self.idle_scan_budget = 1024
-        self.sock_name = sock_name
         if dissect and statistics:
             self.core_plugins = core_plugins + nfstream_statistical_plugins + ndpi_infos_plugins + \
                                 [nDPI(ndpi=NDPI(max_tcp_dissections=max_tcp_dissections,
@@ -105,17 +93,16 @@ class NFCache(Process):
         except ValueError:
             raise TypeError("Streamer initiated with non unique plugins names. Consider renaming your added plugins.")
         self.user_plugins = user_plugins
+        self.channel = channel
 
-    def idle_scan(self, producer):
+    def idle_scan(self):
         remaining = True
         scanned = 0
         while remaining and scanned < self.idle_scan_budget:
             try:
-                idle_idx, idle_item = self._roots.get_idle_item(self.current_tick,
-                                                                                            self.core_plugins,
-                                                                                            self.user_plugins)
+                idle_idx, idle_item = self._roots.get_idle_item(self.current_tick, self.core_plugins, self.user_plugins)
                 if idle_item is not None:  # idle
-                    nf_send_flow(producer, idle_item)
+                    self.channel.put(idle_item)
                     del self._roots[idle_idx]
                     self.active_entries -= 1  # remove it
                     scanned += 1
@@ -124,11 +111,11 @@ class NFCache(Process):
             except StopIteration:
                 remaining = False  # root is empty
 
-    def finish(self, producer, context):
+    def finish(self):
         """ finish all entries in NFCache """
         for h in list(self._roots.keys()):
             f = self._roots[h].clean(self.core_plugins, self.user_plugins)
-            nf_send_flow(producer, f)
+            self.channel.put(f)
             self.active_entries -= 1
             del self._roots[h]
         for plugin in self.core_plugins:
@@ -136,25 +123,24 @@ class NFCache(Process):
         for plugin in self.user_plugins:
             plugin.cleanup()
         self.observer.close()  # close generator
-        nf_send_flow(producer, None)
-        producer.close()
-        context.destroy()
+        self.channel.put(None)
 
-    def consume(self, obs, producer):
+    def consume(self, obs):
         """ consume an observable and produce entry """
         # classical create/update
         try:  # update entry
             entry = self._roots[obs.nfhash].update(obs,
-                                                                 self.core_plugins,
-                                                                 self.user_plugins,
-                                                                 self.active_timeout)
+                                                   self.core_plugins,
+                                                   self.user_plugins,
+                                                   self.active_timeout,
+                                                   self.idle_timeout)
             if entry is not None:
                 if entry.expiration_id < 0:  # custom expiration
-                    nf_send_flow(producer, entry)
+                    self.channel.put(entry)
                     del self._roots[obs.nfhash]
                     self.active_entries -= 1
                 else:  # active expiration
-                    nf_send_flow(producer, entry)
+                    self.channel.put(entry)
                     del self._roots[obs.nfhash]
                     self._roots[obs.nfhash] = NFEntry(obs,
                                                       self.core_plugins,
@@ -172,12 +158,6 @@ class NFCache(Process):
     def run(self):
         """ run NFCache main processing loop """
         try:
-            ctx = zmq.Context()
-            producer = ctx.socket(zmq.PUSH)
-            producer.connect(self.sock_name)
-        except zmq.error.ZMQError:
-            raise OSError("NFStreamer failed to bind socket (producer).")
-        try:
             for observable in self.observer:
                 if observable is not None:
                     go_scan = False
@@ -186,17 +166,17 @@ class NFCache(Process):
                         self.idle_scan_tick = observable.time
                     if observable.time >= self.current_tick:
                         self.current_tick = observable.time
-                    self.consume(observable, producer)
+                    self.consume(observable)
                     if go_scan:
-                        self.idle_scan(producer)  # perform a micro scan
+                        self.idle_scan()  # perform a micro scan
                 else:
                     if self.mode == 1:  # live capture
                         now = int(tm.time() * 1000)
                         if now > self.current_tick:
                             self.current_tick = now
                         if now - self.idle_scan_tick >= self.idle_scan_period:
-                            self.idle_scan(producer)
+                            self.idle_scan()
                             self.idle_scan_tick = now
-            self.finish(producer, ctx)
+            self.finish()
         except KeyboardInterrupt:
-            self.finish(producer, ctx)
+            self.finish()
