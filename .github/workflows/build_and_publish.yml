@@ -66,7 +66,8 @@ jobs:
         ls dist/
     - name: Testing and coverage report generation
       run: |
-        coverage run tests.py
+        coverage run --concurrency=multiprocessing tests.py
+        coverage combine
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
     - name: Publish on Pypi

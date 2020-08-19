@@ -83,7 +83,8 @@ install:
   - ls dist/
 
 script:
-  - python3 -m coverage run tests.py
+  - python3 -m coverage run --concurrency=multiprocessing tests.py
+  - python3 -m coverage combine
 
 after_success:
   - python3 -m codecov
