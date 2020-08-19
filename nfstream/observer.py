@@ -61,41 +61,38 @@ def get_hash(proto, vlan_id, src_addr, dst_addr, sport, dport):
 
 
 class NFPacket(object):
+    __slots__ = ["time", "raw_size", "ip_size", "transport_size", "payload_size", "nfhash", "src_ip", "dst_ip",
+                 "src_port", "dst_port", "protocol", "vlan_id", "version", "tcpflags", "ip_packet", "direction",
+                 "closed"]
+
     def __init__(self, time, raw_size, ip_size, transport_size, payload_size,
                  nfhash, src_ip, dst_ip, src_port, dst_port, protocol, vlan_id,
                  version, tcp_flags, ip_packet):
-        object.__setattr__(self, "time", time)
-        object.__setattr__(self, "raw_size", raw_size)
-        object.__setattr__(self, "ip_size", ip_size)
-        object.__setattr__(self, "transport_size", transport_size)
-        object.__setattr__(self, "payload_size", payload_size)
-        object.__setattr__(self, "nfhash", nfhash)
-        object.__setattr__(self, "src_ip", src_ip)
-        object.__setattr__(self, "dst_ip", dst_ip)
-        object.__setattr__(self, "src_port", src_port)
-        object.__setattr__(self, "dst_port", dst_port)
-        object.__setattr__(self, "protocol", protocol)
-        object.__setattr__(self, "vlan_id", vlan_id)
-        object.__setattr__(self, "version", version)
-        object.__setattr__(self, "tcpflags", tcp_flags)
-        object.__setattr__(self, "ip_packet", ip_packet)
-        object.__setattr__(self, "direction", 0)
-        object.__setattr__(self, "closed", False)
-
-    def __setattr__(self, *args):
-        if self.closed:
-            raise TypeError
-
-    def __delattr__(self, *args):
-        raise TypeError
+        self.time = time
+        self.raw_size = raw_size
+        self.ip_size = ip_size
+        self.transport_size = transport_size
+        self.payload_size = payload_size
+        self.nfhash = nfhash
+        self.src_ip = src_ip
+        self.dst_ip = dst_ip
+        self.src_port = src_port
+        self.dst_port = dst_port
+        self.protocol = protocol
+        self.vlan_id = vlan_id
+        self.version = version
+        self.tcpflags = tcp_flags
+        self.ip_packet = ip_packet
+        self.direction = 0
+        self.closed = False
 
     def __str__(self):
         """ String representation of flow """
         return str(namedtuple(type(self).__name__, self.__dict__.keys())(*self.__dict__.values()))
 
     def close(self, direction):
-        object.__setattr__(self, "direction", direction)
-        object.__setattr__(self, "closed", True)
+        self.direction = direction
+        self.closed = True
 
 
 def validate_parameters(source, promisc, snaplen, bpf_filter, decode_tunnels):
