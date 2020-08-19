@@ -17,15 +17,14 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from os.path import abspath, dirname, isfile
+from collections import namedtuple
 from psutil import net_if_addrs
 import cffi
-from collections import namedtuple
 
 cc_observer_headers = """
 struct pcap;
 typedef struct pcap pcap_t;
 typedef struct nf_packet {
-  uint8_t consumable;
   uint64_t time;
   uint16_t src_port;
   uint16_t dst_port;
@@ -45,8 +44,8 @@ typedef struct nf_packet {
 """
 
 cc_observer_apis = """
-pcap_t *observer_open(const uint8_t * pcap_file, unsigned snaplen, int promisc, int to_ms, char *errbuf, 
-                      char *errbuf_set, int mode);
+pcap_t *observer_open(const uint8_t * pcap_file, unsigned snaplen, int promisc, char *err_open,
+                      char *err_set, int mode);
 int observer_configure(pcap_t * pcap_handle, char * bpf_filter);
 int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tunnels, int n_roots, int root_idx);
 void observer_close(pcap_t *);
@@ -56,46 +55,88 @@ void observer_close(pcap_t *);
 tcpflags = namedtuple('tcpflags', ['syn', 'cwr', 'ece', 'urg', 'ack', 'psh', 'rst', 'fin'])
 
 
-def get_hash(proto, vlan_id, src_addr, dst_addr, sport, dport):
-    return proto, vlan_id, min(src_addr, dst_addr), max(src_addr, dst_addr), min(sport, dport), max(sport, dport)
-
-
 class NFPacket(object):
     __slots__ = ["time", "raw_size", "ip_size", "transport_size", "payload_size", "nfhash", "src_ip", "dst_ip",
                  "src_port", "dst_port", "protocol", "vlan_id", "version", "tcpflags", "ip_packet", "direction",
                  "closed"]
 
-    def __init__(self, time, raw_size, ip_size, transport_size, payload_size,
-                 nfhash, src_ip, dst_ip, src_port, dst_port, protocol, vlan_id,
-                 version, tcp_flags, ip_packet):
-        self.time = time
-        self.raw_size = raw_size
-        self.ip_size = ip_size
-        self.transport_size = transport_size
-        self.payload_size = payload_size
-        self.nfhash = nfhash
+    def __init__(self, pkt, ffi):
+        src_ip = ffi.string(pkt.src_name).decode('utf-8', errors='ignore')
+        dst_ip = ffi.string(pkt.dst_name).decode('utf-8', errors='ignore')
+        self.time = pkt.time
+        self.raw_size = pkt.raw_size
+        self.ip_size = pkt.ip_size
+        self.transport_size = pkt.transport_size
+        self.payload_size = pkt.payload_size
+        self.nfhash = pkt.protocol, \
+                      pkt.vlan_id, \
+                      min(src_ip, dst_ip), max(src_ip, dst_ip),\
+                      min(pkt.src_port, pkt.dst_port), max(pkt.src_port, pkt.dst_port)
         self.src_ip = src_ip
         self.dst_ip = dst_ip
-        self.src_port = src_port
-        self.dst_port = dst_port
-        self.protocol = protocol
-        self.vlan_id = vlan_id
-        self.version = version
-        self.tcpflags = tcp_flags
-        self.ip_packet = ip_packet
+        self.src_port = pkt.src_port
+        self.dst_port = pkt.dst_port
+        self.protocol = pkt.protocol
+        self.vlan_id = pkt.vlan_id
+        self.version = pkt.ip_version
+        self.tcpflags = tcpflags(syn=pkt.syn, cwr=pkt.cwr,
+                                 ece=pkt.ece, urg=pkt.urg,
+                                 ack=pkt.ack, psh=pkt.psh,
+                                 rst=pkt.rst, fin=pkt.fin)
+        self.ip_packet = bytes(ffi.buffer(pkt.ip_content, pkt.ip_content_len))
         self.direction = 0
         self.closed = False
 
     def __str__(self):
-        """ String representation of flow """
         return str(namedtuple(type(self).__name__, self.__dict__.keys())(*self.__dict__.values()))
 
-    def close(self, direction):
-        self.direction = direction
-        self.closed = True
+
+def create_observer_context():
+    ffi = cffi.FFI()
+    lib = ffi.dlopen(dirname(abspath(__file__)) + '/observer_cc.so')
+    ffi.cdef(cc_observer_headers)
+    ffi.cdef(cc_observer_apis, override=True)
+    return ffi, lib
 
 
-def validate_parameters(source, promisc, snaplen, bpf_filter, decode_tunnels):
+def set_observer_mode(src, ffi, lib):
+    if src in net_if_addrs().keys():
+        return 1
+    elif ".pcap" in src[-5:] and isfile(src):
+        return 0
+    else:
+        ffi.dlclose(lib)
+        raise OSError("Undefined source: {}. "
+                      "Please specify a pcap file path or a valid network interface name.".format(src))
+
+
+def open_observer(src, snaplen, mode, promisc, ffi, lib):
+    err_open = ffi.new("char []", 128)
+    err_set = ffi.new("char []", 128)
+    handler = lib.observer_open(bytes(src, 'utf-8'), snaplen, int(promisc), err_open, err_set, mode)
+    if handler == ffi.NULL:
+        ffi.dlclose(lib)
+        error_message = "{}\n{}".format(ffi.string(err_open).decode('ascii', 'ignore'),
+                                        ffi.string(err_set).decode('ascii', 'ignore'))
+        raise OSError(error_message)
+    return handler
+
+
+def configure_observer(handler, bpf_filter, ffi, lib):
+    if bpf_filter is not None:
+        # On a valid handler, we set BPF filtering if defined.
+        rs = lib.observer_configure(handler, bytes(bpf_filter, 'utf-8'))
+        if rs > 0:
+            lib.observer_close(handler)
+            ffi.dlclose(lib)
+            if rs == 1:
+                raise OSError("Failed to compile BPF filter.")
+            else:
+                raise OSError("Failed to set BPF filter.")
+    return handler
+
+
+def validate_observer_args(source, promisc, snaplen, bpf_filter, decode_tunnels):
     errors = ""
     if not isinstance(source, str):
         errors = errors + "\nPlease specify a pcap file path or a valid network interface name as source."
@@ -104,107 +145,72 @@ def validate_parameters(source, promisc, snaplen, bpf_filter, decode_tunnels):
     if not isinstance(snaplen, int) or (isinstance(snaplen, int) and snaplen <= 0):
         errors = errors + "\nPlease specify a valid snaplen parameter (positive integer)."
     if not isinstance(bpf_filter, str) and bpf_filter is not None:
-        errors = errors + "\nPlease specify a valid bpf_filter string format."
+        errors = errors + "\nPlease specify a valid bpf_filter format."
     if not isinstance(decode_tunnels, bool):
         errors = errors + "\nPlease specify a valid decode_tunnels parameter (possible values: True, False)."
-    return errors
+    if errors != "":
+        raise OSError(errors)
 
 
 class NFObserver(object):
     """ NFObserver module main class """
-    def __init__(self, source=None, snaplen=65535, promisc=True, to_ms=1, bpf_filter=None,
-                 nroots=1, root_idx=0, decode_tunnels=False):
-        errors = validate_parameters(source, promisc, snaplen, bpf_filter, decode_tunnels)
-        if errors != '':
-            raise OSError(errors)
-        self._ffi = cffi.FFI()
-        self._lib = self._ffi.dlopen(dirname(abspath(__file__)) + '/observer_cc.so')
-        self._ffi.cdef(cc_observer_headers)
-        self._ffi.cdef(cc_observer_apis, override=True)
+    __slots__ = ["_cap", "_lib", "_ffi", "_mode", "_decode_tunnels", "_n_roots", "_root_idx"]
 
-        if source in net_if_addrs().keys():
-            self.mode = 1  # we found source in device interfaces and set mode to live.
-        elif ".pcap" in source[-5:] and isfile(source):
-            self.mode = 0  # .pcap extension and file exists, we set mode to offline
-        else:
-            raise OSError("Undefined source: {}. "
-                          "Please specify a pcap file path or a valid network interface name.".format(source))
-
-        if self.mode in [0, 1]:
-            error_buffer = self._ffi.new("char []", 128)
-            error_buffer_setter = self._ffi.new("char []", 128)
-            handler = self._lib.observer_open(bytes(source, 'utf-8'), snaplen, int(promisc), to_ms,
-                                              error_buffer, error_buffer_setter, self.mode)
-
-            if handler == self._ffi.NULL:
-                raise OSError(self._ffi.string(error_buffer).decode('ascii', 'ignore') + "\n" +
-                              self._ffi.string(error_buffer_setter).decode('ascii', 'ignore'))
-            else:
-                # Once we have a valid handler, we move to BPF filtering configuration.
-                if isinstance(bpf_filter, str):
-                    rs = self._lib.observer_configure(handler, bytes(bpf_filter, 'utf-8'))
-                    if rs > 0:
-                        raise OSError("Failed to setup BPF filter: {}. Please use a valid one.".format(bpf_filter))
-                elif bpf_filter is None:
-                    pass
-                else:
-                    raise OSError("Please specify a pcap file path or a valid network interface name as source.")
-                self.cap = handler
-        self.nroots = nroots
-        self.root_idx = root_idx
-        self.safety_time = 0
-        self.decode_tunnels = int(decode_tunnels)
-
-    def next_nf_packet(self):
-        nf_packet = self._ffi.new("struct nf_packet *")
-        rv = self._lib.observer_next(self.cap, nf_packet, self.decode_tunnels, self.nroots, self.root_idx)
-        return rv, nf_packet
-
-    def build_nf_packet(self, time, pkt):
-        src_ip = self._ffi.string(pkt.src_name).decode('utf-8', errors='ignore')
-        dst_ip = self._ffi.string(pkt.dst_name).decode('utf-8', errors='ignore')
-        return NFPacket(time=time,
-                        raw_size=pkt.raw_size,
-                        ip_size=pkt.ip_size,
-                        transport_size=pkt.transport_size,
-                        payload_size=pkt.payload_size,
-                        nfhash=get_hash(pkt.protocol, pkt.vlan_id, src_ip, dst_ip, pkt.src_port, pkt.dst_port),
-                        src_ip=src_ip,
-                        dst_ip=dst_ip,
-                        src_port=pkt.src_port,
-                        dst_port=pkt.dst_port,
-                        protocol=pkt.protocol,
-                        vlan_id=pkt.vlan_id,
-                        version=pkt.ip_version,
-                        tcp_flags=tcpflags(syn=pkt.syn, cwr=pkt.cwr, ece=pkt.ece, urg=pkt.urg, ack=pkt.ack, psh=pkt.psh,
-                                           rst=pkt.rst, fin=pkt.fin),
-                        ip_packet=bytes(self._ffi.buffer(pkt.ip_content, pkt.ip_content_len)))
+    def __init__(self, source=None, snaplen=65535, promisc=True, bpf_filter=None,
+                 decode_tunnels=False, n_roots=1, root_idx=0):
+        validate_observer_args(source, promisc, snaplen, bpf_filter, decode_tunnels)
+        observer_ffi, observer_lib = create_observer_context()
+        observer_mode = set_observer_mode(source, observer_ffi, observer_lib)
+        cap = open_observer(source, snaplen, observer_mode, promisc, observer_ffi, observer_lib)
+        cap = configure_observer(cap, bpf_filter, observer_ffi, observer_lib)
+        self._cap = cap
+        self._ffi = observer_ffi
+        self._lib = observer_lib
+        self._mode = observer_mode
+        self._decode_tunnels = decode_tunnels
+        self._n_roots = n_roots
+        self._root_idx = root_idx
 
     def __iter__(self):
+        # faster as we make intensive access to these members.
+        observer_ffi = self._ffi
+        observer_lib = self._lib
+        observer_cap = self._cap
+        decode_tunnels = self._decode_tunnels
+        observer_mode = self._mode
+        n_roots = self._n_roots
+        root_idx = self._root_idx
+        observer_time = 0
+
         try:
             while True:
-                rv, pkt = self.next_nf_packet()
-                if rv == -2:
-                    raise KeyboardInterrupt
-                elif rv == -1:
-                    yield None
-                elif rv == 0:
-                    yield None
-                else:
-                    if rv == 1:
-                        if pkt.consumable == 1:
-                            if pkt.time >= self.safety_time:
-                                self.safety_time = pkt.time
-                                tm = pkt.time
-                            else:
-                                tm = self.safety_time
-                            yield self.build_nf_packet(tm, pkt)
+                nf_packet = observer_ffi.new("struct nf_packet *")
+                ret = observer_lib.observer_next(observer_cap, nf_packet, decode_tunnels, n_roots, root_idx)
+                if ret > 0:  # Valid, must be processed by meter
+                    time = nf_packet.time
+                    if time > observer_time:
+                        observer_time = time
+                    else:
+                        time = observer_time
+                    if ret == 1:
+                        yield 1, time, NFPacket(nf_packet, observer_ffi)
+                    elif ret == 2:  # Time ticker (Valid but do not match our id)
+                        yield 0, time, None
+                    else:
+                        if observer_mode == 1:
+                            yield 0, time, None  # Time ticker (timeout on live buffer)
                         else:
-                            yield None
+                            pass  # Should never happen
+                elif ret == 0:  # Ignored
+                    pass
+                elif ret == -1:  # Read error
+                    pass
+                else:  # End of file
+                    raise KeyboardInterrupt
         except KeyboardInterrupt:
             return
 
     def close(self):
-        self._lib.observer_close(self.cap)
+        self._lib.observer_close(self._cap)
         self._ffi.dlclose(self._lib)
 

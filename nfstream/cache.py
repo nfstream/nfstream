@@ -21,7 +21,6 @@ from collections import OrderedDict
 from .entry import NFEntry
 from .ndpi import NDPI
 from multiprocessing import Process
-import time as tm
 
 
 class LRU(OrderedDict):
@@ -53,7 +52,6 @@ class NFCache(Process):
                  enable_guess=True, channel=None):
         super().__init__()
         self.observer = observer
-        self.mode = observer.mode
         self.idle_timeout = idle_timeout * 1000
         self.active_timeout = active_timeout * 1000
         if self.idle_timeout < 0:
@@ -158,25 +156,23 @@ class NFCache(Process):
     def run(self):
         """ run NFCache main processing loop """
         try:
-            for observable in self.observer:
-                if observable is not None:
+            for observable_type, time, observable in self.observer:
+                if observable_type == 1:
                     go_scan = False
-                    if observable.time - self.idle_scan_tick >= self.idle_scan_period:
+                    if time - self.idle_scan_tick >= self.idle_scan_period:
                         go_scan = True
-                        self.idle_scan_tick = observable.time
-                    if observable.time >= self.current_tick:
-                        self.current_tick = observable.time
+                        self.idle_scan_tick = time
+                    if time >= self.current_tick:
+                        self.current_tick = time
                     self.consume(observable)
                     if go_scan:
                         self.idle_scan()  # perform a micro scan
                 else:
-                    if self.mode == 1:  # live capture
-                        now = int(tm.time() * 1000)
-                        if now > self.current_tick:
-                            self.current_tick = now
-                        if now - self.idle_scan_tick >= self.idle_scan_period:
-                            self.idle_scan()
-                            self.idle_scan_tick = now
+                    if time > self.current_tick:
+                        self.current_tick = time
+                    if time - self.idle_scan_tick >= self.idle_scan_period:
+                        self.idle_scan()
+                        self.idle_scan_tick = time
             self.finish()
         except KeyboardInterrupt:
             self.finish()

@@ -15,65 +15,14 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <stdlib.h>
-
-#ifdef WIN32
-#if (defined(__MINGW32__) || defined(__MINGW64__)) && defined(__GNUC__)
-#define MINGW_GCC
-#define __mingw_forceinline __inline__ __attribute__((__always_inline__,__gnu_inline__))
-#endif
-#include <winsock2.h>
-#include <windows.h>
-#include <ws2tcpip.h>
-#include <process.h>
-#include <io.h>
-#include <getopt.h>   /* getopt from: http://www.pwilson.net/sample.html. */
-#include <process.h>  /* for getpid() and the exec..() family */
-#include <stdint.h>
-#ifndef _CRT_SECURE_NO_WARNINGS
-#define _CRT_SECURE_NO_WARNINGS
-#endif
-#define _WS2TCPIP_H_ /* Avoid compilation problems */
-#define	IPVERSION	4 /* on *nix it is defined in netinet/ip.h */
-extern char* strsep(char **sp, char *sep);
-typedef unsigned char  u_char;
-typedef unsigned short u_short;
-typedef unsigned int   uint;
-typedef unsigned long  u_long;
-typedef u_char         u_int8_t;
-typedef u_short        u_int16_t;
-typedef uint           u_int32_t;
-typedef uint           u_int;
-typedef unsigned       __int64 u_int64_t;
-#define pthread_t                HANDLE
-#define pthread_mutex_t          HANDLE
-#define pthread_rwlock_t         pthread_mutex_t
-#define pthread_rwlock_init      pthread_mutex_init
-#define pthread_rwlock_wrlock    pthread_mutex_lock
-#define pthread_rwlock_rdlock    pthread_mutex_lock
-#define pthread_rwlock_unlock    pthread_mutex_unlock
-#define pthread_rwlock_destroy	 pthread_mutex_destroy
-#define gmtime_r(a, b)           memcpy(b, gmtime(a), sizeof(struct tm))
-#define in_addr_t				unsigned long
-extern unsigned long waitForNextEvent(unsigned long ulDelay /* ms */);
-#define sleep(a /* sec */)              waitForNextEvent(1000*a /* ms */)
-#ifndef localtime_r
-#define localtime_r(a, b)               localtime_s(b, a)
-#endif
-#define strtok_r                        strtok_s
-#define timegm                          _mkgmtime
-#ifndef IPPROTO_IPIP
-#define IPPROTO_IPIP  4
-#endif
-#else
 #include <unistd.h>
 #include <netinet/in.h>
 #include <math.h>
 #include <float.h>
-#endif
-
 #include <pcap.h>
 #include <stdint.h>
 #include <string.h>
+#include <sys/time.h>
 
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 #include <machine/endian.h>
@@ -96,11 +45,6 @@ extern unsigned long waitForNextEvent(unsigned long ulDelay /* ms */);
 #define __BIG_ENDIAN__
 #endif
 #endif
-#ifdef WIN32
-#ifndef __LITTLE_ENDIAN__
-#define __LITTLE_ENDIAN__ 1
-#endif
-#endif
 #if !(defined(__LITTLE_ENDIAN__) || defined(__BIG_ENDIAN__))
 #if defined(__mips__)
 #undef __LITTLE_ENDIAN__
@@ -116,14 +60,8 @@ extern unsigned long waitForNextEvent(unsigned long ulDelay /* ms */);
 #endif
 #endif
 
-
-#ifdef _MSC_VER
-#define PACK_ON   __pragma(pack(push, 1))
-#define PACK_OFF  __pragma(pack(pop))
-#elif defined(__GNUC__)
 #define PACK_ON
 #define PACK_OFF  __attribute__((packed))
-#endif
 
 
 #define TICK_RESOLUTION          1000
@@ -448,7 +386,6 @@ struct nfstream_vxlanhdr {
 
 
 typedef struct nf_packet {
-  uint8_t consumable;
   uint64_t time;
   uint16_t src_port;
   uint16_t dst_port;
@@ -464,27 +401,6 @@ typedef struct nf_packet {
   uint16_t ip_content_len;
   uint8_t *ip_content;
 } nf_packet_t;
-
-
-/**
- * observer_configure: Configure pcap_t with specified bpf_filter.
- */
-int observer_configure(pcap_t * pcap_handle, char * bpf_filter) {
-  if(bpf_filter != NULL) {
-    struct bpf_program fcode;
-    if(pcap_compile(pcap_handle, &fcode, bpf_filter, 1, 0xFFFFFF00) < 0) {
-      return 1;
-    } else {
-      if(pcap_setfilter(pcap_handle, &fcode) < 0) {
-	return 1;
-      } else
-	return 0;
-    }
-  }
-  else {
-    return 0;
-  }
-}
 
 
 /**
@@ -552,13 +468,11 @@ int get_nf_packet_info(const uint8_t version,
 
   if(version == IPVERSION) {
     if(ipsize < 20) {
-      nf_pkt->consumable = 0;
       return 0;
     }
 
 
     if((iph->ihl * 4) > ipsize) {
-         nf_pkt->consumable = 0;
          return 0;
        }
 
@@ -567,7 +481,6 @@ int get_nf_packet_info(const uint8_t version,
   } else {
     l4_offset = sizeof(struct nfstream_ipv6hdr);
     if(sizeof(struct nfstream_ipv6hdr) > ipsize) {
-      nf_pkt->consumable = 0;
       return 0;
     }
 
@@ -575,7 +488,6 @@ int get_nf_packet_info(const uint8_t version,
     l3 = (const uint8_t*)iph6;
   }
   if(nfstream_max(ntohs(iph->tot_len) , ipsize)< l4_offset + l4_packet_len) {
-    nf_pkt->consumable = 0;
     return 0;
   }
 
@@ -636,13 +548,6 @@ int get_nf_packet_info(const uint8_t version,
   nf_pkt->ip_content_len = ipsize;
   uint64_t hashval = 0;
   hashval = nf_pkt->protocol + nf_pkt->vlan_id + iph->saddr + iph->daddr + nf_pkt->src_port + nf_pkt->dst_port;
-  if ((hashval % n_roots) == root_idx) {
-      nf_pkt->consumable = 1;
-  } else {
-     nf_pkt->consumable = 0;
-     return 0;
-  }
-
 
   if(version == IPVERSION) {
 	inet_ntop(AF_INET, &iph->saddr, nf_pkt->src_name, sizeof(nf_pkt->src_name));
@@ -655,9 +560,12 @@ int get_nf_packet_info(const uint8_t version,
 	nf_pkt->ip_size = ntohs(iph->tot_len);
 	nf_pkt->ip_content = (uint8_t *)iph6;
   }
-  nf_pkt->consumable = 1;
-  return 1;
+  if ((hashval % n_roots) == root_idx) {
+      return 1;
+  } else {
+     return 2;
   }
+}
 
 
 /**
@@ -684,7 +592,6 @@ static int get_nf_packet_info6(uint16_t vlan_id,
   uint16_t ip_len = ntohs(iph6->ip6_hdr.ip6_un1_plen);
   const uint8_t *l4ptr = (((const uint8_t *) iph6) + sizeof(struct nfstream_ipv6hdr));
   if(nfstream_handle_ipv6_extension_headers(&l4ptr, &ip_len, &l4proto) != 0) {
-    nf_pkt->consumable = 0;
     return 0;
   }
   iph.protocol = l4proto;
@@ -779,7 +686,6 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
 
  datalink_check:
   if(header->caplen < eth_offset + 40) {
-    nf_pkt->consumable = 0;
     return 0;
   }
   switch(datalink_type) {
@@ -845,12 +751,10 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
 
     /* Check Bad FCS presence */
     if((radiotap->flags & BAD_FCS) == BAD_FCS) {
-      nf_pkt->consumable = 0;
       return 0;
     }
 
     if(header->caplen < (eth_offset + radio_len + sizeof(struct nfstream_wifi_header))) {
-      nf_pkt->consumable = 0;
       return 0;
     }
 
@@ -868,7 +772,6 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
 
     /* Check ether_type from LLC */
     if(header->caplen < (eth_offset + wifi_len + radio_len + sizeof(struct nfstream_llc_header_snap))) {
-      nf_pkt->consumable = 0;
       return 0;
     }
     llc = (struct nfstream_llc_header_snap*)(packet + eth_offset + wifi_len + radio_len);
@@ -884,7 +787,6 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
     break;
 
   default:
-    nf_pkt->consumable = 0;
     return 0;
   }
 
@@ -938,7 +840,6 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
  iph_check:
   /* Check and set IP header size and total packet length */
   if(header->caplen < ip_offset + sizeof(struct nfstream_iphdr)) {
-    nf_pkt->consumable = 0;
     return 0;
   }
 
@@ -962,25 +863,21 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
     }
 
     if((frag_off & 0x1FFF) != 0) {
-      nf_pkt->consumable = 0;
       return 0;
     }
   } else if(iph->version == 6) {
     if(header->caplen < ip_offset + sizeof(struct nfstream_ipv6hdr)) {
-      nf_pkt->consumable = 0;
       return 0;
     }
     iph6 = (struct nfstream_ipv6hdr *)&packet[ip_offset];
     proto = iph6->ip6_hdr.ip6_un1_nxt;
     ip_len = ntohs(iph6->ip6_hdr.ip6_un1_plen);
     if(header->caplen < (ip_offset + sizeof(struct nfstream_ipv6hdr) + ntohs(iph6->ip6_hdr.ip6_un1_plen))) {
-      nf_pkt->consumable = 0;
       return 0;
     }
 
     const uint8_t *l4ptr = (((const uint8_t *) iph6) + sizeof(struct nfstream_ipv6hdr));
     if(nfstream_handle_ipv6_extension_headers(&l4ptr, &ip_len, &proto) != 0) {
-      nf_pkt->consumable = 0;
       return 0;
     }
     if(proto == IPPROTO_IPV6 || proto == IPPROTO_IPIP) {
@@ -993,13 +890,11 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
     iph = NULL;
   } else {
   v4_warning:
-    nf_pkt->consumable = 0;
     return 0;
   }
 
   if(decode_tunnels && (proto == IPPROTO_UDP)) {
     if(header->caplen < ip_offset + ip_len + sizeof(struct nfstream_udphdr)) {
-      nf_pkt->consumable = 0;
       return 0;/* Too short for UDP header*/
     } else {
       struct nfstream_udphdr *udp = (struct nfstream_udphdr *)&packet[ip_offset+ip_len];
@@ -1034,7 +929,6 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
       } else if((sport == TZSP_PORT) || (dport == TZSP_PORT)) {
 	/* https://en.wikipedia.org/wiki/TZSP */
 	if(header->caplen < ip_offset + ip_len + sizeof(struct nfstream_udphdr) + 4) {
-	  nf_pkt->consumable = 0;
       return 0;
 	}
 
@@ -1069,7 +963,6 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
 	    offset += tag_len;
 
 	    if(offset >= header->caplen) {
-	      nf_pkt->consumable = 0;
           return 0;
 	    }
 	    else {
@@ -1115,24 +1008,44 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
 /**
  * observer_open: Open a pcap file or a specified device.
  */
-pcap_t * observer_open(const u_char * pcap_file, u_int snaplen, int promisc, int to_ms, char *errbuf, char *errbuf_set, int mode) {
+pcap_t * observer_open(const u_char * pcap_file, u_int snaplen, int promisc, char *err_open, char *err_set, int mode) {
   pcap_t * pcap_handle = NULL;
-  int status = 0;
+  int set = 0;
   if (mode == 0) {
-    pcap_handle = pcap_open_offline((char*)pcap_file, errbuf);
+    pcap_handle = pcap_open_offline((char*)pcap_file, err_open);
   }
   if (mode == 1) {
-    pcap_handle = pcap_open_live((char*)pcap_file, snaplen, promisc, to_ms, errbuf);
-    if (pcap_handle != NULL) status = pcap_setnonblock(pcap_handle, 1, errbuf_set);
+    pcap_handle = pcap_open_live((char*)pcap_file, snaplen, promisc, 1000, err_open);
+    if (pcap_handle != NULL) set = pcap_setnonblock(pcap_handle, 1, err_set);
   }
-  if (status == 0) {
-    return pcap_handle;
+  if (set == 0) {
     return pcap_handle;
   } else {
+    pcap_close(pcap_handle);
     return NULL;
   }
 }
 
+
+/**
+ * observer_configure: Configure pcap_t with specified bpf_filter.
+ */
+int observer_configure(pcap_t * pcap_handle, char * bpf_filter) {
+  if(bpf_filter != NULL) {
+    struct bpf_program fcode;
+    if(pcap_compile(pcap_handle, &fcode, bpf_filter, 1, 0xFFFFFF00) < 0) {
+      return 1;
+    } else {
+      if(pcap_setfilter(pcap_handle, &fcode) < 0) {
+	return 2;
+      } else
+	return 0;
+    }
+  }
+  else {
+    return 0;
+  }
+}
 
 /**
  * observer_next: Get next packet informations from pcap handle.
@@ -1143,10 +1056,25 @@ int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tun
   int rv_handle = pcap_next_ex(pcap_handle, &hdr, &data);
   if (rv_handle == 1) {
     int rv_processor = process_packet(pcap_handle, hdr, data, decode_tunnels, nf_pkt, n_roots, root_idx);
-    /* Extra check to ensure pkt.consumable is correctly set */
-    if (rv_processor != nf_pkt->consumable) printf("WARNING: mismatching packet parser return value!\n");
+    if (rv_processor == 0) {
+        return 0; // Packet ignored due to parsing
+    } else if (rv_processor == 1) { // Packet parsed correctly and match root_idx
+        return 1;
+    } else { // Packet parsed correctly and do not match root_idx, will use it as time ticker
+        return 2;
+    }
+  } else {
+    if (rv_handle == 0) { // Buffer timeout, fill packet as ticker.
+        struct timeval tick;
+        gettimeofday(&tick, NULL);
+        nf_pkt->time = ((uint64_t) tick.tv_sec) * TICK_RESOLUTION + tick.tv_usec / (1000000 / TICK_RESOLUTION);
+        return 3;
+    }
+    if (rv_handle == -2) {
+        return -2; // End of file
+    }
   }
-  return rv_handle;
+  return -1;
 }
 
 

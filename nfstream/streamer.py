@@ -34,18 +34,18 @@ class NFStreamer(object):
     def __init__(self, source=None, decode_tunnels=True, bpf_filter=None, promisc=True, snaplen=65535,
                  idle_timeout=30, active_timeout=300, plugins=(),
                  dissect=True, statistics=False, max_tcp_dissections=80, max_udp_dissections=16, enable_guess=True,
-                 njobs=4
+                 n_jobs=4
                  ):
         NFStreamer.streamer_id += 1
         self._source = source
         now = str(tm.time())
-        if njobs <= 0:
+        if n_jobs <= 0:
             self.n_caches = psutil.cpu_count(logical=False) - 1
-        elif njobs == 1:
+        elif n_jobs == 1:
             self.n_caches = 1
         else:
-            if njobs <= psutil.cpu_count(logical=False):
-                self.n_caches = njobs - 1
+            if n_jobs <= psutil.cpu_count(logical=False):
+                self.n_caches = n_jobs - 1
             else:  # avoid contention
                 self.n_caches = psutil.cpu_count(logical=False) - 1
         if self.n_caches == 0:
@@ -64,7 +64,7 @@ class NFStreamer(object):
                                                                decode_tunnels=decode_tunnels,
                                                                bpf_filter=bpf_filter,
                                                                promisc=promisc,
-                                                               nroots=self.n_caches,
+                                                               n_roots=self.n_caches,
                                                                root_idx=i
                                                                ),
                                            idle_timeout=idle_timeout,

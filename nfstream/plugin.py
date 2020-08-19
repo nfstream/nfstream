@@ -89,9 +89,9 @@ class packet_direction_setter(NFPlugin):
     """ Setter for packet direction (volatile) """
     def on_update(self, obs, entry):
         if (entry.src_ip == obs.src_ip) and (entry.src_port == obs.src_port):
-            obs.close(0)
+            obs.direction = 0
         else:
-            obs.close(1)
+            obs.direction = 1
 
 
 class bidirectional_first_seen_ms(NFPlugin):

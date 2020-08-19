@@ -243,6 +243,7 @@ messenger.com')
 
     def test_bad_observer_args(self):
         print("\n----------------------------------------------------------------------")
+
         try:
             streamer_test = NFStreamer(source=1, promisc=53, snaplen="wrong", bpf_filter=False, decode_tunnels=22)
         except SystemExit as e:
