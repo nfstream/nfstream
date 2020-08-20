@@ -18,7 +18,7 @@ If not, see <http://www.gnu.org/licenses/>.
 import multiprocessing
 multiprocessing.set_start_method("fork")
 from .observer import NFObserver
-from siphash import siphash_64
+from hashlib import blake2b
 from .cache import NFCache
 import psutil
 import pandas as pd
@@ -118,7 +118,7 @@ class NFStreamer(object):
             sys.exit("Output file exists: {}. Please specify a valid file path.".format(output_path))
         else:
             total_flows = 0
-            crypto_key = secrets.token_bytes(16)
+            crypto_key = secrets.token_bytes(64)
             with open(output_path, 'ab') as f:
                 for flow in self:
                     try:
@@ -129,10 +129,12 @@ class NFStreamer(object):
                             f.write(header.encode('utf-8'))
                         values = flow.values()
                         if ip_anonymization:
-                            values[src_ip_index] = int.from_bytes(siphash_64(crypto_key, values[src_ip_index].encode()),
-                                                                  sys.byteorder)
-                            values[dst_ip_index] = int.from_bytes(siphash_64(crypto_key, values[dst_ip_index].encode()),
-                                                                  sys.byteorder)
+                            values[src_ip_index] = blake2b(values[src_ip_index].encode(),
+                                                           digest_size=64,
+                                                           key=crypto_key).hexdigest()
+                            values[dst_ip_index] = blake2b(values[dst_ip_index].encode(),
+                                                           digest_size=64,
+                                                           key=crypto_key).hexdigest()
                         to_export = sep.join([str(i) for i in values]) + "\n"
                         f.write(to_export.encode('utf-8'))
                         total_flows = total_flows + 1
@@ -160,6 +162,3 @@ class NFStreamer(object):
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
         return df
-
-
-
