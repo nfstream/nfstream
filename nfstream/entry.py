@@ -21,8 +21,8 @@ import json
 
 class NFEntry(object):
     """ NFEntry base class """
-    def __init__(self, obs, core, user, idx):
-        self.id = idx
+    def __init__(self, obs, core, user):
+        self.id = 0  # streamer should set a global ID
         for plugin in core:  # for each NFCache core plugin, we init and update
             setattr(self, plugin.name, plugin.on_init(obs))
         for plugin in user:  # for each NFCache core plugin, we init and update

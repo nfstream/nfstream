@@ -89,6 +89,7 @@ class NFStreamer(object):
         try:
             for i in range(self.n_caches):
                 self.caches[i].start()
+            idx_generator = 0
             while True:
                 try:
                     flow = self.channel.get()
@@ -97,6 +98,8 @@ class NFStreamer(object):
                         if self.n_terminated == self.n_caches:
                             break
                     else:
+                        flow.id = idx_generator
+                        idx_generator += 1
                         yield flow
                 except KeyboardInterrupt:
                     if not self._stopped:

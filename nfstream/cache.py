@@ -24,7 +24,7 @@ from multiprocessing import Process
 
 
 class LRU(OrderedDict):
-    """ Thread safe least recently updated dict """
+    """ Least recently updated Dict """
     def __init__(self, idle_timeout, *args, **kwds):
         super().__init__(*args, **kwds)
         self._idle_timeout = idle_timeout
@@ -37,7 +37,7 @@ class LRU(OrderedDict):
         self.move_to_end(key)  # now this item is the most recently updated
 
     def __eq__(self, other):
-        return super().__eq__(o)
+        return super().__eq__(other)
 
     def get_idle_item(self, current_tick, core, user):
         nxt = next(iter(self))
@@ -61,9 +61,6 @@ class NFCache(Process):
         self._roots = LRU(idle_timeout=self.idle_timeout)
         self.current_tick = 0
         self.active_entries = 0
-        self.idx_generator = 0
-        self.processed_pkts = 0
-        self.performances = [0, 0]
         self.idle_scan_period = 10
         self.idle_scan_tick = 0
         self.idle_scan_budget = 1024
@@ -142,16 +139,12 @@ class NFCache(Process):
                     del self._roots[obs.nfhash]
                     self._roots[obs.nfhash] = NFEntry(obs,
                                                       self.core_plugins,
-                                                      self.user_plugins,
-                                                      self.idx_generator)
-                    self.idx_generator += 1
+                                                      self.user_plugins)
         except KeyError:  # create entry
             self._roots[obs.nfhash] = NFEntry(obs,
                                               self.core_plugins,
-                                              self.user_plugins,
-                                              self.idx_generator)
+                                              self.user_plugins)
             self.active_entries += 1
-            self.idx_generator += 1
 
     def run(self):
         """ run NFCache main processing loop """
