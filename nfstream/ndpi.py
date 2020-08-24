@@ -20,139 +20,6 @@ from os.path import abspath, dirname
 import cffi
 
 cc_ndpi_network_headers = """
-struct ptr_uint32 {
-    uint32_t value;
-};
-
-struct ndpi_chdlc
-{
-  uint8_t addr;          /* 0x0F (Unicast) - 0x8F (Broadcast) */
-  uint8_t ctrl;          /* always 0x00                       */
-  uint16_t proto_code;   /* protocol type (e.g. 0x0800 IP)    */
-};
-
-/* SLARP - Serial Line ARP http://tinyurl.com/qa54e95 */
-struct ndpi_slarp
-{
-  /* address requests (0x00)
-     address replies  (0x01)
-     keep-alive       (0x02)
-  */
-  uint32_t slarp_type;
-  uint32_t addr_1;
-  uint32_t addr_2;
-};
-
-/* Cisco Discovery Protocol http://tinyurl.com/qa6yw9l */
-struct ndpi_cdp
-{
-  uint8_t version;
-  uint8_t ttl;
-  uint16_t checksum;
-  uint16_t type;
-  uint16_t length;
-};
-
-/* +++++++++++++++ Ethernet header (IEEE 802.3) +++++++++++++++ */
-struct ndpi_ethhdr
-{
-  uint8_t h_dest[6];       /* destination eth addr */
-  uint8_t h_source[6];     /* source ether addr    */
-  uint16_t h_proto;      /* data length (<= 1500) or type ID proto (>=1536) */
-};
-
-/* +++++++++++++++ ARP header +++++++++++++++ */
-struct ndpi_arphdr {
-  uint16_t ar_hrd;/* Format of hardware address.  */
-  uint16_t ar_pro;/* Format of protocol address.  */
-  uint8_t  ar_hln;/* Length of hardware address.  */
-  uint8_t  ar_pln;/* Length of protocol address.  */
-  uint16_t ar_op;/* ARP opcode (command).  */
-  uint8_t arp_sha[6];/* sender hardware address */
-  uint32_t arp_spa;/* sender protocol address */
-  uint8_t arp_tha[6];/* target hardware address */
-  uint32_t arp_tpa;/* target protocol address */
-};
-
-/* +++++++++++++++ DHCP header +++++++++++++++ */
-struct ndpi_dhcphdr {
-  uint8_t      msgType;
-  uint8_t      htype;
-  uint8_t      hlen;
-  uint8_t      hops;
-  uint32_t     xid;/* 4 */
-  uint16_t     secs;/* 8 */
-  uint16_t     flags;
-  uint32_t     ciaddr;/* 12 */
-  uint32_t     yiaddr;/* 16 */
-  uint32_t     siaddr;/* 20 */
-  uint32_t     giaddr;/* 24 */
-  uint8_t      chaddr[16]; /* 28 */
-  uint8_t      sname[64]; /* 44 */
-  uint8_t      file[128]; /* 108 */
-  uint32_t     magic; /* 236 */
-  uint8_t      options[308];
-};
-
-/* +++++++++++++++ MDNS rsp header +++++++++++++++ */
-struct ndpi_mdns_rsp_entry {
-  uint16_t rsp_type, rsp_class;
-  uint32_t ttl;
-  uint16_t data_len;
-};
-
-/* +++++++++++++++++++ LLC header (IEEE 802.2) ++++++++++++++++ */
-struct ndpi_snap_extension
-{
-  uint16_t   oui;
-  uint8_t    oui2;
-  uint16_t   proto_ID;
-};
-
-struct ndpi_llc_header_snap
-{
-  uint8_t    dsap;
-  uint8_t    ssap;
-  uint8_t    ctrl;
-  struct ndpi_snap_extension snap;
-};
-
-/* ++++++++++ RADIO TAP header (for IEEE 802.11) +++++++++++++ */
-struct ndpi_radiotap_header
-{
-  uint8_t  version;         /* set to 0 */
-  uint8_t  pad;
-  uint16_t len;
-  uint32_t present;
-  uint64_t MAC_timestamp;
-  uint8_t flags;
-};
-
-/* ++++++++++++ Wireless header (IEEE 802.11) ++++++++++++++++ */
-struct ndpi_wifi_header
-{
-  uint16_t fc;
-  uint16_t duration;
-  uint8_t rcvr[6];
-  uint8_t trsm[6];
-  uint8_t dest[6];
-  uint16_t seq_ctrl;
-  /* uint64_t ccmp - for data encryption only - check fc.flag */
-};
-
-/* +++++++++++++++++++++++ MPLS header +++++++++++++++++++++++ */
-struct ndpi_mpls_header
-{
-  /* Before using this strcut to parse an MPLS header, you will need to convert
-   * the 4-byte data to the correct endianess with ntohl(). */
-  uint32_t ttl:8, s:1, exp:3, label:20;
-};
-
-extern union mpls {
-  uint32_t u32;
-  struct ndpi_mpls_header mpls;
-} mpls;
-
 /* ++++++++++++++++++++++++ IP header ++++++++++++++++++++++++ */
 struct ndpi_iphdr {
   uint8_t ihl:4, version:4;
@@ -317,7 +184,7 @@ typedef enum {
   NDPI_TLS_SUSPICIOUS_ESNI_USAGE,
   NDPI_BLACKLISTED_HOST,
   /* Leave this as last member */
-  NDPI_MAX_RISK
+  NDPI_MAX_RISK /* must be <= 31 due to (**) */
 } ndpi_risk_enum;
 
 typedef uint32_t ndpi_risk;
@@ -625,7 +492,10 @@ struct ndpi_flow_tcp_struct {
 
   /* NDPI_PROTOCOL_MAIL_IMAP */
   uint32_t mail_imap_stage:3, mail_imap_starttls:2;
-
+  
+  /* NDPI_PROTOCOL_SOAP */
+  uint32_t soap_stage:1;
+  
   /* NDPI_PROTOCOL_SKYPE */
   uint8_t skype_packet_id;
 
@@ -830,6 +700,7 @@ typedef enum {
   to test connectivity 
   */
   NDPI_PROTOCOL_CATEGORY_CONNECTIVITY_CHECK,
+  NDPI_PROTOCOL_CATEGORY_IOT_SCADA,
   
   /* Some custom categories */
   CUSTOM_CATEGORY_MINING           = 99,
@@ -1274,6 +1145,7 @@ typedef uint32_t ndpi_init_prefs;
 typedef enum {
   ndpi_no_prefs = 0,
   ndpi_dont_load_tor_hosts,
+  ndpi_dont_init_libgcrypt,
 } ndpi_prefs;
 
 typedef struct {
