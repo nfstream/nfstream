@@ -16,15 +16,15 @@ If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 """
 
-from os.path import abspath, dirname, isfile
+from os.path import abspath, dirname
 from collections import namedtuple
-from psutil import net_if_addrs
 import cffi
 
 cc_observer_headers = """
 struct pcap;
 typedef struct pcap pcap_t;
 typedef struct nf_packet {
+  uint8_t direction;
   uint64_t time;
   uint16_t src_port;
   uint16_t dst_port;
@@ -40,7 +40,6 @@ typedef struct nf_packet {
   uint16_t ip_content_len;
   uint8_t *ip_content;
 } nf_packet_t;
-
 """
 
 cc_observer_apis = """
@@ -52,13 +51,20 @@ void observer_close(pcap_t *);
 """
 
 
-tcpflags = namedtuple('tcpflags', ['syn', 'cwr', 'ece', 'urg', 'ack', 'psh', 'rst', 'fin'])
+tcpflags = namedtuple('tcpflags', ['syn',
+                                   'cwr',
+                                   'ece',
+                                   'urg',
+                                   'ack',
+                                   'psh',
+                                   'rst',
+                                   'fin'])
 
 
 class NFPacket(object):
     __slots__ = ["time", "raw_size", "ip_size", "transport_size", "payload_size", "nfhash", "src_ip", "dst_ip",
                  "src_port", "dst_port", "protocol", "vlan_id", "version", "tcpflags", "ip_packet", "direction",
-                 "closed"]
+                 "c_structure"]
 
     def __init__(self, pkt, ffi):
         src_ip = ffi.string(pkt.src_name).decode('utf-8', errors='ignore')
@@ -85,7 +91,7 @@ class NFPacket(object):
                                  rst=pkt.rst, fin=pkt.fin)
         self.ip_packet = bytes(ffi.buffer(pkt.ip_content, pkt.ip_content_len))
         self.direction = 0
-        self.closed = False
+        self.c_structure = pkt
 
     def __str__(self):
         return str(namedtuple(type(self).__name__, self.__dict__.keys())(*self.__dict__.values()))
@@ -97,17 +103,6 @@ def create_observer_context():
     ffi.cdef(cc_observer_headers)
     ffi.cdef(cc_observer_apis, override=True)
     return ffi, lib
-
-
-def set_observer_mode(src, ffi, lib):
-    if src in net_if_addrs().keys():
-        return 1
-    elif ".pcap" in src[-5:] and isfile(src):
-        return 0
-    else:
-        ffi.dlclose(lib)
-        raise OSError("Undefined source: {}. "
-                      "Please specify a pcap file path or a valid network interface name.".format(src))
 
 
 def open_observer(src, snaplen, mode, promisc, ffi, lib):
@@ -136,37 +131,18 @@ def configure_observer(handler, bpf_filter, ffi, lib):
     return handler
 
 
-def validate_observer_args(source, promisc, snaplen, bpf_filter, decode_tunnels):
-    errors = ""
-    if not isinstance(source, str):
-        errors = errors + "\nPlease specify a pcap file path or a valid network interface name as source."
-    if not isinstance(promisc, bool):
-        errors = errors + "\nPlease specify a valid promisc parameter (possible values: True, False)."
-    if not isinstance(snaplen, int) or (isinstance(snaplen, int) and snaplen <= 0):
-        errors = errors + "\nPlease specify a valid snaplen parameter (positive integer)."
-    if not isinstance(bpf_filter, str) and bpf_filter is not None:
-        errors = errors + "\nPlease specify a valid bpf_filter format."
-    if not isinstance(decode_tunnels, bool):
-        errors = errors + "\nPlease specify a valid decode_tunnels parameter (possible values: True, False)."
-    if errors != "":
-        raise OSError(errors)
-
-
 class NFObserver(object):
     """ NFObserver module main class """
     __slots__ = ["_cap", "_lib", "_ffi", "_mode", "_decode_tunnels", "_n_roots", "_root_idx"]
 
-    def __init__(self, source=None, snaplen=65535, promisc=True, bpf_filter=None,
-                 decode_tunnels=False, n_roots=1, root_idx=0):
-        validate_observer_args(source, promisc, snaplen, bpf_filter, decode_tunnels)
+    def __init__(self, source, snaplen, promisc, bpf_filter, decode_tunnels, n_roots, root_idx, mode):
         observer_ffi, observer_lib = create_observer_context()
-        observer_mode = set_observer_mode(source, observer_ffi, observer_lib)
-        cap = open_observer(source, snaplen, observer_mode, promisc, observer_ffi, observer_lib)
+        cap = open_observer(source, snaplen, mode, promisc, observer_ffi, observer_lib)
         cap = configure_observer(cap, bpf_filter, observer_ffi, observer_lib)
         self._cap = cap
         self._ffi = observer_ffi
         self._lib = observer_lib
-        self._mode = observer_mode
+        self._mode = mode
         self._decode_tunnels = decode_tunnels
         self._n_roots = n_roots
         self._root_idx = root_idx

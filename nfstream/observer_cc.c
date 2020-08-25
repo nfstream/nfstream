@@ -386,6 +386,7 @@ struct nfstream_vxlanhdr {
 
 
 typedef struct nf_packet {
+  uint8_t direction;
   uint64_t time;
   uint16_t src_port;
   uint16_t dst_port;
@@ -626,6 +627,7 @@ int parse_packet(const uint64_t time,
   struct nfstream_udphdr *udph = NULL;
   uint16_t sport, dport, payload_len = 0;
   uint8_t *payload;
+  nf_pkt->direction = 0;
   nf_pkt->time = time;
   nf_pkt->raw_size = rawsize;
 

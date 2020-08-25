@@ -3,7 +3,7 @@
 
 """
 ------------------------------------------------------------------------------------------------------------------------
-cache.py
+meter.py
 Copyright (C) 2019-20 - NFStream Developers
 This file is part of NFStream, a Flexible Network Data Analysis Framework (https://www.nfstream.org/).
 NFStream is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
@@ -16,15 +16,15 @@ If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 """
 
-from .plugin import nfstream_core_plugins, nfplugins_validator, ndpi_infos_plugins, nfstream_statistical_plugins, nDPI
+from .plugin import nfstream_core_plugins, ndpi_infos_plugins, nfstream_statistical_plugins, nDPI
 from collections import OrderedDict
 from .entry import NFEntry
 from .ndpi import NDPI
 from multiprocessing import Process
 
 
-class LRU(OrderedDict):
-    """ Least recently updated Dict """
+class NFCache(OrderedDict):
+    """ Least recently updated dictionary """
     def __init__(self, idle_timeout, *args, **kwds):
         super().__init__(*args, **kwds)
         self._idle_timeout = idle_timeout
@@ -44,49 +44,35 @@ class LRU(OrderedDict):
         return nxt, self[nxt].idle(self._idle_timeout, current_tick, core, user)
 
 
-class NFCache(Process):
+class NFMeter(Process):
     """ NFCache for entries management """
-    def __init__(self, observer=None, idle_timeout=30, active_timeout=300,
-                 core_plugins=nfstream_core_plugins, user_plugins=(),
-                 dissect=True, statistics=True, max_tcp_dissections=10, max_udp_dissections=16,
-                 enable_guess=True, channel=None):
+    def __init__(self, observer, idle_timeout, active_timeout, user_plugins, dissect, statistics,
+                 max_tcp_dissections, max_udp_dissections, enable_guess, channel):
         super().__init__()
         self.observer = observer
-        self.idle_timeout = idle_timeout * 1000
-        self.active_timeout = active_timeout * 1000
-        if self.idle_timeout < 0:
-            self.idle_timeout = 0
-        if self.active_timeout < 0:
-            self.active_timeout = 0
-        self._roots = LRU(idle_timeout=self.idle_timeout)
+        self.idle_timeout = idle_timeout
+        self.active_timeout = active_timeout
+        self._roots = NFCache(idle_timeout=self.idle_timeout)
         self.current_tick = 0
-        self.active_entries = 0
         self.idle_scan_period = 10
         self.idle_scan_tick = 0
         self.idle_scan_budget = 1024
         if dissect and statistics:
-            self.core_plugins = core_plugins + nfstream_statistical_plugins + ndpi_infos_plugins + \
+            self.core_plugins = nfstream_core_plugins + nfstream_statistical_plugins + ndpi_infos_plugins + \
                                 [nDPI(ndpi=NDPI(max_tcp_dissections=max_tcp_dissections,
                                                 max_udp_dissections=max_udp_dissections,
                                                 enable_guess=enable_guess),
                                       volatile=True)]
         elif dissect:
-            self.core_plugins = core_plugins + ndpi_infos_plugins + \
+            self.core_plugins = nfstream_core_plugins + ndpi_infos_plugins + \
                                 [nDPI(ndpi=NDPI(max_tcp_dissections=max_tcp_dissections,
                                                 max_udp_dissections=max_udp_dissections,
                                                 enable_guess=enable_guess),
                                       volatile=True)]
         elif statistics:
-            self.core_plugins = core_plugins + nfstream_statistical_plugins
+            self.core_plugins = nfstream_core_plugins + nfstream_statistical_plugins
         else:
-            self.core_plugins = core_plugins
-
-        try:
-            nfplugins_validator(user_plugins)
-        except TypeError:
-            raise TypeError("Streamer initiated with unknown type plugins (must be NFPlugin type).")
-        except ValueError:
-            raise TypeError("Streamer initiated with non unique plugins names. Consider renaming your added plugins.")
+            self.core_plugins = nfstream_core_plugins
         self.user_plugins = user_plugins
         self.channel = channel
 
@@ -99,7 +85,6 @@ class NFCache(Process):
                 if idle_item is not None:  # idle
                     self.channel.put(idle_item)
                     del self._roots[idle_idx]
-                    self.active_entries -= 1  # remove it
                     scanned += 1
                 else:
                     remaining = False  # no idle entries to poll
@@ -111,7 +96,6 @@ class NFCache(Process):
         for h in list(self._roots.keys()):
             f = self._roots[h].clean(self.core_plugins, self.user_plugins)
             self.channel.put(f)
-            self.active_entries -= 1
             del self._roots[h]
         for plugin in self.core_plugins:
             plugin.cleanup()
@@ -133,7 +117,6 @@ class NFCache(Process):
                 if entry.expiration_id < 0:  # custom expiration
                     self.channel.put(entry)
                     del self._roots[obs.nfhash]
-                    self.active_entries -= 1
                 else:  # active expiration
                     self.channel.put(entry)
                     del self._roots[obs.nfhash]
@@ -144,10 +127,9 @@ class NFCache(Process):
             self._roots[obs.nfhash] = NFEntry(obs,
                                               self.core_plugins,
                                               self.user_plugins)
-            self.active_entries += 1
 
     def run(self):
-        """ run NFCache main processing loop """
+        """ run NFMeter main processing loop """
         try:
             for observable_type, time, observable in self.observer:
                 if observable_type == 1:

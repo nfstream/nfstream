@@ -73,25 +73,15 @@ class NFPlugin(object):
         pass
 
 
-def nfplugins_validator(plugins):
-    """ nfplugins unique names validation function """
-    plugin_names = []
-    for plugin in plugins:
-        if isinstance(plugin, NFPlugin):
-            plugin_names.append(plugin.name)
-        else:
-            raise TypeError
-    if len(plugin_names) != len(list(set(plugin_names))):
-        raise ValueError
-
-
 class packet_direction_setter(NFPlugin):
     """ Setter for packet direction (volatile) """
     def on_update(self, obs, entry):
         if (entry.src_ip == obs.src_ip) and (entry.src_port == obs.src_port):
             obs.direction = 0
+            obs.c_structure.direction = 0
         else:
             obs.direction = 1
+            obs.c_structure.direction = 1
 
 
 class bidirectional_first_seen_ms(NFPlugin):
