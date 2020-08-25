@@ -19,7 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 import unittest
 import os
 import csv
-
+import sys
 import numpy as np
 
 from nfstream import NFStreamer, NFPlugin
@@ -237,7 +237,10 @@ messenger.com')
     def test_noroot_live(self):
         print("\n----------------------------------------------------------------------")
         try:
-            streamer_test = NFStreamer(source="lo", idle_timeout=0)
+            if sys.platform == 'darwin':
+                streamer_test = NFStreamer(source="lo0", idle_timeout=0)
+            else:
+                streamer_test = NFStreamer(source="lo", idle_timeout=0)
         except SystemExit:
             print("{}\t: \033[94mOK\033[0m".format(".Testing live capture (noroot)".ljust(60, ' ')))
 
