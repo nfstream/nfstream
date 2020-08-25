@@ -241,7 +241,7 @@ messenger.com')
                 streamer_test = NFStreamer(source="lo0", idle_timeout=0)
             else:
                 streamer_test = NFStreamer(source="lo", idle_timeout=0)
-        except SystemExit:
+        except ValueError:
             print("{}\t: \033[94mOK\033[0m".format(".Testing live capture (noroot)".ljust(60, ' ')))
 
     def test_bad_observer_args(self):

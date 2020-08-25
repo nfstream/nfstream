@@ -266,8 +266,8 @@ class NFStreamer(object):
                 meters[i].join()
             channel.close()
             channel.join_thread()
-        except OSError as observer_error:
-            sys.exit(observer_error)
+        except ValueError as observer_error:
+            raise ValueError(observer_error)
 
     def to_csv(self, sep="|", path=None, ip_anonymization=False):
         if path is None:

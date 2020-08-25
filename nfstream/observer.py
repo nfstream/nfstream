@@ -111,9 +111,10 @@ def open_observer(src, snaplen, mode, promisc, ffi, lib):
     handler = lib.observer_open(bytes(src, 'utf-8'), snaplen, int(promisc), err_open, err_set, mode)
     if handler == ffi.NULL:
         ffi.dlclose(lib)
-        error_message = "{}\n{}".format(ffi.string(err_open).decode('ascii', 'ignore'),
-                                        ffi.string(err_set).decode('ascii', 'ignore'))
-        raise OSError(error_message)
+        raise ValueError("Failed to open and set defined source. Open error:{} , Set Error:{}".format(
+            ffi.string(err_open).decode('ascii', 'ignore'),
+            ffi.string(err_set).decode('ascii', 'ignore'))
+        )
     return handler
 
 
@@ -125,9 +126,9 @@ def configure_observer(handler, bpf_filter, ffi, lib):
             lib.observer_close(handler)
             ffi.dlclose(lib)
             if rs == 1:
-                raise OSError("Failed to compile BPF filter.")
+                raise ValueError("Failed to compile BPF filter:{}.".format(bpf_filter))
             else:
-                raise OSError("Failed to set BPF filter.")
+                raise ValueError("Failed to set BPF filter:{}.".format(bpf_filter))
     return handler
 
 
