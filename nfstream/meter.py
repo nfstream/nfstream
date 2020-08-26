@@ -72,7 +72,7 @@ class NFMeter(Process):
     def idle_scan(self, meter_tick, cache):
         remaining = True
         scanned = 0
-        while remaining and scanned < 10000:  # idle scan budget
+        while remaining and scanned < 1024:  # idle scan budget
             try:
                 lru_idx = cache.peak_lru_item()
                 lru_item = cache[lru_idx]
@@ -85,8 +85,8 @@ class NFMeter(Process):
             except StopIteration:
                 remaining = False  # root is empty
 
-    def finish(self, cache):
-        """ finish all entries in NFCache """
+    def cleanup(self, cache):
+        """ cleanup all entries in NFCache """
         for h in list(cache.keys()):
             f = cache[h].clean(self.core_plugins, self.user_plugins)
             self.channel.put(f)
@@ -95,7 +95,6 @@ class NFMeter(Process):
             plugin.cleanup()
         for plugin in self.user_plugins:
             plugin.cleanup()
-        self.observer.close()  # close generator
         self.channel.put(None)
 
     def consume(self, observable, cache):
@@ -124,8 +123,9 @@ class NFMeter(Process):
         idle_scan_tick = 0
         idle_scan_interval = 10
         cache = NFCache()
+        observer = self.observer
         try:
-            for observable_type, time, observable in self.observer:
+            for observable_type, time, observable in observer:
                 if observable_type == 1:
                     go_scan = False
                     if time - idle_scan_tick >= idle_scan_interval:
@@ -142,6 +142,8 @@ class NFMeter(Process):
                     if time - idle_scan_tick >= idle_scan_interval:
                         self.idle_scan(meter_tick, cache)
                         idle_scan_tick = time
-            self.finish(cache)
+            raise KeyboardInterrupt
         except KeyboardInterrupt:
-            self.finish(cache)
+            del observer
+            self.observer.close()
+            self.cleanup(cache)
