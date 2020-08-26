@@ -56,13 +56,6 @@ class NFEntry(object):
             if getattr(self, 'expiration_id') < 0:  # custom export
                 return self.clean(core, user)
 
-    def idle(self, idle_timeout, time, core, user):
-        """ Check if flow is idle """
-        if (time - idle_timeout) > getattr(self, 'bidirectional_last_seen_ms'):
-            return self.clean(core, user)
-        else:
-            return
-
     def __str__(self):
         """ String representation of flow """
         return str(namedtuple(type(self).__name__, self.__dict__.keys())(*self.__dict__.values()))

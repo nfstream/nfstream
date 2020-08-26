@@ -25,9 +25,8 @@ from multiprocessing import Process
 
 class NFCache(OrderedDict):
     """ Least recently updated dictionary """
-    def __init__(self, idle_timeout, *args, **kwds):
+    def __init__(self, *args, **kwds):
         super().__init__(*args, **kwds)
-        self._idle_timeout = idle_timeout
 
     def __getitem__(self, key):
         return super().__getitem__(key)
@@ -39,24 +38,18 @@ class NFCache(OrderedDict):
     def __eq__(self, other):
         return super().__eq__(other)
 
-    def get_idle_item(self, current_tick, core, user):
-        nxt = next(iter(self))
-        return nxt, self[nxt].idle(self._idle_timeout, current_tick, core, user)
+    def peak_lru_item(self):
+        return next(iter(self))
 
 
 class NFMeter(Process):
-    """ NFCache for entries management """
+    """ NFMeter for entries management """
     def __init__(self, observer, idle_timeout, active_timeout, user_plugins, dissect, statistics,
                  max_tcp_dissections, max_udp_dissections, enable_guess, channel):
         super().__init__()
         self.observer = observer
         self.idle_timeout = idle_timeout
         self.active_timeout = active_timeout
-        self._roots = NFCache(idle_timeout=self.idle_timeout)
-        self.current_tick = 0
-        self.idle_scan_period = 10
-        self.idle_scan_tick = 0
-        self.idle_scan_budget = 1024
         if dissect and statistics:
             self.core_plugins = nfstream_core_plugins + nfstream_statistical_plugins + ndpi_infos_plugins + \
                                 [nDPI(ndpi=NDPI(max_tcp_dissections=max_tcp_dissections,
@@ -76,27 +69,28 @@ class NFMeter(Process):
         self.user_plugins = user_plugins
         self.channel = channel
 
-    def idle_scan(self):
+    def idle_scan(self, meter_tick, cache):
         remaining = True
         scanned = 0
-        while remaining and scanned < self.idle_scan_budget:
+        while remaining and scanned < 10000:  # idle scan budget
             try:
-                idle_idx, idle_item = self._roots.get_idle_item(self.current_tick, self.core_plugins, self.user_plugins)
-                if idle_item is not None:  # idle
-                    self.channel.put(idle_item)
-                    del self._roots[idle_idx]
+                lru_idx = cache.peak_lru_item()
+                lru_item = cache[lru_idx]
+                if (meter_tick - self.idle_timeout) >= lru_item.bidirectional_last_seen_ms:  # idle
+                    self.channel.put(lru_item.clean(self.core_plugins, self.user_plugins))
+                    del cache[lru_idx]
                     scanned += 1
                 else:
                     remaining = False  # no idle entries to poll
             except StopIteration:
                 remaining = False  # root is empty
 
-    def finish(self):
+    def finish(self, cache):
         """ finish all entries in NFCache """
-        for h in list(self._roots.keys()):
-            f = self._roots[h].clean(self.core_plugins, self.user_plugins)
+        for h in list(cache.keys()):
+            f = cache[h].clean(self.core_plugins, self.user_plugins)
             self.channel.put(f)
-            del self._roots[h]
+            del cache[h]
         for plugin in self.core_plugins:
             plugin.cleanup()
         for plugin in self.user_plugins:
@@ -104,50 +98,50 @@ class NFMeter(Process):
         self.observer.close()  # close generator
         self.channel.put(None)
 
-    def consume(self, obs):
+    def consume(self, observable, cache):
         """ consume an observable and produce entry """
         # classical create/update
         try:  # update entry
-            entry = self._roots[obs.nfhash].update(obs,
-                                                   self.core_plugins,
-                                                   self.user_plugins,
-                                                   self.active_timeout,
-                                                   self.idle_timeout)
+            entry = cache[observable.nfhash].update(observable,
+                                                    self.core_plugins,
+                                                    self.user_plugins,
+                                                    self.active_timeout,
+                                                    self.idle_timeout)
             if entry is not None:
                 if entry.expiration_id < 0:  # custom expiration
                     self.channel.put(entry)
-                    del self._roots[obs.nfhash]
+                    del cache[observable.nfhash]
                 else:  # active expiration
                     self.channel.put(entry)
-                    del self._roots[obs.nfhash]
-                    self._roots[obs.nfhash] = NFEntry(obs,
-                                                      self.core_plugins,
-                                                      self.user_plugins)
+                    del cache[observable.nfhash]
+                    cache[observable.nfhash] = NFEntry(observable, self.core_plugins, self.user_plugins)
         except KeyError:  # create entry
-            self._roots[obs.nfhash] = NFEntry(obs,
-                                              self.core_plugins,
-                                              self.user_plugins)
+            cache[observable.nfhash] = NFEntry(observable, self.core_plugins, self.user_plugins)
 
     def run(self):
         """ run NFMeter main processing loop """
+        meter_tick = 0
+        idle_scan_tick = 0
+        idle_scan_interval = 10
+        cache = NFCache()
         try:
             for observable_type, time, observable in self.observer:
                 if observable_type == 1:
                     go_scan = False
-                    if time - self.idle_scan_tick >= self.idle_scan_period:
+                    if time - idle_scan_tick >= idle_scan_interval:
                         go_scan = True
-                        self.idle_scan_tick = time
-                    if time >= self.current_tick:
-                        self.current_tick = time
-                    self.consume(observable)
+                        idle_scan_tick = time
+                    if time >= meter_tick:
+                        meter_tick = time
+                    self.consume(observable, cache)
                     if go_scan:
-                        self.idle_scan()  # perform a micro scan
+                        self.idle_scan(meter_tick, cache)  # perform a micro scan
                 else:
-                    if time > self.current_tick:
-                        self.current_tick = time
-                    if time - self.idle_scan_tick >= self.idle_scan_period:
-                        self.idle_scan()
-                        self.idle_scan_tick = time
-            self.finish()
+                    if time > meter_tick:
+                        meter_tick = time
+                    if time - idle_scan_tick >= idle_scan_interval:
+                        self.idle_scan(meter_tick, cache)
+                        idle_scan_tick = time
+            self.finish(cache)
         except KeyboardInterrupt:
-            self.finish()
+            self.finish(cache)

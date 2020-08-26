@@ -98,7 +98,7 @@ class TestMethods(unittest.TestCase):
 
     def test_expiration_management(self):
         print("\n----------------------------------------------------------------------")
-        streamer_test = NFStreamer(source='tests/pcap/facebook.pcap', active_timeout=0)
+        streamer_test = NFStreamer(source='tests/pcap/facebook.pcap', idle_timeout=0)
         flows = []
         for flow in streamer_test:
             flows.append(flow)

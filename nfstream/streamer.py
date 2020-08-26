@@ -19,11 +19,10 @@ import multiprocessing
 import pandas as pd
 import time as tm
 import secrets
-import psutil
 import sys
 import os
 from .observer import NFObserver
-from psutil import net_if_addrs
+from psutil import net_if_addrs, cpu_count
 from hashlib import blake2b
 from os.path import isfile
 from .meter import NFMeter
@@ -36,7 +35,7 @@ class NFStreamer(object):
     streamer_id = 0  # class id generator
     """ Network Flow Streamer """
     def __init__(self, source=None, decode_tunnels=True, bpf_filter=None, promisc=True, snaplen=65535,
-                 idle_timeout=30, active_timeout=30, plugins=(),
+                 idle_timeout=30, active_timeout=300, plugins=(),
                  dissect=True, statistics=False, max_tcp_dissections=80, max_udp_dissections=16, enable_guess=True,
                  n_jobs=4
                  ):
@@ -132,7 +131,7 @@ class NFStreamer(object):
     @active_timeout.setter
     def active_timeout(self, value):
         if not isinstance(value, int) or (isinstance(value, int) and value < 0):
-            raise ValueError("Please specify a valid active_timeout parameter (positive integer in seconds).")
+            raise ValueError("Please specify a valid active_timeout parameter (integer >= 0 in seconds).")
         self._active_timeout = value
 
     @property
@@ -209,7 +208,7 @@ class NFStreamer(object):
     def n_jobs(self, value):
         if not isinstance(value, int):
             raise ValueError("Please specify a valid n_jobs parameter (positive integer).")
-        n_cores = psutil.cpu_count(logical=False)
+        n_cores = cpu_count(logical=False)
         if value <= 0:
             self._n_jobs = n_cores
         elif value == 1:
