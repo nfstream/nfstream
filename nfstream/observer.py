@@ -62,9 +62,9 @@ tcpflags = namedtuple('tcpflags', ['syn',
 
 
 class NFPacket(object):
-    __slots__ = ["time", "raw_size", "ip_size", "transport_size", "payload_size", "nfhash", "src_ip", "dst_ip",
+    __slots__ = ("time", "raw_size", "ip_size", "transport_size", "payload_size", "nfhash", "src_ip", "dst_ip",
                  "src_port", "dst_port", "protocol", "vlan_id", "version", "tcpflags", "ip_packet", "direction",
-                 "c_structure"]
+                 "c_structure")
 
     def __init__(self, pkt, ffi):
         src_ip = ffi.string(pkt.src_name).decode('utf-8', errors='ignore')
@@ -134,7 +134,7 @@ def configure_observer(handler, bpf_filter, ffi, lib):
 
 class NFObserver(object):
     """ NFObserver module main class """
-    __slots__ = ["_cap", "_lib", "_ffi", "_mode", "_decode_tunnels", "_n_roots", "_root_idx"]
+    __slots__ = ("_cap", "_lib", "_ffi", "_mode", "_decode_tunnels", "_n_roots", "_root_idx")
 
     def __init__(self, source, snaplen, promisc, bpf_filter, decode_tunnels, n_roots, root_idx, mode):
         observer_ffi, observer_lib = create_observer_context()
