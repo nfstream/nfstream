@@ -36,7 +36,6 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 
 def setup_observer_cc():
-    os.chdir('nfstream/')
     platform_compiler = "gcc"
     if sys.platform == 'darwin':
         platform_compiler = "clang"
@@ -50,20 +49,25 @@ def setup_observer_cc():
                            '--enable-dbus=no', '--without-libnl'])
     subprocess.check_call(['make'])
     os.chdir('..')
-    subprocess.check_call([platform_compiler, '-shared', '-o', 'observer_cc.so', '-g', '-fPIC', '-DPIC', '-O2', '-Wall',
-                           'observer_cc.c', 'libpcap/libpcap.a'])
+    subprocess.check_call([platform_compiler, '-shared', '-o', 'nfstream/observer_cc.so', '-g', '-fPIC', '-DPIC', '-O2', '-Wall',
+                           'nfstream/observer_cc.c', 'libpcap/libpcap.a'])
     shutil.rmtree('libpcap/', ignore_errors=True)
-    os.chdir('..')
 
 
-def setup_ndpi():
-    print("\nSetting up nDPI. Platform: {plat}, Byteorder: {bo}".format(plat=sys.platform, bo=sys.byteorder))
+def setup_meter_cc():
+    platform_compiler = "gcc"
+    if sys.platform == 'darwin':
+        platform_compiler = "clang"
+    print("\nSetting up meter_cc. Platform: {plat}, Byteorder: {bo}".format(plat=sys.platform, bo=sys.byteorder))
     subprocess.check_call(['git', 'clone', '--branch', 'dev', 'https://github.com/ntop/nDPI.git'])
     os.chdir('nDPI/')
     subprocess.check_call(['./autogen.sh'])
+    subprocess.check_call(['./configure', 'CC={}'.format(platform_compiler),])
     os.chdir('src/')
     os.chdir('lib/')
     subprocess.check_call(['make'])
+    # subprocess.check_call([platform_compiler, '-I../include', '-shared', '-o', '../../../nfstream/meter_cc.so',
+    #                       '-g', '-fPIC', '-DPIC', '-O2', '-Wall', '../../../nfstream/meter_cc.c', 'libndpi.a'])
     shutil.copy2('libndpi.so', '../../../nfstream/')
     print("Setting up tests.")
     os.chdir('..')
@@ -81,17 +85,17 @@ def setup_ndpi():
 
 class BuildPyCommand(build_py):
     def run(self):
-        self.run_command('nDPI')
+        self.run_command('build_native')
         build_py.run(self)
 
 
-class BuildNdpiCommand(build_ext):
+class BuildNativeCommand(build_ext):
     def run(self):
         if os.name != 'posix':  # Windows case
             pass
         else:
             setup_observer_cc()
-            setup_ndpi()
+            setup_meter_cc()
         build_ext.run(self)
 
 
@@ -127,7 +131,7 @@ except ImportError:
     print('Install the "wheel" package to fix this warning')
     bdist_wheel = None
 
-cmdclass = {'nDPI': BuildNdpiCommand,
+cmdclass = {'build_native': BuildNativeCommand,
             'build_py': BuildPyCommand,
             'bdist_wheel': bdist_wheel} if bdist_wheel is not None else dict()
 

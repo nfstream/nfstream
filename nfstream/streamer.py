@@ -21,8 +21,8 @@ import time as tm
 import secrets
 import sys
 import os
-from .observer import NFObserver
 from psutil import net_if_addrs, cpu_count
+from .observer import NFObserver
 from hashlib import blake2b
 from os.path import isfile
 from .meter import NFMeter
@@ -222,7 +222,7 @@ class NFStreamer(object):
     def __iter__(self):
         meters = []
         n_terminated = 0
-        channel = multiprocessing.Queue()
+        channel = multiprocessing.Queue(100000)  # Backpressure strategy.
         n_meters = self.n_jobs - 1
         if n_meters == 0:
             n_meters = 1
