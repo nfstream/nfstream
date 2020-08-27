@@ -222,7 +222,8 @@ class NFStreamer(object):
     def __iter__(self):
         meters = []
         n_terminated = 0
-        channel = multiprocessing.Queue(100000)  # Backpressure strategy.
+        channel = multiprocessing.Queue(maxsize=32767)  # Backpressure strategy.
+        # We set it to (2^15-1) to cope with OSX maximum semaphore value.
         n_meters = self.n_jobs - 1
         if n_meters == 0:
             n_meters = 1
