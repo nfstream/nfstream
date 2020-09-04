@@ -90,27 +90,34 @@ def consume(packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps
                 channel.put(entry)
                 del cache[entry_key]
                 del entry
-                cache[entry_key] = NFEntry(packet, ffi, lib, udps, sync, enable_guess, accounting_mode, dissect,
-                                           max_tcp_dissections, max_udp_dissections, statistics, dissector)
+                try:
+                    cache[entry_key] = NFEntry(packet, ffi, lib, udps, sync, enable_guess, accounting_mode, dissect,
+                                               max_tcp_dissections, max_udp_dissections, statistics, dissector)
+                except OSError:
+                    print("WARNING: Failed to allocate memory space for entry creation. Entry creation aborted.")
                 state = 0
         else:
             state = 0
     except KeyError:  # create entry
-        if sync:
-            entry = NFEntry(packet, ffi, lib, udps, sync, enable_guess, accounting_mode, dissect,
-                            max_tcp_dissections, max_udp_dissections, statistics, dissector)
-            if entry.expiration_id == -1:  # A user Plugin forced expiration on the first packet
-                channel.put(entry.expire(udps, sync, enable_guess, accounting_mode, dissect, max_tcp_dissections,
-                                         max_udp_dissections, statistics, ffi, lib, dissector))
-                del entry
-                state = 0
+        try:
+            if sync:
+                entry = NFEntry(packet, ffi, lib, udps, sync, enable_guess, accounting_mode, dissect,
+                                max_tcp_dissections, max_udp_dissections, statistics, dissector)
+                if entry.expiration_id == -1:  # A user Plugin forced expiration on the first packet
+                    channel.put(entry.expire(udps, sync, enable_guess, accounting_mode, dissect, max_tcp_dissections,
+                                             max_udp_dissections, statistics, ffi, lib, dissector))
+                    del entry
+                    state = 0
+                else:
+                    cache[entry_key] = entry
+                    state = 1
             else:
-                cache[entry_key] = entry
+                cache[entry_key] = NFEntry(packet, ffi, lib, udps, sync, enable_guess, accounting_mode, dissect,
+                                           max_tcp_dissections, max_udp_dissections, statistics, dissector)
                 state = 1
-        else:
-            cache[entry_key] = NFEntry(packet, ffi, lib, udps, sync, enable_guess, accounting_mode, dissect,
-                                       max_tcp_dissections, max_udp_dissections, statistics, dissector)
-            state = 1
+        except OSError:
+            print("WARNING: Failed to allocate memory space for entry creation. Entry creation aborted.")
+            state = 0
     return state
 
 

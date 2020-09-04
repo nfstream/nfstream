@@ -1637,7 +1637,7 @@ void meter_expire_entry(struct nf_entry *entry, uint8_t dissect, uint8_t enable_
 
 
 void meter_free_entry(struct nf_entry *entry, uint8_t dissect) {
-  if ((dissect == 1)) {
+  if (dissect == 1) {
     free_ndpi_data(entry);
   }
   ndpi_free(entry);
