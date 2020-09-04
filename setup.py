@@ -35,12 +35,12 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 
-def setup_observer_cc():
+def setup_context_cc():
     platform_compiler = "gcc"
     if sys.platform == 'darwin':
         platform_compiler = "clang"
-    print("\nSetting up observer_cc. Platform: {plat}, Byteorder: {bo}".format(plat=sys.platform, bo=sys.byteorder))
-    # compile libpcap and ship it with observer
+    print("\nSetting up context_cc. Platform: {plat}, Byteorder: {bo}".format(plat=sys.platform, bo=sys.byteorder))
+    # compile libpcap and ship it with nfstream
     # we compile libpcap instead of copying the .so from to ensure 1.9.1 version on both mac OS and Linux
     subprocess.check_call(['git', 'clone', '--branch', 'libpcap-1.9.1',
                            'https://github.com/the-tcpdump-group/libpcap.git'])
@@ -49,16 +49,18 @@ def setup_observer_cc():
                            '--enable-dbus=no', '--without-libnl'])
     subprocess.check_call(['make'])
     os.chdir('..')
-    subprocess.check_call([platform_compiler, '-shared', '-o', 'nfstream/observer_cc.so', '-g', '-fPIC', '-DPIC', '-O2', '-Wall',
-                           'nfstream/observer_cc.c', 'libpcap/libpcap.a'])
+    subprocess.check_call([platform_compiler, '-InDPI/src/include', '-shared', '-o', 'nfstream/context_cc.so', '-g',
+                           '-fPIC', '-DPIC', '-O2', '-Wall', 'nfstream/context_cc.c',
+                           'libpcap/libpcap.a', 'nDPI/src/lib/libndpi.a'])
     shutil.rmtree('libpcap/', ignore_errors=True)
+    shutil.rmtree('nDPI/', ignore_errors=True)
 
 
-def setup_meter_cc():
+def setup_ndpi():
     platform_compiler = "gcc"
     if sys.platform == 'darwin':
         platform_compiler = "clang"
-    print("\nSetting up meter_cc. Platform: {plat}, Byteorder: {bo}".format(plat=sys.platform, bo=sys.byteorder))
+    print("\nSetting up nDPI. Platform: {plat}, Byteorder: {bo}".format(plat=sys.platform, bo=sys.byteorder))
     subprocess.check_call(['git', 'clone', '--branch', 'dev', 'https://github.com/ntop/nDPI.git'])
     os.chdir('nDPI/')
     subprocess.check_call(['./autogen.sh'])
@@ -66,9 +68,6 @@ def setup_meter_cc():
     os.chdir('src/')
     os.chdir('lib/')
     subprocess.check_call(['make'])
-    # subprocess.check_call([platform_compiler, '-I../include', '-shared', '-o', '../../../nfstream/meter_cc.so',
-    #                       '-g', '-fPIC', '-DPIC', '-O2', '-Wall', '../../../nfstream/meter_cc.c', 'libndpi.a'])
-    shutil.copy2('libndpi.so', '../../../nfstream/')
     print("Setting up tests.")
     os.chdir('..')
     os.chdir('..')
@@ -80,7 +79,6 @@ def setup_meter_cc():
     subprocess.check_call(['chmod', 'a+x', 'build_results.sh'])
     subprocess.check_call(['./build_results.sh'])
     os.chdir('..')
-    shutil.rmtree('nDPI/', ignore_errors=True)
 
 
 class BuildPyCommand(build_py):
@@ -94,8 +92,8 @@ class BuildNativeCommand(build_ext):
         if os.name != 'posix':  # Windows case
             pass
         else:
-            setup_observer_cc()
-            setup_meter_cc()
+            setup_ndpi()
+            setup_context_cc()
         build_ext.run(self)
 
 

@@ -16,94 +16,6 @@ If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 """
 
-from os.path import abspath, dirname
-from collections import namedtuple
-import cffi
-
-cc_observer_headers = """
-struct pcap;
-typedef struct pcap pcap_t;
-typedef struct nf_packet {
-  uint8_t direction;
-  uint64_t time;
-  uint16_t src_port;
-  uint16_t dst_port;
-  uint8_t protocol;
-  uint16_t vlan_id;
-  char src_name[48], dst_name[48];
-  uint8_t ip_version;
-  uint16_t fin:1, syn:1, rst:1, psh:1, ack:1, urg:1, ece:1, cwr:1; /* TCP Flags */
-  uint16_t raw_size;
-  uint16_t ip_size;
-  uint16_t transport_size;
-  uint16_t payload_size;
-  uint16_t ip_content_len;
-  uint8_t *ip_content;
-} nf_packet_t;
-"""
-
-cc_observer_apis = """
-pcap_t *observer_open(const uint8_t * pcap_file, unsigned snaplen, int promisc, char *err_open,
-                      char *err_set, int mode);
-int observer_configure(pcap_t * pcap_handle, char * bpf_filter);
-int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tunnels, int n_roots, int root_idx);
-void observer_close(pcap_t *);
-"""
-
-
-tcpflags = namedtuple('tcpflags', ['syn',
-                                   'cwr',
-                                   'ece',
-                                   'urg',
-                                   'ack',
-                                   'psh',
-                                   'rst',
-                                   'fin'])
-
-
-class NFPacket(object):
-    __slots__ = ("time", "raw_size", "ip_size", "transport_size", "payload_size", "nfhash", "src_ip", "dst_ip",
-                 "src_port", "dst_port", "protocol", "vlan_id", "version", "tcpflags", "ip_packet", "direction",
-                 "c_structure")
-
-    def __init__(self, pkt, ffi):
-        src_ip = ffi.string(pkt.src_name).decode('utf-8', errors='ignore')
-        dst_ip = ffi.string(pkt.dst_name).decode('utf-8', errors='ignore')
-        self.time = pkt.time
-        self.raw_size = pkt.raw_size
-        self.ip_size = pkt.ip_size
-        self.transport_size = pkt.transport_size
-        self.payload_size = pkt.payload_size
-        self.nfhash = pkt.protocol, \
-                      pkt.vlan_id, \
-                      min(src_ip, dst_ip), max(src_ip, dst_ip),\
-                      min(pkt.src_port, pkt.dst_port), max(pkt.src_port, pkt.dst_port)
-        self.src_ip = src_ip
-        self.dst_ip = dst_ip
-        self.src_port = pkt.src_port
-        self.dst_port = pkt.dst_port
-        self.protocol = pkt.protocol
-        self.vlan_id = pkt.vlan_id
-        self.version = pkt.ip_version
-        self.tcpflags = tcpflags(syn=pkt.syn, cwr=pkt.cwr,
-                                 ece=pkt.ece, urg=pkt.urg,
-                                 ack=pkt.ack, psh=pkt.psh,
-                                 rst=pkt.rst, fin=pkt.fin)
-        self.ip_packet = bytes(ffi.buffer(pkt.ip_content, pkt.ip_content_len))
-        self.direction = 0
-        self.c_structure = pkt
-
-    def __str__(self):
-        return str(namedtuple(type(self).__name__, self.__dict__.keys())(*self.__dict__.values()))
-
-
-def create_observer_context():
-    ffi = cffi.FFI()
-    lib = ffi.dlopen(dirname(abspath(__file__)) + '/observer_cc.so')
-    ffi.cdef(cc_observer_headers)
-    ffi.cdef(cc_observer_apis, override=True)
-    return ffi, lib
-
 
 def open_observer(src, snaplen, mode, promisc, ffi, lib):
     err_open = ffi.new("char []", 128)
@@ -134,24 +46,23 @@ def configure_observer(handler, bpf_filter, ffi, lib):
 
 class NFObserver(object):
     """ NFObserver module main class """
-    __slots__ = ("_cap", "_lib", "_ffi", "_mode", "_decode_tunnels", "_n_roots", "_root_idx")
+    __slots__ = ("_cap", "lib", "ffi", "_mode", "_decode_tunnels", "_n_roots", "_root_idx")
 
-    def __init__(self, source, snaplen, promisc, bpf_filter, decode_tunnels, n_roots, root_idx, mode):
-        observer_ffi, observer_lib = create_observer_context()
-        cap = open_observer(source, snaplen, mode, promisc, observer_ffi, observer_lib)
-        cap = configure_observer(cap, bpf_filter, observer_ffi, observer_lib)
+    def __init__(self, cfg, ffi, lib):
+        cap = open_observer(cfg.source, cfg.snaplen, cfg.mode, cfg.promisc, ffi, lib)
+        cap = configure_observer(cap, cfg.bpf_filter, ffi, lib)
         self._cap = cap
-        self._ffi = observer_ffi
-        self._lib = observer_lib
-        self._mode = mode
-        self._decode_tunnels = decode_tunnels
-        self._n_roots = n_roots
-        self._root_idx = root_idx
+        self.ffi = ffi
+        self.lib = lib
+        self._mode = cfg.mode
+        self._decode_tunnels = cfg.decode_tunnels
+        self._n_roots = cfg.n_roots
+        self._root_idx = cfg.root_idx
 
     def __iter__(self):
         # faster as we make intensive access to these members.
-        observer_ffi = self._ffi
-        observer_lib = self._lib
+        ffi = self.ffi
+        lib = self.lib
         observer_cap = self._cap
         decode_tunnels = self._decode_tunnels
         observer_mode = self._mode
@@ -161,8 +72,8 @@ class NFObserver(object):
 
         try:
             while True:
-                nf_packet = observer_ffi.new("struct nf_packet *")
-                ret = observer_lib.observer_next(observer_cap, nf_packet, decode_tunnels, n_roots, root_idx)
+                nf_packet = ffi.new("struct nf_packet *")
+                ret = lib.observer_next(observer_cap, nf_packet, decode_tunnels, n_roots, root_idx)
                 if ret > 0:  # Valid, must be processed by meter
                     time = nf_packet.time
                     if time > observer_time:
@@ -170,7 +81,7 @@ class NFObserver(object):
                     else:
                         time = observer_time
                     if ret == 1:
-                        yield 1, time, NFPacket(nf_packet, observer_ffi)
+                        yield 1, time, nf_packet
                     elif ret == 2:  # Time ticker (Valid but do not match our id)
                         yield 0, time, None
                     else:
@@ -188,6 +99,4 @@ class NFObserver(object):
             return
 
     def close(self):
-        self._lib.observer_close(self._cap)
-        self._ffi.dlclose(self._lib)
-
+        self.lib.observer_close(self._cap)

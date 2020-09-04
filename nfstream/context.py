@@ -3,7 +3,7 @@
 
 """
 ------------------------------------------------------------------------------------------------------------------------
-ndpi.py
+context.py
 Copyright (C) 2019-20 - NFStream Developers
 This file is part of NFStream, a Flexible Network Data Analysis Framework (https://www.nfstream.org/).
 NFStream is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,29 @@ If not, see <http://www.gnu.org/licenses/>.
 from os.path import abspath, dirname
 import cffi
 
-cc_ndpi_network_headers = """
+cc_observer_headers = """
+struct pcap;
+typedef struct pcap pcap_t;
+typedef struct nf_packet {
+  uint8_t direction;
+  uint64_t time;
+  uint16_t src_port;
+  uint16_t dst_port;
+  uint8_t protocol;
+  uint16_t vlan_id;
+  char src_name[48], dst_name[48];
+  uint8_t ip_version;
+  uint16_t fin:1, syn:1, rst:1, psh:1, ack:1, urg:1, ece:1, cwr:1; /* TCP Flags */
+  uint16_t raw_size;
+  uint16_t ip_size;
+  uint16_t transport_size;
+  uint16_t payload_size;
+  uint16_t ip_content_len;
+  uint8_t *ip_content;
+} nf_packet_t;
+"""
+
+cc_dissector_headers_packed = """
 /* ++++++++++++++++++++++++ IP header ++++++++++++++++++++++++ */
 struct ndpi_iphdr {
   uint8_t ihl:4, version:4;
@@ -79,52 +101,6 @@ struct ndpi_udphdr
   uint16_t len;
   uint16_t check;
 };
-struct ndpi_dns_packet_header {
-  uint16_t tr_id;
-  uint16_t flags;
-  uint16_t num_queries;
-  uint16_t num_answers;
-  uint16_t authority_rrs;
-  uint16_t additional_rrs;
-};
-
-/* +++++++++++++++++++++++ ICMP header +++++++++++++++++++++++ */
-struct ndpi_icmphdr {
-  uint8_t type;/* message type */
-  uint8_t code;/* type sub-code */
-  uint16_t checksum;
-  union {
-    struct {
-      uint16_t id;
-      uint16_t sequence;
-    } echo; /* echo datagram */
-
-    uint32_t gateway; /* gateway address */
-    struct {
-      uint16_t _unused;
-      uint16_t mtu;
-    } frag;/* path mtu discovery */
-  } un;
-};
-
-/* +++++++++++++++++++++++ ICMP6 header +++++++++++++++++++++++ */
-struct ndpi_icmp6hdr {
-  uint8_t     icmp6_type;   /* type field */
-  uint8_t     icmp6_code;   /* code field */
-  uint16_t    icmp6_cksum;  /* checksum field */
-  union {
-    uint32_t  icmp6_un_data32[1]; /* type-specific field */
-    uint16_t  icmp6_un_data16[2]; /* type-specific field */
-    uint8_t   icmp6_un_data8[4];  /* type-specific field */
-  } icmp6_dataun;
-};
-
-/* +++++++++++++++++++++++ VXLAN header +++++++++++++++++++++++ */
-struct ndpi_vxlanhdr {
-  uint16_t flags;
-  uint16_t groupPolicy;
-  uint32_t vni;
-};
 
 struct tinc_cache_entry {
   uint32_t src_address;
@@ -133,8 +109,7 @@ struct tinc_cache_entry {
 };
 """
 
-cc_ndpi_stuctures = """
-
+cc_dissector_headers = """
 #define NDPI_MAX_NUM_TLS_APPL_BLOCKS      8
 
 typedef enum {
@@ -143,21 +118,6 @@ typedef enum {
   NDPI_LOG_DEBUG,
   NDPI_LOG_DEBUG_EXTRA
 } ndpi_log_level_t;
-
-typedef enum {
-  ndpi_l4_proto_unknown = 0,
-  ndpi_l4_proto_tcp_only,
-  ndpi_l4_proto_udp_only,
-  ndpi_l4_proto_tcp_and_udp,
-} ndpi_l4_proto_info;
-
-typedef enum {
-  ndpi_no_tunnel = 0,
-  ndpi_gtp_tunnel,
-  ndpi_capwap_tunnel,
-  ndpi_tzsp_tunnel,
-  ndpi_l2tp_tunnel,
-} ndpi_packet_tunnel;
 
 typedef enum {
   NDPI_NO_RISK = 0,
@@ -182,7 +142,7 @@ typedef enum {
   NDPI_SSH_OBSOLETE_SERVER_VERSION_OR_CIPHER,
   NDPI_SMB_INSECURE_VERSION,
   NDPI_TLS_SUSPICIOUS_ESNI_USAGE,
-  NDPI_BLACKLISTED_HOST,
+  NDPI_UNSAFE_PROTOCOL,
   /* Leave this as last member */
   NDPI_MAX_RISK /* must be <= 31 due to (**) */
 } ndpi_risk_enum;
@@ -251,9 +211,6 @@ struct bt_announce {              // 192 bytes
   uint8_t		name_len,
     name[149];     // 149 bytes
 };
-
-/* NDPI_PROTOCOL_TINC */
-#define TINC_CACHE_MAX_SIZE 10
 
 typedef enum {
   NDPI_HTTP_METHOD_UNKNOWN = 0,
@@ -492,10 +449,10 @@ struct ndpi_flow_tcp_struct {
 
   /* NDPI_PROTOCOL_MAIL_IMAP */
   uint32_t mail_imap_stage:3, mail_imap_starttls:2;
-  
+
   /* NDPI_PROTOCOL_SOAP */
   uint32_t soap_stage:1;
-  
+
   /* NDPI_PROTOCOL_SKYPE */
   uint8_t skype_packet_id;
 
@@ -640,10 +597,6 @@ struct ndpi_subprotocol_conf_struct {
   void (*func) (struct ndpi_detection_module_struct *, char *attr, char *value, int protocol_id);
 };
 
-typedef struct {
-  uint16_t port_low, port_high;
-} ndpi_port_range;
-
 typedef enum {
   NDPI_PROTOCOL_SAFE = 0,              /* Surely doesn't provide risks for the network. (e.g., a news site) */
   NDPI_PROTOCOL_ACCEPTABLE,            /* Probably doesn't provide risks, but could be malicious (e.g., Dropbox) */
@@ -655,8 +608,6 @@ typedef enum {
   NDPI_PROTOCOL_TRACKER_ADS,           /* Trackers, Advertisements... */
   NDPI_PROTOCOL_UNRATED                /* No idea, not implemented or impossible to classify */
 } ndpi_protocol_breed_t;
-
-#define NUM_BREEDS 8
 
 /* Abstract categories to group the protocols. */
 typedef enum {
@@ -694,14 +645,14 @@ typedef enum {
   NDPI_PROTOCOL_CATEGORY_SHOPPING,
   NDPI_PROTOCOL_CATEGORY_PRODUCTIVITY,
   NDPI_PROTOCOL_CATEGORY_FILE_SHARING,
-  
+
   /*
   The category below is used by sites who are used
   to test connectivity 
   */
   NDPI_PROTOCOL_CATEGORY_CONNECTIVITY_CHECK,
   NDPI_PROTOCOL_CATEGORY_IOT_SCADA,
-  
+
   /* Some custom categories */
   CUSTOM_CATEGORY_MINING           = 99,
   CUSTOM_CATEGORY_MALWARE          = 100,
@@ -731,12 +682,6 @@ typedef enum {
   */
 } ndpi_protocol_category_t;
 
-typedef enum {
-  ndpi_pref_direction_detect_disable = 0,
-  ndpi_pref_enable_tls_block_dissection
-} ndpi_detection_preference;
-
-/* ntop extensions */
 typedef struct ndpi_proto_defaults {
   char *protoName;
   ndpi_protocol_category_t protoCategory;
@@ -772,6 +717,10 @@ typedef struct ndpi_proto {
 #define NUM_CUSTOM_CATEGORIES      5
 #define CUSTOM_CATEGORY_LABEL_LEN 32
 
+typedef enum {
+  ndpi_stun_cache,
+  ndpi_hangout_cache
+} ndpi_lru_cache_type;
 
 struct ndpi_detection_module_struct {
   NDPI_PROTOCOL_BITMASK detection_bitmask;
@@ -870,9 +819,8 @@ struct ndpi_detection_module_struct {
   struct ndpi_lru_cache *msteams_cache;
 
   ndpi_proto_defaults_t proto_defaults[512];
-
-  uint8_t direction_detect_disable:1, /* disable internal detection of packet direction */
-    _pad:7;
+  uint8_t direction_detect_disable:1, /* disable internal detection of packet direction */ _pad:7;
+  void (*ndpi_notify_lru_add_handler_ptr)(ndpi_lru_cache_type cache_type, uint32_t proto, uint32_t app_proto);
 };
 
 #define NDPI_CIPHER_SAFE                        0
@@ -1122,210 +1070,139 @@ struct ndpi_flow_struct {
   struct ndpi_id_struct *dst;
 };
 
-typedef struct {
-  char *string_to_match, *proto_name;
-  int protocol_id;
-  ndpi_protocol_category_t protocol_category;
-  ndpi_protocol_breed_t protocol_breed;
-} ndpi_protocol_match;
-
-typedef struct {
-  char *string_to_match;
-  ndpi_protocol_category_t protocol_category;
-} ndpi_category_match;
-
-typedef struct {
-  uint32_t network;
-  uint8_t cidr;
-  uint8_t value;
-} ndpi_network;
-
-typedef uint32_t ndpi_init_prefs;
-
-typedef enum {
-  ndpi_no_prefs = 0,
-  ndpi_dont_load_tor_hosts,
-  ndpi_dont_init_libgcrypt,
-} ndpi_prefs;
-
-typedef struct {
-  int protocol_id;
-  ndpi_protocol_category_t protocol_category;
-  ndpi_protocol_breed_t protocol_breed;
-} ndpi_protocol_match_result;
-
-typedef struct {
-  char *str;
-  uint16_t str_len;
-} ndpi_string;
-
-/* **************************************** */
-
-struct ndpi_analyze_struct {
-  uint32_t *values;
-  uint32_t min_val, max_val, sum_total, num_data_entries, next_value_insert_index;
-  uint16_t num_values_array_len /* lenght of the values array */;
-
-  struct {
-    float mu, q;
-  } stddev;
-};
-
-#define DEFAULT_SERIES_LEN  64
-#define MAX_SERIES_LEN      512
-#define MIN_SERIES_LEN      8
-
-typedef struct ndpi_ptree ndpi_ptree_t;
-
+typedef struct dissector_checker {
+uint32_t flow_size;
+uint32_t id_size;
+uint32_t flow_tcp_size;
+uint32_t flow_udp_size;
+} dissector_checker_t;
 """
 
-cc_ndpi_apis = """
-struct ndpi_detection_module_struct *ndpi_init_detection_module(void);
-void *memset(void *str, int c, size_t n);
-void ndpi_set_protocol_detection_bitmask2(struct ndpi_detection_module_struct *ndpi_struct, 
-                                          const NDPI_PROTOCOL_BITMASK * detection_bitmask);
-ndpi_protocol ndpi_detection_process_packet(struct ndpi_detection_module_struct *ndpi_struct,
-                                            struct ndpi_flow_struct *flow,
-                                            const unsigned char *packet,
-                                            const unsigned short packetlen,
-                                            const uint64_t current_tick,
-                                            struct ndpi_id_struct *src,
-                                            struct ndpi_id_struct *dst);
-ndpi_protocol ndpi_detection_giveup(struct ndpi_detection_module_struct *ndpi_struct,
-                                    struct ndpi_flow_struct *flow,
-                                    uint8_t enable_guess,
-                                    uint8_t *protocol_was_guessed);
+cc_meter_headers = """
+typedef struct nf_entry {
+  char src_ip[48];
+  uint16_t src_port;
+  char dst_ip[48];
+  uint16_t dst_port;
+  uint8_t protocol;
+  uint8_t ip_version;
+  uint16_t vlan_id;
+  uint64_t bidirectional_first_seen_ms;
+  uint64_t bidirectional_last_seen_ms;
+  uint64_t bidirectional_duration_ms;
+  uint64_t bidirectional_packets;
+  uint64_t bidirectional_bytes;
+  uint64_t src2dst_first_seen_ms;
+  uint64_t src2dst_last_seen_ms;
+  uint64_t src2dst_duration_ms;
+  uint64_t src2dst_packets;
+  uint64_t src2dst_bytes;
+  uint64_t dst2src_first_seen_ms;
+  uint64_t dst2src_last_seen_ms;
+  uint64_t dst2src_duration_ms;
+  uint64_t dst2src_packets;
+  uint64_t dst2src_bytes;
+  uint16_t bidirectional_min_ps;
+  double bidirectional_mean_ps;
+  double bidirectional_stddev_ps;
+  uint16_t bidirectional_max_ps;
+  uint16_t src2dst_min_ps;
+  double src2dst_mean_ps;
+  double src2dst_stddev_ps;
+  uint16_t src2dst_max_ps;
+  uint16_t dst2src_min_ps;
+  double dst2src_mean_ps;
+  double dst2src_stddev_ps;
+  uint16_t dst2src_max_ps;
+  uint64_t bidirectional_min_piat_ms;
+  double bidirectional_mean_piat_ms;
+  double bidirectional_stddev_piat_ms;
+  uint64_t bidirectional_max_piat_ms;
+  uint64_t src2dst_min_piat_ms;
+  double src2dst_mean_piat_ms;
+  double src2dst_stddev_piat_ms;
+  uint64_t src2dst_max_piat_ms;
+  uint64_t dst2src_min_piat_ms;
+  double dst2src_mean_piat_ms;
+  double dst2src_stddev_piat_ms;
+  uint64_t dst2src_max_piat_ms;
+  uint64_t bidirectional_syn_packets;
+  uint64_t bidirectional_cwr_packets;
+  uint64_t bidirectional_ece_packets;
+  uint64_t bidirectional_urg_packets;
+  uint64_t bidirectional_ack_packets;
+  uint64_t bidirectional_psh_packets;
+  uint64_t bidirectional_rst_packets;
+  uint64_t bidirectional_fin_packets;
+  uint64_t src2dst_syn_packets;
+  uint64_t src2dst_cwr_packets;
+  uint64_t src2dst_ece_packets;
+  uint64_t src2dst_urg_packets;
+  uint64_t src2dst_ack_packets;
+  uint64_t src2dst_psh_packets;
+  uint64_t src2dst_rst_packets;
+  uint64_t src2dst_fin_packets;
+  uint64_t dst2src_syn_packets;
+  uint64_t dst2src_cwr_packets;
+  uint64_t dst2src_ece_packets;
+  uint64_t dst2src_urg_packets;
+  uint64_t dst2src_ack_packets;
+  uint64_t dst2src_psh_packets;
+  uint64_t dst2src_rst_packets;
+  uint64_t dst2src_fin_packets;
+  char application_name[32];
+  char category_name[24];
+  char requested_server_name[240];
+  char c_hash[48];
+  char s_hash[48];
+  char content_type[64];
+  char user_agent[128];
+  struct ndpi_flow_struct *ndpi_flow;
+  struct ndpi_id_struct *ndpi_src;
+  struct ndpi_id_struct *ndpi_dst;
+  ndpi_protocol detected_protocol;
+  uint8_t guessed;
+  uint8_t detection_completed;
+} nf_entry_t;
+"""
 
-void * ndpi_malloc(size_t size);
-void   ndpi_free(void *ptr);
-void * ndpi_flow_malloc(size_t size);
-void  ndpi_flow_free(void *ptr);
-void ndpi_exit_detection_module(struct ndpi_detection_module_struct *ndpi_struct);
-char* ndpi_protocol2name(struct ndpi_detection_module_struct *ndpi_mod,
-                         ndpi_protocol proto,
-                         char *buf, unsigned buf_len);
-const char* ndpi_category_get_name(struct ndpi_detection_module_struct *ndpi_mod, ndpi_protocol_category_t category);
-char* ndpi_revision(void);
-void ndpi_finalize_initalization(struct ndpi_detection_module_struct *ndpi_str);
-uint32_t ndpi_detection_get_sizeof_ndpi_flow_struct(void);
-uint32_t ndpi_detection_get_sizeof_ndpi_id_struct(void);
-uint32_t ndpi_detection_get_sizeof_ndpi_flow_tcp_struct(void);
-uint32_t ndpi_detection_get_sizeof_ndpi_flow_udp_struct(void);
-uint8_t ndpi_extra_dissection_possible(struct ndpi_detection_module_struct *ndpi_struct, struct ndpi_flow_struct *flow); 
+cc_observer_apis = """
+pcap_t *observer_open(const uint8_t * pcap_file, unsigned snaplen, int promisc, char *err_open,
+                      char *err_set, int mode);
+int observer_configure(pcap_t * pcap_handle, char * bpf_filter);
+int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tunnels, int n_roots, int root_idx);
+void observer_close(pcap_t *);
+"""
+
+cc_dissector_apis = """
+struct ndpi_detection_module_struct *dissector_init(struct dissector_checker *checker);
+void dissector_configure(struct ndpi_detection_module_struct *dissector);
+void dissector_cleanup(struct ndpi_detection_module_struct *dissector);
+"""
+
+cc_meter_apis = """
+struct nf_entry *meter_initialize_entry(struct nf_packet *packet, uint8_t accounting_mode,
+                                        uint8_t statistics, uint8_t dissect, uint64_t max_tcp_dissections,
+                                        uint64_t max_udp_dissections, uint8_t enable_guess,
+                                        struct ndpi_detection_module_struct *dissector);
+uint8_t meter_update_entry(struct nf_entry *entry, struct nf_packet *packet, uint64_t idle_timeout,
+                           uint64_t active_timeout, uint8_t accounting_mode, uint8_t statistics, uint8_t dissect,
+                           uint64_t max_tcp_dissections, uint64_t max_udp_dissections, uint8_t enable_guess,
+                           struct ndpi_detection_module_struct *dissector);
+void meter_expire_entry(struct nf_entry *entry, uint8_t dissect, uint8_t enable_guess,
+                        struct ndpi_detection_module_struct *dissector);
+void meter_free_entry(struct nf_entry *entry, uint8_t dissect);
 """
 
 
-def check_structures_size(flow_struct_defined, flow_struct_loaded,
-                          id_struct_defined, id_struct_loaded,
-                          tcp_flow_struct_defined, tcp_flow_struct_loaded,
-                          udp_flow_struct_defined, udp_flow_struct_loaded):
-    """ Function used to check loaded structures sizes againt defined ones """
-    errors = []
-    if flow_struct_defined != flow_struct_loaded:
-        errors.append('ndpi_flow_struct')
-    if id_struct_defined != id_struct_loaded:
-        errors.append('ndpi_id_struct')
-    if tcp_flow_struct_defined != tcp_flow_struct_loaded:
-        errors.append('ndpi_tcp_flow_struct')
-    if udp_flow_struct_defined != udp_flow_struct_loaded:
-        errors.append('ndpi_udp_flow_struct')
-    return errors
-
-
-class NDPI(object):
-    """ ndpi module main class """
-
-    def __init__(self, libpath=None, max_tcp_dissections=80, max_udp_dissections=16, enable_guess=True):
-        self._ffi = cffi.FFI()
-        if libpath is None:
-            self._ndpi = self._ffi.dlopen(dirname(abspath(__file__)) + '/libndpi.so')
-        else:
-            self._ndpi = self._ffi.dlopen(libpath)
-        self._ffi.cdef(cc_ndpi_network_headers, packed=True)
-        self._ffi.cdef(cc_ndpi_stuctures)
-        self._ffi.cdef(cc_ndpi_apis)
-        self._mod = self._ndpi.ndpi_init_detection_module()
-        ndpi_revision = self._ffi.string(self._ndpi.ndpi_revision()).decode('utf-8', errors='ignore')
-        if ndpi_revision[:3] >= '3.1':
-            self._ndpi.ndpi_finalize_initalization(self._mod)
-        all = self._ffi.new('NDPI_PROTOCOL_BITMASK*')
-        self._ndpi.memset(self._ffi.cast("char *", all), 0xFF, self._ffi.sizeof("NDPI_PROTOCOL_BITMASK"))
-        self._ndpi.ndpi_set_protocol_detection_bitmask2(self._mod, all)
-        errors = check_structures_size(self._ffi.sizeof("struct ndpi_flow_struct"),
-                                       self._ndpi.ndpi_detection_get_sizeof_ndpi_flow_struct(),
-                                       self._ffi.sizeof("struct ndpi_id_struct"),
-                                       self._ndpi.ndpi_detection_get_sizeof_ndpi_id_struct(),
-                                       self._ffi.sizeof("struct ndpi_flow_tcp_struct"),
-                                       self._ndpi.ndpi_detection_get_sizeof_ndpi_flow_tcp_struct(),
-                                       self._ffi.sizeof("struct ndpi_flow_udp_struct"),
-                                       self._ndpi.ndpi_detection_get_sizeof_ndpi_flow_udp_struct())
-        if len(errors) != 0:
-            raise ValueError('nDPI error: mismatch in the headers of following structures{}'.format(', '.join(errors)))
-        else:
-            self.SIZEOF_FLOW_STRUCT = self._ffi.sizeof("struct ndpi_flow_struct")
-            self.SIZEOF_ID_STRUCT = self._ffi.sizeof("struct ndpi_id_struct")
-        self.NULL = self._ffi.NULL
-        self.max_tcp_dissections = max_tcp_dissections
-        self.max_udp_dissections = max_udp_dissections
-        self.enable_guess = enable_guess
-
-    def new_ndpi_flow(self):
-        """ Create a new nDPI flow object """
-        f = self._ffi.cast('struct ndpi_flow_struct*', self._ndpi.ndpi_flow_malloc(self.SIZEOF_FLOW_STRUCT))
-        self._ndpi.memset(f, 0, self.SIZEOF_FLOW_STRUCT)
-        return f
-
-    def new_ndpi_id(self):
-        """ Create a new nDPI id object """
-        i = self._ffi.cast('struct ndpi_id_struct*', self._ndpi.ndpi_malloc(self.SIZEOF_ID_STRUCT))
-        self._ndpi.memset(i, 0, self.SIZEOF_ID_STRUCT)
-        return i
-
-    def ndpi_detection_process_packet(self, flow, packet, packetlen, current_tick, src, dst):
-        """ Main detection processing function """
-        p = self._ndpi.ndpi_detection_process_packet(self._mod, flow, packet, packetlen, current_tick, src, dst)
-        return p
-
-    def ndpi_detection_giveup(self, flow):
-        """ Giveup detection function """
-        return self._ndpi.ndpi_detection_giveup(self._mod, flow, self.enable_guess, self._ffi.new("uint8_t*", 0))
-
-    def ndpi_flow_free(self, flow):
-        """ Free nDPI flow object """
-        return self._ndpi.ndpi_flow_free(flow)
-
-    def ndpi_free(self, ptr):
-        """ Free nDPI object """
-        return self._ndpi.ndpi_free(ptr)
-
-    def get_str_field(self, ptr):
-        """ Get fixed string size attribute """
-        if ptr == self._ffi.NULL:
-            return ''
-        else:
-            return self._ffi.string(ptr).decode('utf-8', errors='ignore')
-
-    def get_buffer_field(self, ptr, li):
-        """ Get variable string size attribute """
-        if ptr == self._ffi.NULL:
-            return ''
-        else:
-            return self._ffi.string(ptr, li).decode('utf-8', errors='ignore')
-
-    def ndpi_protocol2name(self, proto):
-        """ Convert nDPI protocol object to readable name """
-        buf = self._ffi.new("char[32]")
-        self._ndpi.ndpi_protocol2name(self._mod, proto, buf, self._ffi.sizeof(buf))
-        return self._ffi.string(buf).decode('utf-8', errors='ignore')
-
-    def ndpi_category_get_name(self, category):
-        """ Convert nDPI protocol object to readable name """
-        return self._ffi.string(self._ndpi.ndpi_category_get_name(self._mod, category)).decode('utf-8', errors='ignore')
-
-    def ndpi_extra_dissection_possible(self, flow):
-        return self._ndpi.ndpi_extra_dissection_possible(self._mod, flow)
-
-    def ndpi_exit_detection_module(self):
-        """ Exit function for nDPI module """
-        self._ndpi.ndpi_exit_detection_module(self._mod)
-        self._ffi.dlclose(self._ndpi)
+def create_context():
+    ffi = cffi.FFI()
+    lib = ffi.dlopen(dirname(abspath(__file__)) + '/context_cc.so')
+    ffi.cdef(cc_observer_headers)
+    ffi.cdef(cc_dissector_headers_packed, packed=True, override=True)
+    ffi.cdef(cc_dissector_headers, override=True)
+    ffi.cdef(cc_meter_headers, override=True)
+    ffi.cdef(cc_observer_apis, override=True)
+    ffi.cdef(cc_dissector_apis, override=True)
+    ffi.cdef(cc_meter_apis, override=True)
+    return ffi, lib

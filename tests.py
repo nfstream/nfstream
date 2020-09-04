@@ -17,20 +17,17 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 import unittest
+import pandas as pd
 import os
 import csv
-import sys
-import numpy as np
-
 from nfstream import NFStreamer, NFPlugin
-from nfstream.plugin import bidirectional_packets_matrix
 
 
 def get_files_list(path):
     files = []
     for r, d, f in os.walk(path):
         for file in f:
-            if '.pcap' in file:
+            if '.pcap' == file[-5:]:
                 files.append(os.path.join(r, file))
     files.sort()
     return files
@@ -53,22 +50,325 @@ def get_app_dict(path):
     return app
 
 
-def build_ground_truth_dict(path):
+def build_ndpi_dict(path):
     list_gt = get_files_list(path)
-    ground_truth = {}
+    ndpi = {}
     for file in list_gt:
-        ground_truth[file.split('/')[-1]] = get_app_dict(file)
-    return ground_truth
+        ndpi[file.split('/')[-1]] = get_app_dict(file)
+    return ndpi
 
 
 class TestMethods(unittest.TestCase):
-    def test_no_unknown_protocols_without_timeouts(self):
-        files = get_files_list("tests/pcap/")
-        ground_truth_ndpi = build_ground_truth_dict("tests/result/")
+
+    def test_parameters_handling(self):
         print("\n----------------------------------------------------------------------")
-        print(".Testing on {} applications:".format(len(files)))
+        value_errors = 0
+        source = ["inexisting.pcap", "lo", "lo0", 22]
+        for x in source:
+            try:
+                for flow in NFStreamer(source=x):
+                    print(flow)
+                    pass
+            except ValueError:
+                value_errors += 1
+        decode_tunnels = [33, "True"]
+        for x in decode_tunnels:
+            try:
+                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', decode_tunnels=x):
+                    print(flow)
+                    pass
+            except ValueError:
+                value_errors += 1
+        bpf_filter = ["my filter", 11]
+        for x in bpf_filter:
+            try:
+                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', bpf_filter=x):
+                    print(flow)
+                    pass
+            except ValueError:
+                value_errors += 1
+        promisc = ["yes", 89]
+        for x in promisc:
+            try:
+                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', promisc=x):
+                    print(flow)
+                    pass
+            except ValueError:
+                value_errors += 1
+        snaplen = ["largest", -1]
+        for x in snaplen:
+            try:
+                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', snaplen=x):
+                    print(flow)
+                    pass
+            except ValueError:
+                value_errors += 1
+        idle_timeout = [-1, "idle"]
+        for x in idle_timeout:
+            try:
+                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', idle_timeout=x):
+                    print(flow)
+                    pass
+            except ValueError:
+                value_errors += 1
+        active_timeout = [-1, "active"]
+        for x in active_timeout:
+            try:
+                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', active_timeout=x):
+                    print(flow)
+                    pass
+            except ValueError:
+                value_errors += 1
+        accounting_mode = [-1, 5, 'ip']
+        for x in accounting_mode:
+            try:
+                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', accounting_mode=x):
+                    print(flow)
+                    pass
+            except ValueError:
+                value_errors += 1
+        udps = [lambda y: y+1, "NFPlugin"]
+        for x in udps:
+            try:
+                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', udps=x):
+                    print(flow)
+                    pass
+            except ValueError:
+                value_errors += 1
+        dissect = ["yes", 89]
+        for x in dissect:
+            try:
+                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', dissect=x):
+                    print(flow)
+                    pass
+            except ValueError:
+                value_errors += 1
+        statistics = ["yes", 89]
+        for x in statistics:
+            try:
+                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', statistics=x):
+                    print(flow)
+                    pass
+            except ValueError:
+                value_errors += 1
+        max_tcp_dissections = ["yes", -89]
+        for x in max_tcp_dissections:
+            try:
+                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', max_tcp_dissections=x):
+                    print(flow)
+                    pass
+            except ValueError:
+                value_errors += 1
+        max_udp_dissections = ["yes", -9]
+        for x in max_udp_dissections:
+            try:
+                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', max_udp_dissections=x):
+                    print(flow)
+                    pass
+            except ValueError:
+                value_errors += 1
+        enable_guess = ["yes", -89]
+        for x in enable_guess:
+            try:
+                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', enable_guess=x):
+                    print(flow)
+                    pass
+            except ValueError:
+                value_errors += 1
+        n_meters = ["yes", -1]
+        for x in n_meters:
+            try:
+                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', n_meters=x):
+                    print(flow)
+                    pass
+            except ValueError:
+                value_errors += 1
+        self.assertEqual(value_errors, 33)
+        print("{}\t: \033[94mOK\033[0m".format(".Test parameters handling".ljust(60, ' ')))
+
+    def test_expiration_management(self):
+        print("\n----------------------------------------------------------------------")
+        # Idle expiration
+        streamer_expiration = NFStreamer(source='tests/pcap/google_ssl.pcap', idle_timeout=0)
+        last_id = 0
+        for flow in streamer_expiration:
+            last_id = flow.id
+        self.assertEqual(last_id, 27)
+        # Active expiration
+        streamer_expiration = NFStreamer(source='tests/pcap/google_ssl.pcap', active_timeout=0)
+        last_id = 0
+        for flow in streamer_expiration:
+            last_id = flow.id
+        self.assertEqual(last_id, 27)
+        # Custom expiration
+
+        class OnePacketExpire(NFPlugin):
+            def on_init(self, packet, entry):
+                entry.expiration_id = -1
+
+        class FourPacketExpire(NFPlugin):
+            def on_update(self, packet, entry):
+                if entry.bidirectional_packets == 4:
+                    entry.expiration_id = -1
+
+        streamer_expiration = NFStreamer(source='tests/pcap/google_ssl.pcap', udps=OnePacketExpire())
+        last_id = 0
+        for flow in streamer_expiration:
+            last_id = flow.id
+        self.assertEqual(last_id, 27)
+
+        streamer_expiration = NFStreamer(source='tests/pcap/google_ssl.pcap', udps=FourPacketExpire())
+        last_id = 0
+        for flow in streamer_expiration:
+            last_id = flow.id
+        self.assertEqual(last_id, 6)
+
+        print("{}\t: \033[94mOK\033[0m".format(".Test expiration management".ljust(60, ' ')))
+
+    def test_statistical(self):
+        print("\n----------------------------------------------------------------------")
+        statistical_streamer = NFStreamer(source='tests/pcap/google_ssl.pcap', statistics=True, accounting_mode=1)
+        for flow in statistical_streamer:
+            self.assertEqual(flow.id, 0)
+            self.assertEqual(flow.expiration_id, 0)
+            self.assertEqual(flow.src_ip, '172.31.3.224')
+            self.assertEqual(flow.src_ip_is_private, 1)
+            self.assertEqual(flow.src_port, 42835)
+            self.assertEqual(flow.dst_ip, '216.58.212.100')
+            self.assertEqual(flow.dst_ip_is_private, 0)
+            self.assertEqual(flow.dst_port, 443)
+            self.assertEqual(flow.protocol, 6)
+            self.assertEqual(flow.ip_version, 4)
+            self.assertEqual(flow.vlan_id, 0)
+            self.assertEqual(flow.bidirectional_first_seen_ms, 1434443394683)
+            self.assertEqual(flow.bidirectional_last_seen_ms, 1434443401353)
+            self.assertEqual(flow.bidirectional_duration_ms, 6670)
+            self.assertEqual(flow.bidirectional_packets, 28)
+            self.assertEqual(flow.bidirectional_bytes, 8696)
+            self.assertEqual(flow.src2dst_first_seen_ms, 1434443394683)
+            self.assertEqual(flow.src2dst_last_seen_ms, 1434443401353)
+            self.assertEqual(flow.src2dst_duration_ms, 6670)
+            self.assertEqual(flow.src2dst_packets, 16)
+            self.assertEqual(flow.src2dst_bytes, 1288)
+            self.assertEqual(flow.dst2src_first_seen_ms, 1434443394717)
+            self.assertEqual(flow.dst2src_last_seen_ms, 1434443401308)
+            self.assertEqual(flow.dst2src_duration_ms, 6591)
+            self.assertEqual(flow.dst2src_packets, 12)
+            self.assertEqual(flow.dst2src_bytes, 7408)
+            self.assertEqual(flow.bidirectional_min_ps, 40)
+            self.assertEqual(flow.bidirectional_mean_ps, 310.57142857142856)
+            self.assertEqual(flow.bidirectional_stddev_ps, 500.54617788019937)
+            self.assertEqual(flow.bidirectional_max_ps, 1470)
+            self.assertEqual(flow.src2dst_min_ps, 40)
+            self.assertEqual(flow.src2dst_mean_ps, 80.49999999999999)
+            self.assertEqual(flow.src2dst_stddev_ps, 89.55519713189922)
+            self.assertEqual(flow.src2dst_max_ps, 354)
+            self.assertEqual(flow.dst2src_min_ps, 40)
+            self.assertEqual(flow.dst2src_mean_ps, 617.3333333333334)
+            self.assertEqual(flow.dst2src_stddev_ps, 651.4524099458397)
+            self.assertEqual(flow.dst2src_max_ps, 1470)
+            self.assertEqual(flow.bidirectional_min_piat_ms, 0)
+            self.assertEqual(flow.bidirectional_mean_piat_ms, 247.037037037037)
+            self.assertEqual(flow.bidirectional_stddev_piat_ms, 324.04599406227237)
+            self.assertEqual(flow.bidirectional_max_piat_ms, 995)
+            self.assertEqual(flow.src2dst_min_piat_ms, 76)
+            self.assertEqual(flow.src2dst_mean_piat_ms, 444.6666666666667)
+            self.assertEqual(flow.src2dst_stddev_piat_ms, 397.60329595261277)
+            self.assertEqual(flow.src2dst_max_piat_ms, 1185)
+            self.assertEqual(flow.dst2src_min_piat_ms, 66)
+            self.assertEqual(flow.dst2src_mean_piat_ms, 599.1818181818182)
+            self.assertEqual(flow.dst2src_stddev_piat_ms, 384.78456782511904)
+            self.assertEqual(flow.dst2src_max_piat_ms, 1213)
+            self.assertEqual(flow.bidirectional_syn_packets, 2)
+            self.assertEqual(flow.bidirectional_cwr_packets, 0)
+            self.assertEqual(flow.bidirectional_ece_packets, 0)
+            self.assertEqual(flow.bidirectional_urg_packets, 0)
+            self.assertEqual(flow.bidirectional_ack_packets, 27)
+            self.assertEqual(flow.bidirectional_psh_packets, 8)
+            self.assertEqual(flow.bidirectional_rst_packets, 0)
+            self.assertEqual(flow.bidirectional_fin_packets, 2)
+            self.assertEqual(flow.src2dst_syn_packets, 1)
+            self.assertEqual(flow.src2dst_cwr_packets, 0)
+            self.assertEqual(flow.src2dst_ece_packets, 0)
+            self.assertEqual(flow.src2dst_urg_packets, 0)
+            self.assertEqual(flow.src2dst_ack_packets, 15)
+            self.assertEqual(flow.src2dst_psh_packets, 4)
+            self.assertEqual(flow.src2dst_rst_packets, 0)
+            self.assertEqual(flow.src2dst_fin_packets, 1)
+            self.assertEqual(flow.dst2src_syn_packets, 1)
+            self.assertEqual(flow.dst2src_cwr_packets, 0)
+            self.assertEqual(flow.dst2src_ece_packets, 0)
+            self.assertEqual(flow.dst2src_urg_packets, 0)
+            self.assertEqual(flow.dst2src_ack_packets, 12)
+            self.assertEqual(flow.dst2src_psh_packets, 4)
+            self.assertEqual(flow.dst2src_rst_packets, 0)
+            self.assertEqual(flow.dst2src_fin_packets, 1)
+        del statistical_streamer
+        print("{}\t: \033[94mOK\033[0m".format(".Test statistical extraction".ljust(60, ' ')))
+
+    def test_fingerprint_extraction(self):
+        print("\n----------------------------------------------------------------------")
+        fingerprint_streamer = NFStreamer(source='tests/pcap/facebook.pcap', statistics=True, accounting_mode=1)
+        for flow in fingerprint_streamer:
+            self.assertEqual(flow.application_name, 'TLS.Facebook')
+            self.assertEqual(flow.application_category_name, 'SocialNetwork')
+            self.assertEqual(flow.application_is_guessed, 0)
+            if flow.id == 0:
+                self.assertEqual(flow.requested_server_name, 'facebook.com')
+                self.assertEqual(flow.client_fingerprint, 'bfcc1a3891601edb4f137ab7ab25b840')
+                self.assertEqual(flow.server_fingerprint, '2d1eb5817ece335c24904f516ad5da12')
+            else:
+                self.assertEqual(flow.requested_server_name, 'www.facebook.com')
+                self.assertEqual(flow.client_fingerprint, '5c60e71f1b8cd40e4d40ed5b6d666e3f')
+                self.assertEqual(flow.server_fingerprint, '96681175a9547081bf3d417f1a572091')
+        del fingerprint_streamer
+        print("{}\t: \033[94mOK\033[0m".format(".Test fingerprint extraction".ljust(60, ' ')))
+
+    def test_export(self):
+        print("\n----------------------------------------------------------------------")
+        df = NFStreamer(source='tests/pcap/steam.pcap',
+                        statistics=True,
+                        dissect=True).to_pandas(ip_anonymization=False)
+        df_anon = NFStreamer(source='tests/pcap/steam.pcap',
+                             statistics=True,
+                             dissect=True).to_pandas(ip_anonymization=True)
+        self.assertEqual(df_anon.shape[0], df.shape[0])
+        self.assertEqual(df_anon.shape[1], df.shape[1])
+        self.assertEqual(df_anon['src_ip'].nunique(), df['src_ip'].nunique())
+        self.assertEqual(df_anon['dst_ip'].nunique(), df['dst_ip'].nunique())
+
+        total_flows = NFStreamer(source='tests/pcap/steam.pcap',
+                                 statistics=True,
+                                 dissect=True).to_csv(ip_anonymization=False)
+        df_from_csv = pd.read_csv('tests/pcap/steam.pcap.csv')
+        total_flows_anon = NFStreamer(source='tests/pcap/steam.pcap',
+                                      statistics=True,
+                                      dissect=True).to_csv(ip_anonymization=False)
+        df_anon_from_csv = pd.read_csv('tests/pcap/steam.pcap.csv')
+        self.assertEqual(total_flows, total_flows_anon)
+        self.assertEqual(total_flows, df_from_csv.shape[0])
+        self.assertEqual(total_flows_anon, df_anon_from_csv.shape[0])
+        self.assertEqual(total_flows, df.shape[0])
+        self.assertEqual(total_flows_anon, df_anon.shape[0])
+        print("{}\t: \033[94mOK\033[0m".format(".Test export interfaces".ljust(60, ' ')))
+
+    def test_bpf(self):
+        print("\n----------------------------------------------------------------------")
+        streamer_test = NFStreamer(source='tests/pcap/facebook.pcap', bpf_filter="src port 52066 or dst port 52066")
+        last_id = 0
+        for flow in streamer_test:
+            last_id = flow.id
+            self.assertEqual(flow.src_port, 52066)
+        self.assertEqual(last_id, 0)
+        del streamer_test
+        print("{}\t: \033[94mOK\033[0m".format(".Test BPF".ljust(60, ' ')))
+
+    def test_ndpi_integration(self):
+        files = get_files_list("tests/pcap/")
+        ground_truth_ndpi = build_ndpi_dict("tests/result/")
+        print("\n----------------------------------------------------------------------")
+        print(".Test nDPI integration on {} applications:".format(len(files)))
         ok_files = []
-        ko_files = []
         for test_file in files:
             streamer_test = NFStreamer(source=test_file, idle_timeout=31556952, active_timeout=31556952)
             test_case_name = test_file.split('/')[-1]
@@ -76,291 +376,18 @@ class TestMethods(unittest.TestCase):
             for flow in streamer_test:
                 if flow.application_name != 'Unknown':
                     try:
-                        result[flow.application_name]['bytes'] += flow.bidirectional_raw_bytes
+                        result[flow.application_name]['bytes'] += flow.bidirectional_bytes
                         result[flow.application_name]['flows'] += 1
                         result[flow.application_name]['pkts'] += flow.bidirectional_packets
                     except KeyError:
-                        result[flow.application_name] = {"bytes": flow.bidirectional_raw_bytes,
+                        result[flow.application_name] = {"bytes": flow.bidirectional_bytes,
                                                          'flows': 1, 'pkts': flow.bidirectional_packets}
             if result == ground_truth_ndpi[test_case_name]:
                 ok_files.append(test_case_name)
                 print("{}\t: \033[94mOK\033[0m".format(test_case_name.ljust(60, ' ')))
             else:
-                ko_files.append(test_case_name)
-                print(dict(sorted(ground_truth_ndpi[test_case_name].items(), key=lambda x: x[0].lower())))
-                print("********************************")
-                print(dict(sorted(result.items(),
-                                  key=lambda x: x[0].lower())
-                           )
-                      )
                 print("{}\t: \033[31mKO\033[0m".format(test_case_name.ljust(60, ' ')))
         self.assertEqual(len(files), len(ok_files))
-
-    def test_expiration_management(self):
-        print("\n----------------------------------------------------------------------")
-        streamer_test = NFStreamer(source='tests/pcap/facebook.pcap', idle_timeout=0)
-        flows = []
-        for flow in streamer_test:
-            flows.append(flow)
-        self.assertEqual(len(flows), 60)
-        print("{}\t: \033[94mOK\033[0m".format(".Testing Streamer expiration management".ljust(60, ' ')))
-
-    def test_flow_metadata_extraction(self):
-        print("\n----------------------------------------------------------------------")
-        streamer_test = NFStreamer(source='tests/pcap/facebook.pcap', bpf_filter="src port 52066 or dst port 52066")
-        flows = []
-        for flow in streamer_test:
-            flows.append(flow)
-        del streamer_test
-        self.assertEqual(flows[0].client_info, 'facebook.com')
-        self.assertEqual(flows[0].server_info, '*.facebook.com,*.facebook.net,*.fb.com,*.fbcdn.net,*.fbsbx.com,\
-*.m.facebook.com,*.messenger.com,*.xx.fbcdn.net,*.xy.fbcdn.net,*.xz.fbcdn.net,facebook.com,fb.com,\
-messenger.com')
-        self.assertEqual(flows[0].client_info, 'facebook.com')
-        self.assertEqual(flows[0].ja3_client, 'bfcc1a3891601edb4f137ab7ab25b840')
-        self.assertEqual(flows[0].ja3_server, '2d1eb5817ece335c24904f516ad5da12')
-        print("{}\t: \033[94mOK\033[0m".format(".Testing metadata extraction".ljust(60, ' ')))
-
-    def test_unfound_device(self):
-        print("\n----------------------------------------------------------------------")
-        try:
-            streamer_test = NFStreamer(source="inexisting_file.pcap")
-        except ValueError:
-            print("{}\t: \033[94mOK\033[0m".format(".Testing unfoud device".ljust(60, ' ')))
-
-    def test_statistical_features(self):
-        print("\n----------------------------------------------------------------------")
-        streamer_test = NFStreamer(source='tests/pcap/google_ssl.pcap', statistics=True)
-        flows = []
-        for flow in streamer_test:
-            flows.append(flow)
-        del streamer_test
-        self.assertEqual(flows[0].id, 0)
-        self.assertEqual(flows[0].bidirectional_first_seen_ms, 1434443394683)
-        self.assertEqual(flows[0].bidirectional_last_seen_ms, 1434443401353)
-        self.assertEqual(flows[0].src2dst_first_seen_ms, 1434443394683)
-        self.assertEqual(flows[0].src2dst_last_seen_ms, 1434443401353)
-        self.assertEqual(flows[0].dst2src_first_seen_ms, 1434443394717)
-        self.assertEqual(flows[0].dst2src_last_seen_ms, 1434443401308)
-        self.assertEqual(flows[0].version, 4)
-        self.assertEqual(flows[0].src_port, 42835)
-        self.assertEqual(flows[0].dst_port, 443)
-        self.assertEqual(flows[0].protocol, 6)
-        self.assertEqual(flows[0].vlan_id, 0)
-        self.assertEqual(flows[0].src_ip, '172.31.3.224')
-        self.assertEqual(flows[0].src_ip_type, 1)
-        self.assertEqual(flows[0].dst_ip, '216.58.212.100')
-        self.assertEqual(flows[0].dst_ip_type, 0)
-        self.assertEqual(flows[0].bidirectional_packets, 28)
-        self.assertEqual(flows[0].bidirectional_raw_bytes, 9108)
-        self.assertEqual(flows[0].bidirectional_ip_bytes, 8696)
-        self.assertEqual(flows[0].bidirectional_duration_ms, 6670)
-        self.assertEqual(flows[0].src2dst_packets, 16)
-        self.assertEqual(flows[0].src2dst_raw_bytes, 1512)
-        self.assertEqual(flows[0].src2dst_ip_bytes, 1288)
-        self.assertEqual(flows[0].src2dst_duration_ms, 6670)
-        self.assertEqual(flows[0].dst2src_packets, 12)
-        self.assertEqual(flows[0].dst2src_raw_bytes, 7596)
-        self.assertEqual(flows[0].dst2src_ip_bytes, 7408)
-        self.assertEqual(flows[0].dst2src_duration_ms, 6591)
-        self.assertEqual(flows[0].expiration_id, 0)
-        self.assertEqual(flows[0].bidirectional_min_raw_ps, 54)
-        self.assertEqual(flows[0].bidirectional_mean_raw_ps, 325.2857142857144)
-        self.assertEqual(flows[0].bidirectional_stdev_raw_ps, 500.14981882416123)
-        self.assertEqual(flows[0].bidirectional_max_raw_ps, 1484)
-        self.assertEqual(flows[0].src2dst_min_raw_ps, 54)
-        self.assertEqual(flows[0].src2dst_mean_raw_ps, 94.5)
-        self.assertEqual(flows[0].src2dst_stdev_raw_ps, 89.55519713189923)
-        self.assertEqual(flows[0].src2dst_max_raw_ps, 368)
-        self.assertEqual(flows[0].dst2src_min_raw_ps, 60)
-        self.assertEqual(flows[0].dst2src_mean_raw_ps, 632.9999999999999)
-        self.assertEqual(flows[0].dst2src_stdev_raw_ps, 649.8457159552985)
-        self.assertEqual(flows[0].dst2src_max_raw_ps, 1484)
-        self.assertEqual(flows[0].bidirectional_min_ip_ps, 40)
-        self.assertEqual(flows[0].bidirectional_mean_ip_ps, 310.57142857142856)
-        self.assertEqual(flows[0].bidirectional_stdev_ip_ps, 500.54617788019937)
-        self.assertEqual(flows[0].bidirectional_max_ip_ps, 1470)
-        self.assertEqual(flows[0].src2dst_min_ip_ps, 40)
-        self.assertEqual(flows[0].src2dst_mean_ip_ps, 80.49999999999999)
-        self.assertEqual(flows[0].src2dst_stdev_ip_ps, 89.55519713189922)
-        self.assertEqual(flows[0].src2dst_max_ip_ps, 354)
-        self.assertEqual(flows[0].dst2src_min_ip_ps, 40)
-        self.assertEqual(flows[0].dst2src_mean_ip_ps, 617.3333333333334)
-        self.assertEqual(flows[0].dst2src_stdev_ip_ps, 651.4524099458397)
-        self.assertEqual(flows[0].dst2src_max_ip_ps, 1470)
-        self.assertEqual(flows[0].bidirectional_min_piat_ms, 0)
-        self.assertEqual(flows[0].bidirectional_mean_piat_ms, 247.037037037037)
-        self.assertEqual(flows[0].bidirectional_stdev_piat_ms, 324.04599406227237)
-        self.assertEqual(flows[0].bidirectional_max_piat_ms, 995)
-        self.assertEqual(flows[0].src2dst_min_piat_ms, 76)
-        self.assertEqual(flows[0].src2dst_mean_piat_ms, 444.6666666666667)
-        self.assertEqual(flows[0].src2dst_stdev_piat_ms, 398.80726017617934)
-        self.assertEqual(flows[0].src2dst_max_piat_ms, 1185)
-        self.assertEqual(flows[0].dst2src_min_piat_ms, 66)
-        self.assertEqual(flows[0].dst2src_mean_piat_ms, 599.1818181818182)
-        self.assertEqual(flows[0].dst2src_stdev_piat_ms, 384.78456782511904)
-        self.assertEqual(flows[0].dst2src_max_piat_ms, 1213)
-        self.assertEqual(flows[0].master_protocol, 91)
-        self.assertEqual(flows[0].app_protocol, 126)
-        self.assertEqual(flows[0].application_name, 'TLS.Google')
-        self.assertEqual(flows[0].category_name, 'Web')
-        self.assertEqual(flows[0].client_info, '')
-        self.assertEqual(flows[0].server_info, '')
-        self.assertEqual(flows[0].ja3_client, '')
-        self.assertEqual(flows[0].ja3_server, '')
-        self.assertEqual(flows[0].bidirectional_syn_packets, 2)
-        self.assertEqual(flows[0].bidirectional_cwr_packets, 0)
-        self.assertEqual(flows[0].bidirectional_ece_packets, 0)
-        self.assertEqual(flows[0].bidirectional_urg_packets, 0)
-        self.assertEqual(flows[0].bidirectional_ack_packets, 27)
-        self.assertEqual(flows[0].bidirectional_psh_packets, 8)
-        self.assertEqual(flows[0].bidirectional_rst_packets, 0)
-        self.assertEqual(flows[0].bidirectional_fin_packets, 2)
-        self.assertEqual(flows[0].src2dst_syn_packets, 1)
-        self.assertEqual(flows[0].src2dst_cwr_packets, 0)
-        self.assertEqual(flows[0].src2dst_ece_packets, 0)
-        self.assertEqual(flows[0].src2dst_urg_packets, 0)
-        self.assertEqual(flows[0].src2dst_ack_packets, 15)
-        self.assertEqual(flows[0].src2dst_psh_packets, 4)
-        self.assertEqual(flows[0].src2dst_rst_packets, 0)
-        self.assertEqual(flows[0].src2dst_fin_packets, 1)
-        self.assertEqual(flows[0].dst2src_syn_packets, 1)
-        self.assertEqual(flows[0].dst2src_cwr_packets, 0)
-        self.assertEqual(flows[0].dst2src_ece_packets, 0)
-        self.assertEqual(flows[0].dst2src_urg_packets, 0)
-        self.assertEqual(flows[0].dst2src_ack_packets, 12)
-        self.assertEqual(flows[0].dst2src_psh_packets, 4)
-        self.assertEqual(flows[0].dst2src_rst_packets, 0)
-        self.assertEqual(flows[0].dst2src_fin_packets, 1)
-        print("{}\t: \033[94mOK\033[0m".format(".Testing statistical features".ljust(60, ' ')))
-
-    def test_noroot_live(self):
-        print("\n----------------------------------------------------------------------")
-        try:
-            if sys.platform == 'darwin':
-                streamer_test = NFStreamer(source="lo0", idle_timeout=0)
-            else:
-                streamer_test = NFStreamer(source="lo", idle_timeout=0)
-        except ValueError:
-            print("{}\t: \033[94mOK\033[0m".format(".Testing live capture (noroot)".ljust(60, ' ')))
-
-    def test_bad_observer_args(self):
-        print("\n----------------------------------------------------------------------")
-
-        try:
-            streamer_test = NFStreamer(source=1, promisc=53, snaplen="wrong", bpf_filter=False, decode_tunnels=22)
-        except ValueError as e:
-            self.assertEqual(1, 1)
-            print("{}\t: \033[94mOK\033[0m".format(".Testing parameters handling".ljust(60, ' ')))
-
-    def test_user_plugins(self):
-        class feat_1(NFPlugin):
-            def on_update(self, obs, entry):
-                if entry.bidirectional_packets == 4:
-                    entry.feat_1 = obs.ip_size
-
-        print("\n----------------------------------------------------------------------")
-        streamer_test = NFStreamer(source='tests/pcap/facebook.pcap',
-                                   plugins=[feat_1()],
-                                   bpf_filter="src port 52066 or dst port 52066")
-        rs = []
-        for flow in streamer_test:
-            rs.append(flow)
-        self.assertEqual(rs[0].feat_1, 248)
-        self.assertEqual(len(rs), 1)
-        del streamer_test
-        print("{}\t: \033[94mOK\033[0m".format(".Testing adding user plugins".ljust(60, ' ')))
-
-    def test_custom_expiration(self):
-        class custom_expire(NFPlugin):
-            def on_update(self, obs, entry):
-                if entry.bidirectional_packets == 10:
-                    entry.expiration_id = -1
-                    entry.custom_expire = True
-
-        print("\n----------------------------------------------------------------------")
-        streamer_test = NFStreamer(source='tests/pcap/facebook.pcap',
-                                   plugins=[custom_expire(volatile=True)],
-                                   bpf_filter="src port 52066 or dst port 52066")
-        rs = []
-        for flow in streamer_test:
-            rs.append(flow)
-        self.assertEqual(rs[0].expiration_id, -1)
-        self.assertEqual(len(rs), 2)
-        del streamer_test
-        print("{}\t: \033[94mOK\033[0m".format(".Testing custom expiration".ljust(60, ' ')))
-
-    def test_bpf_filter(self):
-        print("\n----------------------------------------------------------------------")
-        streamer_test = NFStreamer(source='tests/pcap/facebook.pcap',
-                                   statistics=True,
-                                   bpf_filter="src port 52066 or dst port 52066")
-        count = 0
-        for flow in streamer_test:
-            print(flow)
-            print(flow.to_namedtuple())
-            print(flow.to_json())
-            count = count + 1
-            self.assertEqual(flow.src_port, 52066)
-        self.assertEqual(count, 1)
-        del streamer_test
-        print("{}\t: \033[94mOK\033[0m".format(".Testing BPF filtering".ljust(60, ' ')))
-
-    def test_to_pandas(self):
-        print("\n----------------------------------------------------------------------")
-        df = NFStreamer(source='tests/pcap/facebook.pcap', statistics=True,
-                        bpf_filter="src port 52066 or dst port 52066").to_pandas(ip_anonymization=False)
-        self.assertEqual(df["src_port"][0], 52066)
-        self.assertEqual(df.shape[0], 1)
-        self.assertEqual(df.shape[1], 97)
-        print("{}\t: \033[94mOK\033[0m".format(".Testing to Pandas".ljust(60, ' ')))
-
-    def test_to_pandas_anonymized(self):
-        print("\n----------------------------------------------------------------------")
-        df = NFStreamer(source='tests/pcap/ethereum.pcap',
-                        idle_timeout=31556952,
-                        active_timeout=31556952).to_pandas(ip_anonymization=True)
-        self.assertEqual(df.shape[0], 74)
-        self.assertEqual(df.shape[1], 37)
-        print("{}\t: \033[94mOK\033[0m".format(".Testing to Pandas ip_anonymization=True".ljust(60, ' ')))
-
-    def test_raw_feature_parsing(self):
-        streamer = NFStreamer(
-            source='tests/pcap/skype.pcap',
-            idle_timeout=60,
-            active_timeout=60,
-            plugins=[bidirectional_packets_matrix(packet_limit=5)],
-            statistics=False
-        )
-
-        for entry in streamer:
-            assert isinstance(entry.bidirectional_packets_matrix, np.ndarray)
-            assert entry.bidirectional_packets_matrix.shape[1] == 6
-
-    def test_raw_feature_parsing_customized(self):
-        streamer = NFStreamer(
-            source='tests/pcap/skype.pcap',
-            idle_timeout=60,
-            active_timeout=60,
-            plugins=[bidirectional_packets_matrix(packet_limit=5,
-                                                  payload_len=False,
-                                                  tcp_flag=False,
-                                                  ip_proto=False,
-                                                  custom_extractors=[
-                                                      lambda x: 1,
-                                                      lambda x: x.direction,
-                                                  ])],
-            statistics=False
-        )
-
-        for entry in streamer:
-            assert isinstance(entry.bidirectional_packets_matrix, np.ndarray)
-            # we have 3 mandatory + 2 custom features
-            assert entry.bidirectional_packets_matrix.shape[1] == 5
-            # this is our constant function
-            assert entry.bidirectional_packets_matrix[0, 3] == 1
-            # first observation's direction is always 0
-            assert entry.bidirectional_packets_matrix[0, 4] == 0
 
 
 if __name__ == '__main__':

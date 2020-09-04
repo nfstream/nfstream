@@ -16,11 +16,11 @@ If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 """
 
-from .plugin import nfstream_core_plugins, ndpi_infos_plugins, nfstream_statistical_plugins, nDPI
 from collections import OrderedDict
-from .entry import NFEntry
-from .ndpi import NDPI
 from multiprocessing import Process
+from .observer import NFObserver
+from .context import create_context
+from .entry import NFEntry
 
 
 class NFCache(OrderedDict):
@@ -38,42 +38,23 @@ class NFCache(OrderedDict):
     def __eq__(self, other):
         return super().__eq__(other)
 
-    def peak_lru_item(self):
+    def get_lru_key(self):
         return next(iter(self))
 
 
-def configure_meter(dissect, statistics, max_tcp_dissections, max_udp_dissections, enable_guess):
-    core_plugins = nfstream_core_plugins
-    if dissect and statistics:
-        core_plugins += nfstream_statistical_plugins + ndpi_infos_plugins + \
-                        [nDPI(ndpi=NDPI(max_tcp_dissections=max_tcp_dissections,
-                                        max_udp_dissections=max_udp_dissections,
-                                        enable_guess=enable_guess),
-                              volatile=True)]
-    elif dissect:
-        core_plugins += ndpi_infos_plugins + \
-                        [nDPI(ndpi=NDPI(max_tcp_dissections=max_tcp_dissections,
-                                        max_udp_dissections=max_udp_dissections,
-                                        enable_guess=enable_guess),
-                              volatile=True)]
-    elif statistics:
-        core_plugins += nfstream_statistical_plugins
-    else:
-        pass
-    return core_plugins
-
-
-def idle_scan(meter_tick, cache, core_plugins, user_plugins, idle_timeout, channel):
+def meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, enable_guess, accounting_mode, dissect,
+               max_tcp_dissections, max_udp_dissections, statistics, ffi, lib, dissector):
     remaining = True
     scanned = 0
     while remaining and scanned < 10000:  # idle scan budget
         try:
-            lru_idx = cache.peak_lru_item()
-            lru_item = cache[lru_idx]
-            if (meter_tick - idle_timeout) >= lru_item.bidirectional_last_seen_ms:  # idle
-                channel.put(lru_item.clean(core_plugins, user_plugins))
-                del cache[lru_idx]
-                del lru_item
+            entry_key = cache.get_lru_key()
+            entry = cache[entry_key]
+            if entry.is_idle(meter_tick, idle_timeout):  # idle
+                channel.put(entry.expire(udps, sync, enable_guess, accounting_mode, dissect, max_tcp_dissections,
+                                         max_udp_dissections, statistics, ffi, lib, dissector))
+                del cache[entry_key]
+                del entry
                 scanned += 1
             else:
                 remaining = False  # no idle entries to poll
@@ -82,96 +63,163 @@ def idle_scan(meter_tick, cache, core_plugins, user_plugins, idle_timeout, chann
     return scanned
 
 
-def consume(observable, cache, core_plugins, user_plugins, active_timeout, idle_timeout, channel):
-    """ consume an observable and produce entry """
-    # classical create/update
-    state = 1  # 1 for creation, 0 for update/cut, -1 for custom expire
+def get_entry_key(packet, ffi):
+    src_ip = ffi.string(packet.src_name).decode('utf-8', errors='ignore')
+    dst_ip = ffi.string(packet.dst_name).decode('utf-8', errors='ignore')
+    return packet.protocol, packet.vlan_id, \
+           min(src_ip, dst_ip), max(src_ip, dst_ip),\
+           min(packet.src_port, packet.dst_port), max(packet.src_port, packet.dst_port)
+
+
+def consume(packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps, sync, enable_guess, accounting_mode,
+            dissect, max_tcp_dissections, max_udp_dissections, statistics, dissector):
+    """ consume a packet and produce entry """
+    # We maintain state for active flows computation 1 for creation, 0 for update/cut, -1 for custom expire
+    entry_key = get_entry_key(packet, ffi)
     try:  # update entry
-        entry = cache[observable.nfhash].update(observable, core_plugins, user_plugins, active_timeout, idle_timeout)
+        entry = cache[entry_key].update(packet, idle_timeout, active_timeout, ffi, lib, udps, sync, enable_guess,
+                                        accounting_mode, dissect, max_tcp_dissections, max_udp_dissections, statistics,
+                                        dissector)
         if entry is not None:
             if entry.expiration_id < 0:  # custom expiration
                 channel.put(entry)
-                del cache[observable.nfhash]
+                del cache[entry_key]
                 del entry
                 state = -1
             else:  # active/inactive expiration
                 channel.put(entry)
-                del cache[observable.nfhash]
+                del cache[entry_key]
                 del entry
-                cache[observable.nfhash] = NFEntry(observable, core_plugins, user_plugins)
+                cache[entry_key] = NFEntry(packet, ffi, lib, udps, sync, enable_guess, accounting_mode, dissect,
+                                           max_tcp_dissections, max_udp_dissections, statistics, dissector)
                 state = 0
+        else:
+            state = 0
     except KeyError:  # create entry
-        cache[observable.nfhash] = NFEntry(observable, core_plugins, user_plugins)
+        if sync:
+            entry = NFEntry(packet, ffi, lib, udps, sync, enable_guess, accounting_mode, dissect,
+                            max_tcp_dissections, max_udp_dissections, statistics, dissector)
+            if entry.expiration_id == -1:  # A user Plugin forced expiration on the first packet
+                channel.put(entry.expire(udps, sync, enable_guess, accounting_mode, dissect, max_tcp_dissections,
+                                         max_udp_dissections, statistics, ffi, lib, dissector))
+                del entry
+                state = 0
+            else:
+                cache[entry_key] = entry
+                state = 1
+        else:
+            cache[entry_key] = NFEntry(packet, ffi, lib, udps, sync, enable_guess, accounting_mode, dissect,
+                                       max_tcp_dissections, max_udp_dissections, statistics, dissector)
+            state = 1
     return state
 
 
-def cleanup(cache, core_plugins, user_plugins, channel):
+def meter_cleanup(cache, channel, udps, sync, enable_guess, accounting_mode, dissect, max_tcp_dissections,
+                  max_udp_dissections, statistics, ffi, lib, dissector):
     """ cleanup all entries in NFCache """
-    for h in list(cache.keys()):
-        f = cache[h].clean(core_plugins, user_plugins)
-        channel.put(f)
-        del cache[h]
-        del f
-    for plugin in core_plugins:
-        plugin.cleanup()
-    for plugin in user_plugins:
-        plugin.cleanup()
+    for entry_key in list(cache.keys()):
+        entry = cache[entry_key]
+        channel.put(entry.expire(udps, sync, enable_guess, accounting_mode, dissect, max_tcp_dissections,
+                                 max_udp_dissections, statistics, ffi, lib, dissector)
+                    )
+        del cache[entry_key]
+        del entry
     channel.put(None)
+
+
+def setup_dissector(ffi, lib, dissect):
+    if dissect:
+        checker = ffi.new("struct dissector_checker *")
+        checker.flow_size = ffi.sizeof("struct ndpi_flow_struct")
+        checker.id_size = ffi.sizeof("struct ndpi_id_struct")
+        checker.flow_tcp_size = ffi.sizeof("struct ndpi_flow_tcp_struct")
+        checker.flow_udp_size = ffi.sizeof("struct ndpi_flow_udp_struct")
+        dissector = lib.dissector_init(checker)
+        if dissector == ffi.NULL:
+            raise ValueError("Error while initializing dissector.")
+        else:
+            lib.dissector_configure(dissector)
+    else:
+        dissector = ffi.NULL
+    return dissector
 
 
 class NFMeter(Process):
     """ NFMeter for entries management """
-    def __init__(self, observer, idle_timeout, active_timeout, user_plugins, dissect, statistics,
-                 max_tcp_dissections, max_udp_dissections, enable_guess, channel):
+    def __init__(self, observer_cfg, meter_cfg, channel):
         super().__init__()
-        self.observer = observer
-        self.idle_timeout = idle_timeout
-        self.active_timeout = active_timeout
-        self.user_plugins = user_plugins
-        self.dissect = dissect
-        self.statistics = statistics
-        self.max_tcp_dissections = max_tcp_dissections
-        self.max_udp_dissections = max_udp_dissections
-        self.enable_guess = enable_guess
+        self.ffi, self.lib = create_context()
+        self.observer = NFObserver(cfg=observer_cfg,
+                                   ffi=self.ffi,
+                                   lib=self.lib)
+        self.idle_timeout = meter_cfg.idle_timeout
+        self.active_timeout = meter_cfg.active_timeout
+        self.accounting_mode = meter_cfg.accounting_mode
+        self.udps = meter_cfg.udps
+        self.dissect = meter_cfg.dissect
+        self.statistics = meter_cfg.statistics
+        self.max_tcp_dissections = meter_cfg.max_tcp_dissections
+        self.max_udp_dissections = meter_cfg.max_udp_dissections
+        self.enable_guess = meter_cfg.enable_guess
         self.channel = channel
 
     def run(self):
         """ run NFMeter main processing loop """
         meter_tick = 0
-        idle_scan_tick = 0
-        idle_scan_interval = 10
-        active_timeout = self.active_timeout
+        meter_scan_tick = 0
+        meter_scan_interval = 10
         idle_timeout = self.idle_timeout
+        active_timeout = self.active_timeout
+        accounting_mode = self.accounting_mode
+        statistics = self.statistics
+        max_udp_dissections = self.max_udp_dissections
+        max_tcp_dissections = self.max_tcp_dissections
+        enable_guess = self.enable_guess
+        dissect = self.dissect
         cache = NFCache()
         observer = self.observer
-        core_plugins = configure_meter(self.dissect, self.statistics, self.max_tcp_dissections,
-                                       self.max_udp_dissections, self.enable_guess)
-        user_plugins = self.user_plugins
         channel = self.channel
         active_flows = 0
+        ffi, lib = self.ffi, self.lib
+        dissector = setup_dissector(ffi, lib, dissect)
+        udps = self.udps
+        sync = False
+        if len(udps) > 0:  # streamer started with udps: sync internal structures on update.
+            sync = True
         try:
-            for observable_type, time, observable in observer:
+            for observable_type, time, packet in observer:
                 if observable_type == 1:
                     go_scan = False
-                    if time - idle_scan_tick >= idle_scan_interval:
+                    if time - meter_scan_tick >= meter_scan_interval:
                         go_scan = True
-                        idle_scan_tick = time
+                        meter_scan_tick = time
                     if time >= meter_tick:
                         meter_tick = time
-                    diff = consume(observable, cache, core_plugins, user_plugins, active_timeout, idle_timeout, channel)
+                    diff = consume(packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps, sync,
+                                   enable_guess, accounting_mode, dissect, max_tcp_dissections, max_udp_dissections,
+                                   statistics, dissector)
                     active_flows += diff
                     if go_scan:
-                        idles = idle_scan(meter_tick, cache, core_plugins, user_plugins, idle_timeout, channel)
+                        idles = meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, enable_guess,
+                                           accounting_mode, dissect, max_tcp_dissections, max_udp_dissections,
+                                           statistics, ffi, lib, dissector)
                         active_flows -= idles
                 else:
                     if time > meter_tick:
                         meter_tick = time
-                    if time - idle_scan_tick >= idle_scan_interval:
-                        idles = idle_scan(meter_tick, cache, core_plugins, user_plugins, idle_timeout, channel)
+                    if time - meter_scan_tick >= meter_scan_interval:
+                        idles = meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, enable_guess,
+                                           accounting_mode, dissect, max_tcp_dissections, max_udp_dissections,
+                                           statistics, ffi, lib, dissector)
                         active_flows -= idles
-                        idle_scan_tick = time
+                        meter_scan_tick = time
             raise KeyboardInterrupt
         except KeyboardInterrupt:
             del observer
+            meter_cleanup(cache, channel, udps, sync, enable_guess, accounting_mode, dissect, max_tcp_dissections,
+                          max_udp_dissections, statistics, ffi, lib, dissector)
             self.observer.close()
-            cleanup(cache, core_plugins, user_plugins, channel)
+            self.lib.dissector_cleanup(dissector)
+            del ffi
+            del lib
+            self.ffi.dlclose(self.lib)

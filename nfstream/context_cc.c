@@ -1,6 +1,6 @@
 /*
 ------------------------------------------------------------------------------------------------------------------------
-observer_cc.c
+context_cc.c
 Copyright (C) 2019-20 - NFStream Developers
 This file is part of NFStream, a Flexible Network Data Analysis Framework (https://www.nfstream.org/).
 NFStream is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
@@ -17,12 +17,13 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <unistd.h>
 #include <netinet/in.h>
 #include <math.h>
-#include <float.h>
 #include <pcap.h>
 #include <stdint.h>
 #include <string.h>
 #include <sys/time.h>
-
+#include <ndpi_api.h>
+#include <ndpi_main.h>
+#include <ndpi_typedefs.h>
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 #include <machine/endian.h>
 #endif
@@ -62,6 +63,12 @@ If not, see <http://www.gnu.org/licenses/>.
 #define PACK_ON
 #define PACK_OFF  __attribute__((packed))
 
+
+/*
+------------------------------------------------------------------------------------------------------------------------
+                                           Observer Layer
+------------------------------------------------------------------------------------------------------------------------
+*/
 
 #define TICK_RESOLUTION          1000
 #define	IPVERSION	4
@@ -139,8 +146,8 @@ struct nfstream_cdp
 PACK_ON
 struct nfstream_ethhdr
 {
-  u_char h_dest[6];       /* destination eth addr */
-  u_char h_source[6];     /* source ether addr    */
+  uint8_t h_dest[6];       /* destination eth addr */
+  uint8_t h_source[6];     /* source ether addr    */
   uint16_t h_proto;      /* data length (<= 1500) or type ID proto (>=1536) */
 } PACK_OFF;
 
@@ -152,9 +159,9 @@ struct nfstream_arphdr {
   uint8_t  ar_hln;/* Length of hardware address.  */
   uint8_t  ar_pln;/* Length of protocol address.  */
   uint16_t ar_op;/* ARP opcode (command).  */
-  u_char arp_sha[6];/* sender hardware address */
+  uint8_t arp_sha[6];/* sender hardware address */
   uint32_t arp_spa;/* sender protocol address */
-  u_char arp_tha[6];/* target hardware address */
+  uint8_t arp_tha[6];/* target hardware address */
   uint32_t arp_tpa;/* target protocol address */
 } PACK_OFF;
 
@@ -224,9 +231,9 @@ struct nfstream_wifi_header
 {
   uint16_t fc;
   uint16_t duration;
-  u_char rcvr[6];
-  u_char trsm[6];
-  u_char dest[6];
+  uint8_t rcvr[6];
+  uint8_t trsm[6];
+  uint8_t dest[6];
   uint16_t seq_ctrl;
   /* uint64_t ccmp - for data encryption only - check fc.flag */
 } PACK_OFF;
@@ -497,7 +504,7 @@ int get_nf_packet_info(const uint8_t version,
   l4 =& ((const uint8_t *) l3)[l4_offset];
 
   if(*proto == IPPROTO_TCP && l4_packet_len >= sizeof(struct nfstream_tcphdr)) {
-    u_int tcp_len;
+    unsigned tcp_len;
     *tcph = (struct nfstream_tcphdr *)l4;
     *sport = (*tcph)->source, *dport = (*tcph)->dest;
     tcp_len = nfstream_min(4*(*tcph)->doff, l4_packet_len);
@@ -616,7 +623,7 @@ int parse_packet(const uint64_t time,
                  uint16_t ipsize,
                  uint16_t rawsize,
                  const struct pcap_pkthdr *header,
-                 const u_char *packet,
+                 const uint8_t *packet,
                  struct timeval when,
                  struct nf_packet *nf_pkt,
                  int n_roots,
@@ -642,7 +649,7 @@ int parse_packet(const uint64_t time,
 /**
  * process_packet: Main packet processing function.
  */
-int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const u_char *packet, int decode_tunnels,
+int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const uint8_t *packet, int decode_tunnels,
                    struct nf_packet *nf_pkt, int n_roots, int root_idx) {
   /* --- Ethernet header --- */
   const struct nfstream_ethhdr *ethernet;
@@ -903,7 +910,7 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
 
       if((sport == GTP_U_V1_PORT) || (dport == GTP_U_V1_PORT)) {
 	/* Check if it's GTPv1 */
-	u_int offset = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
+	unsigned offset = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
 	uint8_t flags = packet[offset];
 	uint8_t message_type = packet[offset+1];
 
@@ -933,7 +940,7 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
       return 0;
 	}
 
-	u_int offset           = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
+	unsigned offset           = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
 	uint8_t version       = packet[offset];
 	uint8_t ts_type       = packet[offset+1];
 	uint16_t encapsulates = ntohs(*((uint16_t*)&packet[offset+2]));
@@ -974,7 +981,7 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
 	}
       } else if(sport == NFSTREAM_CAPWAP_DATA_PORT) {
 	/* We dissect ONLY CAPWAP traffic */
-	u_int offset           = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
+	unsigned offset           = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
 
 	if((offset+1) < header->caplen) {
 	  uint8_t preamble = packet[offset];
@@ -1009,7 +1016,7 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
 /**
  * observer_open: Open a pcap file or a specified device.
  */
-pcap_t * observer_open(const u_char * pcap_file, u_int snaplen, int promisc, char *err_open, char *err_set, int mode) {
+pcap_t * observer_open(const uint8_t * pcap_file, unsigned snaplen, int promisc, char *err_open, char *err_set, int mode) {
   pcap_t * pcap_handle = NULL;
   int set = 0;
   if (mode == 0) {
@@ -1053,7 +1060,7 @@ int observer_configure(pcap_t * pcap_handle, char * bpf_filter) {
  */
 int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tunnels, int n_roots, int root_idx) {
   struct pcap_pkthdr *hdr;
-  const u_char *data;
+  const uint8_t *data;
   int rv_handle = pcap_next_ex(pcap_handle, &hdr, &data);
   if (rv_handle == 1) {
     int rv_processor = process_packet(pcap_handle, hdr, data, decode_tunnels, nf_pkt, n_roots, root_idx);
@@ -1085,4 +1092,554 @@ int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tun
 void observer_close(pcap_t * pcap_handle) {
   pcap_breakloop(pcap_handle);
   pcap_close(pcap_handle);
+}
+/*
+------------------------------------------------------------------------------------------------------------------------
+                                           Dissector Layer
+------------------------------------------------------------------------------------------------------------------------
+*/
+
+
+typedef struct dissector_checker {
+uint32_t flow_size;
+uint32_t id_size;
+uint32_t flow_tcp_size;
+uint32_t flow_udp_size;
+} dissector_checker_t;
+
+/**
+ * dissector_init: Dissector initializer.
+ */
+struct ndpi_detection_module_struct *dissector_init(struct dissector_checker *checker) {
+  ndpi_init_prefs init_prefs = ndpi_no_prefs;
+  if (checker->flow_size != ndpi_detection_get_sizeof_ndpi_flow_struct()) return NULL;
+  if (checker->id_size != ndpi_detection_get_sizeof_ndpi_id_struct()) return NULL;
+  if (checker->flow_tcp_size != ndpi_detection_get_sizeof_ndpi_flow_tcp_struct()) return NULL;
+  if (checker->flow_udp_size != ndpi_detection_get_sizeof_ndpi_flow_udp_struct()) return NULL;
+  return ndpi_init_detection_module(init_prefs);
+}
+
+/**
+ * dissector_configure: Dissector initializer.
+ */
+void dissector_configure(struct ndpi_detection_module_struct *dissector) {
+    if (dissector == NULL) {
+      return;
+    } else {
+      NDPI_PROTOCOL_BITMASK protos;
+      NDPI_BITMASK_SET_ALL(protos);
+      ndpi_set_protocol_detection_bitmask2(dissector, &protos);
+      ndpi_finalize_initalization(dissector);
+    }
+}
+
+/**
+ * dissector_cleanup: Dissector cleaner.
+ */
+void dissector_cleanup(struct ndpi_detection_module_struct *dissector) {
+  if (dissector == NULL) return;
+  else return ndpi_exit_detection_module(dissector);
+}
+
+
+/*
+------------------------------------------------------------------------------------------------------------------------
+                                           Meter Layer
+------------------------------------------------------------------------------------------------------------------------
+*/
+
+typedef struct nf_entry {
+  char src_ip[48];
+  uint16_t src_port;
+  char dst_ip[48];
+  uint16_t dst_port;
+  uint8_t protocol;
+  uint8_t ip_version;
+  uint16_t vlan_id;
+  uint64_t bidirectional_first_seen_ms;
+  uint64_t bidirectional_last_seen_ms;
+  uint64_t bidirectional_duration_ms;
+  uint64_t bidirectional_packets;
+  uint64_t bidirectional_bytes;
+  uint64_t src2dst_first_seen_ms;
+  uint64_t src2dst_last_seen_ms;
+  uint64_t src2dst_duration_ms;
+  uint64_t src2dst_packets;
+  uint64_t src2dst_bytes;
+  uint64_t dst2src_first_seen_ms;
+  uint64_t dst2src_last_seen_ms;
+  uint64_t dst2src_duration_ms;
+  uint64_t dst2src_packets;
+  uint64_t dst2src_bytes;
+  uint16_t bidirectional_min_ps;
+  double bidirectional_mean_ps;
+  double bidirectional_stddev_ps;
+  uint16_t bidirectional_max_ps;
+  uint16_t src2dst_min_ps;
+  double src2dst_mean_ps;
+  double src2dst_stddev_ps;
+  uint16_t src2dst_max_ps;
+  uint16_t dst2src_min_ps;
+  double dst2src_mean_ps;
+  double dst2src_stddev_ps;
+  uint16_t dst2src_max_ps;
+  uint64_t bidirectional_min_piat_ms;
+  double bidirectional_mean_piat_ms;
+  double bidirectional_stddev_piat_ms;
+  uint64_t bidirectional_max_piat_ms;
+  uint64_t src2dst_min_piat_ms;
+  double src2dst_mean_piat_ms;
+  double src2dst_stddev_piat_ms;
+  uint64_t src2dst_max_piat_ms;
+  uint64_t dst2src_min_piat_ms;
+  double dst2src_mean_piat_ms;
+  double dst2src_stddev_piat_ms;
+  uint64_t dst2src_max_piat_ms;
+  uint64_t bidirectional_syn_packets;
+  uint64_t bidirectional_cwr_packets;
+  uint64_t bidirectional_ece_packets;
+  uint64_t bidirectional_urg_packets;
+  uint64_t bidirectional_ack_packets;
+  uint64_t bidirectional_psh_packets;
+  uint64_t bidirectional_rst_packets;
+  uint64_t bidirectional_fin_packets;
+  uint64_t src2dst_syn_packets;
+  uint64_t src2dst_cwr_packets;
+  uint64_t src2dst_ece_packets;
+  uint64_t src2dst_urg_packets;
+  uint64_t src2dst_ack_packets;
+  uint64_t src2dst_psh_packets;
+  uint64_t src2dst_rst_packets;
+  uint64_t src2dst_fin_packets;
+  uint64_t dst2src_syn_packets;
+  uint64_t dst2src_cwr_packets;
+  uint64_t dst2src_ece_packets;
+  uint64_t dst2src_urg_packets;
+  uint64_t dst2src_ack_packets;
+  uint64_t dst2src_psh_packets;
+  uint64_t dst2src_rst_packets;
+  uint64_t dst2src_fin_packets;
+  char application_name[32];
+  char category_name[24];
+  char requested_server_name[240];
+  char c_hash[48];
+  char s_hash[48];
+  char content_type[64];
+  char user_agent[128];
+  struct ndpi_flow_struct *ndpi_flow;
+  struct ndpi_id_struct *ndpi_src;
+  struct ndpi_id_struct *ndpi_dst;
+  ndpi_protocol detected_protocol;
+  uint8_t guessed;
+  uint8_t detection_completed;
+} nf_entry_t;
+
+
+/**
+ * meter_account_packet: Return packet_size according to configured accounting mode.
+ */
+uint16_t meter_account_packet(struct nf_packet *packet, uint8_t accounting_mode) {
+  if (accounting_mode == 0) return packet->raw_size;
+  else if (accounting_mode == 1) return packet->ip_size;
+  else if (accounting_mode == 2) return packet->transport_size;
+  else return packet->payload_size;
+}
+
+uint8_t is_ndpi_proto(struct nf_entry *entry, uint16_t id) {
+  if ((entry->detected_protocol.master_protocol == id)|| (entry->detected_protocol.app_protocol == id)) return 1;
+  else return 0;
+}
+
+void dissector_process_info(struct ndpi_detection_module_struct *dissector, struct nf_entry *entry) {
+  if (!entry->ndpi_flow) return;
+  ndpi_protocol2name(dissector, entry->detected_protocol, entry->application_name, sizeof(entry->application_name));
+  memcpy(entry->category_name, ndpi_category_get_name(dissector, entry->detected_protocol.category), 24);
+  snprintf(entry->requested_server_name, sizeof(entry->requested_server_name), "%s", entry->ndpi_flow->host_server_name);
+  /* DHCP */
+  if (is_ndpi_proto(entry, NDPI_PROTOCOL_DHCP)) {
+    snprintf(entry->c_hash, sizeof(entry->c_hash), "%s", entry->ndpi_flow->protos.dhcp.fingerprint);
+  }
+  /* HTTP */
+  else if (is_ndpi_proto(entry, NDPI_PROTOCOL_HTTP)) {
+      snprintf(entry->content_type, sizeof(entry->content_type), "%s",
+               entry->ndpi_flow->http.content_type ? entry->ndpi_flow->http.content_type : "");
+      snprintf(entry->user_agent, sizeof(entry->user_agent), "%s",
+               entry->ndpi_flow->http.user_agent ? entry->ndpi_flow->http.user_agent : "");
+  /* SSH */
+  } else if (is_ndpi_proto(entry, NDPI_PROTOCOL_SSH)) {
+    snprintf(entry->c_hash, sizeof(entry->c_hash), "%s", entry->ndpi_flow->protos.ssh.hassh_client);
+    snprintf(entry->s_hash, sizeof(entry->s_hash), "%s", entry->ndpi_flow->protos.ssh.hassh_server);
+  }
+  /* TLS */
+  else if ((is_ndpi_proto(entry, NDPI_PROTOCOL_TLS)) || (entry->ndpi_flow->protos.stun_ssl.ssl.ja3_client[0] != '\0')) {
+    snprintf(entry->requested_server_name, sizeof(entry->requested_server_name), "%s",
+             entry->ndpi_flow->protos.stun_ssl.ssl.client_requested_server_name);
+    snprintf(entry->c_hash, sizeof(entry->c_hash), "%s",
+             entry->ndpi_flow->protos.stun_ssl.ssl.ja3_client);
+    snprintf(entry->s_hash, sizeof(entry->s_hash), "%s",
+             entry->ndpi_flow->protos.stun_ssl.ssl.ja3_server);
+  }
+}
+
+
+void free_ndpi_data(struct nf_entry *entry) {
+  if(entry->ndpi_flow) { ndpi_flow_free(entry->ndpi_flow); entry->ndpi_flow = NULL; }
+  if(entry->ndpi_src) { ndpi_free(entry->ndpi_src); entry->ndpi_src = NULL; }
+  if(entry->ndpi_dst) { ndpi_free(entry->ndpi_dst); entry->ndpi_dst = NULL; }
+}
+
+
+/**
+ * meter_initialize_entry: Initialize entry based on packet values and set packet direction.
+ */
+struct nf_entry *meter_initialize_entry(struct nf_packet *packet, uint8_t accounting_mode,
+                                        uint8_t statistics, uint8_t dissect, uint64_t max_tcp_dissections,
+                                        uint64_t max_udp_dissections, uint8_t enable_guess,
+                                        struct ndpi_detection_module_struct *dissector) {
+
+  struct nf_entry *entry = (struct nf_entry*)ndpi_malloc(sizeof(struct nf_entry));
+  if(entry == NULL) return NULL;
+  memset(entry, 0, sizeof(struct nf_entry));
+
+  if (dissect == 1) {
+    entry->ndpi_flow = (struct ndpi_flow_struct *)ndpi_flow_malloc(SIZEOF_FLOW_STRUCT);
+
+    if (entry->ndpi_flow == NULL) {
+      ndpi_free(entry);
+      return NULL;
+    } else {
+      memset(entry->ndpi_flow, 0, SIZEOF_FLOW_STRUCT);
+    }
+    entry->ndpi_src = (struct ndpi_id_struct *)ndpi_calloc(1, SIZEOF_ID_STRUCT);
+    if (entry->ndpi_src == NULL)  {
+      ndpi_free(entry);
+      return NULL;
+    }
+    entry->ndpi_dst = (struct ndpi_id_struct *)ndpi_calloc(1, SIZEOF_ID_STRUCT);
+    if (entry->ndpi_dst == NULL) {
+      ndpi_free(entry);
+      return NULL;
+    }
+    entry->detected_protocol = ndpi_detection_process_packet(dissector,
+                                                             entry->ndpi_flow,
+                                                             packet->ip_content,
+                                                             packet->ip_content_len,
+                                                             packet->time,
+                                                             entry->ndpi_src,
+                                                             entry->ndpi_dst);
+    dissector_process_info(dissector, entry);
+    uint8_t tcp_stop = (packet->protocol == 6) && (max_tcp_dissections == 1);
+    uint8_t udp_stop = (packet->protocol == 17) && (max_udp_dissections == 1);
+    if ((entry->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) && (tcp_stop || udp_stop)) {
+      // not identified and we are limited to 1, we try to guess.
+      entry->detected_protocol = ndpi_detection_giveup(dissector,
+                                                       entry->ndpi_flow,
+                                                       enable_guess,
+                                                       &entry->guessed);
+      dissector_process_info(dissector, entry);
+      entry->detection_completed = 1;
+      free_ndpi_data(entry);
+    } else {
+      dissector_process_info(dissector, entry);
+    }
+  }
+  entry->bidirectional_first_seen_ms = packet->time;
+  entry->bidirectional_last_seen_ms = packet->time;
+  entry->src2dst_first_seen_ms = packet->time;
+  entry->src2dst_last_seen_ms = packet->time;
+  memcpy(entry->src_ip, packet->src_name, 48);
+  entry->src_port = packet->src_port;
+  memcpy(entry->dst_ip, packet->dst_name, 48);
+  entry->dst_port = packet->dst_port;
+  entry->protocol = packet->protocol;
+  entry->ip_version = packet->ip_version;
+  entry->vlan_id = packet->vlan_id;
+  entry->bidirectional_packets = 1;
+  entry->src2dst_packets = 1;
+  uint16_t packet_size = meter_account_packet(packet, accounting_mode);
+
+  // Already zero. (https://cffi.readthedocs.io/en/latest/using.html#working-with-pointers-structures-and-arrays)
+  entry->bidirectional_bytes += packet_size;
+  entry->src2dst_bytes += packet_size;
+  if (statistics == 1) {
+    entry->bidirectional_min_ps += packet_size;
+    entry->bidirectional_mean_ps += packet_size;
+    entry->bidirectional_max_ps += packet_size;
+    entry->src2dst_min_ps += packet_size;
+    entry->src2dst_mean_ps += packet_size;
+    entry->src2dst_max_ps += packet_size;
+    if (packet->syn) {
+      entry->bidirectional_syn_packets++;
+      entry->src2dst_syn_packets++;
+    }
+    if (packet->cwr) {
+      entry->bidirectional_cwr_packets++;
+      entry->src2dst_cwr_packets++;
+    }
+    if (packet->ece) {
+      entry->bidirectional_ece_packets++;
+      entry->src2dst_ece_packets++;
+    }
+    if (packet->urg) {
+      entry->bidirectional_urg_packets++;
+      entry->src2dst_urg_packets++;
+    }
+    if (packet->ack) {
+      entry->bidirectional_ack_packets++;
+      entry->src2dst_ack_packets++;
+    }
+    if (packet->psh) {
+      entry->bidirectional_psh_packets++;
+      entry->src2dst_psh_packets++;
+    }
+    if (packet->rst) {
+      entry->bidirectional_rst_packets++;
+      entry->src2dst_rst_packets++;
+    }
+    if (packet->fin) {
+      entry->bidirectional_fin_packets++;
+      entry->src2dst_fin_packets++;
+    }
+  }
+  return entry;
+}
+
+/**
+ * meter_update_entry: Check expiration state, and update entry based on packet values if case of active one.
+ */
+uint8_t meter_update_entry(struct nf_entry *entry, struct nf_packet *packet, uint64_t idle_timeout,
+                           uint64_t active_timeout, uint8_t accounting_mode, uint8_t statistics, uint8_t dissect,
+                           uint64_t max_tcp_dissections, uint64_t max_udp_dissections, uint8_t enable_guess,
+                           struct ndpi_detection_module_struct *dissector) {
+  if ((packet->time - entry->bidirectional_last_seen_ms) >= idle_timeout) {
+    return 1; // Inactive expiration
+  }
+  if ((packet->time - entry->bidirectional_first_seen_ms) >= active_timeout) {
+    return 2; // active expiration
+  }
+
+  // We first check ports to determine direction.
+  if ((entry->src_port != packet->src_port) || (entry->src_port != packet->src_port)) {
+    packet->direction = 1;
+  // Then IPs
+  } else {
+    if ((memcmp(entry->src_ip, packet->src_name, 48) != 0) || (memcmp(entry->dst_ip, packet->dst_name, 48) != 0)) {
+      packet->direction = 1;
+    }
+  }
+  // --------------------------------------- bidirectional processing --------------------------------------------------
+  uint64_t bidirectional_piat_ms = packet->time - entry->bidirectional_last_seen_ms;
+  entry->bidirectional_last_seen_ms = packet->time;
+  entry->bidirectional_duration_ms = entry->bidirectional_last_seen_ms - entry->bidirectional_first_seen_ms;
+  entry->bidirectional_packets++;
+
+  if (dissect == 1) {
+    uint8_t tcp_stop = (packet->protocol == 6) && (max_tcp_dissections == entry->bidirectional_packets);
+    uint8_t udp_stop = (packet->protocol == 17) && (max_udp_dissections == entry->bidirectional_packets);
+    if (entry->detection_completed == 0) { // application not detected yet.
+      if (packet->direction == 0) {
+        entry->detected_protocol = ndpi_detection_process_packet(dissector,
+                                                                 entry->ndpi_flow,
+                                                                 packet->ip_content,
+                                                                 packet->ip_content_len,
+                                                                 packet->time,
+                                                                 entry->ndpi_src,
+                                                                 entry->ndpi_dst);
+      } else {
+        entry->detected_protocol = ndpi_detection_process_packet(dissector,
+                                                                 entry->ndpi_flow,
+                                                                 packet->ip_content,
+                                                                 packet->ip_content_len,
+                                                                 packet->time,
+                                                                 entry->ndpi_dst,
+                                                                 entry->ndpi_src);
+      }
+      dissector_process_info(dissector, entry);
+      uint8_t enough_packets = (tcp_stop || udp_stop);
+      if (enough_packets || (entry->detected_protocol.app_protocol != NDPI_PROTOCOL_UNKNOWN)) {
+        if ((!enough_packets) && ndpi_extra_dissection_possible(dissector, entry->ndpi_flow));
+        /* Pass as we will wait for certificate fingerprint */
+        else {
+          if (entry->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) {
+            entry->detected_protocol = ndpi_detection_giveup(dissector,
+                                                             entry->ndpi_flow,
+                                                             enable_guess,
+                                                             &entry->guessed);
+          }
+          dissector_process_info(dissector, entry);
+          free_ndpi_data(entry);
+          entry->detection_completed = 1;
+        }
+      }
+    }
+  }
+
+  uint16_t packet_size = meter_account_packet(packet, accounting_mode);
+
+  entry->bidirectional_bytes += packet_size;
+  if (statistics == 1) {
+    if (packet_size > entry->bidirectional_max_ps) {
+      entry->bidirectional_max_ps = packet_size;
+    }
+    if (packet_size < entry->bidirectional_min_ps) {
+      entry->bidirectional_min_ps = packet_size;
+    }
+    double bidirectional_mean_ps = entry->bidirectional_mean_ps;
+    entry->bidirectional_mean_ps += (packet_size - bidirectional_mean_ps)/entry->bidirectional_packets;
+    entry->bidirectional_stddev_ps += (packet_size - bidirectional_mean_ps)*(packet_size - entry->bidirectional_mean_ps);
+
+    if (packet->syn) entry->bidirectional_syn_packets++;
+    if (packet->cwr) entry->bidirectional_cwr_packets++;
+    if (packet->ece) entry->bidirectional_ece_packets++;
+    if (packet->urg) entry->bidirectional_urg_packets++;
+    if (packet->ack) entry->bidirectional_ack_packets++;
+    if (packet->psh) entry->bidirectional_psh_packets++;
+    if (packet->rst) entry->bidirectional_rst_packets++;
+    if (packet->fin) entry->bidirectional_fin_packets++;
+
+    if (entry->bidirectional_packets == 2) {
+      entry->bidirectional_min_piat_ms += bidirectional_piat_ms;
+      entry->bidirectional_mean_piat_ms += bidirectional_piat_ms;
+      entry->bidirectional_max_piat_ms += bidirectional_piat_ms;
+    } else {
+      if (bidirectional_piat_ms > entry->bidirectional_max_piat_ms) {
+        entry->bidirectional_max_piat_ms = bidirectional_piat_ms;
+      }
+      if (bidirectional_piat_ms < entry->bidirectional_min_piat_ms) {
+        entry->bidirectional_min_piat_ms = bidirectional_piat_ms;
+      }
+      double bidirectional_mean_piat_ms = entry->bidirectional_mean_piat_ms;
+      entry->bidirectional_mean_piat_ms += (bidirectional_piat_ms - bidirectional_mean_piat_ms)/(entry->bidirectional_packets-1);
+      entry->bidirectional_stddev_piat_ms += (bidirectional_piat_ms - bidirectional_mean_piat_ms)*(bidirectional_piat_ms - entry->bidirectional_mean_piat_ms);
+    }
+  }
+
+  if (packet->direction == 0) { // ------------------ src2dst processing -----------------------------------------------
+    entry->src2dst_packets++;
+    uint64_t src2dst_piat_ms = packet->time - entry->src2dst_last_seen_ms;
+    entry->src2dst_last_seen_ms = packet->time;
+    entry->src2dst_duration_ms = entry->src2dst_last_seen_ms - entry->src2dst_first_seen_ms;
+    entry->src2dst_bytes += packet_size;
+    if (statistics == 1) {
+      if (packet_size > entry->src2dst_max_ps) {
+        entry->src2dst_max_ps = packet_size;
+      }
+      if (packet_size < entry->src2dst_min_ps) {
+        entry->src2dst_min_ps = packet_size;
+      }
+
+      double src2dst_mean_ps = entry->src2dst_mean_ps;
+      entry->src2dst_mean_ps += (packet_size - src2dst_mean_ps)/entry->src2dst_packets;
+      entry->src2dst_stddev_ps += (packet_size - src2dst_mean_ps)*(packet_size - entry->src2dst_mean_ps);
+
+      if (packet->syn) entry->src2dst_syn_packets++;
+      if (packet->cwr) entry->src2dst_cwr_packets++;
+      if (packet->ece) entry->src2dst_ece_packets++;
+      if (packet->urg) entry->src2dst_urg_packets++;
+      if (packet->ack) entry->src2dst_ack_packets++;
+      if (packet->psh) entry->src2dst_psh_packets++;
+      if (packet->rst) entry->src2dst_rst_packets++;
+      if (packet->fin) entry->src2dst_fin_packets++;
+
+      if (entry->src2dst_packets == 2) {
+        entry->src2dst_min_piat_ms += src2dst_piat_ms;
+        entry->src2dst_mean_piat_ms += src2dst_piat_ms;
+        entry->src2dst_max_piat_ms += src2dst_piat_ms;
+      } else {
+        if (src2dst_piat_ms > entry->src2dst_max_piat_ms) {
+          entry->src2dst_max_piat_ms = src2dst_piat_ms;
+        }
+        if (src2dst_piat_ms < entry->src2dst_min_piat_ms) {
+          entry->src2dst_min_piat_ms = src2dst_piat_ms;
+        }
+        double src2dst_mean_piat_ms = entry->src2dst_mean_piat_ms;
+        entry->src2dst_mean_piat_ms += (src2dst_piat_ms - src2dst_mean_piat_ms)/(entry->src2dst_packets-1);
+        entry->src2dst_stddev_piat_ms += (src2dst_piat_ms - src2dst_mean_piat_ms)*(src2dst_piat_ms - entry->src2dst_mean_piat_ms);
+      }
+    }
+  } else { // --------------------------------------- dst2src processing -----------------------------------------------
+    entry->dst2src_packets++;
+    entry->dst2src_bytes += packet_size;
+    if (entry->dst2src_packets == 1) { // First packet in this direction
+      entry->dst2src_first_seen_ms = packet->time;
+      entry->dst2src_last_seen_ms = packet->time;
+      if (statistics == 1) {
+        entry->dst2src_min_ps += packet_size;
+        entry->dst2src_mean_ps += packet_size;
+        entry->dst2src_max_ps += packet_size;
+        if (packet->syn) entry->dst2src_syn_packets++;
+        if (packet->cwr) entry->dst2src_cwr_packets++;
+        if (packet->ece) entry->dst2src_ece_packets++;
+        if (packet->urg) entry->dst2src_urg_packets++;
+        if (packet->ack) entry->dst2src_ack_packets++;
+        if (packet->psh) entry->dst2src_psh_packets++;
+        if (packet->rst) entry->dst2src_rst_packets++;
+        if (packet->fin) entry->dst2src_fin_packets++;
+      }
+    } else {
+      uint64_t dst2src_piat_ms = packet->time - entry->dst2src_last_seen_ms;
+      entry->dst2src_last_seen_ms = packet->time;
+      entry->dst2src_duration_ms = entry->dst2src_last_seen_ms - entry->dst2src_first_seen_ms;
+      if (statistics == 1) {
+        if (packet_size > entry->dst2src_max_ps) {
+          entry->dst2src_max_ps = packet_size;
+        }
+        if (packet_size < entry->dst2src_min_ps) {
+          entry->dst2src_min_ps = packet_size;
+        }
+        double dst2src_mean_ps = entry->dst2src_mean_ps;
+        entry->dst2src_mean_ps += (packet_size - dst2src_mean_ps)/entry->dst2src_packets;
+        entry->dst2src_stddev_ps += (packet_size - dst2src_mean_ps)*(packet_size - entry->dst2src_mean_ps);
+
+        if (packet->syn) entry->dst2src_syn_packets++;
+        if (packet->cwr) entry->dst2src_cwr_packets++;
+        if (packet->ece) entry->dst2src_ece_packets++;
+        if (packet->urg) entry->dst2src_urg_packets++;
+        if (packet->ack) entry->dst2src_ack_packets++;
+        if (packet->psh) entry->dst2src_psh_packets++;
+        if (packet->rst) entry->dst2src_rst_packets++;
+        if (packet->fin) entry->dst2src_fin_packets++;
+
+        if (entry->dst2src_packets == 2) {
+          entry->dst2src_min_piat_ms += dst2src_piat_ms;
+          entry->dst2src_mean_piat_ms += dst2src_piat_ms;
+          entry->dst2src_max_piat_ms += dst2src_piat_ms;
+        } else {
+          if (dst2src_piat_ms > entry->dst2src_max_piat_ms) {
+            entry->dst2src_max_piat_ms = dst2src_piat_ms;
+          }
+          if (dst2src_piat_ms < entry->dst2src_min_piat_ms) {
+            entry->dst2src_min_piat_ms = dst2src_piat_ms;
+          }
+          double dst2src_mean_piat_ms = entry->dst2src_mean_piat_ms;
+          entry->dst2src_mean_piat_ms += (dst2src_piat_ms - dst2src_mean_piat_ms)/(entry->dst2src_packets-1);
+          entry->dst2src_stddev_piat_ms += (dst2src_piat_ms - dst2src_mean_piat_ms)*(dst2src_piat_ms - entry->dst2src_mean_piat_ms);
+        }
+      }
+    }
+  }
+  return 0; // Update done
+}
+
+
+void meter_expire_entry(struct nf_entry *entry, uint8_t dissect, uint8_t enable_guess,
+                        struct ndpi_detection_module_struct *dissector) {
+  if (dissect == 1) {
+    if ((entry->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) && (entry->detection_completed == 0)) {
+      entry->detected_protocol = ndpi_detection_giveup(dissector,
+                                                       entry->ndpi_flow,
+                                                       enable_guess,
+                                                       &entry->guessed);
+      dissector_process_info(dissector, entry);
+    }
+  }
+}
+
+
+void meter_free_entry(struct nf_entry *entry, uint8_t dissect) {
+  if ((dissect == 1)) {
+    free_ndpi_data(entry);
+  }
+  ndpi_free(entry);
+  entry = NULL;
 }

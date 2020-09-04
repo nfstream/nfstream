@@ -1,2 +1,1 @@
-include nfstream/libndpi.so
-include nfstream/observer_cc.so
+include nfstream/context_cc.so
