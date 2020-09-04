@@ -64,7 +64,7 @@ def setup_ndpi():
     subprocess.check_call(['git', 'clone', '--branch', 'dev', 'https://github.com/ntop/nDPI.git'])
     os.chdir('nDPI/')
     subprocess.check_call(['./autogen.sh'])
-    subprocess.check_call(['./configure', 'CC={}'.format(platform_compiler),])
+    subprocess.check_call(['./configure', 'CC={}'.format(platform_compiler), '--disable-gcrypt'])
     os.chdir('src/')
     os.chdir('lib/')
     subprocess.check_call(['make'])
