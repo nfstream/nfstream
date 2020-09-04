@@ -1181,16 +1181,14 @@ void dissector_cleanup(struct ndpi_detection_module_struct *dissector);
 """
 
 cc_meter_apis = """
-struct nf_entry *meter_initialize_entry(struct nf_packet *packet, uint8_t accounting_mode,
-                                        uint8_t statistics, uint8_t dissect, uint64_t max_tcp_dissections,
-                                        uint64_t max_udp_dissections, uint8_t enable_guess,
+struct nf_entry *meter_initialize_entry(struct nf_packet *packet, uint8_t accounting_mode, uint8_t statistics,
+                                        uint8_t dissect, uint64_t max_tcp_dissections, uint64_t max_udp_dissections,
                                         struct ndpi_detection_module_struct *dissector);
 uint8_t meter_update_entry(struct nf_entry *entry, struct nf_packet *packet, uint64_t idle_timeout,
                            uint64_t active_timeout, uint8_t accounting_mode, uint8_t statistics, uint8_t dissect,
-                           uint64_t max_tcp_dissections, uint64_t max_udp_dissections, uint8_t enable_guess,
+                           uint64_t max_tcp_dissections, uint64_t max_udp_dissections,
                            struct ndpi_detection_module_struct *dissector);
-void meter_expire_entry(struct nf_entry *entry, uint8_t dissect, uint8_t enable_guess,
-                        struct ndpi_detection_module_struct *dissector);
+void meter_expire_entry(struct nf_entry *entry, uint8_t dissect, struct ndpi_detection_module_struct *dissector);
 void meter_free_entry(struct nf_entry *entry, uint8_t dissect);
 """
 

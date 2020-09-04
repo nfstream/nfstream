@@ -167,14 +167,6 @@ class TestMethods(unittest.TestCase):
                     pass
             except ValueError:
                 value_errors += 1
-        enable_guess = ["yes", -89]
-        for x in enable_guess:
-            try:
-                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', enable_guess=x):
-                    print(flow)
-                    pass
-            except ValueError:
-                value_errors += 1
         n_meters = ["yes", -1]
         for x in n_meters:
             try:
@@ -183,7 +175,7 @@ class TestMethods(unittest.TestCase):
                     pass
             except ValueError:
                 value_errors += 1
-        self.assertEqual(value_errors, 33)
+        self.assertEqual(value_errors, 31)
         print("{}\t: \033[94mOK\033[0m".format(".Test parameters handling".ljust(60, ' ')))
 
     def test_expiration_management(self):

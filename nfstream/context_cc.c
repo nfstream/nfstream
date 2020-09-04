@@ -1292,9 +1292,8 @@ void free_ndpi_data(struct nf_entry *entry) {
 /**
  * meter_initialize_entry: Initialize entry based on packet values and set packet direction.
  */
-struct nf_entry *meter_initialize_entry(struct nf_packet *packet, uint8_t accounting_mode,
-                                        uint8_t statistics, uint8_t dissect, uint64_t max_tcp_dissections,
-                                        uint64_t max_udp_dissections, uint8_t enable_guess,
+struct nf_entry *meter_initialize_entry(struct nf_packet *packet, uint8_t accounting_mode, uint8_t statistics,
+                                        uint8_t dissect, uint64_t max_tcp_dissections, uint64_t max_udp_dissections,
                                         struct ndpi_detection_module_struct *dissector) {
 
   struct nf_entry *entry = (struct nf_entry*)ndpi_malloc(sizeof(struct nf_entry));
@@ -1332,10 +1331,7 @@ struct nf_entry *meter_initialize_entry(struct nf_packet *packet, uint8_t accoun
     uint8_t udp_stop = (packet->protocol == 17) && (max_udp_dissections == 1);
     if ((entry->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) && (tcp_stop || udp_stop)) {
       // not identified and we are limited to 1, we try to guess.
-      entry->detected_protocol = ndpi_detection_giveup(dissector,
-                                                       entry->ndpi_flow,
-                                                       enable_guess,
-                                                       &entry->guessed);
+      entry->detected_protocol = ndpi_detection_giveup(dissector, entry->ndpi_flow, 1, &entry->guessed);
       dissector_process_info(dissector, entry);
       entry->detection_completed = 1;
       free_ndpi_data(entry);
@@ -1409,7 +1405,7 @@ struct nf_entry *meter_initialize_entry(struct nf_packet *packet, uint8_t accoun
  */
 uint8_t meter_update_entry(struct nf_entry *entry, struct nf_packet *packet, uint64_t idle_timeout,
                            uint64_t active_timeout, uint8_t accounting_mode, uint8_t statistics, uint8_t dissect,
-                           uint64_t max_tcp_dissections, uint64_t max_udp_dissections, uint8_t enable_guess,
+                           uint64_t max_tcp_dissections, uint64_t max_udp_dissections,
                            struct ndpi_detection_module_struct *dissector) {
   if ((packet->time - entry->bidirectional_last_seen_ms) >= idle_timeout) {
     return 1; // Inactive expiration
@@ -1437,40 +1433,49 @@ uint8_t meter_update_entry(struct nf_entry *entry, struct nf_packet *packet, uin
     uint8_t tcp_stop = (packet->protocol == 6) && (max_tcp_dissections == entry->bidirectional_packets);
     uint8_t udp_stop = (packet->protocol == 17) && (max_udp_dissections == entry->bidirectional_packets);
     if (entry->detection_completed == 0) { // application not detected yet.
-      if (packet->direction == 0) {
-        entry->detected_protocol = ndpi_detection_process_packet(dissector,
-                                                                 entry->ndpi_flow,
-                                                                 packet->ip_content,
-                                                                 packet->ip_content_len,
-                                                                 packet->time,
-                                                                 entry->ndpi_src,
-                                                                 entry->ndpi_dst);
-      } else {
-        entry->detected_protocol = ndpi_detection_process_packet(dissector,
-                                                                 entry->ndpi_flow,
-                                                                 packet->ip_content,
-                                                                 packet->ip_content_len,
-                                                                 packet->time,
-                                                                 entry->ndpi_dst,
-                                                                 entry->ndpi_src);
-      }
-      dissector_process_info(dissector, entry);
-      uint8_t enough_packets = (tcp_stop || udp_stop);
-      if (enough_packets || (entry->detected_protocol.app_protocol != NDPI_PROTOCOL_UNKNOWN)) {
-        if ((!enough_packets) && ndpi_extra_dissection_possible(dissector, entry->ndpi_flow));
-        /* Pass as we will wait for certificate fingerprint */
-        else {
-          if (entry->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) {
-            entry->detected_protocol = ndpi_detection_giveup(dissector,
-                                                             entry->ndpi_flow,
-                                                             enable_guess,
-                                                             &entry->guessed);
-          }
-          dissector_process_info(dissector, entry);
-          free_ndpi_data(entry);
-          entry->detection_completed = 1;
+      // We dissect only if still unknown or known and we didn"t dissect all possible information yet
+      uint8_t still_dissect = (entry->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) ||
+                              ((entry->detected_protocol.app_protocol != NDPI_PROTOCOL_UNKNOWN)
+                                && ndpi_extra_dissection_possible(dissector, entry->ndpi_flow));
+      if (still_dissect) {
+        if (packet->direction == 0) {
+          entry->detected_protocol = ndpi_detection_process_packet(dissector,
+                                                                   entry->ndpi_flow,
+                                                                   packet->ip_content,
+                                                                   packet->ip_content_len,
+                                                                   packet->time,
+                                                                   entry->ndpi_src,
+                                                                   entry->ndpi_dst);
+        } else {
+          entry->detected_protocol = ndpi_detection_process_packet(dissector,
+                                                                   entry->ndpi_flow,
+                                                                   packet->ip_content,
+                                                                   packet->ip_content_len,
+                                                                   packet->time,
+                                                                   entry->ndpi_dst,
+                                                                   entry->ndpi_src);
         }
+        dissector_process_info(dissector, entry);
+      } else {
+        // We release nDPI references as we are done.
+        free_ndpi_data(entry);
+        entry->detection_completed = 1;
       }
+
+      // We check the configured dissections limit
+      uint8_t enough_packets = (tcp_stop || udp_stop);
+
+      if (enough_packets) { // if we reach it,
+        // and application is unknown, we try to guess it.
+        if (entry->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) {
+            entry->detected_protocol = ndpi_detection_giveup(dissector, entry->ndpi_flow, 1, &entry->guessed);
+            dissector_process_info(dissector, entry);
+        } // We reach it and detection is done, release references.
+        free_ndpi_data(entry);
+        entry->detection_completed = 1;
+      }
+    } else {
+      if (entry->detection_completed == 1) entry->detection_completed = 2; /* trigger the copy only once on sync mode.*/
     }
   }
 
@@ -1622,16 +1627,13 @@ uint8_t meter_update_entry(struct nf_entry *entry, struct nf_packet *packet, uin
 }
 
 
-void meter_expire_entry(struct nf_entry *entry, uint8_t dissect, uint8_t enable_guess,
-                        struct ndpi_detection_module_struct *dissector) {
+void meter_expire_entry(struct nf_entry *entry, uint8_t dissect, struct ndpi_detection_module_struct *dissector) {
   if (dissect == 1) {
     if ((entry->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) && (entry->detection_completed == 0)) {
-      entry->detected_protocol = ndpi_detection_giveup(dissector,
-                                                       entry->ndpi_flow,
-                                                       enable_guess,
-                                                       &entry->guessed);
+      entry->detected_protocol = ndpi_detection_giveup(dissector, entry->ndpi_flow, 1, &entry->guessed);
       dissector_process_info(dissector, entry);
     }
+    entry->detection_completed = 1; // This will force copy on non sync mode.
   }
 }
 

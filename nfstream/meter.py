@@ -42,8 +42,7 @@ class NFCache(OrderedDict):
         return next(iter(self))
 
 
-def meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, enable_guess, accounting_mode, dissect,
-               max_tcp_dissections, max_udp_dissections, statistics, ffi, lib, dissector):
+def meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, dissect, statistics, ffi, lib, dissector):
     remaining = True
     scanned = 0
     while remaining and scanned < 10000:  # idle scan budget
@@ -51,8 +50,7 @@ def meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, enable_gues
             entry_key = cache.get_lru_key()
             entry = cache[entry_key]
             if entry.is_idle(meter_tick, idle_timeout):  # idle
-                channel.put(entry.expire(udps, sync, enable_guess, accounting_mode, dissect, max_tcp_dissections,
-                                         max_udp_dissections, statistics, ffi, lib, dissector))
+                channel.put(entry.expire(udps, sync, dissect, statistics, ffi, lib, dissector))
                 del cache[entry_key]
                 del entry
                 scanned += 1
@@ -71,13 +69,13 @@ def get_entry_key(packet, ffi):
            min(packet.src_port, packet.dst_port), max(packet.src_port, packet.dst_port)
 
 
-def consume(packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps, sync, enable_guess, accounting_mode,
-            dissect, max_tcp_dissections, max_udp_dissections, statistics, dissector):
+def consume(packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps, sync, accounting_mode, dissect,
+            max_tcp_dissections, max_udp_dissections, statistics, dissector):
     """ consume a packet and produce entry """
     # We maintain state for active flows computation 1 for creation, 0 for update/cut, -1 for custom expire
     entry_key = get_entry_key(packet, ffi)
     try:  # update entry
-        entry = cache[entry_key].update(packet, idle_timeout, active_timeout, ffi, lib, udps, sync, enable_guess,
+        entry = cache[entry_key].update(packet, idle_timeout, active_timeout, ffi, lib, udps, sync,
                                         accounting_mode, dissect, max_tcp_dissections, max_udp_dissections, statistics,
                                         dissector)
         if entry is not None:
@@ -91,7 +89,7 @@ def consume(packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps
                 del cache[entry_key]
                 del entry
                 try:
-                    cache[entry_key] = NFEntry(packet, ffi, lib, udps, sync, enable_guess, accounting_mode, dissect,
+                    cache[entry_key] = NFEntry(packet, ffi, lib, udps, sync, accounting_mode, dissect,
                                                max_tcp_dissections, max_udp_dissections, statistics, dissector)
                 except OSError:
                     print("WARNING: Failed to allocate memory space for entry creation. Entry creation aborted.")
@@ -101,18 +99,17 @@ def consume(packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps
     except KeyError:  # create entry
         try:
             if sync:
-                entry = NFEntry(packet, ffi, lib, udps, sync, enable_guess, accounting_mode, dissect,
+                entry = NFEntry(packet, ffi, lib, udps, sync, accounting_mode, dissect,
                                 max_tcp_dissections, max_udp_dissections, statistics, dissector)
                 if entry.expiration_id == -1:  # A user Plugin forced expiration on the first packet
-                    channel.put(entry.expire(udps, sync, enable_guess, accounting_mode, dissect, max_tcp_dissections,
-                                             max_udp_dissections, statistics, ffi, lib, dissector))
+                    channel.put(entry.expire(udps, sync, dissect, statistics, ffi, lib, dissector))
                     del entry
                     state = 0
                 else:
                     cache[entry_key] = entry
                     state = 1
             else:
-                cache[entry_key] = NFEntry(packet, ffi, lib, udps, sync, enable_guess, accounting_mode, dissect,
+                cache[entry_key] = NFEntry(packet, ffi, lib, udps, sync, accounting_mode, dissect,
                                            max_tcp_dissections, max_udp_dissections, statistics, dissector)
                 state = 1
         except OSError:
@@ -121,14 +118,11 @@ def consume(packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps
     return state
 
 
-def meter_cleanup(cache, channel, udps, sync, enable_guess, accounting_mode, dissect, max_tcp_dissections,
-                  max_udp_dissections, statistics, ffi, lib, dissector):
+def meter_cleanup(cache, channel, udps, sync, dissect, statistics, ffi, lib, dissector):
     """ cleanup all entries in NFCache """
     for entry_key in list(cache.keys()):
         entry = cache[entry_key]
-        channel.put(entry.expire(udps, sync, enable_guess, accounting_mode, dissect, max_tcp_dissections,
-                                 max_udp_dissections, statistics, ffi, lib, dissector)
-                    )
+        channel.put(entry.expire(udps, sync, dissect, statistics, ffi, lib, dissector))
         del cache[entry_key]
         del entry
     channel.put(None)
@@ -167,7 +161,6 @@ class NFMeter(Process):
         self.statistics = meter_cfg.statistics
         self.max_tcp_dissections = meter_cfg.max_tcp_dissections
         self.max_udp_dissections = meter_cfg.max_udp_dissections
-        self.enable_guess = meter_cfg.enable_guess
         self.channel = channel
 
     def run(self):
@@ -181,7 +174,6 @@ class NFMeter(Process):
         statistics = self.statistics
         max_udp_dissections = self.max_udp_dissections
         max_tcp_dissections = self.max_tcp_dissections
-        enable_guess = self.enable_guess
         dissect = self.dissect
         cache = NFCache()
         observer = self.observer
@@ -203,28 +195,25 @@ class NFMeter(Process):
                     if time >= meter_tick:
                         meter_tick = time
                     diff = consume(packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps, sync,
-                                   enable_guess, accounting_mode, dissect, max_tcp_dissections, max_udp_dissections,
+                                   accounting_mode, dissect, max_tcp_dissections, max_udp_dissections,
                                    statistics, dissector)
                     active_flows += diff
                     if go_scan:
-                        idles = meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, enable_guess,
-                                           accounting_mode, dissect, max_tcp_dissections, max_udp_dissections,
+                        idles = meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, dissect,
                                            statistics, ffi, lib, dissector)
                         active_flows -= idles
                 else:
                     if time > meter_tick:
                         meter_tick = time
                     if time - meter_scan_tick >= meter_scan_interval:
-                        idles = meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, enable_guess,
-                                           accounting_mode, dissect, max_tcp_dissections, max_udp_dissections,
+                        idles = meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, dissect,
                                            statistics, ffi, lib, dissector)
                         active_flows -= idles
                         meter_scan_tick = time
             raise KeyboardInterrupt
         except KeyboardInterrupt:
             del observer
-            meter_cleanup(cache, channel, udps, sync, enable_guess, accounting_mode, dissect, max_tcp_dissections,
-                          max_udp_dissections, statistics, ffi, lib, dissector)
+            meter_cleanup(cache, channel, udps, sync, dissect, statistics, ffi, lib, dissector)
             self.observer.close()
             self.lib.dissector_cleanup(dissector)
             del ffi

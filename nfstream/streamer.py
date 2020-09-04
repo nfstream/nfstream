@@ -49,8 +49,7 @@ meter_cfg = namedtuple('MeterConfiguration', ['idle_timeout',
                                               'dissect',
                                               'statistics',
                                               'max_tcp_dissections',
-                                              'max_udp_dissections',
-                                              'enable_guess'])
+                                              'max_udp_dissections'])
 
 
 def csv_converter(values):
@@ -72,7 +71,7 @@ class NFStreamer(object):
     """ Network Flow Streamer """
     def __init__(self, source=None, decode_tunnels=True, bpf_filter=None, promisc=True, snaplen=65535,
                  idle_timeout=30, active_timeout=300, accounting_mode=0, udps=None,
-                 dissect=True, statistics=False, max_tcp_dissections=80, max_udp_dissections=16, enable_guess=True,
+                 dissect=True, statistics=False, max_tcp_dissections=80, max_udp_dissections=16,
                  n_meters=3
                  ):
         NFStreamer.streamer_id += 1
@@ -90,7 +89,6 @@ class NFStreamer(object):
         self.statistics = statistics
         self.max_tcp_dissections = max_tcp_dissections
         self.max_udp_dissections = max_udp_dissections
-        self.enable_guess = enable_guess
         self.n_meters = n_meters
 
     @property
@@ -247,16 +245,6 @@ class NFStreamer(object):
         self._max_udp_dissections = value
 
     @property
-    def enable_guess(self):
-        return self._enable_guess
-
-    @enable_guess.setter
-    def enable_guess(self, value):
-        if not isinstance(value, bool):
-            raise ValueError("Please specify a valid enable_guess parameter (possible values: True, False).")
-        self._enable_guess = value
-
-    @property
     def n_meters(self):
         return self._n_meters
 
@@ -305,8 +293,7 @@ class NFStreamer(object):
                                                           dissect=self.dissect,
                                                           statistics=self.statistics,
                                                           max_tcp_dissections=self.max_tcp_dissections,
-                                                          max_udp_dissections=self.max_udp_dissections,
-                                                          enable_guess=self.enable_guess),
+                                                          max_udp_dissections=self.max_udp_dissections),
                                       channel=channel))
                 meters[i].daemon = True  # demonize meter
                 meters[i].start()

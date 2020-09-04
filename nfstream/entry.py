@@ -166,12 +166,12 @@ class NFEntry(object):
                  '_C',
                  'udps')
 
-    def __init__(self, packet, ffi, lib, udps, sync, enable_guess, accounting_mode, dissect, max_tcp_dissections,
+    def __init__(self, packet, ffi, lib, udps, sync, accounting_mode, dissect, max_tcp_dissections,
                  max_udp_dissections, statistics, dissector):
         self.id = 0
         self.expiration_id = 0
         self._C = lib.meter_initialize_entry(packet, accounting_mode, statistics, dissect, max_tcp_dissections,
-                                             max_udp_dissections, enable_guess, dissector)
+                                             max_udp_dissections, dissector)
         if self._C == ffi.NULL:
             raise OSError("Not enough memory for new flow creation.")
         self.src_ip = ffi.string(self._C.src_ip).decode('utf-8', errors='ignore')
@@ -250,8 +250,7 @@ class NFEntry(object):
         if dissect:
             self.application_name = ffi.string(self._C.application_name).decode('utf-8', errors='ignore')
             self.application_category_name = ffi.string(self._C.category_name).decode('utf-8', errors='ignore')
-            if enable_guess:
-                self.application_is_guessed = self._C.guessed
+            self.application_is_guessed = self._C.guessed
             self.requested_server_name = ffi.string(self._C.requested_server_name).decode('utf-8', errors='ignore')
             self.client_fingerprint = ffi.string(self._C.c_hash).decode('utf-8', errors='ignore')
             self.server_fingerprint = ffi.string(self._C.s_hash).decode('utf-8', errors='ignore')
@@ -262,29 +261,24 @@ class NFEntry(object):
             for udp in udps:
                 udp.on_init(pythonize_packet(packet, ffi), self)
 
-    def update(self, packet, idle_timeout, active_timeout, ffi, lib, udps, sync, enable_guess, accounting_mode,
+    def update(self, packet, idle_timeout, active_timeout, ffi, lib, udps, sync, accounting_mode,
                dissect, max_tcp_dissections, max_udp_dissections, statistics, dissector):
         ret = lib.meter_update_entry(self._C, packet, idle_timeout, active_timeout, accounting_mode, statistics,
-                                     dissect, max_tcp_dissections, max_udp_dissections, enable_guess, dissector)
+                                     dissect, max_tcp_dissections, max_udp_dissections, dissector)
         if ret > 0:
             self.expiration_id = ret - 1
-            return self.expire(udps, sync, enable_guess, accounting_mode, dissect, max_tcp_dissections,
-                               max_udp_dissections, statistics, ffi, lib, dissector)
+            return self.expire(udps, sync, dissect, statistics, ffi, lib, dissector)
         else:
             if sync:
-                self.sync(enable_guess, accounting_mode, dissect, max_tcp_dissections, max_udp_dissections, statistics,
-                          ffi, lib, dissector, False)
+                self.sync(dissect, statistics, ffi)
                 for udp in udps:
                     udp.on_update(pythonize_packet(packet, ffi), self)
                 if self.expiration_id == -1:
-                    return self.expire(udps, sync, enable_guess, accounting_mode, dissect, max_tcp_dissections,
-                                       max_udp_dissections, statistics, ffi, lib, dissector)
+                    return self.expire(udps, sync, dissect, statistics, ffi, lib, dissector)
 
-    def expire(self, udps, sync, enable_guess, accounting_mode, dissect, max_tcp_dissections, max_udp_dissections,
-               statistics, ffi, lib, dissector):
-        lib.meter_expire_entry(self._C, dissect, enable_guess, dissector)
-        self.sync(enable_guess, accounting_mode, dissect, max_tcp_dissections, max_udp_dissections, statistics,
-                  ffi, lib, dissector, True)
+    def expire(self, udps, sync, dissect, statistics, ffi, lib, dissector):
+        lib.meter_expire_entry(self._C, dissect, dissector)
+        self.sync(dissect, statistics, ffi)
         if sync:
             for udp in udps:
                 udp.on_expire(self)
@@ -292,8 +286,7 @@ class NFEntry(object):
         del self._C
         return self
 
-    def sync(self, enable_guess, accounting_mode, dissect, max_tcp_dissections, max_udp_dissections, statistics,
-             ffi, lib, dissector, expired):
+    def sync(self, dissect, statistics, ffi):
         self.bidirectional_last_seen_ms = self._C.bidirectional_last_seen_ms
         self.bidirectional_duration_ms = self._C.bidirectional_duration_ms
         self.bidirectional_packets = self._C.bidirectional_packets
@@ -366,7 +359,7 @@ class NFEntry(object):
             self.dst2src_rst_packets = self._C.dst2src_rst_packets
             self.dst2src_fin_packets = self._C.dst2src_fin_packets
         if dissect:
-            if self._C.detection_completed == 0 or expired:
+            if self._C.detection_completed == 1:
                 self.application_name = ffi.string(self._C.application_name).decode('utf-8', errors='ignore')
                 self.application_category_name = ffi.string(self._C.category_name).decode('utf-8', errors='ignore')
                 self.requested_server_name = ffi.string(self._C.requested_server_name).decode('utf-8', errors='ignore')
@@ -374,7 +367,6 @@ class NFEntry(object):
                 self.server_fingerprint = ffi.string(self._C.s_hash).decode('utf-8', errors='ignore')
                 self.http_user_agent = ffi.string(self._C.user_agent).decode('utf-8', errors='ignore')
                 self.http_content_type = ffi.string(self._C.content_type).decode('utf-8', errors='ignore')
-            if enable_guess:
                 self.application_is_guessed = self._C.guessed
 
     def is_idle(self, tick, idle_timeout):
