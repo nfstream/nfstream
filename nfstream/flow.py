@@ -20,7 +20,7 @@ from collections import namedtuple
 from math import sqrt
 import ipaddress
 
-
+# When NFStream is extended with plugins, packer C structure is pythonized using the following namedtuple.
 nf_packet = namedtuple('NFPacket', ['time',
                                     'delta_time',
                                     'direction',
@@ -47,6 +47,7 @@ nf_packet = namedtuple('NFPacket', ['time',
 
 
 class UDPS(object):
+    """ dummy class that add udps slot the flexibility required for extensions """
     pass
 
 
@@ -78,6 +79,15 @@ def pythonize_packet(packet, ffi):
 
 
 class NFlow(object):
+    """
+        NFlow is NFStream representation of a network flow.
+        It is a slotted class for performances reasons, and slots are initiated according to NFStream detected mode.
+        If nfstream is used with extension, we refer to it as sync mode, and we need to update slots from C structure.
+        If not, nfstream will compute all configured metrics within C structure and update it only at init and expire.
+        Such logic allows us to provide maximum performances when running withour extensions. When set with extension
+        we pay the cost of flexibility with attributes access/update.
+
+    """
     __slots__ = ('id',
                  'expiration_id',
                  'src_ip',
@@ -152,6 +162,9 @@ class NFlow(object):
                  'dst2src_psh_packets',
                  'dst2src_rst_packets',
                  'dst2src_fin_packets',
+                 'splt_direction',
+                 'splt_ps',
+                 'splt_piat_ms',
                  'application_name',
                  'application_category_name',
                  'application_is_guessed',
@@ -163,12 +176,14 @@ class NFlow(object):
                  '_C',
                  'udps')
 
-    def __init__(self, packet, ffi, lib, udps, sync, accounting_mode, n_dissections, statistics, dissector):
-        self.id = 0
+    def __init__(self, packet, ffi, lib, udps, sync, accounting_mode, n_dissections, statistics, splt, dissector):
+        self.id = 0  # id always at zero and will be handled by NFStreamer side.
         self.expiration_id = 0
-        self._C = lib.meter_initialize_flow(packet, accounting_mode, statistics, n_dissections, dissector)
-        if self._C == ffi.NULL:
+        # Initialize C structure.
+        self._C = lib.meter_initialize_flow(packet, accounting_mode, statistics, splt, n_dissections, dissector)
+        if self._C == ffi.NULL:  # raise OSError in order to be handled by meter.
             raise OSError("Not enough memory for new flow creation.")
+        # Here we go for the first copy in order to make defined slots available
         self.src_ip = ffi.string(self._C.src_ip).decode('utf-8', errors='ignore')
         self.src_ip_is_private = int(ipaddress.ip_address(self.src_ip).is_private)
         self.src_port = self._C.src_port
@@ -193,7 +208,7 @@ class NFlow(object):
         self.dst2src_duration_ms = self._C.dst2src_duration_ms
         self.dst2src_packets = self._C.dst2src_packets
         self.dst2src_bytes = self._C.dst2src_bytes
-        if statistics:
+        if statistics: # if statistical analysis set, we activate statistical slots.
             self.bidirectional_min_ps = self._C.bidirectional_min_ps
             self.bidirectional_mean_ps = self._C.bidirectional_mean_ps
             self.bidirectional_stddev_ps = self._C.bidirectional_stddev_ps
@@ -242,7 +257,7 @@ class NFlow(object):
             self.dst2src_psh_packets = self._C.dst2src_psh_packets
             self.dst2src_rst_packets = self._C.dst2src_rst_packets
             self.dst2src_fin_packets = self._C.dst2src_fin_packets
-        if n_dissections:
+        if n_dissections:  # Same for dissection when > 0
             self.application_name = ffi.string(self._C.application_name).decode('utf-8', errors='ignore')
             self.application_category_name = ffi.string(self._C.category_name).decode('utf-8', errors='ignore')
             self.application_is_guessed = self._C.guessed
@@ -251,37 +266,51 @@ class NFlow(object):
             self.server_fingerprint = ffi.string(self._C.s_hash).decode('utf-8', errors='ignore')
             self.http_user_agent = ffi.string(self._C.user_agent).decode('utf-8', errors='ignore')
             self.http_content_type = ffi.string(self._C.content_type).decode('utf-8', errors='ignore')
-        if sync:
+        if splt:  # If splt_analysis set (>0), we unpack the arrays structures.
+            self.splt_direction = ffi.unpack(self._C.splt_direction, splt)
+            self.splt_ps = ffi.unpack(self._C.splt_ps, splt)
+            self.splt_piat_ms = ffi.unpack(self._C.splt_piat_ms, splt)
+        if sync:  # NFStream running with Plugins
             self.udps = UDPS()
-            for udp in udps:
+            for udp in udps:  # on_init entrypoint
                 udp.on_init(pythonize_packet(packet, ffi), self)
 
     def update(self, packet, idle_timeout, active_timeout, ffi, lib, udps, sync, accounting_mode,
-               n_dissections, statistics, dissector):
-        ret = lib.meter_update_flow(self._C, packet, idle_timeout, active_timeout, accounting_mode, statistics,
+               n_dissections, statistics, splt, dissector):
+        """ NFlow update method """
+        # First, we update internal C structure.
+        ret = lib.meter_update_flow(self._C, packet, idle_timeout, active_timeout, accounting_mode, statistics, splt,
                                     n_dissections, dissector)
-        if ret > 0:
+        if ret > 0:  # If update done it will be zero, idle and active are matched to 1 and 2.
             self.expiration_id = ret - 1
-            return self.expire(udps, sync, n_dissections, statistics, ffi, lib, dissector)
+            return self.expire(udps, sync, n_dissections, statistics, splt, ffi, lib, dissector)  # expire it.
         else:
-            if sync:
-                self.sync(n_dissections, statistics, ffi)
-                for udp in udps:
+            if sync:  # If running with Plugins
+                self.sync(n_dissections, statistics, splt, ffi, lib)  # We need to copy computed values on C struct.
+                for udp in udps:  # Then call each plugin on_update entrypoint.
                     udp.on_update(pythonize_packet(packet, ffi), self)
-                if self.expiration_id == -1:
-                    return self.expire(udps, sync, n_dissections, statistics, ffi, lib, dissector)
+                if self.expiration_id == -1: # One of the plugins set expiration to custom value (-1)
+                    return self.expire(udps, sync, n_dissections, statistics, splt, ffi, lib, dissector)  # Expire it.
 
-    def expire(self, udps, sync, n_dissections, statistics, ffi, lib, dissector):
+    def expire(self, udps, sync, n_dissections, statistics, splt, ffi, lib, dissector):
+        """ NFlow expiration method """
+        # Call expiration of C structure.
         lib.meter_expire_flow(self._C, n_dissections, dissector)
-        self.sync(n_dissections, statistics, ffi)
-        if sync:
+        # Then sync (second copy in case of non sync mode)
+        self.sync(n_dissections, statistics, splt, ffi, lib)
+        if sync: # Running with NFPlugins
             for udp in udps:
-                udp.on_expire(self)
-        lib.meter_free_flow(self._C, n_dissections)
-        del self._C
+                udp.on_expire(self)  # Call each Plugin on_expire entrypoint
+        lib.meter_free_flow(self._C, n_dissections, splt)  # then free C struct
+        del self._C  # and remove it from NFlow slots.
         return self
 
-    def sync(self, n_dissections, statistics, ffi):
+    def sync(self, n_dissections, statistics, splt, ffi, lib):
+        """
+        NFlow synchronizer method
+           Will be called only twice when running without Plugins
+           Will be called at each update when running with Plugins
+        """
         self.bidirectional_last_seen_ms = self._C.bidirectional_last_seen_ms
         self.bidirectional_duration_ms = self._C.bidirectional_duration_ms
         self.bidirectional_packets = self._C.bidirectional_packets
@@ -295,10 +324,11 @@ class NFlow(object):
         self.dst2src_duration_ms = self._C.dst2src_duration_ms
         self.dst2src_packets = self._C.dst2src_packets
         self.dst2src_bytes = self._C.dst2src_bytes
-        if statistics:
+        if statistics:  # Statistical analysis activated
             self.bidirectional_min_ps = self._C.bidirectional_min_ps
             self.bidirectional_mean_ps = self._C.bidirectional_mean_ps
             bidirectional_packets = self.bidirectional_packets
+            # NOTE: We need the root square of the variance to provide sample stddev (Var**0.5)/(n-1)
             if bidirectional_packets > 1:
                 self.bidirectional_stddev_ps = sqrt(self._C.bidirectional_stddev_ps/(bidirectional_packets - 1))
             self.bidirectional_max_ps = self._C.bidirectional_max_ps
@@ -353,7 +383,8 @@ class NFlow(object):
             self.dst2src_psh_packets = self._C.dst2src_psh_packets
             self.dst2src_rst_packets = self._C.dst2src_rst_packets
             self.dst2src_fin_packets = self._C.dst2src_fin_packets
-        if n_dissections:
+        if n_dissections:  # If dissection set (>0)
+            # We minimize updates to a single one, when detection completed.
             if self._C.detection_completed == 1:
                 self.application_name = ffi.string(self._C.application_name).decode('utf-8', errors='ignore')
                 self.application_category_name = ffi.string(self._C.category_name).decode('utf-8', errors='ignore')
@@ -363,14 +394,24 @@ class NFlow(object):
                 self.http_user_agent = ffi.string(self._C.user_agent).decode('utf-8', errors='ignore')
                 self.http_content_type = ffi.string(self._C.content_type).decode('utf-8', errors='ignore')
                 self.application_is_guessed = self._C.guessed
+        if splt:  # Same for splt, once we reach splt limit, there is no need to sync it anymore.
+            if self._C.bidirectional_packets <= splt:
+                self.splt_direction = ffi.unpack(self._C.splt_direction, splt)
+                self.splt_ps = ffi.unpack(self._C.splt_ps, splt)
+                self.splt_piat_ms = ffi.unpack(self._C.splt_piat_ms, splt)
+            else:
+                if self._C.splt_closed == 0:  # we also release the memory to keep only the obtained list.
+                    lib.free_splt_data(self._C)
 
     def is_idle(self, tick, idle_timeout):
+        """ is_idle method to check if NFlow is idle accoring to configured timeout """
         if (tick - idle_timeout) >= self._C.bidirectional_last_seen_ms:
             return True
         else:
             return False
 
     def __str__(self):
+        """ String representation of NFlow """
         started = False
         printable = "NFlow("
         for attr_name in self.__slots__:
@@ -390,6 +431,8 @@ class NFlow(object):
         return printable
 
     def keys(self):
+        """ get NFlow keys"""
+        # Note we transform udps to udps.value_name as preprocessing for csv/pandas interfaces
         ret = []
         for attr_name in self.__slots__:
             try:
@@ -404,6 +447,8 @@ class NFlow(object):
         return ret
 
     def values(self):
+        """ get flow values """
+        # Note: same indexing as keys.
         ret = []
         for attr_name in self.__slots__:
             try:
@@ -416,6 +461,3 @@ class NFlow(object):
             except AttributeError:
                 pass
         return ret
-
-
-

@@ -148,7 +148,7 @@ class TestMethods(unittest.TestCase):
                     pass
             except ValueError:
                 value_errors += 1
-        n_dissections = ["yes", -1]
+        n_dissections = ["yes", -1, 256]
         for x in n_dissections:
             try:
                 for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', n_dissections=x):
@@ -164,6 +164,14 @@ class TestMethods(unittest.TestCase):
                     pass
             except ValueError:
                 value_errors += 1
+        splt_analysis = [-1, 256, "yes"]
+        for x in splt_analysis:
+            try:
+                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', splt_analysis=x):
+                    print(flow)
+                    pass
+            except ValueError:
+                value_errors += 1
         n_meters = ["yes", -1]
         for x in n_meters:
             try:
@@ -172,7 +180,7 @@ class TestMethods(unittest.TestCase):
                     pass
             except ValueError:
                 value_errors += 1
-        self.assertEqual(value_errors, 27)
+        self.assertEqual(value_errors, 31)
         print("{}\t: \033[94mOK\033[0m".format(".Test parameters handling".ljust(60, ' ')))
 
     def test_expiration_management(self):
@@ -374,14 +382,20 @@ class TestMethods(unittest.TestCase):
 
     def test_splt(self):
         print("\n----------------------------------------------------------------------")
-        splt_df = NFStreamer(source='tests/pcap/google_ssl.pcap', udps=SPLT(sequence_length=5,
-                                                                            accounting_mode=0)).to_pandas()
+        splt_df = NFStreamer(source='tests/pcap/google_ssl.pcap', splt_analysis=5,
+                             udps=SPLT(sequence_length=5, accounting_mode=0)).to_pandas()
         direction = json.loads(splt_df["udps.splt_direction"][0])
         ps = json.loads(splt_df["udps.splt_ps"][0])
         piat = json.loads(splt_df["udps.splt_piat_ms"][0])
+        ndirection = json.loads(splt_df["splt_direction"][0])
+        nps = json.loads(splt_df["splt_ps"][0])
+        npiat = json.loads(splt_df["splt_piat_ms"][0])
         self.assertEqual(direction, [0, 1, 0, 0, 1])
         self.assertEqual(ps, [58, 60, 54, 180, 60])
         self.assertEqual(piat, [0, 34, 134, 144, 35])
+        self.assertEqual(direction, ndirection)
+        self.assertEqual(ps, nps)
+        self.assertEqual(piat, npiat)
         print("{}\t: \033[94mOK\033[0m".format(".Test SPLT analysis".ljust(60, ' ')))
 
 

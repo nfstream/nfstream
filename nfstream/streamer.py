@@ -46,7 +46,8 @@ meter_cfg = namedtuple('MeterConfiguration', ['idle_timeout',
                                               'accounting_mode',
                                               'udps',
                                               'n_dissections',
-                                              'statistics'])
+                                              'statistics',
+                                              'splt'])
 
 
 def csv_converter(values):
@@ -79,6 +80,7 @@ class NFStreamer(object):
                  udps=None,
                  n_dissections=20,
                  statistical_analysis=False,
+                 splt_analysis=0,
                  n_meters=3
                  ):
         NFStreamer.streamer_id += 1
@@ -94,6 +96,7 @@ class NFStreamer(object):
         self.udps = udps
         self.n_dissections = n_dissections
         self.statistical_analysis = statistical_analysis
+        self.splt_analysis = splt_analysis
         self.n_meters = n_meters
 
     @property
@@ -230,6 +233,16 @@ class NFStreamer(object):
         self._statistical_analysis = value
 
     @property
+    def splt_analysis(self):
+        return self._splt_analysis
+
+    @splt_analysis.setter
+    def splt_analysis(self, value):
+        if not isinstance(value, int) or (isinstance(value, int) and (value < 0 or value > 255)):
+            raise ValueError("Please specify a valid splt_analysis parameter (possible values in : [0,...,255])")
+        self._splt_analysis = value
+
+    @property
     def n_meters(self):
         return self._n_meters
 
@@ -276,7 +289,8 @@ class NFStreamer(object):
                                                           accounting_mode=self.accounting_mode,
                                                           udps=self.udps,
                                                           n_dissections=self.n_dissections,
-                                                          statistics=self.statistical_analysis),
+                                                          statistics=self.statistical_analysis,
+                                                          splt=self.splt_analysis),
                                       channel=channel))
                 meters[i].daemon = True  # demonize meter
                 meters[i].start()
@@ -287,18 +301,18 @@ class NFStreamer(object):
                     if flow is None:
                         n_terminated += 1
                         if n_terminated == n_meters:
-                            break
+                            break  # We finish up when all metering jobs are terminated
                     else:
-                        flow.id = idx_generator
+                        flow.id = idx_generator  # Unify ID
                         idx_generator += 1
                         yield flow
                 except KeyboardInterrupt:
-                    pass
+                    pass  # We pass as we wait for metering jobs (they will handle the keyboard interupt)
             for i in range(n_meters):
-                meters[i].join()
-            channel.close()
-            channel.join_thread()
-        except ValueError as observer_error:
+                meters[i].join()  # Join metring jobs
+            channel.close()  # We close the queue
+            channel.join_thread()  # and we join its thread
+        except ValueError as observer_error: # job initiation failed due to some bad observer parameters.
             raise ValueError(observer_error)
 
     def to_csv(self, path=None, ip_anonymization=False, flows_per_file=0):
@@ -314,6 +328,7 @@ class NFStreamer(object):
             output_path = path
         total_flows = 0
         chunk_flows = 0
+        # We generate a random secret key
         crypto_key = secrets.token_bytes(64)
         f = None
         for flow in self:
@@ -330,6 +345,7 @@ class NFStreamer(object):
                     f.write(header.encode('utf-8'))
                 values = flow.values()
                 if ip_anonymization:
+                    # Anonymization use generated secret key to hash using blake2B algo src and dst IPs.
                     values[src_ip_index] = blake2b(values[src_ip_index].encode(),
                                                     digest_size=64,
                                                     key=crypto_key).hexdigest()

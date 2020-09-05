@@ -18,7 +18,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 
 class NFPlugin(object):
-    """ NFPlugin class """
+    """ NFPlugin class: Main entry point to extend NFStream """
     def __init__(self, **kwargs):
         """
         NFPlugin Parameters:
@@ -30,33 +30,51 @@ class NFPlugin(object):
     def on_init(self, packet, flow):
         """
         on_init(self, obs, flow): Method called at flow creation.
+        You must initiate your udps values if you plan to compute ones.
+        Example: -------------------------------------------------------
+                 flow.udps.magic_message = "NO"
+                 if packet.raw_size == 40:
+                    flow.udps.packet_40_count = 1
+                 else:
+                    flow.udps.packet_40_count = 0
+        ----------------------------------------------------------------
         """
         pass
 
     def on_update(self, packet, flow):
         """
-        on_update(self, obs, flow): Method called to update each flow with its belonging obs.
-                                     When aggregating packets into flows, the flow is an NFEntry
-                                     object and the obs is an NFPacket object.
+        on_update(self, obs, flow): Method called to update each flow with its belonging packet.
+        Example: -------------------------------------------------------
+                 if packet.raw_size == 40:
+                    flow.udps.packet_40_count += 1
+        ----------------------------------------------------------------
         """
         pass
 
     def on_expire(self, flow):
         """
-        on_expire(self, flow):      Method called at flow expiration. When aggregating packets
-                                     into flows, the flow is an NFEntry
+        on_expire(self, flow):      Method called at flow expiration.
+        Example: -------------------------------------------------------
+                 if flow.udps.packet_40_count >= 10:
+                    flow.udps.magic_message = "YES"
+        ----------------------------------------------------------------
         """
         pass
 
     def cleanup(self):
         """
         cleanup(self):               Method called for plugin cleanup.
+        Example: -------------------------------------------------------
+                 del self.large_dict_passed_as_plugin_attribute
+        ----------------------------------------------------------------
         """
         pass
 
 
+# A working example.
 class SPLT(NFPlugin):
     """
+    Reimplementation of SPLT native analysis as NFPlugin: For testing and demo purposes.
     SPLT: Sequence of packet length and time analyzer.
     This plugin will take 2 arguments:
         - sequence_length: determines the maximum sequence length (number of packets to analyze)

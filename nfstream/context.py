@@ -19,6 +19,12 @@ If not, see <http://www.gnu.org/licenses/>.
 from os.path import abspath, dirname
 import cffi
 
+# We declare here all headers and APIs of native nfstream, This will include:
+#   - headers and APIs for observation stage (packet capture and processing).
+#   - headers and APIs for nDPI (the dissection part).
+#   - headers and APIs for Metering stage (flow intialization, update, expiration and cleaning)
+# We group it in a "context" initialized by meter as start in order to share the same ffi instance between stages.
+
 cc_observer_headers = """
 struct pcap;
 typedef struct pcap pcap_t;
@@ -1151,6 +1157,10 @@ typedef struct nf_flow {
   uint64_t dst2src_psh_packets;
   uint64_t dst2src_rst_packets;
   uint64_t dst2src_fin_packets;
+  int8_t *splt_direction;
+  int32_t *splt_ps;
+  int64_t *splt_piat_ms;
+  uint8_t splt_closed;
   char application_name[40];
   char category_name[40];
   char requested_server_name[240];
@@ -1182,17 +1192,20 @@ void dissector_cleanup(struct ndpi_detection_module_struct *dissector);
 """
 
 cc_meter_apis = """
-struct nf_flow *meter_initialize_flow(struct nf_packet *packet, uint8_t accounting_mode, uint8_t statistics,
-                                      uint8_t n_dissections, struct ndpi_detection_module_struct *dissector);
+struct nf_flow *meter_initialize_flow(struct nf_packet *packet, uint8_t accounting_mode, uint8_t statistics, 
+                                      uint8_t splt, uint8_t n_dissections, 
+                                      struct ndpi_detection_module_struct *dissector);
 uint8_t meter_update_flow(struct nf_flow *flow, struct nf_packet *packet, uint64_t idle_timeout, 
-                          uint64_t active_timeout, uint8_t accounting_mode, uint8_t statistics, uint8_t n_dissections,
-                          struct ndpi_detection_module_struct *dissector);
+                          uint64_t active_timeout, uint8_t accounting_mode, uint8_t statistics, uint8_t splt,
+                          uint8_t n_dissections, struct ndpi_detection_module_struct *dissector);
 void meter_expire_flow(struct nf_flow *flow, uint8_t n_dissections, struct ndpi_detection_module_struct *dissector);
-void meter_free_flow(struct nf_flow *flow, uint8_t n_dissections);
+void meter_free_flow(struct nf_flow *flow, uint8_t n_dissections, uint8_t splt);
+void free_splt_data(struct nf_flow *flow);
 """
 
 
 def create_context():
+    """ context creation function, return the loaded native nfstream context and it's ffi interface"""
     ffi = cffi.FFI()
     lib = ffi.dlopen(dirname(abspath(__file__)) + '/context_cc.so')
     ffi.cdef(cc_observer_headers)
