@@ -20,7 +20,7 @@ from collections import OrderedDict
 from multiprocessing import Process
 from .observer import NFObserver
 from .context import create_context
-from .entry import NFEntry
+from .flow import NFlow
 
 
 class NFCache(OrderedDict):
@@ -42,17 +42,17 @@ class NFCache(OrderedDict):
         return next(iter(self))
 
 
-def meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, dissect, statistics, ffi, lib, dissector):
+def meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, n_dissections, statistics, ffi, lib, dissector):
     remaining = True
     scanned = 0
     while remaining and scanned < 10000:  # idle scan budget
         try:
-            entry_key = cache.get_lru_key()
-            entry = cache[entry_key]
-            if entry.is_idle(meter_tick, idle_timeout):  # idle
-                channel.put(entry.expire(udps, sync, dissect, statistics, ffi, lib, dissector))
-                del cache[entry_key]
-                del entry
+            flow_key = cache.get_lru_key()
+            flow = cache[flow_key]
+            if flow.is_idle(meter_tick, idle_timeout):  # idle
+                channel.put(flow.expire(udps, sync, n_dissections, statistics, ffi, lib, dissector))
+                del cache[flow_key]
+                del flow
                 scanned += 1
             else:
                 remaining = False  # no idle entries to poll
@@ -61,7 +61,7 @@ def meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, dissect, st
     return scanned
 
 
-def get_entry_key(packet, ffi):
+def get_flow_key(packet, ffi):
     src_ip = ffi.string(packet.src_name).decode('utf-8', errors='ignore')
     dst_ip = ffi.string(packet.dst_name).decode('utf-8', errors='ignore')
     return packet.protocol, packet.vlan_id, \
@@ -69,67 +69,65 @@ def get_entry_key(packet, ffi):
            min(packet.src_port, packet.dst_port), max(packet.src_port, packet.dst_port)
 
 
-def consume(packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps, sync, accounting_mode, dissect,
-            max_tcp_dissections, max_udp_dissections, statistics, dissector):
-    """ consume a packet and produce entry """
+def consume(packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps, sync, accounting_mode, n_dissections,
+            statistics, dissector):
+    """ consume a packet and produce flow """
     # We maintain state for active flows computation 1 for creation, 0 for update/cut, -1 for custom expire
-    entry_key = get_entry_key(packet, ffi)
-    try:  # update entry
-        entry = cache[entry_key].update(packet, idle_timeout, active_timeout, ffi, lib, udps, sync,
-                                        accounting_mode, dissect, max_tcp_dissections, max_udp_dissections, statistics,
-                                        dissector)
-        if entry is not None:
-            if entry.expiration_id < 0:  # custom expiration
-                channel.put(entry)
-                del cache[entry_key]
-                del entry
+    flow_key = get_flow_key(packet, ffi)
+    try:  # update flow
+        flow = cache[flow_key].update(packet, idle_timeout, active_timeout, ffi, lib, udps, sync, accounting_mode,
+                                      n_dissections, statistics, dissector)
+        if flow is not None:
+            if flow.expiration_id < 0:  # custom expiration
+                channel.put(flow)
+                del cache[flow_key]
+                del flow
                 state = -1
             else:  # active/inactive expiration
-                channel.put(entry)
-                del cache[entry_key]
-                del entry
+                channel.put(flow)
+                del cache[flow_key]
+                del flow
                 try:
-                    cache[entry_key] = NFEntry(packet, ffi, lib, udps, sync, accounting_mode, dissect,
-                                               max_tcp_dissections, max_udp_dissections, statistics, dissector)
+                    cache[flow_key] = NFlow(packet, ffi, lib, udps, sync, accounting_mode, n_dissections,
+                                            statistics, dissector)
                 except OSError:
-                    print("WARNING: Failed to allocate memory space for entry creation. Entry creation aborted.")
+                    print("WARNING: Failed to allocate memory space for flow creation. Flow creation aborted.")
                 state = 0
         else:
             state = 0
-    except KeyError:  # create entry
+    except KeyError:  # create flow
         try:
             if sync:
-                entry = NFEntry(packet, ffi, lib, udps, sync, accounting_mode, dissect,
-                                max_tcp_dissections, max_udp_dissections, statistics, dissector)
-                if entry.expiration_id == -1:  # A user Plugin forced expiration on the first packet
-                    channel.put(entry.expire(udps, sync, dissect, statistics, ffi, lib, dissector))
-                    del entry
+                flow = NFlow(packet, ffi, lib, udps, sync, accounting_mode, n_dissections, statistics, dissector)
+                if flow.expiration_id == -1:  # A user Plugin forced expiration on the first packet
+                    channel.put(flow.expire(udps, sync, n_dissections, statistics, ffi, lib, dissector))
+                    del flow
                     state = 0
                 else:
-                    cache[entry_key] = entry
+                    cache[flow_key] = flow
                     state = 1
             else:
-                cache[entry_key] = NFEntry(packet, ffi, lib, udps, sync, accounting_mode, dissect,
-                                           max_tcp_dissections, max_udp_dissections, statistics, dissector)
+                cache[flow_key] = NFlow(packet, ffi, lib, udps, sync, accounting_mode, n_dissections, statistics,
+                                        dissector)
                 state = 1
         except OSError:
-            print("WARNING: Failed to allocate memory space for entry creation. Entry creation aborted.")
+            print("WARNING: Failed to allocate memory space for flow creation. Flow creation aborted.")
             state = 0
     return state
 
 
-def meter_cleanup(cache, channel, udps, sync, dissect, statistics, ffi, lib, dissector):
+def meter_cleanup(cache, channel, udps, sync, n_dissections, statistics, ffi, lib, dissector):
     """ cleanup all entries in NFCache """
-    for entry_key in list(cache.keys()):
-        entry = cache[entry_key]
-        channel.put(entry.expire(udps, sync, dissect, statistics, ffi, lib, dissector))
-        del cache[entry_key]
-        del entry
+    for flow_key in list(cache.keys()):
+        flow = cache[flow_key]
+        channel.put(flow.expire(udps, sync, n_dissections, statistics, ffi, lib, dissector))
+        del cache[flow_key]
+        del flow
     channel.put(None)
 
 
-def setup_dissector(ffi, lib, dissect):
-    if dissect:
+def setup_dissector(ffi, lib, n_dissections):
+    if n_dissections:
         checker = ffi.new("struct dissector_checker *")
         checker.flow_size = ffi.sizeof("struct ndpi_flow_struct")
         checker.id_size = ffi.sizeof("struct ndpi_id_struct")
@@ -157,10 +155,8 @@ class NFMeter(Process):
         self.active_timeout = meter_cfg.active_timeout
         self.accounting_mode = meter_cfg.accounting_mode
         self.udps = meter_cfg.udps
-        self.dissect = meter_cfg.dissect
+        self.n_dissections = meter_cfg.n_dissections
         self.statistics = meter_cfg.statistics
-        self.max_tcp_dissections = meter_cfg.max_tcp_dissections
-        self.max_udp_dissections = meter_cfg.max_udp_dissections
         self.channel = channel
 
     def run(self):
@@ -172,15 +168,13 @@ class NFMeter(Process):
         active_timeout = self.active_timeout
         accounting_mode = self.accounting_mode
         statistics = self.statistics
-        max_udp_dissections = self.max_udp_dissections
-        max_tcp_dissections = self.max_tcp_dissections
-        dissect = self.dissect
+        n_dissections = self.n_dissections
         cache = NFCache()
         observer = self.observer
         channel = self.channel
         active_flows = 0
         ffi, lib = self.ffi, self.lib
-        dissector = setup_dissector(ffi, lib, dissect)
+        dissector = setup_dissector(ffi, lib, n_dissections)
         udps = self.udps
         sync = False
         if len(udps) > 0:  # streamer started with udps: sync internal structures on update.
@@ -195,25 +189,24 @@ class NFMeter(Process):
                     if time >= meter_tick:
                         meter_tick = time
                     diff = consume(packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps, sync,
-                                   accounting_mode, dissect, max_tcp_dissections, max_udp_dissections,
-                                   statistics, dissector)
+                                   accounting_mode, n_dissections, statistics, dissector)
                     active_flows += diff
                     if go_scan:
-                        idles = meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, dissect,
+                        idles = meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, n_dissections,
                                            statistics, ffi, lib, dissector)
                         active_flows -= idles
                 else:
                     if time > meter_tick:
                         meter_tick = time
                     if time - meter_scan_tick >= meter_scan_interval:
-                        idles = meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, dissect,
+                        idles = meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, n_dissections,
                                            statistics, ffi, lib, dissector)
                         active_flows -= idles
                         meter_scan_tick = time
             raise KeyboardInterrupt
         except KeyboardInterrupt:
             del observer
-            meter_cleanup(cache, channel, udps, sync, dissect, statistics, ffi, lib, dissector)
+            meter_cleanup(cache, channel, udps, sync, n_dissections, statistics, ffi, lib, dissector)
             self.observer.close()
             self.lib.dissector_cleanup(dissector)
             del ffi

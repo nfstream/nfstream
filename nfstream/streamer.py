@@ -20,7 +20,6 @@ import multiprocessing
 import pandas as pd
 import time as tm
 import secrets
-import sys
 import os
 from collections.abc import Iterable
 from collections import namedtuple
@@ -46,15 +45,14 @@ meter_cfg = namedtuple('MeterConfiguration', ['idle_timeout',
                                               'active_timeout',
                                               'accounting_mode',
                                               'udps',
-                                              'dissect',
-                                              'statistics',
-                                              'max_tcp_dissections',
-                                              'max_udp_dissections'])
+                                              'n_dissections',
+                                              'statistics'])
 
 
 def csv_converter(values):
     for idx in range(len(values)):
-        if isinstance(values[idx], str):
+        if not isinstance(values[idx], float) and not isinstance(values[idx], int):
+            values[idx] = str(values[idx])
             values[idx] = values[idx].replace('\"', '\\"')
             values[idx] = "\"" + values[idx] + "\""
 
@@ -69,9 +67,18 @@ def open_file(path, chunked, chunk_idx):
 class NFStreamer(object):
     streamer_id = 0  # class id generator
     """ Network Flow Streamer """
-    def __init__(self, source=None, decode_tunnels=True, bpf_filter=None, promisc=True, snaplen=65535,
-                 idle_timeout=30, active_timeout=300, accounting_mode=0, udps=None,
-                 dissect=True, statistics=False, max_tcp_dissections=80, max_udp_dissections=16,
+    def __init__(self,
+                 source=None,
+                 decode_tunnels=True,
+                 bpf_filter=None,
+                 promiscuous_mode=True,
+                 snapshot_length=65535,
+                 idle_timeout=30,
+                 active_timeout=300,
+                 accounting_mode=0,
+                 udps=None,
+                 n_dissections=20,
+                 statistical_analysis=False,
                  n_meters=3
                  ):
         NFStreamer.streamer_id += 1
@@ -79,16 +86,14 @@ class NFStreamer(object):
         self.source = source
         self.decode_tunnels = decode_tunnels
         self.bpf_filter = bpf_filter
-        self.promisc = promisc
-        self.snaplen = snaplen
+        self.promiscuous_mode = promiscuous_mode
+        self.snapshot_length = snapshot_length
         self.idle_timeout = idle_timeout
         self.active_timeout = active_timeout
         self.accounting_mode = accounting_mode
         self.udps = udps
-        self.dissect = dissect
-        self.statistics = statistics
-        self.max_tcp_dissections = max_tcp_dissections
-        self.max_udp_dissections = max_udp_dissections
+        self.n_dissections = n_dissections
+        self.statistical_analysis = statistical_analysis
         self.n_meters = n_meters
 
     @property
@@ -130,24 +135,24 @@ class NFStreamer(object):
         self._bpf_filter = value
 
     @property
-    def promisc(self):
-        return self._promisc
+    def promiscuous_mode(self):
+        return self._promiscuous_mode
 
-    @promisc.setter
-    def promisc(self, value):
+    @promiscuous_mode.setter
+    def promiscuous_mode(self, value):
         if not isinstance(value, bool):
-            raise ValueError("Please specify a valid promisc parameter (possible values: True, False).")
-        self._promisc = value
+            raise ValueError("Please specify a valid promiscuous_mode parameter (possible values: True, False).")
+        self._promiscuous_mode = value
 
     @property
-    def snaplen(self):
-        return self._snaplen
+    def snapshot_length(self):
+        return self._snapshot_length
 
-    @snaplen.setter
-    def snaplen(self, value):
+    @snapshot_length.setter
+    def snapshot_length(self, value):
         if not isinstance(value, int) or (isinstance(value, int) and value <= 0):
-            raise ValueError("Please specify a valid snaplen parameter (positive integer).")
-        self._snaplen = value
+            raise ValueError("Please specify a valid snapshot_length parameter (positive integer).")
+        self._snapshot_length = value
 
     @property
     def idle_timeout(self):
@@ -205,44 +210,24 @@ class NFStreamer(object):
                     raise ValueError("User defined plugins must inherit from NFPlugin type.")
 
     @property
-    def dissect(self):
-        return self._dissect
+    def n_dissections(self):
+        return self._n_dissections
 
-    @dissect.setter
-    def dissect(self, value):
+    @n_dissections.setter
+    def n_dissections(self, value):
+        if not isinstance(value, int) or (isinstance(value, int) and (value < 0 or value > 255)):
+            raise ValueError("Please specify a valid n_dissections parameter (possible values in : [0,...,255]).")
+        self._n_dissections = value
+
+    @property
+    def statistical_analysis(self):
+        return self._statistical_analysis
+
+    @statistical_analysis.setter
+    def statistical_analysis(self, value):
         if not isinstance(value, bool):
-            raise ValueError("Please specify a valid dissect parameter (possible values: True, False).")
-        self._dissect = value
-
-    @property
-    def statistics(self):
-        return self._statistics
-
-    @statistics.setter
-    def statistics(self, value):
-        if not isinstance(value, bool):
-            raise ValueError("Please specify a valid statistics parameter (possible values: True, False).")
-        self._statistics = value
-
-    @property
-    def max_tcp_dissections(self):
-        return self._max_tcp_dissections
-
-    @max_tcp_dissections.setter
-    def max_tcp_dissections(self, value):
-        if not isinstance(value, int) or (isinstance(value, int) and value < 1):
-            raise ValueError("Please specify a valid max_tcp_dissections parameter (integer >= 1).")
-        self._max_tcp_dissections = value
-
-    @property
-    def max_udp_dissections(self):
-        return self._max_udp_dissections
-
-    @max_udp_dissections.setter
-    def max_udp_dissections(self, value):
-        if not isinstance(value, int) or (isinstance(value, int) and value < 1):
-            raise ValueError("Please specify a valid max_udp_dissections parameter (integer >= 1).")
-        self._max_udp_dissections = value
+            raise ValueError("Please specify a valid statistical_analysis parameter (possible values: True, False).")
+        self._statistical_analysis = value
 
     @property
     def n_meters(self):
@@ -264,8 +249,8 @@ class NFStreamer(object):
                 print("WARNING: NFStreamer set with n_meters:{}.\n"
                       "         Such configuration runs {} processes > {} physical cores on this host.\n"
                       "         This will results in contention and performances degradation.".format(value,
-                                                                                                     value + 1,
-                                                                                                     n_cores))
+                                                                                                      value + 1,
+                                                                                                      n_cores))
                 self._n_meters = value
 
     def __iter__(self):
@@ -279,10 +264,10 @@ class NFStreamer(object):
         try:
             for i in range(n_meters):
                 meters.append(NFMeter(observer_cfg=observer_cfg(source=self.source,
-                                                                snaplen=self.snaplen,
+                                                                snaplen=self.snapshot_length,
                                                                 decode_tunnels=self.decode_tunnels,
                                                                 bpf_filter=self.bpf_filter,
-                                                                promisc=self.promisc,
+                                                                promisc=self.promiscuous_mode,
                                                                 n_roots=n_meters,
                                                                 root_idx=i,
                                                                 mode=self.mode),
@@ -290,10 +275,8 @@ class NFStreamer(object):
                                                           active_timeout=self.active_timeout*1000,
                                                           accounting_mode=self.accounting_mode,
                                                           udps=self.udps,
-                                                          dissect=self.dissect,
-                                                          statistics=self.statistics,
-                                                          max_tcp_dissections=self.max_tcp_dissections,
-                                                          max_udp_dissections=self.max_udp_dissections),
+                                                          n_dissections=self.n_dissections,
+                                                          statistics=self.statistical_analysis),
                                       channel=channel))
                 meters[i].daemon = True  # demonize meter
                 meters[i].start()
@@ -318,12 +301,12 @@ class NFStreamer(object):
         except ValueError as observer_error:
             raise ValueError(observer_error)
 
-    def to_csv(self, path=None, ip_anonymization=False, chunk_size=0):
-        if not isinstance(chunk_size, int) or isinstance(chunk_size, int) and chunk_size < 0:
-            raise ValueError("Please specify a valid chunk size parameter (>= 0).")
+    def to_csv(self, path=None, ip_anonymization=False, flows_per_file=0):
+        if not isinstance(flows_per_file, int) or isinstance(flows_per_file, int) and flows_per_file < 0:
+            raise ValueError("Please specify a valid flows_per_file parameter (>= 0).")
         chunked = True
         chunk_idx = -1
-        if chunk_size == 0:
+        if flows_per_file == 0:
             chunked = False
         if path is None:
             output_path = str(self.source) + '.csv'
@@ -335,7 +318,7 @@ class NFStreamer(object):
         f = None
         for flow in self:
             try:
-                if total_flows == 0 or (chunked and (chunk_flows > chunk_size)):  # header creation
+                if total_flows == 0 or (chunked and (chunk_flows > flows_per_file)):  # header creation
                     if f is not None:
                         f.close()
                     chunk_flows = 1
@@ -369,7 +352,7 @@ class NFStreamer(object):
         temp_file_path = "nfstream-{pid}-{iid}-{ts}?csv".format(pid=os.getpid(),
                                                                 iid=NFStreamer.streamer_id,
                                                                 ts=tm.time())
-        total_flows = self.to_csv(path=temp_file_path, ip_anonymization=ip_anonymization, chunk_size=0)
+        total_flows = self.to_csv(path=temp_file_path, ip_anonymization=ip_anonymization, flows_per_file=0)
         if total_flows >= 0:
             df = pd.read_csv(temp_file_path)
             if total_flows != df.shape[0]:

@@ -25,6 +25,7 @@ typedef struct pcap pcap_t;
 typedef struct nf_packet {
   uint8_t direction;
   uint64_t time;
+  uint64_t delta_time;
   uint16_t src_port;
   uint16_t dst_port;
   uint8_t protocol;
@@ -1079,7 +1080,7 @@ uint32_t flow_udp_size;
 """
 
 cc_meter_headers = """
-typedef struct nf_entry {
+typedef struct nf_flow {
   char src_ip[48];
   uint16_t src_port;
   char dst_ip[48];
@@ -1150,8 +1151,8 @@ typedef struct nf_entry {
   uint64_t dst2src_psh_packets;
   uint64_t dst2src_rst_packets;
   uint64_t dst2src_fin_packets;
-  char application_name[32];
-  char category_name[24];
+  char application_name[40];
+  char category_name[40];
   char requested_server_name[240];
   char c_hash[48];
   char s_hash[48];
@@ -1163,7 +1164,7 @@ typedef struct nf_entry {
   ndpi_protocol detected_protocol;
   uint8_t guessed;
   uint8_t detection_completed;
-} nf_entry_t;
+} nf_flow_t;
 """
 
 cc_observer_apis = """
@@ -1181,15 +1182,13 @@ void dissector_cleanup(struct ndpi_detection_module_struct *dissector);
 """
 
 cc_meter_apis = """
-struct nf_entry *meter_initialize_entry(struct nf_packet *packet, uint8_t accounting_mode, uint8_t statistics,
-                                        uint8_t dissect, uint64_t max_tcp_dissections, uint64_t max_udp_dissections,
-                                        struct ndpi_detection_module_struct *dissector);
-uint8_t meter_update_entry(struct nf_entry *entry, struct nf_packet *packet, uint64_t idle_timeout,
-                           uint64_t active_timeout, uint8_t accounting_mode, uint8_t statistics, uint8_t dissect,
-                           uint64_t max_tcp_dissections, uint64_t max_udp_dissections,
-                           struct ndpi_detection_module_struct *dissector);
-void meter_expire_entry(struct nf_entry *entry, uint8_t dissect, struct ndpi_detection_module_struct *dissector);
-void meter_free_entry(struct nf_entry *entry, uint8_t dissect);
+struct nf_flow *meter_initialize_flow(struct nf_packet *packet, uint8_t accounting_mode, uint8_t statistics,
+                                      uint8_t n_dissections, struct ndpi_detection_module_struct *dissector);
+uint8_t meter_update_flow(struct nf_flow *flow, struct nf_packet *packet, uint64_t idle_timeout, 
+                          uint64_t active_timeout, uint8_t accounting_mode, uint8_t statistics, uint8_t n_dissections,
+                          struct ndpi_detection_module_struct *dissector);
+void meter_expire_flow(struct nf_flow *flow, uint8_t n_dissections, struct ndpi_detection_module_struct *dissector);
+void meter_free_flow(struct nf_flow *flow, uint8_t n_dissections);
 """
 
 

@@ -3,7 +3,7 @@
 
 """
 ------------------------------------------------------------------------------------------------------------------------
-entry.py
+flow.py
 Copyright (C) 2019-20 - NFStream Developers
 This file is part of NFStream, a Flexible Network Data Analysis Framework (https://www.nfstream.org/).
 NFStream is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
@@ -21,12 +21,8 @@ from math import sqrt
 import ipaddress
 
 
-class ExpireOnInit(Exception):
-    """Base class for other exceptions"""
-    pass
-
-
 nf_packet = namedtuple('NFPacket', ['time',
+                                    'delta_time',
                                     'direction',
                                     'raw_size',
                                     'ip_size',
@@ -57,6 +53,7 @@ class UDPS(object):
 def pythonize_packet(packet, ffi):
     """ convert a cdata packet to a namedtuple """
     return nf_packet(time=packet.time,
+                     delta_time=packet.delta_time,
                      direction=packet.direction,
                      raw_size=packet.raw_size,
                      ip_size=packet.ip_size,
@@ -80,7 +77,7 @@ def pythonize_packet(packet, ffi):
                      fin=packet.fin)
 
 
-class NFEntry(object):
+class NFlow(object):
     __slots__ = ('id',
                  'expiration_id',
                  'src_ip',
@@ -166,12 +163,10 @@ class NFEntry(object):
                  '_C',
                  'udps')
 
-    def __init__(self, packet, ffi, lib, udps, sync, accounting_mode, dissect, max_tcp_dissections,
-                 max_udp_dissections, statistics, dissector):
+    def __init__(self, packet, ffi, lib, udps, sync, accounting_mode, n_dissections, statistics, dissector):
         self.id = 0
         self.expiration_id = 0
-        self._C = lib.meter_initialize_entry(packet, accounting_mode, statistics, dissect, max_tcp_dissections,
-                                             max_udp_dissections, dissector)
+        self._C = lib.meter_initialize_flow(packet, accounting_mode, statistics, n_dissections, dissector)
         if self._C == ffi.NULL:
             raise OSError("Not enough memory for new flow creation.")
         self.src_ip = ffi.string(self._C.src_ip).decode('utf-8', errors='ignore')
@@ -247,7 +242,7 @@ class NFEntry(object):
             self.dst2src_psh_packets = self._C.dst2src_psh_packets
             self.dst2src_rst_packets = self._C.dst2src_rst_packets
             self.dst2src_fin_packets = self._C.dst2src_fin_packets
-        if dissect:
+        if n_dissections:
             self.application_name = ffi.string(self._C.application_name).decode('utf-8', errors='ignore')
             self.application_category_name = ffi.string(self._C.category_name).decode('utf-8', errors='ignore')
             self.application_is_guessed = self._C.guessed
@@ -262,31 +257,31 @@ class NFEntry(object):
                 udp.on_init(pythonize_packet(packet, ffi), self)
 
     def update(self, packet, idle_timeout, active_timeout, ffi, lib, udps, sync, accounting_mode,
-               dissect, max_tcp_dissections, max_udp_dissections, statistics, dissector):
-        ret = lib.meter_update_entry(self._C, packet, idle_timeout, active_timeout, accounting_mode, statistics,
-                                     dissect, max_tcp_dissections, max_udp_dissections, dissector)
+               n_dissections, statistics, dissector):
+        ret = lib.meter_update_flow(self._C, packet, idle_timeout, active_timeout, accounting_mode, statistics,
+                                    n_dissections, dissector)
         if ret > 0:
             self.expiration_id = ret - 1
-            return self.expire(udps, sync, dissect, statistics, ffi, lib, dissector)
+            return self.expire(udps, sync, n_dissections, statistics, ffi, lib, dissector)
         else:
             if sync:
-                self.sync(dissect, statistics, ffi)
+                self.sync(n_dissections, statistics, ffi)
                 for udp in udps:
                     udp.on_update(pythonize_packet(packet, ffi), self)
                 if self.expiration_id == -1:
-                    return self.expire(udps, sync, dissect, statistics, ffi, lib, dissector)
+                    return self.expire(udps, sync, n_dissections, statistics, ffi, lib, dissector)
 
-    def expire(self, udps, sync, dissect, statistics, ffi, lib, dissector):
-        lib.meter_expire_entry(self._C, dissect, dissector)
-        self.sync(dissect, statistics, ffi)
+    def expire(self, udps, sync, n_dissections, statistics, ffi, lib, dissector):
+        lib.meter_expire_flow(self._C, n_dissections, dissector)
+        self.sync(n_dissections, statistics, ffi)
         if sync:
             for udp in udps:
                 udp.on_expire(self)
-        lib.meter_free_entry(self._C, dissect)
+        lib.meter_free_flow(self._C, n_dissections)
         del self._C
         return self
 
-    def sync(self, dissect, statistics, ffi):
+    def sync(self, n_dissections, statistics, ffi):
         self.bidirectional_last_seen_ms = self._C.bidirectional_last_seen_ms
         self.bidirectional_duration_ms = self._C.bidirectional_duration_ms
         self.bidirectional_packets = self._C.bidirectional_packets
@@ -358,7 +353,7 @@ class NFEntry(object):
             self.dst2src_psh_packets = self._C.dst2src_psh_packets
             self.dst2src_rst_packets = self._C.dst2src_rst_packets
             self.dst2src_fin_packets = self._C.dst2src_fin_packets
-        if dissect:
+        if n_dissections:
             if self._C.detection_completed == 1:
                 self.application_name = ffi.string(self._C.application_name).decode('utf-8', errors='ignore')
                 self.application_category_name = ffi.string(self._C.category_name).decode('utf-8', errors='ignore')
@@ -377,7 +372,7 @@ class NFEntry(object):
 
     def __str__(self):
         started = False
-        printable = "NFEntry("
+        printable = "NFlow("
         for attr_name in self.__slots__:
             try:
                 if not started:
