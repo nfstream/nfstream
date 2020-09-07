@@ -343,7 +343,8 @@ extended_streamer = NFStreamer(source='facebook.pcap',
                                udps=MyCustomFeature(custom_size=555))
 
 for flow in extended_streamer:
-    print(flow.udps.packet_with_custom_size) # see your dynamically created metric in generated flows
+    # see your dynamically created metric in generated flows
+    print(flow.udps.packet_with_custom_size) 
 ```
 
 ### Run your Machine Learning models
@@ -374,7 +375,8 @@ class ModelPrediction(NFPlugin):
         flow.udps.model_prediction = 0
     def on_expire(self, flow):
         # You can do the same in op_update entrypoint and force expiration with custom id. 
-        to_predict = numpy.array([flow.bidirectional_packets, flow.bidirectional_bytes]).reshape((1,-1))
+        to_predict = numpy.array([flow.bidirectional_packets,
+                                  flow.bidirectional_bytes]).reshape((1,-1))
         flow.udps.model_prediction = self.my_model.predict(to_predict)
 
 ml_streamer = NFStreamer(source="eth0", udps=ModelPrediction(my_model=model))
