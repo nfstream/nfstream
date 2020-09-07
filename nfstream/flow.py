@@ -286,7 +286,8 @@ class NFlow(object):
             return self.expire(udps, sync, n_dissections, statistics, splt, ffi, lib, dissector)  # expire it.
         else:
             if sync:  # If running with Plugins
-                self.sync(n_dissections, statistics, splt, ffi, lib)  # We need to copy computed values on C struct.
+                self.sync(n_dissections, statistics, splt, ffi, lib, sync)
+                # We need to copy computed values on C struct.
                 for udp in udps:  # Then call each plugin on_update entrypoint.
                     udp.on_update(pythonize_packet(packet, ffi), self)
                 if self.expiration_id == -1: # One of the plugins set expiration to custom value (-1)
@@ -297,15 +298,15 @@ class NFlow(object):
         # Call expiration of C structure.
         lib.meter_expire_flow(self._C, n_dissections, dissector)
         # Then sync (second copy in case of non sync mode)
-        self.sync(n_dissections, statistics, splt, ffi, lib)
-        if sync: # Running with NFPlugins
+        self.sync(n_dissections, statistics, splt, ffi, lib, sync)
+        if sync:  # Running with NFPlugins
             for udp in udps:
                 udp.on_expire(self)  # Call each Plugin on_expire entrypoint
         lib.meter_free_flow(self._C, n_dissections, splt)  # then free C struct
         del self._C  # and remove it from NFlow slots.
         return self
 
-    def sync(self, n_dissections, statistics, splt, ffi, lib):
+    def sync(self, n_dissections, statistics, splt, ffi, lib, sync_mode):
         """
         NFlow synchronizer method
            Will be called only twice when running without Plugins
@@ -394,14 +395,20 @@ class NFlow(object):
                 self.http_user_agent = ffi.string(self._C.user_agent).decode('utf-8', errors='ignore')
                 self.http_content_type = ffi.string(self._C.content_type).decode('utf-8', errors='ignore')
                 self.application_is_guessed = self._C.guessed
-        if splt:  # Same for splt, once we reach splt limit, there is no need to sync it anymore.
-            if self._C.bidirectional_packets <= splt:
+        if splt:
+            if sync_mode: # Same for splt, once we reach splt limit, there is no need to sync it anymore.
+                if self._C.bidirectional_packets <= splt:
+                    self.splt_direction = ffi.unpack(self._C.splt_direction, splt)
+                    self.splt_ps = ffi.unpack(self._C.splt_ps, splt)
+                    self.splt_piat_ms = ffi.unpack(self._C.splt_piat_ms, splt)
+                else:
+                    if self._C.splt_closed == 0:  # we also release the memory to keep only the obtained list.
+                        lib.free_splt_data(self._C)
+            else:
                 self.splt_direction = ffi.unpack(self._C.splt_direction, splt)
                 self.splt_ps = ffi.unpack(self._C.splt_ps, splt)
                 self.splt_piat_ms = ffi.unpack(self._C.splt_piat_ms, splt)
-            else:
-                if self._C.splt_closed == 0:  # we also release the memory to keep only the obtained list.
-                    lib.free_splt_data(self._C)
+                # Memory will be released by freer.
 
     def is_idle(self, tick, idle_timeout):
         """ is_idle method to check if NFlow is idle accoring to configured timeout """
