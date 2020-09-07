@@ -21,6 +21,7 @@ import pandas as pd
 import time as tm
 import secrets
 import os
+import datetime
 from collections.abc import Iterable
 from collections import namedtuple
 from psutil import net_if_addrs, cpu_count
@@ -51,6 +52,7 @@ meter_cfg = namedtuple('MeterConfiguration', ['idle_timeout',
 
 
 def csv_converter(values):
+    """ convert non numeric values to using their __str__ method and ensure quoting """
     for idx in range(len(values)):
         if not isinstance(values[idx], float) and not isinstance(values[idx], int):
             values[idx] = str(values[idx])
@@ -73,7 +75,7 @@ class NFStreamer(object):
                  decode_tunnels=True,
                  bpf_filter=None,
                  promiscuous_mode=True,
-                 snapshot_length=65535,
+                 snapshot_length=1500,
                  idle_timeout=30,
                  active_timeout=300,
                  accounting_mode=0,
@@ -81,7 +83,8 @@ class NFStreamer(object):
                  n_dissections=20,
                  statistical_analysis=False,
                  splt_analysis=0,
-                 n_meters=3
+                 n_meters=3,
+                 performance_summary=False,
                  ):
         NFStreamer.streamer_id += 1
         self.mode = 0
@@ -98,6 +101,7 @@ class NFStreamer(object):
         self.statistical_analysis = statistical_analysis
         self.splt_analysis = splt_analysis
         self.n_meters = n_meters
+        self.performance_summary = performance_summary
 
     @property
     def source(self):
@@ -248,12 +252,12 @@ class NFStreamer(object):
 
     @n_meters.setter
     def n_meters(self, value):
-        if (isinstance(value, int) and value >= 1) or value is None:
+        if isinstance(value, int) and value >= 0:
             pass
         else:
-            raise ValueError("Please specify a valid n_meters parameter (>=1 or None).")
+            raise ValueError("Please specify a valid n_meters parameter (>=1 or 0 for auto scaling).")
         n_cores = cpu_count(logical=False)
-        if value is None:
+        if value == 0:
             self._n_meters = n_cores - 1
         else:
             if (value + 1) <= n_cores:
@@ -266,8 +270,24 @@ class NFStreamer(object):
                                                                                                       n_cores))
                 self._n_meters = value
 
+    @property
+    def performance_summary(self):
+        return self._performance_summary
+
+    @performance_summary.setter
+    def performance_summary(self, value):
+        if not isinstance(value, bool):
+            raise ValueError("Please specify a valid performance_summary parameter (possible values: True, False).")
+        self._performance_summary = value
+
     def __iter__(self):
+        start_time = datetime.datetime.now()
         meters = []
+        meters_load = {}
+        processed_packets = 0
+        discarded_packets = 0
+        dropped_packets = 0
+        dropped_intf_packets = 0
         n_terminated = 0
         channel = multiprocessing.Queue(maxsize=32767)  # Backpressure strategy.
         # We set it to (2^15-1) to cope with OSX maximum semaphore value.
@@ -276,6 +296,7 @@ class NFStreamer(object):
             n_meters = 1
         try:
             for i in range(n_meters):
+                meters_load[i] = 0
                 meters.append(NFMeter(observer_cfg=observer_cfg(source=self.source,
                                                                 snaplen=self.snapshot_length,
                                                                 decode_tunnels=self.decode_tunnels,
@@ -297,15 +318,35 @@ class NFStreamer(object):
             idx_generator = 0
             while True:
                 try:
-                    flow = channel.get()
-                    if flow is None:
+                    recv = channel.get()
+                    if isinstance(recv, list):  # termination and stats
                         n_terminated += 1
+                        meters_load[recv[0]] = recv[1]
+                        processed_packets += recv[1]
+                        discarded_packets = max(discarded_packets, recv[2])
+                        dropped_packets = max(dropped_packets, recv[3])
+                        dropped_intf_packets = max(dropped_intf_packets, recv[4])
                         if n_terminated == n_meters:
+                            if self.performance_summary:
+                                for i in range(n_meters):
+                                    if processed_packets != 0:
+                                        meters_load[i] = round((meters_load[i]/processed_packets)*100, 2)
+                                print("\nNFStreamer performance summary:")
+                                print("- Processing time                   : {}".format(
+                                    datetime.datetime.now()-start_time)
+                                )
+                                print("- Metering load dispatch (%)        : {}".format(meters_load))
+                                print("- Processed flows                   : {}".format(idx_generator))
+                                print("- Processed packets                 : {}".format(processed_packets))
+                                print("- Ignored packets                   : {}".format(discarded_packets))
+                                if self.mode:
+                                    print("- Dropped/filtered packets (kernel) : {}".format(dropped_packets))
+                                    print("- Dropped packets (interface)       : {}".format(dropped_intf_packets))
                             break  # We finish up when all metering jobs are terminated
                     else:
-                        flow.id = idx_generator  # Unify ID
+                        recv.id = idx_generator  # Unify ID
                         idx_generator += 1
-                        yield flow
+                        yield recv
                 except KeyboardInterrupt:
                     pass  # We pass as we wait for metering jobs (they will handle the keyboard interupt)
             for i in range(n_meters):

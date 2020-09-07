@@ -18,14 +18,10 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from nfstream import NFStreamer
 import sys
-import datetime
-
 
 path = sys.argv[1]
-output_file_name = path + ".csv"
 print("nfstream processing started. Use Ctrl+C to interrupt and save.")
-start = datetime.datetime.now()
-total_flows = NFStreamer(source=path, statistics=True).to_csv(path=output_file_name)
-end = datetime.datetime.now()
-print("\nnfstream processed {} flows and saved them in file: {}".format(total_flows, output_file_name))
-print("Processing time: {}".format(end - start))
+total_flows = NFStreamer(source=path,
+                         statistical_analysis=True,
+                         splt_analysis=10,
+                         performance_summary=True).to_csv()

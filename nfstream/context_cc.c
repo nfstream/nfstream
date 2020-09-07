@@ -345,6 +345,11 @@ typedef struct nf_packet {
 } nf_packet_t;
 
 
+typedef struct nf_stat {
+  unsigned dropped;
+  unsigned dropped_by_interface;
+} nf_stat_t;
+
 /**
  * nfstream_handle_ipv6_extension_headers: Handle IPv6 extensions header.
  */
@@ -1008,11 +1013,18 @@ int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tun
   return -1;
 }
 
-
 /**
  * observer_close: Close observer handle.
  */
-void observer_close(pcap_t * pcap_handle) {
+void observer_close(pcap_t * pcap_handle, unsigned mode, struct nf_stat *nf_statistics) {
+  struct pcap_stat statistics;
+  if (mode == 1) { // We report statistics on live interface.
+    int ret = pcap_stats(pcap_handle, &statistics);
+    if (ret == 0) {
+      nf_statistics->dropped = statistics.ps_drop;
+      nf_statistics->dropped_by_interface = statistics.ps_ifdrop;
+    }
+  }
   pcap_breakloop(pcap_handle);
   pcap_close(pcap_handle);
 }

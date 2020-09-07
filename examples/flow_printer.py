@@ -21,7 +21,7 @@ import sys
 
 
 path = sys.argv[1]
-flow_streamer = NFStreamer(source=path)
+flow_streamer = NFStreamer(source=path, statistical_analysis=False, performance_summary=False)
 result = {}
 try:
     for flow in flow_streamer:
@@ -30,9 +30,9 @@ try:
             result[flow.application_name] += flow.bidirectional_packets
         except KeyError:
             result[flow.application_name] = flow.bidirectional_packets
-    print("Summary (Application Name: Packets):")
+    print("\nSummary (Application Name: Packets):")
     print(result)
 except KeyboardInterrupt:
-    print("Summary (Application Name: Packets):")
+    print("\nSummary (Application Name: Packets):")
     print(result)
     print("Terminated.")

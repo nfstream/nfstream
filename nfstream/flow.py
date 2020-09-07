@@ -177,7 +177,7 @@ class NFlow(object):
                  'udps')
 
     def __init__(self, packet, ffi, lib, udps, sync, accounting_mode, n_dissections, statistics, splt, dissector):
-        self.id = 0  # id always at zero and will be handled by NFStreamer side.
+        self.id = -1  # id always at -1 and will be handled by NFStreamer side.
         self.expiration_id = 0
         # Initialize C structure.
         self._C = lib.meter_initialize_flow(packet, accounting_mode, statistics, splt, n_dissections, dissector)
@@ -422,9 +422,10 @@ class NFlow(object):
                 else:
                     if attr_name == 'udps':
                         for udp_name in self.udps.__dict__.keys():
-                            printable += ',\n\t' + attr_name + '.' + udp_name + "=" + str(getattr(self.udps, udp_name))
+                            printable += ',\n      ' + attr_name + '.' + udp_name + "=" + str(getattr(self.udps,
+                                                                                                        udp_name))
                     else:
-                        printable += ',\n\t' + attr_name + "=" + str(getattr(self, attr_name))
+                        printable += ',\n      ' + attr_name + "=" + str(getattr(self, attr_name))
             except AttributeError:
                 pass
         printable += ")"

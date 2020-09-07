@@ -35,7 +35,7 @@ def configure_observer(handler, bpf_filter, ffi, lib):
         # On a valid handler, we set BPF filtering if defined.
         rs = lib.observer_configure(handler, bytes(bpf_filter, 'utf-8'))
         if rs > 0:
-            lib.observer_close(handler)
+            lib.observer_close(handler, 0, ffi.NULL)
             ffi.dlclose(lib)
             if rs == 1:
                 raise ValueError("Failed to compile BPF filter:{}.".format(bpf_filter))
@@ -46,7 +46,7 @@ def configure_observer(handler, bpf_filter, ffi, lib):
 
 class NFObserver(object):
     """ NFObserver module main class """
-    __slots__ = ("_cap", "lib", "ffi", "_mode", "_decode_tunnels", "_n_roots", "_root_idx")
+    __slots__ = ("_cap", "lib", "ffi", "_mode", "_decode_tunnels", "_n_roots", "_root_idx", "_consumed", "_discarded")
 
     def __init__(self, cfg, ffi, lib):
         cap = open_observer(cfg.source, cfg.snaplen, cfg.mode, cfg.promisc, ffi, lib)
@@ -58,6 +58,8 @@ class NFObserver(object):
         self._decode_tunnels = cfg.decode_tunnels
         self._n_roots = cfg.n_roots
         self._root_idx = cfg.root_idx
+        self._discarded = 0
+        self._consumed = 0
 
     def __iter__(self):
         # faster as we make intensive access to these members.
@@ -69,7 +71,8 @@ class NFObserver(object):
         n_roots = self._n_roots
         root_idx = self._root_idx
         observer_time = 0
-
+        discarded_packets = 0
+        consumed_packets = 0
         try:
             while True:
                 nf_packet = ffi.new("struct nf_packet *")
@@ -81,6 +84,7 @@ class NFObserver(object):
                     else:
                         time = observer_time
                     if ret == 1:
+                        consumed_packets += 1
                         yield 1, time, nf_packet
                     elif ret == 2:  # Time ticker (Valid but do not match our id)
                         yield 0, time, None
@@ -90,13 +94,22 @@ class NFObserver(object):
                         else:
                             pass  # Should never happen
                 elif ret == 0:  # Ignored
-                    pass
+                    discarded_packets += 1
                 elif ret == -1:  # Read error
                     pass
                 else:  # End of file
                     raise KeyboardInterrupt
         except KeyboardInterrupt:
+            self._consumed = consumed_packets
+            self._discarded = discarded_packets
             return
 
-    def close(self):
-        self.lib.observer_close(self._cap)
+    def close(self, channel):
+        stats = self.ffi.new("struct nf_stat *")
+        self.lib.observer_close(self._cap, self._mode, stats)
+        channel.put([self._root_idx,
+                     self._consumed,
+                     self._discarded,
+                     stats.dropped,
+                     stats.dropped_by_interface
+                     ])

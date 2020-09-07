@@ -180,7 +180,15 @@ class TestMethods(unittest.TestCase):
                     pass
             except ValueError:
                 value_errors += 1
-        self.assertEqual(value_errors, 31)
+        performance_summary = ["yes", -1]
+        for x in performance_summary:
+            try:
+                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', performance_summary=x):
+                    print(flow)
+                    pass
+            except ValueError:
+                value_errors += 1
+        self.assertEqual(value_errors, 33)
         print("{}\t: \033[94mOK\033[0m".format(".Test parameters handling".ljust(60, ' ')))
 
     def test_expiration_management(self):
@@ -216,7 +224,7 @@ class TestMethods(unittest.TestCase):
     def test_statistical(self):
         print("\n----------------------------------------------------------------------")
         statistical_streamer = NFStreamer(source='tests/pcap/google_ssl.pcap', statistical_analysis=True,
-                                          accounting_mode=1)
+                                          accounting_mode=1, performance_summary=True)
         for flow in statistical_streamer:
             self.assertEqual(flow.id, 0)
             self.assertEqual(flow.expiration_id, 0)

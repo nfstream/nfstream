@@ -46,6 +46,10 @@ typedef struct nf_packet {
   uint16_t ip_content_len;
   uint8_t *ip_content;
 } nf_packet_t;
+typedef struct nf_stat {
+  unsigned dropped;
+  unsigned dropped_by_interface;
+} nf_stat_t;
 """
 
 cc_dissector_headers_packed = """
@@ -1182,7 +1186,7 @@ pcap_t *observer_open(const uint8_t * pcap_file, unsigned snaplen, int promisc, 
                       char *err_set, int mode);
 int observer_configure(pcap_t * pcap_handle, char * bpf_filter);
 int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tunnels, int n_roots, int root_idx);
-void observer_close(pcap_t *);
+void observer_close(pcap_t * pcap_handle, unsigned mode, struct nf_stat *nf_statistics);
 """
 
 cc_dissector_apis = """

@@ -126,7 +126,6 @@ def meter_cleanup(cache, channel, udps, sync, n_dissections, statistics, splt, f
         channel.put(flow.expire(udps, sync, n_dissections, statistics, splt, ffi, lib, dissector))
         del cache[flow_key]
         del flow
-    channel.put(None)  # Termination message
 
 
 def setup_dissector(ffi, lib, n_dissections):
@@ -220,7 +219,7 @@ class NFMeter(Process):
             # Expire all remaining flows in the cache.
             meter_cleanup(cache, channel, udps, sync, n_dissections, statistics, splt, ffi, lib, dissector)
             # Close observer
-            self.observer.close()
+            self.observer.close(channel)
             # Clean dissector
             self.lib.dissector_cleanup(dissector)
             del ffi
