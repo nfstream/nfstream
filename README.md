@@ -104,7 +104,7 @@ reproducible and deployable. By using NFStream as a common framework, researcher
 the same feature computation logic and thus, a fair comparison is possible. Moreover, trained models can be deployed 
 and evaluated on live network using [**NFPlugins**][nfplugin]. 
 
-### How to get it?
+## How to get it?
 
 Binary installers for the latest released version are availableon Pypi.
 ```bash
