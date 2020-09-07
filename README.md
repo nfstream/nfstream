@@ -1,10 +1,10 @@
 ![NFStream Logo](https://raw.githubusercontent.com/nfstream/nfstream/master/assets/nfstream_header_logo.png?raw=true)
 
 --------------------------------------------------------------------------------
-[**NFStream**][repo] is a Python package providing fast, flexible, and expressive data structures designed to make 
+[**NFStream**][repo] is a Python framework providing fast, flexible, and expressive data structures designed to make 
 working with **online** or **offline** network data both easy and intuitive. It aims to be the fundamental high-level 
 building block for doing practical, **real world** network data analysis in Python. Additionally, it has the broader 
-goal of becoming **a common network data processing framework for researchers** providing data reproducibility 
+goal of becoming **a common network data analytics framework for researchers** providing data reproducibility 
 across experiments.
 
 <table>
@@ -88,28 +88,35 @@ across experiments.
 
 ## Main Features
 
-* **Performance:** **NFStream** is designed to be fast: parallel processing, native C 
+* **Performance:** NFStream is designed to be fast: parallel processing, native C 
 (using [**CFFI**][cffi]) for critical computation and [**PyPy**][pypy] support.
-* **Encrypted layer-7 visibility:** **NFStream** deep packet inspection is based on [**nDPI**][ndpi]. 
+* **Encrypted layer-7 visibility:** NFStream deep packet inspection is based on [**nDPI**][ndpi]. 
 It allows NFStream to perform [**reliable**][reliable] encrypted applications identification and metadata 
 fingerprinting (e.g. TLS, SSH, DHCP, HTTP).
-* **Statistical fingerprinting:** **NFStream** provides state of the art of flow-based statistical feature extraction. 
+* **Statistical features extraction:** NFStream provides state of the art of flow-based statistical feature extraction. 
 It includes both post-mortem statistical features (e.g. min, mean, stddev and max of packet size and inter arrival time) 
 and early flow features (e.g. sequence of first n packets sizes, inter arrival times and
 directions).
-* **Flexibility:** **NFStream** is easily extensible using [**NFPlugins**][nfplugin]. It allows to create a new 
+* **Flexibility:** NFStream is easily extensible using [**NFPlugins**][nfplugin]. It allows to create a new 
 feature within a few lines of Python.
-* **Machine Learning oriented:** **NFStream** aims to make Machine Learning Approaches for network traffic management 
+* **Machine Learning oriented:** NFStream aims to make Machine Learning Approaches for network traffic management 
 reproducible and deployable. By using NFStream as a common framework, researchers ensure that models are trained using 
 the same feature computation logic and thus, a fair comparison is possible. Moreover, trained models can be deployed 
 and evaluated on live network using [**NFPlugins**][nfplugin]. 
+
+### How to get it?
+
+Binary installers for the latest released version are availableon Pypi.
+```bash
+pip install nfstream
+```
 
 ## How to use it?
 
 ### Encrypted application identification and metadata extraction
 
-Dealing with a big pcap file and just want to aggregate into labeled network flows? **NFStream** make this path easier in 
-few lines:
+Dealing with a big pcap file and just want to aggregate into labeled network flows? **NFStream** make this path easier 
+in few lines:
 
 ```python
 from nfstream import NFStreamer
@@ -171,9 +178,10 @@ NFlow(id=0,
       http_content_type='')
  ```
 
-### Extract post-mortem statistical flow features
+### Post-mortem statistical flow features extraction
 
-NFStream performs 48 post mortem flow statistical features extraction:
+NFStream performs 48 post mortem flow statistical features extraction which include detailed TCP flags analysis, 
+minimum, mean, maximum and standard deviation of both packet size and interarrival time in each direction. 
 
 ```python
 from nfstream import NFStreamer
@@ -264,7 +272,7 @@ NFlow(id=0,
 
 ### Early statistical flow features extraction
 NFStream performs early (up to 255 packets) flow statistical features extraction (also referred as SPLT analysis in the 
-literature) 
+literature). It is summarized as a sequence a these packets directions, sizes and interarrival times.
 
 ```python
 from nfstream import NFStreamer
@@ -273,7 +281,7 @@ my_streamer = NFStreamer(source="facebook.pcap",
                          # for readability purpose.
                          n_dissections=0,
                          statistical_analysis=False,
-                         splt_analysis=True)
+                         splt_analysis=10)
 for flow in my_streamer:
     print(flow)
 ```
@@ -311,18 +319,18 @@ NFlow(id=0,
       splt_piat_ms=[0, 303, 0, 0, 313, 0, 0, 0, 0, 1])
 ```
 
-### Convert your network flows into a Pandas dataframe
+### Pandas export interface
 
-From pcap to Pandas DataFrame?
+NFStream natively supports Pandas as export interface.
 
 ```python
 my_dataframe = NFStreamer(source='facebook.pcap').to_pandas(ip_anonymization=False)
 my_dataframe.head(5)
 ```
 
-### Convert your network flows into a CSV file
+### CSV export interface
 
-From pcap to csv file?
+NFStream natively supports CSV file format as export interface.
 
 ```python
 flows_count = NFStreamer(source='facebook.pcap').to_csv(path=None,
@@ -359,13 +367,13 @@ for flow in extended_streamer:
     print(flow.udps.packet_with_custom_size) 
 ```
 
-### Run your Machine Learning models
+### Machine Learning models training and deployment
 
-In the following, we want to run a classification of flows application category based on a trained machine learning 
-model than takes as features bidirectional_packets and bidirectional_bytes of a flow and predict if traffic category is 
-SocialNetwork or not. In the following example, we decide to predict only at flow expiration stage. 
+In the example following, we demonstrate a simplistic machine learning approach training and deployment.
+We suppose that we want to run a classification of Social Network category flows based on bidirectional_packets and 
+bidirectional_bytes as features. For the sake of brevity, we decide to predict only at flow expiration stage.
 
-#### Training your model
+#### Training the model
 
 ```python
 from nfstream import NFPlugin, NFStreamer
@@ -379,7 +387,7 @@ model = RandomForestClassifier()
 model.fit(X, y)
 ```
 
-#### Start your ML powered streamer on live traffic
+#### ML powered streamer on live traffic
 
 ```python
 class ModelPrediction(NFPlugin):
@@ -399,20 +407,11 @@ for flow in ml_streamer:
 More example and details are provided on the official [**documentation**][documentation]. You can test NFStream 
 without installation using our [**live demo notebook**][demo].
 
-## Installation
-
-### Using pip
-
-Binary installers for the latest released version are available:
-```bash
-python3 -m pip install nfstream
-```
-
-### Build from sources
+## Building from sources
 
 If you want to build **NFStream** from sources on your local machine:
 
-#### ![linux](https://raw.githubusercontent.com/wiki/ryanoasis/nerd-fonts/screenshots/v1.0.x/linux-pass-sm.png) Linux
+### ![linux](https://raw.githubusercontent.com/wiki/ryanoasis/nerd-fonts/screenshots/v1.0.x/linux-pass-sm.png) Linux
 
 ```bash
 sudo apt-get update
@@ -424,7 +423,7 @@ python3 -m pip install -r requirements.txt
 python3 setup.py bdist_wheel
 ```
 
-#### ![osx](https://raw.githubusercontent.com/wiki/ryanoasis/nerd-fonts/screenshots/v1.0.x/mac-pass-sm.png) MacOS
+### ![osx](https://raw.githubusercontent.com/wiki/ryanoasis/nerd-fonts/screenshots/v1.0.x/mac-pass-sm.png) MacOS
 
 ```bash
 brew install autoconf automake libtool pkg-config
