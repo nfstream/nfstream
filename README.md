@@ -88,9 +88,9 @@ across experiments.
 
 ## Main Features
 
-* **Performance:** **NFStream** is designed to be fast. This includes: parallel processing, native C 
+* **Performance:** **NFStream** is designed to be fast: parallel processing, native C 
 (using [**CFFI**][cffi]) for critical computation and [**PyPy**][pypy] support.
-* **Encrypted layer-7 visibility:** **NFStream** deep packet inspection engine is based on [**nDPI**][ndpi]. 
+* **Encrypted layer-7 visibility:** **NFStream** deep packet inspection is based on [**nDPI**][ndpi]. 
 It allows NFStream to perform [**reliable**][reliable] encrypted applications identification and metadata 
 fingerprinting (e.g. TLS, SSH, DHCP, HTTP).
 * **Statistical fingerprinting:** **NFStream** provides state of the art of flow-based statistical feature extraction. 
@@ -102,11 +102,13 @@ feature within a few lines of Python.
 * **Machine Learning oriented:** **NFStream** aims to make Machine Learning Approaches for network traffic management 
 reproducible and deployable. By using NFStream as a common framework, researchers ensure that models are trained using 
 the same feature computation logic and thus, a fair comparison is possible. Moreover, trained models can be deployed 
-and evaluated on live network using [**NFPlugin**][nfplugin]. 
+and evaluated on live network using [**NFPlugins**][nfplugin]. 
 
 ## How to use it?
 
-* Dealing with a big pcap file and just want to aggregate it as network flows? **NFStream** make this path easier in 
+### Encrypted application identification and metadata extraction
+
+Dealing with a big pcap file and just want to aggregate into labeled network flows? **NFStream** make this path easier in 
 few lines:
 
 ```python
@@ -169,7 +171,9 @@ NFlow(id=0,
       http_content_type='')
  ```
 
-* NFStream performs 48 post mortem flow statistical features extraction:
+### Extract post-mortem statistical flow features
+
+NFStream performs 48 post mortem flow statistical features extraction:
 
 ```python
 from nfstream import NFStreamer
@@ -258,8 +262,9 @@ NFlow(id=0,
       dst2src_fin_packets=0)
 ```
 
-* NFStream performs early flow statistical features extraction 
-(up to 255 packets):
+### Early statistical flow features extraction
+NFStream performs early (up to 255 packets) flow statistical features extraction (also referred as SPLT analysis in the 
+literature) 
 
 ```python
 from nfstream import NFStreamer
@@ -306,21 +311,28 @@ NFlow(id=0,
       splt_piat_ms=[0, 303, 0, 0, 313, 0, 0, 0, 0, 1])
 ```
 
-* From pcap to Pandas DataFrame?
+### Convert your network flows into a Pandas dataframe
+
+From pcap to Pandas DataFrame?
 
 ```python
 my_dataframe = NFStreamer(source='facebook.pcap').to_pandas(ip_anonymization=False)
 my_dataframe.head(5)
 ```
 
-* From pcap to csv file?
+### Convert your network flows into a CSV file
+
+From pcap to csv file?
 
 ```python
 flows_count = NFStreamer(source='facebook.pcap').to_csv(path=None,
                                                         flows_per_file=0,
                                                         ip_anonymization=False)
 ```
-* Didn't find a specific flow feature? add a plugin to **NFStream** in few lines:
+
+### Extending NFStream
+
+Didn't find a specific flow feature? add a plugin to **NFStream** in few lines:
 
 ```python
 from nfstream import NFPlugin
@@ -374,7 +386,7 @@ class ModelPrediction(NFPlugin):
     def on_init(self, packet, flow):
         flow.udps.model_prediction = 0
     def on_expire(self, flow):
-        # You can do the same in op_update entrypoint and force expiration with custom id. 
+        # You can do the same in on_update entrypoint and force expiration with custom id. 
         to_predict = numpy.array([flow.bidirectional_packets,
                                   flow.bidirectional_bytes]).reshape((1,-1))
         flow.udps.model_prediction = self.my_model.predict(to_predict)
@@ -384,11 +396,10 @@ for flow in ml_streamer:
     print(flow.udps.model_prediction)
 ```
 
-* More example and details are provided on the official [**documentation**][documentation].
-* You can test NFStream without installation using our [**live demo notebook**][demo].
+More example and details are provided on the official [**documentation**][documentation]. You can test NFStream 
+without installation using our [**live demo notebook**][demo].
 
 ## Installation
-
 
 ### Using pip
 
