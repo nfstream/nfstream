@@ -83,7 +83,7 @@ class NFStreamer(object):
                  n_dissections=20,
                  statistical_analysis=False,
                  splt_analysis=0,
-                 n_meters=3,
+                 n_meters=0,
                  performance_summary=False,
                  ):
         NFStreamer.streamer_id += 1
