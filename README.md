@@ -462,11 +462,16 @@ As with any packet monitoring tool, **NFStream** could potentially be misused.
 
 ### Authors
 
-[**Zied Aouini**][linkedin] created **nfstream** and [**these fine people**][contributors] have contributed.
+NFStream has been created by [**Zied AOUINI**](mailto:aouinizied@gmail.com).
+
+The following people contributed to NFStream:
+* [**Zied Aouini**](mailto:aouinizied@gmail.com): Main developer.
+* [**Adrian Pekar**](mailto:adrian.pekar@gmail.com): Testing, datasets generation and storage.
+* [**Radion Bikmukhamedov**](mailto:radion.bikmukhamedov@pm.me): Initial work on SPLT analysis NFPlugin.
 
 ### Supporting Organizations
 
-![sah] ![tuke]
+[![sah]](https://www.softathome.com/) [![tuke]](https://www.tuke.sk/)
 
 ## License
 
@@ -483,6 +488,5 @@ This project is licensed under the LGPLv3 License - see the [**License**][licens
 [demo]: https://mybinder.org/v2/gh/nfstream/nfstream/master?filepath=demo_notebook.ipynb
 [pypy]: https://www.pypy.org/
 [cffi]: https://cffi.readthedocs.io/en/latest/index.html
-[linkedin]: https://www.linkedin.com/in/dr-zied-aouini
 [sah]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/sah_logo.png?raw=true
 [tuke]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/tuke_logo.png?raw=true
