@@ -106,7 +106,8 @@ and evaluated on live network using [**NFPlugins**][nfplugin].
 
 ## How to get it?
 
-Binary installers for the latest released version are availableon Pypi.
+Binary installers for the latest released version are available on Pypi.
+
 ```bash
 pip install nfstream
 ```
@@ -122,6 +123,7 @@ in few lines:
 from nfstream import NFStreamer
 # We display all streamer parameters with their default values.
 # See documentation for detailed information about each parameter.
+# https://www.nfstream.org/docs/api#nfstreamer
 my_streamer = NFStreamer(source="facebook.pcap", # or network interface
                          decode_tunnels=True,
                          bpf_filter=None,
@@ -142,6 +144,8 @@ for flow in my_streamer:
 ```
 
 ```python
+# See documentation for each feature detailed description.
+# https://www.nfstream.org/docs/api#nflow
 NFlow(id=0,
       expiration_id=0,
       src_ip='192.168.43.18',
@@ -194,6 +198,8 @@ for flow in my_streamer:
 ```
 
 ```python
+# See documentation for each feature detailed description.
+# https://www.nfstream.org/docs/api#nflow
 NFlow(id=0,
       expiration_id=0,
       src_ip='192.168.43.18',
@@ -287,6 +293,8 @@ for flow in my_streamer:
 ```
 
 ```python
+# See documentation for each feature detailed description.
+# https://www.nfstream.org/docs/api#nflow
 NFlow(id=0,
       expiration_id=0,
       src_ip='192.168.43.18',
@@ -324,6 +332,8 @@ NFlow(id=0,
 NFStream natively supports Pandas as export interface.
 
 ```python
+# See documentation for more details.
+# https://www.nfstream.org/docs/api#pandas-dataframe-conversion
 my_dataframe = NFStreamer(source='facebook.pcap').to_pandas(ip_anonymization=False)
 my_dataframe.head(5)
 ```
@@ -333,6 +343,8 @@ my_dataframe.head(5)
 NFStream natively supports CSV file format as export interface.
 
 ```python
+# See documentation for more details.
+# https://www.nfstream.org/docs/api#csv-file-conversion
 flows_count = NFStreamer(source='facebook.pcap').to_csv(path=None,
                                                         flows_per_file=0,
                                                         ip_anonymization=False)
@@ -404,8 +416,8 @@ for flow in ml_streamer:
     print(flow.udps.model_prediction)
 ```
 
-More example and details are provided on the official [**documentation**][documentation]. You can test NFStream 
-without installation using our [**live demo notebook**][demo].
+More NFPlugin examples and details are provided on the official [**documentation**][documentation]. You can also test 
+NFStream without installation using our [**live demo notebook**][demo].
 
 ## Building from sources
 
@@ -446,6 +458,20 @@ network applied machine learning models.
 As with any packet monitoring tool, **NFStream** could potentially be misused.
 **Do not run it on any network of which you are not the owner or the administrator**.
 
+## Credits
+
+### Authors
+
+[**Zied Aouini**][linkedin] created **nfstream** and [**these fine people**][contributors] have contributed.
+
+### Supporting Organizations
+
+| <!-- -->    | <!-- -->                       |
+|-------------|--------------------------------|
+| ![sah]      | SofAtHome                      |
+| ![tuke]     | Technical University of Košice |
+
+
 ## License
 
 This project is licensed under the LGPLv3 License - see the [**License**][license] file for details
@@ -454,11 +480,13 @@ This project is licensed under the LGPLv3 License - see the [**License**][licens
 [contribute]: https://nfstream.org/docs/community
 [contributors]: https://github.com/nfstream/nfstream/graphs/contributors
 [documentation]: https://nfstream.org/
-[ndpi]: https://nfstream.org/docs/visibility
+[ndpi]: https://github.com/ntop/nDPI
 [nfplugin]: https://nfstream.org/docs/api#nfplugin
 [reliable]: http://people.ac.upc.edu/pbarlet/papers/ground-truth.pam2014.pdf
 [repo]: https://nfstream.org/
 [demo]: https://mybinder.org/v2/gh/nfstream/nfstream/master?filepath=demo_notebook.ipynb
-[stat_feat]: https://nfstream.org/docs/api#statistical-features
 [pypy]: https://www.pypy.org/
 [cffi]: https://cffi.readthedocs.io/en/latest/index.html
+[linkedin]: https://www.linkedin.com/in/dr-zied-aouini
+[sah]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/sah_logo.png?raw=true
+[tuke]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/tuke_logo.png?raw=true
