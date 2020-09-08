@@ -469,7 +469,7 @@ The following people contributed to NFStream:
 * [**Adrian Pekar**](mailto:adrian.pekar@gmail.com): Testing, datasets generation and storage.
 * [**Radion Bikmukhamedov**](mailto:radion.bikmukhamedov@pm.me): Initial work on SPLT analysis NFPlugin.
 
-### Supporting Organizations
+### Supporting organizations
 
 [![sah]](https://www.softathome.com/) [![tuke]](https://www.tuke.sk/)
 
