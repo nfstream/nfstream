@@ -71,8 +71,6 @@ class NFObserver(object):
         n_roots = self._n_roots
         root_idx = self._root_idx
         observer_time = 0
-        discarded_packets = 0
-        consumed_packets = 0
         try:
             while True:
                 nf_packet = ffi.new("struct nf_packet *")
@@ -84,7 +82,7 @@ class NFObserver(object):
                     else:
                         time = observer_time
                     if ret == 1:
-                        consumed_packets += 1
+                        self._consumed += 1
                         yield 1, time, nf_packet
                     elif ret == 2:  # Time ticker (Valid but do not match our id)
                         yield 0, time, None
@@ -94,14 +92,12 @@ class NFObserver(object):
                         else:
                             pass  # Should never happen
                 elif ret == 0:  # Ignored
-                    discarded_packets += 1
+                    self._discarded += 1
                 elif ret == -1:  # Read error
                     pass
                 else:  # End of file
                     raise KeyboardInterrupt
         except KeyboardInterrupt:
-            self._consumed = consumed_packets
-            self._discarded = discarded_packets
             return
 
     def close(self, channel):
