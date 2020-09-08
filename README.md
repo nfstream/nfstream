@@ -471,7 +471,7 @@ The following people contributed to NFStream:
 
 ### Supporting organizations
 
-[![sah]](https://www.softathome.com/) [![tuke]](https://www.tuke.sk/)
+[![sah]](https://www.softathome.com/) [![tuke]](https://www.tuke.sk/) [![ntop]](https://www.ntop.org/)
 
 ## License
 
@@ -490,3 +490,4 @@ This project is licensed under the LGPLv3 License - see the [**License**][licens
 [cffi]: https://cffi.readthedocs.io/en/latest/index.html
 [sah]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/sah_logo.png?raw=true
 [tuke]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/tuke_logo.png?raw=true
+[ntop]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/ntop_logo.png?raw=true
