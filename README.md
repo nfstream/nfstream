@@ -466,11 +466,7 @@ As with any packet monitoring tool, **NFStream** could potentially be misused.
 
 ### Supporting Organizations
 
-| <!-- -->    | <!-- -->                       |
-|-------------|--------------------------------|
-| ![sah]      | SofAtHome                      |
-|             |                                |
-| ![tuke]     | Technical University of Košice |
+![support]
 
 
 ## License
@@ -489,5 +485,4 @@ This project is licensed under the LGPLv3 License - see the [**License**][licens
 [pypy]: https://www.pypy.org/
 [cffi]: https://cffi.readthedocs.io/en/latest/index.html
 [linkedin]: https://www.linkedin.com/in/dr-zied-aouini
-[sah]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/sah_logo.png?raw=true
-[tuke]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/tuke_logo.png?raw=true
+[support]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/support.png?raw=true
