@@ -471,6 +471,12 @@ The following people contributed to NFStream:
 
 ### Supporting organizations
 
+NFStream development is mainly supported by [**SoftAtHome**](https://www.softathome.com/).
+
+The following organizations are supporting NFStream:
+* [**TUKE University**](https://www.tuke.sk/): Hardware and infrastructure required for NFStream project.
+* [**ntop**](https://www.ntop.org/): Technical support and guidance required for Layer-7 visibility development.
+
 [![sah]](https://www.softathome.com/) [![tuke]](https://www.tuke.sk/) [![ntop]](https://www.ntop.org/)
 
 ## License
