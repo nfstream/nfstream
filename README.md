@@ -462,21 +462,18 @@ As with any packet monitoring tool, **NFStream** could potentially be misused.
 
 ### Authors
 
-NFStream has been created by [**Zied AOUINI**](mailto:aouinizied@gmail.com).
-
 The following people contributed to NFStream:
-* [**Zied Aouini**](mailto:aouinizied@gmail.com): Main developer.
+* [**Zied Aouini**](mailto:aouinizied@gmail.com): Creator and main developer.
 * [**Adrian Pekar**](mailto:adrian.pekar@gmail.com): Testing, datasets generation and storage.
 * [**Radion Bikmukhamedov**](mailto:radion.bikmukhamedov@pm.me): Initial work on SPLT analysis NFPlugin.
 
 ### Supporting organizations
 
-NFStream development is mainly supported by [**SoftAtHome**](https://www.softathome.com/).
-
 The following organizations are supporting NFStream:
-* [**Technical University of Košice**](https://www.tuke.sk/): Hardware and infrastructure for NFStream datasets 
-generation and storage.
-* [**ntop**](https://www.ntop.org/): Technical support and guidance required for nDPI integration.
+* [**SoftAtHome**](https://www.softathome.com/): Main supporter of NFStream development.
+* [**Technical University of Košice**](https://www.tuke.sk/): Hardware and infrastructure for datasets generation and 
+storage.
+* [**ntop**](https://www.ntop.org/): Technical support of nDPI integration.
 
 [![sah]](https://www.softathome.com/) [![tuke]](https://www.tuke.sk/) [![ntop]](https://www.ntop.org/)
 
