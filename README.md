@@ -492,6 +492,6 @@ This project is licensed under the LGPLv3 License - see the [**License**][licens
 [demo]: https://mybinder.org/v2/gh/nfstream/nfstream/master?filepath=demo_notebook.ipynb
 [pypy]: https://www.pypy.org/
 [cffi]: https://cffi.readthedocs.io/en/latest/index.html
-[sah]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/sah_logo.png?raw=true
-[tuke]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/tuke_logo.png?raw=true
-[ntop]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/ntop_logo.png?raw=true
+[sah]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/sah.png?raw=true
+[tuke]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/tuke.png?raw=true
+[ntop]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/ntop.png?raw=true
