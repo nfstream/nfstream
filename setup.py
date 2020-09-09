@@ -42,7 +42,7 @@ def setup_context_cc():
     print("\nSetting up context_cc. Platform: {plat}, Byteorder: {bo}".format(plat=sys.platform, bo=sys.byteorder))
     # compile libpcap and ship it with nfstream
     # we compile libpcap instead of copying the .so from to ensure 1.9.1 version on both mac OS and Linux
-    subprocess.check_call(['git', 'clone', '--branch', 'libpcap-1.9.1',
+    subprocess.check_call(['git', 'clone', '--branch', 'libpcap-1.10.0-bp',
                            'https://github.com/the-tcpdump-group/libpcap.git'])
     os.chdir('libpcap/')
     subprocess.check_call(['./configure', 'CC={}'.format(platform_compiler), '--enable-ipv6', '--disable-universal',
