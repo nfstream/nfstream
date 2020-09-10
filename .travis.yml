@@ -17,6 +17,7 @@ matrix:
             - automake
             - libtool
             - pkg-config
+            - gettext
             - libpcap-dev
             - libusb-1.0-0-dev
             - libdbus-glib-1-dev
@@ -42,6 +43,7 @@ matrix:
             - automake
             - libtool
             - pkg-config
+            - gettext
             - libpcap-dev
             - libusb-1.0-0-dev
             - libdbus-glib-1-dev
@@ -80,6 +82,22 @@ install:
   - python3 -m pip install --upgrade pip
   - python3 -m pip install --upgrade setuptools wheel twine codecov
   - python3 -m pip install -r requirements.txt
+  - git clone --branch libgpg-error-1.39 https://github.com/gpg/libgpg-error
+  - cd libgpg-error
+  - ./autogen.sh
+  - ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc --disable-nls
+  - make
+  - sudo make install
+  - cd ..
+  - rm -rf libgpg-error
+  - git clone --branch libgcrypt-1.8.6 https://github.com/gpg/libgcrypt
+  - cd libgcrypt
+  - ./autogen.sh
+  - ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc
+  - make
+  - sudo make install
+  - cd ..
+  - rm -rf libgcrypt
   - python3 setup.py bdist_wheel
   - ls dist/
 
