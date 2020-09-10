@@ -59,7 +59,23 @@ jobs:
       run: |
         pip install wheel twine setuptools codecov
         pip install -r requirements.txt
-        sudo MACOSX_DEPLOYMENT_TARGET=10.14 python setup.py bdist_wheel
+        git clone --branch libgpg-error-1.39 https://github.com/gpg/libgpg-error
+        cd libgpg-error
+        ./autogen.sh
+        ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic
+        make
+        sudo make install
+        cd ..
+        rm -rf libgpg-error
+        git clone --branch libgcrypt-1.8.6 https://github.com/gpg/libgcrypt
+        cd libgcrypt
+        ./autogen.sh
+        ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic
+        make
+        sudo make install
+        cd ..
+        rm -rf libgcrypt
+        MACOSX_DEPLOYMENT_TARGET=10.14 python setup.py bdist_wheel
         ls nfstream/
     - name: Generated wheel
       run: |
