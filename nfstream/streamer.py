@@ -75,7 +75,7 @@ class NFStreamer(object):
                  decode_tunnels=True,
                  bpf_filter=None,
                  promiscuous_mode=True,
-                 snapshot_length=1500,
+                 snapshot_length=1536,
                  idle_timeout=30,
                  active_timeout=300,
                  accounting_mode=0,
@@ -338,10 +338,11 @@ class NFStreamer(object):
                                 print("- Metering load dispatch (%)        : {}".format(meters_load))
                                 print("- Processed flows                   : {}".format(idx_generator))
                                 print("- Processed packets                 : {}".format(processed_packets))
-                                print("- Ignored packets                   : {}".format(discarded_packets))
+                                print("- Discarded packets (e.g. nonIP)    : {}".format(discarded_packets))
                                 if self.mode:
-                                    print("- Dropped/filtered packets (kernel) : {}".format(dropped_packets))
+                                    print("- Filtered/Dropped packets (kernel) : {}".format(dropped_packets))
                                     print("- Dropped packets (interface)       : {}".format(dropped_intf_packets))
+                                    print("Please read: https://github.com/nfstream/nfstream/blob/master/assets/NOTE.md")
                             break  # We finish up when all metering jobs are terminated
                     else:
                         recv.id = idx_generator  # Unify ID

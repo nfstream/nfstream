@@ -346,6 +346,7 @@ typedef struct nf_packet {
 
 
 typedef struct nf_stat {
+  unsigned received;
   unsigned dropped;
   unsigned dropped_by_interface;
 } nf_stat_t;
@@ -951,7 +952,7 @@ pcap_t * observer_open(const uint8_t * pcap_file, unsigned snaplen, int promisc,
     pcap_handle = pcap_open_offline((char*)pcap_file, err_open);
   }
   if (mode == 1) {
-    pcap_handle = pcap_open_live((char*)pcap_file, snaplen, promisc, 1000, err_open);
+    pcap_handle = pcap_open_live((char*)pcap_file, snaplen, promisc, 500, err_open);
     if (pcap_handle != NULL) set = pcap_setnonblock(pcap_handle, 1, err_set);
   }
   if (set == 0) {
@@ -1013,18 +1014,30 @@ int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tun
   return -1;
 }
 
+
+/**
+ * observer_stats: Get observer stats.
+ */
+void observer_stats(pcap_t * pcap_handle, struct nf_stat *nf_statistics, unsigned mode) {
+  if (mode == 0) return;
+  else {
+    struct pcap_stat statistics;
+    int ret = pcap_stats(pcap_handle, &statistics);
+    if (ret == 0) {
+      nf_statistics->received = statistics.ps_recv;
+      nf_statistics->dropped = statistics.ps_drop;
+      nf_statistics->dropped_by_interface = statistics.ps_ifdrop;
+    } else {
+      printf("Error: Unable to read interface performance statistics.");
+    }
+  }
+}
+
+
 /**
  * observer_close: Close observer handle.
  */
-void observer_close(pcap_t * pcap_handle, unsigned mode, struct nf_stat *nf_statistics) {
-  struct pcap_stat statistics;
-  if (mode == 1) { // We report statistics on live interface.
-    int ret = pcap_stats(pcap_handle, &statistics);
-    if (ret == 0) {
-      nf_statistics->dropped = statistics.ps_drop;
-      nf_statistics->dropped_by_interface = statistics.ps_ifdrop;
-    }
-  }
+void observer_close(pcap_t * pcap_handle) {
   pcap_breakloop(pcap_handle);
   pcap_close(pcap_handle);
 }

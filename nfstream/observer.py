@@ -35,7 +35,7 @@ def configure_observer(handler, bpf_filter, ffi, lib):
         # On a valid handler, we set BPF filtering if defined.
         rs = lib.observer_configure(handler, bytes(bpf_filter, 'utf-8'))
         if rs > 0:
-            lib.observer_close(handler, 0, ffi.NULL)
+            lib.observer_close(handler)
             ffi.dlclose(lib)
             if rs == 1:
                 raise ValueError("Failed to compile BPF filter:{}.".format(bpf_filter))
@@ -46,7 +46,8 @@ def configure_observer(handler, bpf_filter, ffi, lib):
 
 class NFObserver(object):
     """ NFObserver module main class """
-    __slots__ = ("_cap", "lib", "ffi", "_mode", "_decode_tunnels", "_n_roots", "_root_idx", "_consumed", "_discarded")
+    __slots__ = ("_cap", "lib", "ffi", "_mode", "_decode_tunnels", "_n_roots", "_root_idx", "_consumed", "_discarded",
+                 "_stats")
 
     def __init__(self, cfg, ffi, lib):
         cap = open_observer(cfg.source, cfg.snaplen, cfg.mode, cfg.promisc, ffi, lib)
@@ -60,6 +61,7 @@ class NFObserver(object):
         self._root_idx = cfg.root_idx
         self._discarded = 0
         self._consumed = 0
+        self._stats = self.ffi.new("struct nf_stat *")
 
     def __iter__(self):
         # faster as we make intensive access to these members.
@@ -100,12 +102,14 @@ class NFObserver(object):
         except KeyboardInterrupt:
             return
 
+    def stats(self):
+        self.lib.observer_stats(self._cap, self._stats, self._mode)
+
     def close(self, channel):
-        stats = self.ffi.new("struct nf_stat *")
-        self.lib.observer_close(self._cap, self._mode, stats)
+        self.lib.observer_close(self._cap)
         channel.put([self._root_idx,
                      self._consumed,
                      self._discarded,
-                     stats.dropped,
-                     stats.dropped_by_interface
+                     self._stats.dropped,
+                     self._stats.dropped_by_interface
                      ])

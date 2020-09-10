@@ -46,7 +46,7 @@ def meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, n_dissectio
                dissector):
     remaining = True  # We suppose that there is something to expire
     scanned = 0
-    while remaining and scanned < 10000:  # idle scan budget (each 10ms we scan 10000 as maximum)
+    while remaining and scanned < 1000:  # idle scan budget (each 10ms we scan 1000 as maximum)
         try:
             flow_key = cache.get_lru_key()  # will return the LRU flow key.
             flow = cache[flow_key]
@@ -169,7 +169,7 @@ class NFMeter(Process):
         """ run NFMeter main processing loop """
         meter_tick = 0  # store meter timeline
         meter_scan_tick = 0  # store cache walker timeline
-        meter_scan_interval = 10  # we set a sccan for idle flows each 10 milliseconds
+        meter_scan_interval = 10  # we set a scan for idle flows each 10 milliseconds
         # May look ugly but it is faster as we make intensive access to these attributes.
         idle_timeout = self.idle_timeout
         active_timeout = self.active_timeout
@@ -207,7 +207,7 @@ class NFMeter(Process):
                         active_flows -= idles
                 else:  # Time ticker event (packer that do not match this meter id or call return after timeout on live)
                     if time > meter_tick:
-                        meter_tick = time # update timeline ans scan if needed
+                        meter_tick = time  # update timeline ans scan if needed
                     if time - meter_scan_tick >= meter_scan_interval:
                         idles = meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, n_dissections,
                                            statistics, splt, ffi, lib, dissector)
@@ -215,6 +215,8 @@ class NFMeter(Process):
                         meter_scan_tick = time
             raise KeyboardInterrupt  # We finished our job.
         except KeyboardInterrupt:
+            # Get observer drops stats
+            self.observer.stats()
             del observer
             # Expire all remaining flows in the cache.
             meter_cleanup(cache, channel, udps, sync, n_dissections, statistics, splt, ffi, lib, dissector)
