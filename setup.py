@@ -40,49 +40,14 @@ def setup_context_cc():
     if sys.platform == 'darwin':
         platform_compiler = "clang"
     print("\nSetting up context_cc. Platform: {plat}, Byteorder: {bo}".format(plat=sys.platform, bo=sys.byteorder))
-    # compile libpcap and ship it with nfstream
-    # we compile libpcap instead of copying the .so from to ensure 1.9.1 version on both mac OS and Linux
-    subprocess.check_call(['git', 'clone', '--branch', 'libpcap-1.10.0-bp',
-                           'https://github.com/the-tcpdump-group/libpcap.git'])
-    os.chdir('libpcap/')
-    subprocess.check_call(['./configure', 'CC={}'.format(platform_compiler), '--enable-ipv6', '--disable-universal',
-                           '--enable-dbus=no', '--without-libnl'])
-    subprocess.check_call(['make'])
-    os.chdir('..')
-    subprocess.check_call([platform_compiler, '-InDPI/src/include', '-shared', '-o', 'nfstream/context_cc.so', '-g',
-                           '-fPIC', '-DPIC', '-O2', '-Wall', 'nfstream/context_cc.c',
-                           'libpcap/libpcap.a',
-                           'nDPI/src/lib/libndpi.a',
+    subprocess.check_call([platform_compiler, '-shared', '-o', 'nfstream/context_cc.so', '-g', '-fPIC', '-DPIC', '-O2',
+                           '-Wall', 'nfstream/context_cc.c',
+                           # Required compiled static libs
+                           '/usr/local/lib/libpcap.a',
+                           '/usr/local/lib/libndpi.a',
                            '/usr/local/lib/libgcrypt.a',
                            '/usr/local/lib/libgpg-error.a'
                            ])
-    shutil.rmtree('libpcap/', ignore_errors=True)
-    shutil.rmtree('nDPI/', ignore_errors=True)
-
-
-def setup_ndpi():
-    platform_compiler = "gcc"
-    if sys.platform == 'darwin':
-        platform_compiler = "clang"
-    print("\nSetting up nDPI. Platform: {plat}, Byteorder: {bo}".format(plat=sys.platform, bo=sys.byteorder))
-    subprocess.check_call(['git', 'clone', '--branch', 'dev', 'https://github.com/ntop/nDPI.git'])
-    os.chdir('nDPI/')
-    subprocess.check_call(['./autogen.sh'])
-    subprocess.check_call(['./configure', 'CC={}'.format(platform_compiler)])
-    os.chdir('src/')
-    os.chdir('lib/')
-    subprocess.check_call(['make'])
-    print("Setting up tests.")
-    os.chdir('..')
-    os.chdir('..')
-    os.chdir('example/')
-    subprocess.check_call(['make'])
-    os.chdir('..')
-    os.chdir('..')
-    os.chdir('tests/')
-    subprocess.check_call(['chmod', 'a+x', 'build_results.sh'])
-    subprocess.check_call(['./build_results.sh'])
-    os.chdir('..')
 
 
 class BuildPyCommand(build_py):
@@ -96,7 +61,6 @@ class BuildNativeCommand(build_ext):
         if os.name != 'posix':  # Windows case
             pass
         else:
-            setup_ndpi()
             setup_context_cc()
         build_ext.run(self)
 

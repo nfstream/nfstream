@@ -1,5 +1,5 @@
 #!/bin/sh
-READER="../nDPI/example/ndpiReader"
+READER="ndpiReader"
 RC=0
 PCAPS=`cd pcap; /bin/ls *.pcap`
 build_results() {
