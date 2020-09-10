@@ -59,7 +59,7 @@ jobs:
       run: |
         pip install wheel twine setuptools codecov
         pip install -r requirements.txt
-        MACOSX_DEPLOYMENT_TARGET=10.13 python setup.py bdist_wheel
+        MACOSX_DEPLOYMENT_TARGET=10.14 python setup.py bdist_wheel
         ls nfstream/
     - name: Generated wheel
       run: |
