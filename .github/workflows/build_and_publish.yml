@@ -70,7 +70,7 @@ jobs:
         git clone --branch libgcrypt-1.8.6 https://github.com/gpg/libgcrypt
         cd libgcrypt
         ./autogen.sh
-        ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic
+        ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc
         make
         sudo make install
         cd ..
