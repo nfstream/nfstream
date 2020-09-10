@@ -40,8 +40,8 @@ def setup_context_cc():
     if sys.platform == 'darwin':
         platform_compiler = "clang"
     print("\nSetting up context_cc. Platform: {plat}, Byteorder: {bo}".format(plat=sys.platform, bo=sys.byteorder))
-    subprocess.check_call([platform_compiler, '-shared', '-o', 'nfstream/context_cc.so', '-g', '-fPIC', '-DPIC', '-O2',
-                           '-Wall', 'nfstream/context_cc.c',
+    subprocess.check_call([platform_compiler, '-I/usr/local/include/ndpi', '-shared', '-o', 'nfstream/context_cc.so',
+                           '-g', '-fPIC', '-DPIC', '-O2', '-Wall', 'nfstream/context_cc.c',
                            # Required compiled static libs
                            '/usr/local/lib/libpcap.a',
                            '/usr/local/lib/libndpi.a',
