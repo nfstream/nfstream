@@ -51,7 +51,11 @@ def setup_context_cc():
     os.chdir('..')
     subprocess.check_call([platform_compiler, '-InDPI/src/include', '-shared', '-o', 'nfstream/context_cc.so', '-g',
                            '-fPIC', '-DPIC', '-O2', '-Wall', 'nfstream/context_cc.c',
-                           'libpcap/libpcap.a', 'nDPI/src/lib/libndpi.a'])
+                           'libpcap/libpcap.a',
+                           'nDPI/src/lib/libndpi.a',
+                           '/usr/local/lib/libgcrypt.a',
+                           '/usr/local/lib/libgpg-error.a'
+                           ])
     shutil.rmtree('libpcap/', ignore_errors=True)
     shutil.rmtree('nDPI/', ignore_errors=True)
 
@@ -61,10 +65,34 @@ def setup_ndpi():
     if sys.platform == 'darwin':
         platform_compiler = "clang"
     print("\nSetting up nDPI. Platform: {plat}, Byteorder: {bo}".format(plat=sys.platform, bo=sys.byteorder))
+
+    # We start by libgpg-error
+    subprocess.check_call(['git', 'clone', '--branch', 'libgpg-error-1.39', 'https://github.com/gpg/libgpg-error'])
+    os.chdir('libgpg-error/')
+    subprocess.check_call(['./autogen.sh'])
+    subprocess.check_call(['./configure', 'CC={}'.format(platform_compiler), '-enable-maintainer-mode',
+                           '--enable-static', '--enable-shared', '--with-pic'])
+    subprocess.check_call(['make'])
+    subprocess.check_call(['make install'])
+    os.chdir('..')
+    shutil.rmtree('libgpg-error/', ignore_errors=True)
+
+    # Then libgcrypt
+    subprocess.check_call(['git', 'clone', '--branch', 'libgcrypt-1.8.6', 'https://github.com/gpg/libgcrypt'])
+    os.chdir('libgcrypt/')
+    subprocess.check_call(['./autogen.sh'])
+    subprocess.check_call(['./configure', 'CC={}'.format(platform_compiler), '-enable-maintainer-mode',
+                           '--enable-static', '--enable-shared', '--with-pic'])
+    subprocess.check_call(['make'])
+    subprocess.check_call(['make install'])
+    os.chdir('..')
+    shutil.rmtree('libgcrypt/', ignore_errors=True)
+
+    # And finally nDPI
     subprocess.check_call(['git', 'clone', '--branch', 'dev', 'https://github.com/ntop/nDPI.git'])
     os.chdir('nDPI/')
     subprocess.check_call(['./autogen.sh'])
-    subprocess.check_call(['./configure', 'CC={}'.format(platform_compiler), '--disable-gcrypt'])
+    subprocess.check_call(['./configure', 'CC={}'.format(platform_compiler)])
     os.chdir('src/')
     os.chdir('lib/')
     subprocess.check_call(['make'])
