@@ -73,7 +73,7 @@ def setup_ndpi():
     subprocess.check_call(['./configure', 'CC={}'.format(platform_compiler), '-enable-maintainer-mode',
                            '--enable-static', '--enable-shared', '--with-pic'])
     subprocess.check_call(['make'])
-    subprocess.check_call(['make install'])
+    subprocess.check_call(['make', 'install'])
     os.chdir('..')
     shutil.rmtree('libgpg-error/', ignore_errors=True)
 
@@ -84,7 +84,7 @@ def setup_ndpi():
     subprocess.check_call(['./configure', 'CC={}'.format(platform_compiler), '-enable-maintainer-mode',
                            '--enable-static', '--enable-shared', '--with-pic'])
     subprocess.check_call(['make'])
-    subprocess.check_call(['make install'])
+    subprocess.check_call(['make', 'install'])
     os.chdir('..')
     shutil.rmtree('libgcrypt/', ignore_errors=True)
 
