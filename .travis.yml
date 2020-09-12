@@ -70,6 +70,7 @@ matrix:
             - libtool
             - pkg-config
             - gettext
+            - libpcap-dev
             - libusb-1.0-0-dev
             - libdbus-glib-1-dev
             - libbluetooth-dev
