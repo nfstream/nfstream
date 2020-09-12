@@ -381,7 +381,7 @@ for flow in extended_streamer:
 
 ### Machine Learning models training and deployment
 
-In the example following, we demonstrate a simplistic machine learning approach training and deployment.
+In the following example, we demonstrate a simplistic machine learning approach training and deployment.
 We suppose that we want to run a classification of Social Network category flows based on bidirectional_packets and 
 bidirectional_bytes as features. For the sake of brevity, we decide to predict only at flow expiration stage.
 
@@ -419,31 +419,9 @@ for flow in ml_streamer:
 More NFPlugin examples and details are provided on the official [**documentation**][documentation]. You can also test 
 NFStream without installation using our [**live demo notebook**][demo].
 
-## Building from sources
+## Building from sources ![l] ![m] 
 
-If you want to build **NFStream** from sources on your local machine:
-
-### ![linux](https://raw.githubusercontent.com/wiki/ryanoasis/nerd-fonts/screenshots/v1.0.x/linux-pass-sm.png) Linux
-
-```bash
-sudo apt-get update
-sudo apt-get install autoconf automake libtool pkg-config libpcap-dev flex bison
-sudo apt-get install libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev
-git clone https://github.com/nfstream/nfstream.git
-cd nfstream
-python3 -m pip install -r requirements.txt
-python3 setup.py bdist_wheel
-```
-
-### ![osx](https://raw.githubusercontent.com/wiki/ryanoasis/nerd-fonts/screenshots/v1.0.x/mac-pass-sm.png) MacOS
-
-```bash
-brew install autoconf automake libtool pkg-config
-git clone https://github.com/nfstream/nfstream.git
-cd nfstream
-python3 -m pip install -r requirements.txt
-python3 setup.py bdist_wheel
-```
+If you want to build **NFStream** from sources. Please read the [**installation guide**][install].
 
 ## Contributing
 
@@ -495,3 +473,6 @@ This project is licensed under the LGPLv3 License - see the [**License**][licens
 [sah]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/sah_logo.png?raw=true
 [tuke]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/tuke_logo.png?raw=true
 [ntop]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/ntop_logo.png?raw=true
+[l]:https://github.com/ryanoasis/nerd-fonts/wiki/screenshots/v1.0.x/linux-pass-sm.png
+[m]:https://github.com/ryanoasis/nerd-fonts/wiki/screenshots/v1.0.x/mac-pass-sm.png
+[install]: https://www.nfstream.org/docs/#building-nfstream-from-sources

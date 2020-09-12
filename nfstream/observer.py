@@ -69,7 +69,6 @@ class NFObserver(object):
         lib = self.lib
         observer_cap = self._cap
         decode_tunnels = self._decode_tunnels
-        observer_mode = self._mode
         n_roots = self._n_roots
         root_idx = self._root_idx
         observer_time = 0
@@ -86,16 +85,11 @@ class NFObserver(object):
                     if ret == 1:
                         self._consumed += 1
                         yield 1, time, nf_packet
-                    elif ret == 2:  # Time ticker (Valid but do not match our id)
+                    else:  # Time ticker (Valid but do not match our id)
                         yield 0, time, None
-                    else:
-                        if observer_mode == 1:
-                            yield 0, time, None  # Time ticker (timeout on live buffer)
-                        else:
-                            pass  # Should never happen
                 elif ret == 0:  # Ignored
                     self._discarded += 1
-                elif ret == -1:  # Read error
+                elif ret == -1:  # Read error or empty buffer
                     pass
                 else:  # End of file
                     raise KeyboardInterrupt

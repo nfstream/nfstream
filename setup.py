@@ -19,7 +19,6 @@ If not, see <http://www.gnu.org/licenses/>.
 import sys
 import os
 import subprocess
-import shutil
 
 if (not sys.version_info[0] == 3) and (not sys.version_info[1] >= 6):
     sys.exit("Sorry, nfstream requires Python3.6+ versions.")

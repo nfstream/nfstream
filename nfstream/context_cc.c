@@ -953,7 +953,6 @@ pcap_t * observer_open(const uint8_t * pcap_file, unsigned snaplen, int promisc,
   }
   if (mode == 1) {
     pcap_handle = pcap_open_live((char*)pcap_file, snaplen, promisc, 500, err_open);
-    if (pcap_handle != NULL) set = pcap_setnonblock(pcap_handle, 1, err_set);
   }
   if (set == 0) {
     return pcap_handle;
@@ -985,13 +984,13 @@ int observer_configure(pcap_t * pcap_handle, char * bpf_filter) {
 }
 
 /**
- * observer_next: Get next packet informations from pcap handle.
+ * observer_next: Get next packet information from pcap handle.
  */
 int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tunnels, int n_roots, int root_idx) {
-  struct pcap_pkthdr *hdr;
-  const uint8_t *data;
+  struct pcap_pkthdr *hdr = NULL;
+  const uint8_t *data = NULL;
   int rv_handle = pcap_next_ex(pcap_handle, &hdr, &data);
-  if (rv_handle == 1) {
+  if (rv_handle == 1) { // Everything is OK.
     int rv_processor = process_packet(pcap_handle, hdr, data, decode_tunnels, nf_pkt, n_roots, root_idx);
     if (rv_processor == 0) {
         return 0; // Packet ignored due to parsing
@@ -1001,11 +1000,22 @@ int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tun
         return 2;
     }
   } else {
-    if (rv_handle == 0) { // Buffer timeout, fill packet as ticker.
-        struct timeval tick;
-        gettimeofday(&tick, NULL);
-        nf_pkt->time = ((uint64_t) tick.tv_sec) * TICK_RESOLUTION + tick.tv_usec / (1000000 / TICK_RESOLUTION);
-        return 3;
+    if (rv_handle == 0) {
+    // See the following for full explanation:
+    // https://github.com/the-tcpdump-group/libpcap/issues/572#issuecomment-576039197
+    // We are using blocking mode and a timeout. So libpcap behavior will depend on used capture mechanism
+      if ((hdr == NULL) || (data == NULL)) { // Timeout with no packet
+        return -1;
+      } else { // packet read at buffer timeout
+        int rv_processor = process_packet(pcap_handle, hdr, data, decode_tunnels, nf_pkt, n_roots, root_idx);
+        if (rv_processor == 0) {
+          return 0; // Packet ignored due to parsing
+        } else if (rv_processor == 1) { // Packet parsed correctly and match root_idx
+          return 1;
+        } else { // Packet parsed correctly and do not match root_idx, will use it as time ticker
+          return 2;
+        }
+      }
     }
     if (rv_handle == -2) {
         return -2; // End of file
