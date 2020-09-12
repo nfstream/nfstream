@@ -946,7 +946,6 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
  * observer_open: Open a pcap file or a specified device.
  */
 pcap_t * observer_open(const uint8_t * pcap_file, unsigned snaplen, int promisc, char *err_open, char *err_set, int mode) {
-  printf("libpcap version: %s\n", pcap_lib_version());
   pcap_t * pcap_handle = NULL;
   int set = 0;
   if (mode == 0) {
