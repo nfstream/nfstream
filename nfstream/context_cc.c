@@ -964,13 +964,14 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
 pcap_t * observer_open(const uint8_t * pcap_file, unsigned snaplen, int promisc, char *err_open, char *err_set, int mode) {
   pcap_t * pcap_handle = NULL;
   int set = 0;
+  int set_fanout = 0;
   if (mode == 0) {
     pcap_handle = pcap_open_offline((char*)pcap_file, err_open);
   }
   if (mode == 1) {
     pcap_handle = pcap_create((char*)pcap_file, err_open);
 #ifdef __linux__
-    int set_fanout = pcap_set_fanout_linux(pcap_handle, 1, 0x8000, 0);
+    set_fanout = pcap_set_fanout_linux(pcap_handle, 1, 0x8000, 0);
 #endif
     int set_snaplen = pcap_set_snaplen(pcap_handle, snaplen);
     int set_promisc = pcap_set_promisc(pcap_handle, promisc);
