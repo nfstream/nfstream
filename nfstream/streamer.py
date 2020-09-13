@@ -29,6 +29,7 @@ from hashlib import blake2b
 from os.path import isfile
 from .meter import NFMeter
 from.plugin import NFPlugin
+from .utils import csv_converter, open_file
 # Set fork as method to avoid issues on macos with spawn default value
 multiprocessing.set_start_method("fork")
 
@@ -49,22 +50,6 @@ meter_cfg = namedtuple('MeterConfiguration', ['idle_timeout',
                                               'n_dissections',
                                               'statistics',
                                               'splt'])
-
-
-def csv_converter(values):
-    """ convert non numeric values to using their __str__ method and ensure quoting """
-    for idx in range(len(values)):
-        if not isinstance(values[idx], float) and not isinstance(values[idx], int):
-            values[idx] = str(values[idx])
-            values[idx] = values[idx].replace('\"', '\\"')
-            values[idx] = "\"" + values[idx] + "\""
-
-
-def open_file(path, chunked, chunk_idx):
-    if not chunked:
-        return open(path, 'wb')
-    else:
-        return open(path.replace("csv", "{}.csv".format(chunk_idx)), 'wb')
 
 
 class NFStreamer(object):
@@ -349,7 +334,8 @@ class NFStreamer(object):
                         idx_generator += 1
                         yield recv
                 except KeyboardInterrupt:
-                    pass  # We pass as we wait for metering jobs (they will handle the keyboard interupt)
+                    for i in range(n_meters): # We break workflow loop
+                        meters[i].terminate()
             for i in range(n_meters):
                 meters[i].join()  # Join metring jobs
             channel.close()  # We close the queue

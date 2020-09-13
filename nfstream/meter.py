@@ -147,7 +147,6 @@ def setup_dissector(ffi, lib, n_dissections):
         dissector = ffi.NULL
     return dissector
 
-
 class NFMeter(Process):
     """ NFMeter for entries management """
     def __init__(self, observer_cfg, meter_cfg, channel):
@@ -164,9 +163,11 @@ class NFMeter(Process):
         self.statistics = meter_cfg.statistics
         self.splt = meter_cfg.splt
         self.channel = channel
+        self.break_loop = False
 
     def run(self):
         """ run NFMeter main processing loop """
+        # faster as we make intensive access to these members.
         meter_tick = 0  # store meter timeline
         meter_scan_tick = 0  # store cache walker timeline
         meter_scan_interval = 10  # we set a scan for idle flows each 10 milliseconds
@@ -213,8 +214,6 @@ class NFMeter(Process):
                                            statistics, splt, ffi, lib, dissector)
                         active_flows -= idles
                         meter_scan_tick = time
-            raise KeyboardInterrupt  # We finished our job.
-        except KeyboardInterrupt:
             # Get observer drops stats
             self.observer.stats()
             del observer
@@ -228,3 +227,11 @@ class NFMeter(Process):
             del lib
             # Release context library
             self.ffi.dlclose(self.lib)
+        except KeyboardInterrupt:
+            pass
+
+
+    def terminate(self):
+        # Get observer drops stats
+        self.observer.break_loop()
+        self.break_loop = True

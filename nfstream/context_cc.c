@@ -409,7 +409,10 @@ int get_nf_packet_info(const uint8_t version,
                        uint8_t *proto,
                        uint8_t **payload,
                        uint16_t *payload_len,
-                       struct timeval when, struct nf_packet *nf_pkt, int n_roots, int root_idx) {
+                       struct timeval when, struct nf_packet *nf_pkt,
+                       int n_roots,
+                       int root_idx,
+                       int mode) {
   uint32_t l4_offset;
   const uint8_t *l3, *l4;
   uint32_t l4_data_len = 0XFEEDFACE;
@@ -486,6 +489,7 @@ int get_nf_packet_info(const uint8_t version,
   nf_pkt->ip_content_len = ipsize;
   nf_pkt->delta_time = 0; // This will be filled by meter.
   uint64_t hashval = 0; // Compute hashval as the sum of 6-tuple fields.
+
   hashval = nf_pkt->protocol + nf_pkt->vlan_id + iph->saddr + iph->daddr + nf_pkt->src_port + nf_pkt->dst_port;
 
   if(version == IPVERSION) {
@@ -499,11 +503,22 @@ int get_nf_packet_info(const uint8_t version,
 	nf_pkt->ip_size = ntohs(iph->tot_len);
 	nf_pkt->ip_content = (uint8_t *)iph6;
   }
-
-  if ((hashval % n_roots) == root_idx) { // If packet match meter idx, he will consume it and process it.
+  if (mode == 0) { // Offline, we perform fanout like strategy
+    if ((hashval % n_roots) == root_idx) { // If packet match meter idx, he will consume it and process it.
       return 1;
-  } else {
-     return 2; // Else it will be used as time ticker to ensure synchro across meters.
+    } else {
+      return 2; // Else it will be used as time ticker to ensure synchro across meters.
+    }
+  } else { // Live mode
+#ifdef __linux__
+      return 1; // Fanout already done by kernel on Linux
+#else // Macos do not provide kernel fanout, so we do it ourselves.
+    if ((hashval % n_roots) == root_idx) { // If packet match meter idx, he will consume it and process it.
+      return 1;
+    } else {
+      return 2; // Else it will be used as time ticker to ensure synchro across meters.
+    }
+#endif
   }
 }
 
@@ -522,7 +537,7 @@ static int get_nf_packet_info6(uint16_t vlan_id,
                                uint8_t *proto,
                                uint8_t **payload,
                                uint16_t *payload_len,
-                               struct timeval when, struct nf_packet *nf_pkt, int n_roots, int root_idx) {
+                               struct timeval when, struct nf_packet *nf_pkt, int n_roots, int root_idx, int mode) {
   // We move field to iph to treat it by the same function for IPV4
   struct nfstream_iphdr iph;
   memset(&iph, 0, sizeof(iph));
@@ -541,7 +556,7 @@ static int get_nf_packet_info6(uint16_t vlan_id,
 			    &iph, iph6, ip_offset, ipsize,
 			    ntohs(iph6->ip6_hdr.ip6_un1_plen),
 			    tcph, udph, sport, dport, proto, payload,
-			    payload_len, when, nf_pkt, n_roots, root_idx));
+			    payload_len, when, nf_pkt, n_roots, root_idx, mode));
 }
 
 
@@ -561,7 +576,8 @@ int parse_packet(const uint64_t time,
                  struct timeval when,
                  struct nf_packet *nf_pkt,
                  int n_roots,
-                 int root_idx) {
+                 int root_idx,
+                 int mode) {
   uint8_t proto;
   struct nfstream_tcphdr *tcph = NULL;
   struct nfstream_udphdr *udph = NULL;
@@ -573,10 +589,10 @@ int parse_packet(const uint64_t time,
   // According to IPVERSION, we extract required information for metering layer.
   if(iph)
     return get_nf_packet_info(IPVERSION, vlan_id, tunnel_type, iph, NULL, ip_offset, ipsize, ntohs(iph->tot_len) - (iph->ihl * 4),
-			      &tcph, &udph, &sport, &dport, &proto, &payload, &payload_len, when, nf_pkt, n_roots, root_idx);
+			      &tcph, &udph, &sport, &dport, &proto, &payload, &payload_len, when, nf_pkt, n_roots, root_idx, mode);
   else
     return get_nf_packet_info6(vlan_id, tunnel_type, iph6, ip_offset, ipsize, &tcph, &udph, &sport, &dport, &proto,
-                        &payload, &payload_len, when, nf_pkt, n_roots, root_idx);
+                        &payload, &payload_len, when, nf_pkt, n_roots, root_idx, mode);
 }
 
 
@@ -584,7 +600,7 @@ int parse_packet(const uint64_t time,
  * process_packet: Main packet processing function.
  */
 int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const uint8_t *packet, int decode_tunnels,
-                   struct nf_packet *nf_pkt, int n_roots, int root_idx) {
+                   struct nf_packet *nf_pkt, int n_roots, int root_idx, int mode) {
   // Ethernet header
   const struct nfstream_ethhdr *ethernet;
   // LLC header
@@ -938,7 +954,7 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
     }
   }
   return parse_packet(time, vlan_id, tunnel_type, iph, iph6, ip_offset, header->caplen - ip_offset, header->len,
-                      header, packet, header->ts, nf_pkt, n_roots, root_idx);
+                      header, packet, header->ts, nf_pkt, n_roots, root_idx, mode);
 }
 
 
@@ -952,7 +968,15 @@ pcap_t * observer_open(const uint8_t * pcap_file, unsigned snaplen, int promisc,
     pcap_handle = pcap_open_offline((char*)pcap_file, err_open);
   }
   if (mode == 1) {
-    pcap_handle = pcap_open_live((char*)pcap_file, snaplen, promisc, 500, err_open);
+    pcap_handle = pcap_create((char*)pcap_file, err_open);
+#ifdef __linux__
+    int set_fanout = pcap_set_fanout_linux(pcap_handle, 1, 0x8000, 0);
+#endif
+    int set_snaplen = pcap_set_snaplen(pcap_handle, snaplen);
+    int set_promisc = pcap_set_promisc(pcap_handle, promisc);
+    int set_timeout = pcap_set_timeout(pcap_handle, 500);
+    int set_activate = pcap_activate(pcap_handle);
+    set = set_fanout + set_snaplen + set_promisc + set_timeout + set_activate;
   }
   if (set == 0) {
     return pcap_handle;
@@ -986,12 +1010,12 @@ int observer_configure(pcap_t * pcap_handle, char * bpf_filter) {
 /**
  * observer_next: Get next packet information from pcap handle.
  */
-int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tunnels, int n_roots, int root_idx) {
+int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tunnels, int n_roots, int root_idx, int mode) {
   struct pcap_pkthdr *hdr = NULL;
   const uint8_t *data = NULL;
   int rv_handle = pcap_next_ex(pcap_handle, &hdr, &data);
   if (rv_handle == 1) { // Everything is OK.
-    int rv_processor = process_packet(pcap_handle, hdr, data, decode_tunnels, nf_pkt, n_roots, root_idx);
+    int rv_processor = process_packet(pcap_handle, hdr, data, decode_tunnels, nf_pkt, n_roots, root_idx, mode);
     if (rv_processor == 0) {
         return 0; // Packet ignored due to parsing
     } else if (rv_processor == 1) { // Packet parsed correctly and match root_idx
@@ -1007,7 +1031,7 @@ int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tun
       if ((hdr == NULL) || (data == NULL)) { // Timeout with no packet
         return -1;
       } else { // packet read at buffer timeout
-        int rv_processor = process_packet(pcap_handle, hdr, data, decode_tunnels, nf_pkt, n_roots, root_idx);
+        int rv_processor = process_packet(pcap_handle, hdr, data, decode_tunnels, nf_pkt, n_roots, root_idx, mode);
         if (rv_processor == 0) {
           return 0; // Packet ignored due to parsing
         } else if (rv_processor == 1) { // Packet parsed correctly and match root_idx
@@ -1052,6 +1076,12 @@ void observer_close(pcap_t * pcap_handle) {
   pcap_close(pcap_handle);
 }
 
+/**
+ * observer_break: Force observer to return.
+ */
+void observer_break(pcap_t * pcap_handle) {
+  pcap_breakloop(pcap_handle);
+}
 
 /*
 ------------------------------------------------------------------------------------------------------------------------

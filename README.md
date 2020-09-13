@@ -88,7 +88,7 @@ across experiments.
 
 ## Main Features
 
-* **Performance:** NFStream is designed to be fast: parallel processing, native C 
+* **Performance:** NFStream is designed to be fast: AF_PACKETV3/FANOUT on Linux, parallel processing, native C 
 (using [**CFFI**][cffi]) for critical computation and [**PyPy**][pypy] support.
 * **Encrypted layer-7 visibility:** NFStream deep packet inspection is based on [**nDPI**][ndpi]. 
 It allows NFStream to perform [**reliable**][reliable] encrypted applications identification and metadata 

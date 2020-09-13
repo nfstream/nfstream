@@ -16,7 +16,6 @@ If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 """
 
-
 def open_observer(src, snaplen, mode, promisc, ffi, lib):
     err_open = ffi.new("char []", 128)
     err_set = ffi.new("char []", 128)
@@ -46,8 +45,8 @@ def configure_observer(handler, bpf_filter, ffi, lib):
 
 class NFObserver(object):
     """ NFObserver module main class """
-    __slots__ = ("_cap", "lib", "ffi", "_mode", "_decode_tunnels", "_n_roots", "_root_idx", "_consumed", "_discarded",
-                 "_stats")
+    __slots__ = ("_cap", "lib", "ffi", "_mode", "_decode_tunnels", "_n_roots", "_root_idx",
+                 "_consumed", "_discarded", "_dispatched", "_stats")
 
     def __init__(self, cfg, ffi, lib):
         cap = open_observer(cfg.source, cfg.snaplen, cfg.mode, cfg.promisc, ffi, lib)
@@ -61,21 +60,22 @@ class NFObserver(object):
         self._root_idx = cfg.root_idx
         self._discarded = 0
         self._consumed = 0
+        self._dispatched = 0
         self._stats = self.ffi.new("struct nf_stat *")
 
     def __iter__(self):
-        # faster as we make intensive access to these members.
         ffi = self.ffi
         lib = self.lib
         observer_cap = self._cap
         decode_tunnels = self._decode_tunnels
         n_roots = self._n_roots
         root_idx = self._root_idx
+        observer_mode = self._mode
         observer_time = 0
         try:
             while True:
                 nf_packet = ffi.new("struct nf_packet *")
-                ret = lib.observer_next(observer_cap, nf_packet, decode_tunnels, n_roots, root_idx)
+                ret = lib.observer_next(observer_cap, nf_packet, decode_tunnels, n_roots, root_idx, observer_mode)
                 if ret > 0:  # Valid, must be processed by meter
                     time = nf_packet.time
                     if time > observer_time:
@@ -86,6 +86,7 @@ class NFObserver(object):
                         self._consumed += 1
                         yield 1, time, nf_packet
                     else:  # Time ticker (Valid but do not match our id)
+                        self._dispatched += 1
                         yield 0, time, None
                 elif ret == 0:  # Ignored
                     self._discarded += 1
@@ -107,3 +108,7 @@ class NFObserver(object):
                      self._stats.dropped,
                      self._stats.dropped_by_interface
                      ])
+
+    def break_loop(self):
+        self.lib.observer_break(self._cap)
+
