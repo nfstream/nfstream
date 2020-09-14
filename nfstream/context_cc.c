@@ -975,7 +975,7 @@ pcap_t * observer_open(const uint8_t * pcap_file, unsigned snaplen, int promisc,
 #endif
     int set_snaplen = pcap_set_snaplen(pcap_handle, snaplen);
     int set_promisc = pcap_set_promisc(pcap_handle, promisc);
-    int set_timeout = pcap_set_timeout(pcap_handle, 500);
+    int set_timeout = pcap_set_timeout(pcap_handle, 1000);
     int set_activate = pcap_activate(pcap_handle);
     set = set_fanout + set_snaplen + set_promisc + set_timeout + set_activate;
   }

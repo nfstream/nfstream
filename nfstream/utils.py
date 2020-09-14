@@ -71,11 +71,11 @@ def update_performances(performances, is_linux, flows_count):
             ignored = max(meter[2].value, ignored)
         processed += meter[1].value
         load.append(meter[1].value)
-    print(json.dumps({"expired_flows": flows_count.value,
+    print(json.dumps({"flows_expired": flows_count.value,
                       "packets_processed": processed,
                       "packets_ignored": ignored,
                       "packets_dropped_filtered_by_kernel": drops,
-                      "meters_packets_load_balance": load}))
+                      "packets_processing_meters_balance": load}))
 
 
 class RepeatedTimer(object):

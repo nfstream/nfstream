@@ -137,7 +137,7 @@ my_streamer = NFStreamer(source="facebook.pcap", # or network interface
                          statistical_analysis=False,
                          splt_analysis=0,
                          n_meters=0,
-                         performance_summary=False)
+                         performance_report=0)
                          
 for flow in my_streamer:
     print(flow)  # print it.
