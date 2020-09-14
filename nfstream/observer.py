@@ -43,10 +43,17 @@ def configure_observer(handler, bpf_filter, ffi, lib):
     return handler
 
 
+def update_stats(ffi, lib, handler, mode, tracker, processed, ignored):
+    stat = ffi.new("struct nf_stat *")
+    lib.observer_stats(handler, stat, mode)
+    tracker[0].value = stat.dropped
+    tracker[1].value = processed
+    tracker[2].value = ignored
+
+
 class NFObserver(object):
     """ NFObserver module main class """
-    __slots__ = ("_cap", "lib", "ffi", "_mode", "_decode_tunnels", "_n_roots", "_root_idx",
-                 "_consumed", "_discarded", "_dispatched", "_stats")
+    __slots__ = ("_cap", "lib", "ffi", "_mode", "_decode_tunnels", "_n_roots", "_root_idx", "_tracker")
 
     def __init__(self, cfg, ffi, lib):
         cap = open_observer(cfg.source, cfg.snaplen, cfg.mode, cfg.promisc, ffi, lib)
@@ -58,10 +65,7 @@ class NFObserver(object):
         self._decode_tunnels = cfg.decode_tunnels
         self._n_roots = cfg.n_roots
         self._root_idx = cfg.root_idx
-        self._discarded = 0
-        self._consumed = 0
-        self._dispatched = 0
-        self._stats = self.ffi.new("struct nf_stat *")
+        self._tracker = cfg.perf_track
 
     def __iter__(self):
         ffi = self.ffi
@@ -72,6 +76,11 @@ class NFObserver(object):
         root_idx = self._root_idx
         observer_mode = self._mode
         observer_time = 0
+        stat_time = 0
+        go_stat = False
+        processed = 0
+        ignored = 0
+        tracker = self._tracker
         try:
             while True:
                 nf_packet = ffi.new("struct nf_packet *")
@@ -83,32 +92,29 @@ class NFObserver(object):
                     else:
                         time = observer_time
                     if ret == 1:
-                        self._consumed += 1
+                        processed += 1
                         yield 1, time, nf_packet
                     else:  # Time ticker (Valid but do not match our id)
-                        self._dispatched += 1
                         yield 0, time, None
+                    if observer_time - stat_time >= 1000: # refresh stats each second
+                        stat_time = observer_time
+                        go_stat = True
+                    else:
+                        go_stat = False
                 elif ret == 0:  # Ignored
-                    self._discarded += 1
+                    ignored += 1
+                    pass
                 elif ret == -1:  # Read error or empty buffer
                     pass
                 else:  # End of file
                     raise KeyboardInterrupt
+                if go_stat:
+                    update_stats(ffi, lib, observer_cap, observer_mode, tracker, processed, ignored)
+
         except KeyboardInterrupt:
             return
 
-    def stats(self):
-        self.lib.observer_stats(self._cap, self._stats, self._mode)
-
     def close(self, channel):
         self.lib.observer_close(self._cap)
-        channel.put([self._root_idx,
-                     self._consumed,
-                     self._discarded,
-                     self._stats.dropped,
-                     self._stats.dropped_by_interface
-                     ])
-
-    def break_loop(self):
-        self.lib.observer_break(self._cap)
+        channel.put(None)
 

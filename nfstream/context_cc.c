@@ -1077,13 +1077,6 @@ void observer_close(pcap_t * pcap_handle) {
   pcap_close(pcap_handle);
 }
 
-/**
- * observer_break: Force observer to return.
- */
-void observer_break(pcap_t * pcap_handle) {
-  pcap_breakloop(pcap_handle);
-}
-
 /*
 ------------------------------------------------------------------------------------------------------------------------
                                            Dissector Layer

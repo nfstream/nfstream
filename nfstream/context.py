@@ -1189,7 +1189,6 @@ int observer_configure(pcap_t * pcap_handle, char * bpf_filter);
 int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tunnels, int n_roots, int root_idx, int mode);
 void observer_stats(pcap_t * pcap_handle, struct nf_stat *nf_statistics, unsigned mode);
 void observer_close(pcap_t * pcap_handle);
-void observer_break(pcap_t * pcap_handle);
 """
 
 cc_dissector_apis = """

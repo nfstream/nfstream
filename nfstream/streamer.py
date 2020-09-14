@@ -21,35 +21,18 @@ import pandas as pd
 import time as tm
 import secrets
 import os
-import datetime
+import platform
 from collections.abc import Iterable
-from collections import namedtuple
 from psutil import net_if_addrs, cpu_count
+from multiprocessing import Value
 from hashlib import blake2b
 from os.path import isfile
 from .meter import NFMeter
 from.plugin import NFPlugin
-from .utils import csv_converter, open_file
+from .utils import csv_converter, open_file, meter_cfg, observer_cfg, RepeatedTimer, update_performances
+
 # Set fork as method to avoid issues on macos with spawn default value
 multiprocessing.set_start_method("fork")
-
-
-observer_cfg = namedtuple('ObserverConfiguration', ['source',
-                                                    'snaplen',
-                                                    'decode_tunnels',
-                                                    'bpf_filter',
-                                                    'promisc',
-                                                    'n_roots',
-                                                    'root_idx',
-                                                    'mode'])
-
-meter_cfg = namedtuple('MeterConfiguration', ['idle_timeout',
-                                              'active_timeout',
-                                              'accounting_mode',
-                                              'udps',
-                                              'n_dissections',
-                                              'statistics',
-                                              'splt'])
 
 
 class NFStreamer(object):
@@ -69,10 +52,9 @@ class NFStreamer(object):
                  statistical_analysis=False,
                  splt_analysis=0,
                  n_meters=0,
-                 performance_summary=False,
-                 ):
+                 performance_report=0):
         NFStreamer.streamer_id += 1
-        self.mode = 0
+        self._mode = 0
         self.source = source
         self.decode_tunnels = decode_tunnels
         self.bpf_filter = bpf_filter
@@ -86,7 +68,7 @@ class NFStreamer(object):
         self.statistical_analysis = statistical_analysis
         self.splt_analysis = splt_analysis
         self.n_meters = n_meters
-        self.performance_summary = performance_summary
+        self.performance_report = performance_report
 
     @property
     def source(self):
@@ -99,9 +81,9 @@ class NFStreamer(object):
         else:
             available_interfaces = net_if_addrs().keys()
             if value in available_interfaces:
-                self.mode = 1
+                self._mode = 1
             elif ".pcap" in value[-5:] and isfile(value):
-                self.mode = 0
+                self._mode = 0
             else:
                 raise ValueError("Please specify a pcap file path or a valid network interface name as source.")
         self._source = value
@@ -256,24 +238,23 @@ class NFStreamer(object):
                 self._n_meters = value
 
     @property
-    def performance_summary(self):
-        return self._performance_summary
+    def performance_report(self):
+        return self._performance_report
 
-    @performance_summary.setter
-    def performance_summary(self, value):
-        if not isinstance(value, bool):
-            raise ValueError("Please specify a valid performance_summary parameter (possible values: True, False).")
-        self._performance_summary = value
+    @performance_report.setter
+    def performance_report(self, value):
+        if isinstance(value, int) and value >= 0:
+            pass
+        else:
+            raise ValueError("Please specify a valid performance_report parameter (>=1 for reporting interval (seconds) "
+                             "or 0 to disaable). [Available only for Live capture]")
+        self._performance_report = value
 
     def __iter__(self):
-        start_time = datetime.datetime.now()
         meters = []
-        meters_load = {}
-        processed_packets = 0
-        discarded_packets = 0
-        dropped_packets = 0
-        dropped_intf_packets = 0
+        performances = []
         n_terminated = 0
+        rt = None
         channel = multiprocessing.Queue(maxsize=32767)  # Backpressure strategy.
         # We set it to (2^15-1) to cope with OSX maximum semaphore value.
         n_meters = self.n_meters
@@ -281,7 +262,7 @@ class NFStreamer(object):
             n_meters = 1
         try:
             for i in range(n_meters):
-                meters_load[i] = 0
+                performances.append([Value('i', 0), Value('i', 0), Value('i', 0)])
                 meters.append(NFMeter(observer_cfg=observer_cfg(source=self.source,
                                                                 snaplen=self.snapshot_length,
                                                                 decode_tunnels=self.decode_tunnels,
@@ -289,7 +270,8 @@ class NFStreamer(object):
                                                                 promisc=self.promiscuous_mode,
                                                                 n_roots=n_meters,
                                                                 root_idx=i,
-                                                                mode=self.mode),
+                                                                mode=self._mode,
+                                                                perf_track=performances[i]),
                                       meter_cfg=meter_cfg(idle_timeout=self.idle_timeout*1000,
                                                           active_timeout=self.active_timeout*1000,
                                                           accounting_mode=self.accounting_mode,
@@ -300,44 +282,31 @@ class NFStreamer(object):
                                       channel=channel))
                 meters[i].daemon = True  # demonize meter
                 meters[i].start()
-            idx_generator = 0
+            idx_generator = Value('i', 0)
+            if self._mode == 1 and self.performance_report > 0:
+                if platform.system() == "Linux":
+                    rt = RepeatedTimer(self.performance_report, update_performances, performances, True, idx_generator)
+                else:
+                    rt = RepeatedTimer(self.performance_report, update_performances, performances, False, idx_generator)
             while True:
                 try:
                     recv = channel.get()
-                    if isinstance(recv, list):  # termination and stats
+                    if recv is None:  # termination and stats
                         n_terminated += 1
-                        meters_load[recv[0]] = recv[1]
-                        processed_packets += recv[1]
-                        discarded_packets = max(discarded_packets, recv[2])
-                        dropped_packets = max(dropped_packets, recv[3])
-                        dropped_intf_packets = max(dropped_intf_packets, recv[4])
                         if n_terminated == n_meters:
-                            if self.performance_summary:
-                                for i in range(n_meters):
-                                    if processed_packets != 0:
-                                        meters_load[i] = round((meters_load[i]/processed_packets)*100, 2)
-                                print("\nNFStreamer performance summary:")
-                                print("- Processing time                   : {}".format(
-                                    datetime.datetime.now()-start_time)
-                                )
-                                print("- Metering load dispatch (%)        : {}".format(meters_load))
-                                print("- Processed flows                   : {}".format(idx_generator))
-                                print("- Processed packets                 : {}".format(processed_packets))
-                                print("- Discarded packets (e.g. nonIP)    : {}".format(discarded_packets))
-                                if self.mode:
-                                    print("- Filtered/Dropped packets (kernel) : {}".format(dropped_packets))
-                                    print("- Dropped packets (interface)       : {}".format(dropped_intf_packets))
-                                    print("Please read: https://github.com/nfstream/nfstream/blob/master/assets/NOTE.md")
                             break  # We finish up when all metering jobs are terminated
                     else:
-                        recv.id = idx_generator  # Unify ID
-                        idx_generator += 1
+                        recv.id = idx_generator.value  # Unify ID
+                        idx_generator.value = idx_generator.value + 1
                         yield recv
                 except KeyboardInterrupt:
                     for i in range(n_meters): # We break workflow loop
                         meters[i].terminate()
+                    break
             for i in range(n_meters):
                 meters[i].join()  # Join metring jobs
+            if self._mode == 1 and self.performance_report > 0:
+                rt.stop()
             channel.close()  # We close the queue
             channel.join_thread()  # and we join its thread
         except ValueError as observer_error: # job initiation failed due to some bad observer parameters.

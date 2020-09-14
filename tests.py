@@ -180,10 +180,10 @@ class TestMethods(unittest.TestCase):
                     pass
             except ValueError:
                 value_errors += 1
-        performance_summary = ["yes", -1]
-        for x in performance_summary:
+        performance_report = ["yes", -1]
+        for x in performance_report:
             try:
-                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', performance_summary=x):
+                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', performance_report=x):
                     print(flow)
                     pass
             except ValueError:
@@ -228,8 +228,7 @@ class TestMethods(unittest.TestCase):
     def test_statistical(self):
         print("\n----------------------------------------------------------------------")
         statistical_streamer = NFStreamer(source='tests/pcap/google_ssl.pcap', statistical_analysis=True,
-                                          accounting_mode=1, performance_summary=True,
-                                          n_meters=int(os.getenv('MAX_NFMETERS', 0)))
+                                          accounting_mode=1, n_meters=int(os.getenv('MAX_NFMETERS', 0)))
         for flow in statistical_streamer:
             self.assertEqual(flow.id, 0)
             self.assertEqual(flow.expiration_id, 0)

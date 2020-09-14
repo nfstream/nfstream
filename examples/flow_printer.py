@@ -21,7 +21,7 @@ import sys
 
 
 path = sys.argv[1]
-flow_streamer = NFStreamer(source=path, statistical_analysis=False, performance_summary=False)
+flow_streamer = NFStreamer(source=path, statistical_analysis=False, performance_report=1)
 result = {}
 try:
     for flow in flow_streamer:

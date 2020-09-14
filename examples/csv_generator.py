@@ -24,4 +24,4 @@ print("nfstream processing started. Use Ctrl+C to interrupt and save.")
 total_flows = NFStreamer(source=path,
                          statistical_analysis=True,
                          splt_analysis=10,
-                         performance_summary=True).to_csv()
+                         performance_report=1).to_csv()

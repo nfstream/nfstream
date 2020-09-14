@@ -21,6 +21,7 @@ from multiprocessing import Process
 from .observer import NFObserver
 from .context import create_context
 from .flow import NFlow
+import os
 
 
 class NFCache(OrderedDict):
@@ -214,8 +215,6 @@ class NFMeter(Process):
                                            statistics, splt, ffi, lib, dissector)
                         active_flows -= idles
                         meter_scan_tick = time
-            # Get observer drops stats
-            self.observer.stats()
             del observer
             # Expire all remaining flows in the cache.
             meter_cleanup(cache, channel, udps, sync, n_dissections, statistics, splt, ffi, lib, dissector)
@@ -229,9 +228,3 @@ class NFMeter(Process):
             self.ffi.dlclose(self.lib)
         except KeyboardInterrupt:
             pass
-
-
-    def terminate(self):
-        # Get observer drops stats
-        self.observer.break_loop()
-        self.break_loop = True
