@@ -232,7 +232,7 @@ class NFStreamer(object):
             else:  # avoid contention
                 print("WARNING: n_meters set to :{} in order to avoid contention.".format(n_cpus - 1))
                 self._n_meters = n_cpus - 1
-        if self._n_meters == 0:
+        if self._n_meters == 0: # one CPU case
             self._n_meters = 1
         set_affinity([n_cpus-1]) # we set CPU affinity of streamer to last CPU id
 
