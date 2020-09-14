@@ -315,14 +315,11 @@ class TestMethods(unittest.TestCase):
             self.assertEqual(flow.application_name, 'TLS.Facebook')
             self.assertEqual(flow.application_category_name, 'SocialNetwork')
             self.assertEqual(flow.application_is_guessed, 0)
-            if flow.id == 0:
-                self.assertEqual(flow.requested_server_name, 'facebook.com')
-                self.assertEqual(flow.client_fingerprint, 'bfcc1a3891601edb4f137ab7ab25b840')
-                self.assertEqual(flow.server_fingerprint, '2d1eb5817ece335c24904f516ad5da12')
-            else:
-                self.assertEqual(flow.requested_server_name, 'www.facebook.com')
-                self.assertEqual(flow.client_fingerprint, '5c60e71f1b8cd40e4d40ed5b6d666e3f')
-                self.assertEqual(flow.server_fingerprint, '96681175a9547081bf3d417f1a572091')
+            self.assertTrue(flow.requested_server_name in ['facebook.com', 'www.facebook.com'])
+            self.assertTrue(flow.client_fingerprint in ['bfcc1a3891601edb4f137ab7ab25b840',
+                                                        '5c60e71f1b8cd40e4d40ed5b6d666e3f'])
+            self.assertTrue(flow.server_fingerprint in ['2d1eb5817ece335c24904f516ad5da12',
+                                                        '96681175a9547081bf3d417f1a572091'])
         del fingerprint_streamer
         print("{}\t: \033[94mOK\033[0m".format(".Test fingerprint extraction".ljust(60, ' ')))
 

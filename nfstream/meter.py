@@ -21,7 +21,7 @@ from multiprocessing import Process
 from .observer import NFObserver
 from .context import create_context
 from .flow import NFlow
-import psutil
+from .utils import set_affinity
 
 
 class NFCache(OrderedDict):
@@ -168,8 +168,7 @@ class NFMeter(Process):
 
     def run(self):
         """ run NFMeter main processing loop """
-        p = psutil.Process()
-        p.cpu_affinity(self.mask)
+        set_affinity(self.mask) # we set meter process to CPU with meter id masking.
         # faster as we make intensive access to these members.
         meter_tick = 0  # store meter timeline
         meter_scan_tick = 0  # store cache walker timeline

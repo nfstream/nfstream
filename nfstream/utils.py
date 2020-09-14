@@ -17,6 +17,8 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 import json
+import platform
+import psutil
 from collections import namedtuple
 from threading import Timer
 
@@ -75,7 +77,7 @@ def update_performances(performances, is_linux, flows_count):
                       "packets_processed": processed,
                       "packets_ignored": ignored,
                       "packets_dropped_filtered_by_kernel": drops,
-                      "packets_processing_meters_balance": load}))
+                      "meters_packets_processing_balance": load}))
 
 
 class RepeatedTimer(object):
@@ -103,3 +105,8 @@ class RepeatedTimer(object):
     def stop(self):
         self._timer.cancel()
         self.is_running = False
+
+def set_affinity(mask):
+    if platform.system() == "Linux":
+        psutil.Process().cpu_affinity(mask) # Doesn't work on MAcOS
+

@@ -22,7 +22,6 @@ import time as tm
 import secrets
 import os
 import platform
-import psutil
 from collections.abc import Iterable
 from psutil import net_if_addrs, cpu_count
 from multiprocessing import Value
@@ -30,7 +29,7 @@ from hashlib import blake2b
 from os.path import isfile
 from .meter import NFMeter
 from.plugin import NFPlugin
-from .utils import csv_converter, open_file, meter_cfg, observer_cfg, RepeatedTimer, update_performances
+from .utils import csv_converter, open_file, meter_cfg, observer_cfg, RepeatedTimer, update_performances, set_affinity
 
 # Set fork as method to avoid issues on macos with spawn default value
 multiprocessing.set_start_method("fork")
@@ -235,7 +234,7 @@ class NFStreamer(object):
                 self._n_meters = n_cpus - 1
         if self._n_meters == 0:
             self._n_meters = 1
-        psutil.Process().cpu_affinity([n_cpus-1])
+        set_affinity([n_cpus-1]) # we set CPU affinity of streamer to last CPU id
 
     @property
     def performance_report(self):
