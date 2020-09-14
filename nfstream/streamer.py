@@ -22,6 +22,7 @@ import time as tm
 import secrets
 import os
 import platform
+import psutil
 from collections.abc import Iterable
 from psutil import net_if_addrs, cpu_count
 from multiprocessing import Value
@@ -223,19 +224,18 @@ class NFStreamer(object):
             pass
         else:
             raise ValueError("Please specify a valid n_meters parameter (>=1 or 0 for auto scaling).")
-        n_cores = cpu_count(logical=False)
+        n_cpus = cpu_count(logical=True)
         if value == 0:
-            self._n_meters = n_cores - 1
+            self._n_meters = n_cpus - 1
         else:
-            if (value + 1) <= n_cores:
+            if (value + 1) <= n_cpus:
                 self._n_meters = value
             else:  # avoid contention
-                print("WARNING: NFStreamer set with n_meters:{}.\n"
-                      "         Such configuration runs {} processes > {} physical cores on this host.\n"
-                      "         This will results in contention and performances degradation.".format(value,
-                                                                                                      value + 1,
-                                                                                                      n_cores))
-                self._n_meters = value
+                print("WARNING: n_meters set to :{} in order to avoid contention.".format(n_cpus - 1))
+                self._n_meters = n_cpus - 1
+        if self._n_meters == 0:
+            self._n_meters = 1
+        psutil.Process().cpu_affinity([n_cpus-1])
 
     @property
     def performance_report(self):
@@ -258,8 +258,6 @@ class NFStreamer(object):
         channel = multiprocessing.Queue(maxsize=32767)  # Backpressure strategy.
         # We set it to (2^15-1) to cope with OSX maximum semaphore value.
         n_meters = self.n_meters
-        if n_meters == 0:
-            n_meters = 1
         try:
             for i in range(n_meters):
                 performances.append([Value('i', 0), Value('i', 0), Value('i', 0)])

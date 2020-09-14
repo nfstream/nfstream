@@ -79,6 +79,7 @@ def update_performances(performances, is_linux, flows_count):
 
 
 class RepeatedTimer(object):
+    """ Repeated timer thread """
     def __init__(self, interval, function, *args, **kwargs):
         self._timer     = None
         self.interval   = interval
