@@ -16,6 +16,7 @@ If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 """
 
+
 def open_observer(src, snaplen, mode, promisc, ffi, lib):
     err_open = ffi.new("char []", 128)
     err_set = ffi.new("char []", 128)
@@ -103,7 +104,6 @@ class NFObserver(object):
                         go_stat = False
                 elif ret == 0:  # Ignored
                     ignored += 1
-                    pass
                 elif ret == -1:  # Read error or empty buffer
                     pass
                 else:  # End of file

@@ -16,7 +16,7 @@ If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 """
 
-import multiprocessing
+import multiprocessing as mp
 import pandas as pd
 import time as tm
 import secrets
@@ -24,7 +24,6 @@ import os
 import platform
 from collections.abc import Iterable
 from psutil import net_if_addrs, cpu_count
-from multiprocessing import Value
 from hashlib import blake2b
 from os.path import isfile
 from .meter import NFMeter
@@ -32,7 +31,7 @@ from.plugin import NFPlugin
 from .utils import csv_converter, open_file, meter_cfg, observer_cfg, RepeatedTimer, update_performances, set_affinity
 
 # Set fork as method to avoid issues on macos with spawn default value
-multiprocessing.set_start_method("fork")
+mp.set_start_method("fork")
 
 
 class NFStreamer(object):
@@ -245,8 +244,8 @@ class NFStreamer(object):
         if isinstance(value, int) and value >= 0:
             pass
         else:
-            raise ValueError("Please specify a valid performance_report parameter (>=1 for reporting interval (seconds) "
-                             "or 0 to disaable). [Available only for Live capture]")
+            raise ValueError("Please specify a valid performance_report parameter (>=1 for reporting interval (seconds)"
+                             " or 0 to disaable). [Available only for Live capture]")
         self._performance_report = value
 
     def __iter__(self):
@@ -254,12 +253,12 @@ class NFStreamer(object):
         performances = []
         n_terminated = 0
         rt = None
-        channel = multiprocessing.Queue(maxsize=32767)  # Backpressure strategy.
+        channel = mp.Queue(maxsize=32767)  # Backpressure strategy.
         # We set it to (2^15-1) to cope with OSX maximum semaphore value.
         n_meters = self.n_meters
         try:
             for i in range(n_meters):
-                performances.append([Value('i', 0), Value('i', 0), Value('i', 0)])
+                performances.append([mp.Value('i', 0), mp.Value('i', 0), mp.Value('i', 0)])
                 meters.append(NFMeter(observer_cfg=observer_cfg(source=self.source,
                                                                 snaplen=self.snapshot_length,
                                                                 decode_tunnels=self.decode_tunnels,
@@ -279,7 +278,7 @@ class NFStreamer(object):
                                       channel=channel))
                 meters[i].daemon = True  # demonize meter
                 meters[i].start()
-            idx_generator = Value('i', 0)
+            idx_generator = mp.Value('i', 0)
             if self._mode == 1 and self.performance_report > 0:
                 if platform.system() == "Linux":
                     rt = RepeatedTimer(self.performance_report, update_performances, performances, True, idx_generator)
