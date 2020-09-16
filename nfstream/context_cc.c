@@ -961,49 +961,131 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
 /**
  * observer_open: Open a pcap file or a specified device.
  */
-pcap_t * observer_open(const uint8_t * pcap_file, unsigned snaplen, int promisc, char *err_open, char *err_set, int mode) {
+pcap_t * observer_open(const uint8_t * pcap_file, int mode, int root_idx) {
   pcap_t * pcap_handle = NULL;
-  int set = 0;
-  int set_fanout = 0;
+  char pcap_error_buffer[PCAP_ERRBUF_SIZE];
   if (mode == 0) {
-    pcap_handle = pcap_open_offline((char*)pcap_file, err_open);
+    pcap_handle = pcap_open_offline((char*)pcap_file, pcap_error_buffer);
   }
   if (mode == 1) {
-    pcap_handle = pcap_create((char*)pcap_file, err_open);
-#ifdef __linux__
-    set_fanout = pcap_set_fanout_linux(pcap_handle, 1, 0x8000, 0);
-#endif
-    int set_snaplen = pcap_set_snaplen(pcap_handle, snaplen);
-    int set_promisc = pcap_set_promisc(pcap_handle, promisc);
-    int set_timeout = pcap_set_timeout(pcap_handle, 1000);
-    int set_activate = pcap_activate(pcap_handle);
-    set = set_fanout + set_snaplen + set_promisc + set_timeout + set_activate;
+    pcap_handle = pcap_create((char*)pcap_file, pcap_error_buffer);
   }
-  if (set == 0) {
+  if (pcap_handle != NULL) {
     return pcap_handle;
   } else {
-    pcap_close(pcap_handle);
+    if (root_idx == 0) printf("ERROR: Unable to open source %s: %s\n", pcap_file, pcap_error_buffer);
     return NULL;
   }
 }
 
 
 /**
- * observer_configure: Configure pcap_t with specified bpf_filter.
+ * observer_set_fanout: set fanout mode.
  */
-int observer_configure(pcap_t * pcap_handle, char * bpf_filter) {
+int observer_set_fanout(pcap_t * pcap_handle, int mode, int root_idx) {
+  int set_fanout = 0;
+  if (mode == 0) return set_fanout;
+  else {
+#ifdef __linux__
+    set_fanout = pcap_set_fanout_linux(pcap_handle, 1, 0x8000, 0);
+    if (set_fanout != 0) {
+      pcap_close(pcap_handle);
+      if (root_idx == 0) printf("ERROR: Unable to setup fanout mode.\n");
+    }
+#endif
+  return set_fanout;
+  }
+}
+
+
+/**
+ * observer_activate: activate observer.
+ */
+int observer_activate(pcap_t * pcap_handle, int mode, int root_idx) {
+  int set_activate = 0;
+  if (mode == 0) return set_activate;
+  else {
+    set_activate = pcap_activate(pcap_handle);
+    if (set_activate != 0) {
+      pcap_close(pcap_handle);
+      if (root_idx == 0) printf("ERROR: Unable to activate source.\n");
+    }
+  return set_activate;
+  }
+}
+
+
+/**
+ * observer_set_timeout: set buffer timeout.
+ */
+int observer_set_timeout(pcap_t * pcap_handle, int mode, int root_idx) {
+  int set_timeout = 0;
+  if (mode == 0) return set_timeout;
+  else {
+    set_timeout = pcap_set_timeout(pcap_handle, 1000);
+    if (set_timeout != 0) {
+      pcap_close(pcap_handle);
+      if (root_idx == 0) printf("ERROR: Unable to set buffer timeout.\n");
+    }
+  return set_timeout;
+  }
+}
+
+
+/**
+ * observer_set_promisc: set promisc mode.
+ */
+int observer_set_promisc(pcap_t * pcap_handle, int mode, int root_idx, int promisc) {
+  int set_promisc = 0;
+  if (mode == 0) return set_promisc;
+  else {
+    set_promisc = pcap_set_promisc(pcap_handle, promisc);
+    if (set_promisc != 0) {
+      pcap_close(pcap_handle);
+      if (root_idx == 0) printf("ERROR: Unable to set promisc mode.\n");
+    }
+  return set_promisc;
+  }
+}
+
+
+/**
+ * observer_set_snaplen: set snaplen.
+ */
+int observer_set_snaplen(pcap_t * pcap_handle, int mode, int root_idx, unsigned snaplen) {
+  int set_snaplen = 0;
+  if (mode == 0) return set_snaplen;
+  else {
+    set_snaplen = pcap_set_snaplen(pcap_handle, snaplen);
+    if (set_snaplen != 0) {
+      pcap_close(pcap_handle);
+      if (root_idx == 0) printf("ERROR: Unable to set snaplen.\n");
+    }
+  return set_snaplen;
+  }
+}
+
+
+/**
+ * observer_set_filter: Configure pcap_t with specified bpf_filter.
+ */
+int observer_set_filter(pcap_t * pcap_handle, char * bpf_filter, int root_idx) {
   if(bpf_filter != NULL) {
     struct bpf_program fcode;
     if(pcap_compile(pcap_handle, &fcode, bpf_filter, 1, 0xFFFFFF00) < 0) {
+      if (root_idx == 0) printf("ERROR: Unable to compile BPF filter.\n");
+      pcap_close(pcap_handle);
       return 1;
     } else {
       if(pcap_setfilter(pcap_handle, &fcode) < 0) {
-	return 2;
-      } else
-	return 0;
+	    if (root_idx == 0) printf("ERROR: Unable to compile BPF filter.\n");
+	    pcap_close(pcap_handle);
+	    return 1;
+      } else {
+	    return 0;
+	  }
     }
-  }
-  else {
+  } else {
     return 0;
   }
 }

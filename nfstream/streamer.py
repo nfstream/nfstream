@@ -26,9 +26,9 @@ from collections.abc import Iterable
 from psutil import net_if_addrs, cpu_count
 from hashlib import blake2b
 from os.path import isfile
-from .meter import NFMeter
+from .meter import meter_workflow
 from.plugin import NFPlugin
-from .utils import csv_converter, open_file, meter_cfg, observer_cfg, RepeatedTimer, update_performances, set_affinity
+from .utils import csv_converter, open_file, RepeatedTimer, update_performances, set_affinity
 
 # Set fork as method to avoid issues on macos with spawn default value
 mp.set_start_method("fork")
@@ -222,18 +222,17 @@ class NFStreamer(object):
             pass
         else:
             raise ValueError("Please specify a valid n_meters parameter (>=1 or 0 for auto scaling).")
-        n_cpus = cpu_count(logical=True)
+        c_cores = cpu_count(logical=False)
         if value == 0:
-            self._n_meters = n_cpus - 1
+            self._n_meters = c_cores - 1
         else:
-            if (value + 1) <= n_cpus:
+            if (value + 1) <= c_cores:
                 self._n_meters = value
             else:  # avoid contention
-                print("WARNING: n_meters set to :{} in order to avoid contention.".format(n_cpus - 1))
-                self._n_meters = n_cpus - 1
-        if self._n_meters == 0: # one CPU case
+                print("WARNING: n_meters set to :{} in order to avoid contention.".format(c_cores - 1))
+                self._n_meters = c_cores - 1
+        if self._n_meters == 0:  # one CPU case
             self._n_meters = 1
-        set_affinity([n_cpus-1]) # we set CPU affinity of streamer to last CPU id
 
     @property
     def performance_report(self):
@@ -249,6 +248,9 @@ class NFStreamer(object):
         self._performance_report = value
 
     def __iter__(self):
+        set_affinity(cpu_count(logical=False)-1)
+        lock = mp.Lock()
+        lock.acquire()
         meters = []
         performances = []
         n_terminated = 0
@@ -259,23 +261,25 @@ class NFStreamer(object):
         try:
             for i in range(n_meters):
                 performances.append([mp.Value('i', 0), mp.Value('i', 0), mp.Value('i', 0)])
-                meters.append(NFMeter(observer_cfg=observer_cfg(source=self.source,
-                                                                snaplen=self.snapshot_length,
-                                                                decode_tunnels=self.decode_tunnels,
-                                                                bpf_filter=self.bpf_filter,
-                                                                promisc=self.promiscuous_mode,
-                                                                n_roots=n_meters,
-                                                                root_idx=i,
-                                                                mode=self._mode,
-                                                                perf_track=performances[i]),
-                                      meter_cfg=meter_cfg(idle_timeout=self.idle_timeout*1000,
-                                                          active_timeout=self.active_timeout*1000,
-                                                          accounting_mode=self.accounting_mode,
-                                                          udps=self.udps,
-                                                          n_dissections=self.n_dissections,
-                                                          statistics=self.statistical_analysis,
-                                                          splt=self.splt_analysis),
-                                      channel=channel))
+                meters.append(mp.Process(target=meter_workflow,
+                                         args=(self.source,
+                                               self.snapshot_length,
+                                               self.decode_tunnels,
+                                               self.bpf_filter,
+                                               self.promiscuous_mode,
+                                               n_meters,
+                                               i,
+                                               self._mode,
+                                               self.idle_timeout*1000,
+                                               self.active_timeout*1000,
+                                               self.accounting_mode,
+                                               self.udps,
+                                               self.n_dissections,
+                                               self.statistical_analysis,
+                                               self.splt_analysis,
+                                               channel,
+                                               performances[i],
+                                               lock,)))
                 meters[i].daemon = True  # demonize meter
                 meters[i].start()
             idx_generator = mp.Value('i', 0)
@@ -296,7 +300,7 @@ class NFStreamer(object):
                         idx_generator.value = idx_generator.value + 1
                         yield recv
                 except KeyboardInterrupt:
-                    for i in range(n_meters): # We break workflow loop
+                    for i in range(n_meters):  # We break workflow loop
                         meters[i].terminate()
                     break
             for i in range(n_meters):

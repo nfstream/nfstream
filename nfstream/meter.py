@@ -17,8 +17,6 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from collections import OrderedDict
-from multiprocessing import Process
-from .observer import NFObserver
 from .context import create_context
 from .flow import NFlow
 from .utils import set_affinity
@@ -130,7 +128,7 @@ def meter_cleanup(cache, channel, udps, sync, n_dissections, statistics, splt, f
 
 
 def setup_dissector(ffi, lib, n_dissections):
-    """ Setup dissector according to dissections value"""
+    """ Setup dissector according to dissections value """
     if n_dissections:  # Dissection activated
         # Check that headers and loaded library match and initiate dissector.
         checker = ffi.new("struct dissector_checker *")
@@ -148,84 +146,115 @@ def setup_dissector(ffi, lib, n_dissections):
         dissector = ffi.NULL
     return dissector
 
-class NFMeter(Process):
-    """ NFMeter for entries management """
-    def __init__(self, observer_cfg, meter_cfg, channel):
-        super().__init__()
-        self.ffi, self.lib = create_context()
-        self.observer = NFObserver(cfg=observer_cfg,
-                                   ffi=self.ffi,
-                                   lib=self.lib)
-        self.idle_timeout = meter_cfg.idle_timeout
-        self.active_timeout = meter_cfg.active_timeout
-        self.accounting_mode = meter_cfg.accounting_mode
-        self.udps = meter_cfg.udps
-        self.n_dissections = meter_cfg.n_dissections
-        self.statistics = meter_cfg.statistics
-        self.splt = meter_cfg.splt
-        self.channel = channel
-        self.mask = [observer_cfg.root_idx]
 
-    def run(self):
-        """ run NFMeter main processing loop """
-        set_affinity(self.mask) # we set meter process to CPU with meter id masking.
-        # faster as we make intensive access to these members.
-        meter_tick = 0  # store meter timeline
-        meter_scan_tick = 0  # store cache walker timeline
-        meter_scan_interval = 10  # we set a scan for idle flows each 10 milliseconds
-        # May look ugly but it is faster as we make intensive access to these attributes.
-        idle_timeout = self.idle_timeout
-        active_timeout = self.active_timeout
-        accounting_mode = self.accounting_mode
-        statistics = self.statistics
-        splt = self.splt
-        n_dissections = self.n_dissections
-        cache = NFCache()
-        observer = self.observer
-        channel = self.channel
-        active_flows = 0
-        ffi, lib = self.ffi, self.lib
-        dissector = setup_dissector(ffi, lib, n_dissections)
-        udps = self.udps
-        sync = False
-        if len(udps) > 0:  # streamer started with udps: sync internal structures on update.
-            sync = True
-        try:
-            for observable_type, time, packet in observer:
-                if observable_type == 1:  # Packet that match this meter idx.
-                    go_scan = False
-                    if time - meter_scan_tick >= meter_scan_interval:
-                        go_scan = True  # Activate scan
-                        meter_scan_tick = time
-                    if time >= meter_tick:  # Update meter timeline
-                        meter_tick = time
-                    # Consume packet and return diff
-                    diff = consume(packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps, sync,
-                                   accounting_mode, n_dissections, statistics, splt, dissector)
-                    active_flows += diff
-                    if go_scan:
-                        # scan and return expired flows count.
-                        idles = meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, n_dissections,
-                                           statistics, splt, ffi, lib, dissector)
-                        active_flows -= idles
-                else:  # Time ticker event (packer that do not match this meter id or call return after timeout on live)
-                    if time > meter_tick:
-                        meter_tick = time  # update timeline ans scan if needed
-                    if time - meter_scan_tick >= meter_scan_interval:
-                        idles = meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, n_dissections,
-                                           statistics, splt, ffi, lib, dissector)
-                        active_flows -= idles
-                        meter_scan_tick = time
-            del observer
-            # Expire all remaining flows in the cache.
-            meter_cleanup(cache, channel, udps, sync, n_dissections, statistics, splt, ffi, lib, dissector)
-            # Close observer
-            self.observer.close(channel)
-            # Clean dissector
-            self.lib.dissector_cleanup(dissector)
-            del ffi
-            del lib
-            # Release context library
-            self.ffi.dlclose(self.lib)
-        except KeyboardInterrupt:
+def setup_observer(ffi, lib, root_idx, source, snaplen, promisc, mode, bpf_filter):
+    """ Setup observer options """
+    observer = lib.observer_open(bytes(source, 'utf-8'), mode, root_idx)
+    if observer == ffi.NULL:
+        return
+    fanout_set_failed = lib.observer_set_fanout(observer, mode, root_idx)
+    if fanout_set_failed:
+        return
+    timeout_set_failed = lib.observer_set_timeout(observer, mode, root_idx)
+    if timeout_set_failed:
+        return
+    promisc_set_failed = lib.observer_set_promisc(observer, mode, root_idx, int(promisc))
+    if promisc_set_failed:
+        return
+    snaplen_set_failed = lib.observer_set_snaplen(observer, mode, root_idx, snaplen)
+    if snaplen_set_failed:
+        return
+    if bpf_filter is not None:
+        filter_set_failed = lib.observer_set_filter(observer, bytes(bpf_filter, 'utf-8'), root_idx)
+        if filter_set_failed:
+            return
+    return observer
+
+
+def track(lib, observer, mode, interface_stats, tracker, processed, ignored):
+    """ Update shared performance values """
+    lib.observer_stats(observer, interface_stats, mode)
+    tracker[0].value = interface_stats.dropped
+    tracker[1].value = processed
+    tracker[2].value = ignored
+
+
+def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots, root_idx, mode,
+                   idle_timeout, active_timeout, accounting_mode, udps, n_dissections, statistics, splt,
+                   channel, tracker, lock):
+    """ Metering workflow """
+    set_affinity(root_idx)
+    ffi, lib = create_context()
+    observer = setup_observer(ffi, lib, root_idx, source, snaplen, promisc, mode, bpf_filter)
+    if observer is None:
+        ffi.dlclose(lib)
+        channel.put(None)
+        return
+    meter_tick, meter_scan_tick, meter_track_tick = 0, 0, 0  # meter, idle scan and perf track timelines
+    meter_scan_interval, meter_track_interval = 10, 1000  # we scan each 10 msecs and update perf each sec.
+    cache = NFCache()
+    dissector = setup_dissector(ffi, lib, n_dissections)
+    active_flows, ignored_packets, processed_packets = 0, 0, 0
+    sync = False
+    if len(udps) > 0:  # streamer started with udps: sync internal structures on update.
+        sync = True
+    remaining_packets = True
+    interface_stats = ffi.new("struct nf_stat *")
+    # We ensure that processes start at the same time
+    if root_idx == n_roots - 1:
+        lock.release()
+    else:
+        lock.acquire()
+        lock.release()
+    activation_failed = lib.observer_activate(observer, mode, root_idx)
+    if activation_failed:
+        ffi.dlclose(lib)
+        channel.put(None)
+        return
+    while remaining_packets:
+        nf_packet = ffi.new("struct nf_packet *")
+        ret = lib.observer_next(observer, nf_packet, decode_tunnels, n_roots, root_idx, mode)
+        if ret > 0:  # Valid must be processed by meter
+            packet_time = nf_packet.time
+            if packet_time > meter_tick:
+                meter_tick = packet_time
+            else:
+                nf_packet.time = meter_tick  # Force time order
+            if ret == 1:  # Must be processed
+                processed_packets += 1
+                go_scan = False
+                if meter_tick - meter_scan_tick >= meter_scan_interval:
+                    go_scan = True  # Activate scan
+                    meter_scan_tick = meter_tick
+                # Consume packet and return diff
+                diff = consume(nf_packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps, sync,
+                               accounting_mode, n_dissections, statistics, splt, dissector)
+                active_flows += diff
+                if go_scan:
+                    idles = meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, n_dissections,
+                                       statistics, splt, ffi, lib, dissector)
+                    active_flows -= idles
+            else:  # time ticker
+                if meter_tick - meter_scan_tick >= meter_scan_interval:
+                    idles = meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, n_dissections,
+                                       statistics, splt, ffi, lib, dissector)
+                    active_flows -= idles
+                    meter_scan_tick = meter_tick
+        elif ret == 0:  # Ignored packet
+            ignored_packets += 1
+        elif ret == -1:  # Read error or empty buffer
             pass
+        else:  # End of file
+            remaining_packets = False  # end of loop
+        if meter_tick - meter_track_tick >= meter_track_interval:  # Performance tracking
+            track(lib, observer, mode, interface_stats, tracker, processed_packets, ignored_packets)
+            meter_track_tick = meter_tick
+    # Expire all remaining flows in the cache.
+    meter_cleanup(cache, channel, udps, sync, n_dissections, statistics, splt, ffi, lib, dissector)
+    # Close observer
+    lib.observer_close(observer)
+    # Clean dissector
+    lib.dissector_cleanup(dissector)
+    # Release context library
+    ffi.dlclose(lib)
+    channel.put(None)

@@ -1183,12 +1183,16 @@ typedef struct nf_flow {
 """
 
 cc_observer_apis = """
-pcap_t *observer_open(const uint8_t * pcap_file, unsigned snaplen, int promisc, char *err_open,
-                      char *err_set, int mode);
-int observer_configure(pcap_t * pcap_handle, char * bpf_filter);
+pcap_t * observer_open(const uint8_t * pcap_file, int mode, int root_idx);
+int observer_set_fanout(pcap_t * pcap_handle, int mode, int root_idx);
+int observer_set_timeout(pcap_t * pcap_handle, int mode, int root_idx);
+int observer_set_promisc(pcap_t * pcap_handle, int mode, int root_idx, int promisc);
+int observer_set_snaplen(pcap_t * pcap_handle, int mode, int root_idx, unsigned snaplen);
+int observer_set_filter(pcap_t * pcap_handle, char * bpf_filter, int root_idx);
 int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tunnels, int n_roots, int root_idx, int mode);
 void observer_stats(pcap_t * pcap_handle, struct nf_stat *nf_statistics, unsigned mode);
 void observer_close(pcap_t * pcap_handle);
+int observer_activate(pcap_t * pcap_handle, int mode, int root_idx);
 """
 
 cc_dissector_apis = """

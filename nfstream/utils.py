@@ -19,7 +19,6 @@ If not, see <http://www.gnu.org/licenses/>.
 import json
 import platform
 import psutil
-from collections import namedtuple
 from threading import Timer
 
 
@@ -37,25 +36,6 @@ def open_file(path, chunked, chunk_idx):
         return open(path, 'wb')
     else:
         return open(path.replace("csv", "{}.csv".format(chunk_idx)), 'wb')
-
-
-observer_cfg = namedtuple('ObserverConfiguration', ['source',
-                                                    'snaplen',
-                                                    'decode_tunnels',
-                                                    'bpf_filter',
-                                                    'promisc',
-                                                    'n_roots',
-                                                    'root_idx',
-                                                    'mode',
-                                                    'perf_track'])
-
-meter_cfg = namedtuple('MeterConfiguration', ['idle_timeout',
-                                              'active_timeout',
-                                              'accounting_mode',
-                                              'udps',
-                                              'n_dissections',
-                                              'statistics',
-                                              'splt'])
 
 
 def update_performances(performances, is_linux, flows_count):
@@ -83,11 +63,11 @@ def update_performances(performances, is_linux, flows_count):
 class RepeatedTimer(object):
     """ Repeated timer thread """
     def __init__(self, interval, function, *args, **kwargs):
-        self._timer     = None
-        self.interval   = interval
-        self.function   = function
-        self.args       = args
-        self.kwargs     = kwargs
+        self._timer = None
+        self.interval = interval
+        self.function = function
+        self.args = args
+        self.kwargs = kwargs
         self.is_running = False
         self.start()
 
@@ -106,7 +86,19 @@ class RepeatedTimer(object):
         self._timer.cancel()
         self.is_running = False
 
-def set_affinity(mask):
-    if platform.system() == "Linux":
-        psutil.Process().cpu_affinity(mask) # Doesn't work on MAcOS
 
+def chunks(l, n):
+    n = max(1, n)
+    return (l[i:i+n] for i in range(0, len(l), n))
+
+
+def set_affinity(id):
+    if platform.system() == "Linux":
+        c_cores = psutil.cpu_count(logical=False)
+        c_cpus = psutil.cpu_count(logical=True)
+        if c_cpus == c_cores:  # single threaded.
+            psutil.Process().cpu_affinity([id,])
+        else:
+            if c_cpus == (2*c_cores):  # multi threaded
+                temp = list(chunks(range(c_cpus), 2))
+                psutil.Process().cpu_affinity(list(temp[id]))
