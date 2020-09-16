@@ -43,8 +43,8 @@ class NFStreamer(object):
                  bpf_filter=None,
                  promiscuous_mode=True,
                  snapshot_length=1536,
-                 idle_timeout=30,
-                 active_timeout=300,
+                 idle_timeout=15, # default value on wide range of netflow-enabled routers
+                 active_timeout=1800, # default value on wide range of netflow-enabled routers
                  accounting_mode=0,
                  udps=None,
                  n_dissections=20,
@@ -223,6 +223,7 @@ class NFStreamer(object):
         else:
             raise ValueError("Please specify a valid n_meters parameter (>=1 or 0 for auto scaling).")
         c_cores = cpu_count(logical=False)
+        # We exclude hyperthreding as in case of high load this will results in contention.
         if value == 0:
             self._n_meters = c_cores - 1
         else:
@@ -248,7 +249,8 @@ class NFStreamer(object):
         self._performance_report = value
 
     def __iter__(self):
-        set_affinity(cpu_count(logical=False)-1)
+        set_affinity(0) # we pin streamer to core 0 as it's the less intensive task and several services runs
+                        # by default on this core.
         lock = mp.Lock()
         lock.acquire()
         meters = []

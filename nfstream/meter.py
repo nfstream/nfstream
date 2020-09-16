@@ -183,7 +183,7 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
                    idle_timeout, active_timeout, accounting_mode, udps, n_dissections, statistics, splt,
                    channel, tracker, lock):
     """ Metering workflow """
-    set_affinity(root_idx)
+    set_affinity(root_idx+1)
     ffi, lib = create_context()
     observer = setup_observer(ffi, lib, root_idx, source, snaplen, promisc, mode, bpf_filter)
     if observer is None:

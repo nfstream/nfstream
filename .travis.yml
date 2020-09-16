@@ -121,7 +121,7 @@ install:
   - ls dist/
 
 script:
-  - python3 -m coverage run tests.py
+  - travis_wait python3 -m coverage run tests.py
   - python3 -m coverage combine
 
 after_success:
