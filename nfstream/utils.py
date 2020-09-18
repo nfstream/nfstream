@@ -34,8 +34,7 @@ def csv_converter(values):
 def open_file(path, chunked, chunk_idx):
     if not chunked:
         return open(path, 'wb')
-    else:
-        return open(path.replace("csv", "{}.csv".format(chunk_idx)), 'wb')
+    return open(path.replace("csv", "{}.csv".format(chunk_idx)), 'wb')
 
 
 def update_performances(performances, is_linux, flows_count):
@@ -92,13 +91,13 @@ def chunks(l, n):
     return (l[i:i+n] for i in range(0, len(l), n))
 
 
-def set_affinity(id):
+def set_affinity(mask):
     if platform.system() == "Linux":
         c_cores = psutil.cpu_count(logical=False)
         c_cpus = psutil.cpu_count(logical=True)
         if c_cpus == c_cores:  # single threaded.
-            psutil.Process().cpu_affinity([id,])
+            psutil.Process().cpu_affinity([mask,])
         else:
             if c_cpus == (2*c_cores):  # multi threaded
                 temp = list(chunks(range(c_cpus), 2))
-                psutil.Process().cpu_affinity(list(temp[id]))
+                psutil.Process().cpu_affinity(list(temp[mask]))

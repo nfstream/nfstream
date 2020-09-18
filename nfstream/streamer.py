@@ -357,8 +357,9 @@ class NFStreamer(object):
                 chunk_flows += 1
             except KeyboardInterrupt:
                 pass
-        if not f.closed:
-            f.close()
+        if f is not None:
+            if not f.closed:
+                f.close()
         return total_flows
 
     def to_pandas(self, ip_anonymization=False):

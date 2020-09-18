@@ -48,8 +48,6 @@ nf_packet = namedtuple('NFPacket', ['time',
 
 class UDPS(object):
     """ dummy class that add udps slot the flexibility required for extensions """
-    pass
-
 
 def pythonize_packet(packet, ffi):
     """ convert a cdata packet to a namedtuple """
@@ -284,14 +282,13 @@ class NFlow(object):
         if ret > 0:  # If update done it will be zero, idle and active are matched to 1 and 2.
             self.expiration_id = ret - 1
             return self.expire(udps, sync, n_dissections, statistics, splt, ffi, lib, dissector)  # expire it.
-        else:
-            if sync:  # If running with Plugins
-                self.sync(n_dissections, statistics, splt, ffi, lib, sync)
-                # We need to copy computed values on C struct.
-                for udp in udps:  # Then call each plugin on_update entrypoint.
-                    udp.on_update(pythonize_packet(packet, ffi), self)
-                if self.expiration_id == -1: # One of the plugins set expiration to custom value (-1)
-                    return self.expire(udps, sync, n_dissections, statistics, splt, ffi, lib, dissector)  # Expire it.
+        if sync:  # If running with Plugins
+            self.sync(n_dissections, statistics, splt, ffi, lib, sync)
+            # We need to copy computed values on C struct.
+            for udp in udps:  # Then call each plugin on_update entrypoint.
+                udp.on_update(pythonize_packet(packet, ffi), self)
+            if self.expiration_id == -1: # One of the plugins set expiration to custom value (-1)
+                return self.expire(udps, sync, n_dissections, statistics, splt, ffi, lib, dissector)  # Expire it.
 
     def expire(self, udps, sync, n_dissections, statistics, splt, ffi, lib, dissector):
         """ NFlow expiration method """
@@ -412,10 +409,7 @@ class NFlow(object):
 
     def is_idle(self, tick, idle_timeout):
         """ is_idle method to check if NFlow is idle accoring to configured timeout """
-        if (tick - idle_timeout) >= self._C.bidirectional_last_seen_ms:
-            return True
-        else:
-            return False
+        return (tick - idle_timeout) >= self._C.bidirectional_last_seen_ms
 
     def __str__(self):
         """ String representation of NFlow """

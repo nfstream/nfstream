@@ -139,9 +139,8 @@ def setup_dissector(ffi, lib, n_dissections):
         dissector = lib.dissector_init(checker)
         if dissector == ffi.NULL:
             raise ValueError("Error while initializing dissector.")
-        else:
-            # Configure it (activate bitmask to all protocols)
-            lib.dissector_configure(dissector)
+        # Configure it (activate bitmask to all protocols)
+        lib.dissector_configure(dissector)
     else:  # No dissection configured
         dissector = ffi.NULL
     return dissector

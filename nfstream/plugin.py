@@ -39,7 +39,6 @@ class NFPlugin(object):
                     flow.udps.packet_40_count = 0
         ----------------------------------------------------------------
         """
-        pass
 
     def on_update(self, packet, flow):
         """
@@ -49,7 +48,6 @@ class NFPlugin(object):
                     flow.udps.packet_40_count += 1
         ----------------------------------------------------------------
         """
-        pass
 
     def on_expire(self, flow):
         """
@@ -59,7 +57,6 @@ class NFPlugin(object):
                     flow.udps.magic_message = "YES"
         ----------------------------------------------------------------
         """
-        pass
 
     def cleanup(self):
         """
@@ -68,8 +65,6 @@ class NFPlugin(object):
                  del self.large_dict_passed_as_plugin_attribute
         ----------------------------------------------------------------
         """
-        pass
-
 
 # A working example.
 class SPLT(NFPlugin):
@@ -92,12 +87,11 @@ class SPLT(NFPlugin):
     def _get_packet_size(packet, accounting_mode):
         if accounting_mode == 0:
             return packet.raw_size
-        elif accounting_mode == 1:
+        if accounting_mode == 1:
             return packet.ip_size
-        elif accounting_mode == 2:
+        if accounting_mode == 2:
             return packet.transport_size
-        else:
-            return packet.payload_size
+        return packet.payload_size
 
     def on_init(self, packet, flow):
         flow.udps.splt_direction = [-1] * self.sequence_length
@@ -113,6 +107,3 @@ class SPLT(NFPlugin):
             flow.udps.splt_direction[packet_index] = packet.direction
             flow.udps.splt_ps[packet_index] = self._get_packet_size(packet, self.accounting_mode)
             flow.udps.splt_piat_ms[packet_index] = packet.delta_time
-
-
-
