@@ -81,7 +81,6 @@ class TestMethods(unittest.TestCase):
             try:
                 for flow in NFStreamer(source=x):
                     print(flow)
-                    pass
             except ValueError:
                 value_errors += 1
         decode_tunnels = [33, "True"]
@@ -89,7 +88,6 @@ class TestMethods(unittest.TestCase):
             try:
                 for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', decode_tunnels=x):
                     print(flow)
-                    pass
             except ValueError:
                 value_errors += 1
         bpf_filter = ["my filter", 11]
@@ -97,7 +95,6 @@ class TestMethods(unittest.TestCase):
             try:
                 for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', bpf_filter=x):
                     print(flow)
-                    pass
             except ValueError:
                 value_errors += 1
         promiscuous_mode = ["yes", 89]
@@ -105,7 +102,6 @@ class TestMethods(unittest.TestCase):
             try:
                 for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', promiscuous_mode=x):
                     print(flow)
-                    pass
             except ValueError:
                 value_errors += 1
         snapshot_length = ["largest", -1]
@@ -113,7 +109,6 @@ class TestMethods(unittest.TestCase):
             try:
                 for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', snapshot_length=x):
                     print(flow)
-                    pass
             except ValueError:
                 value_errors += 1
         idle_timeout = [-1, "idle"]
@@ -121,7 +116,6 @@ class TestMethods(unittest.TestCase):
             try:
                 for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', idle_timeout=x):
                     print(flow)
-                    pass
             except ValueError:
                 value_errors += 1
         active_timeout = [-1, "active"]
@@ -129,7 +123,6 @@ class TestMethods(unittest.TestCase):
             try:
                 for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', active_timeout=x):
                     print(flow)
-                    pass
             except ValueError:
                 value_errors += 1
         accounting_mode = [-1, 5, 'ip']
@@ -137,7 +130,6 @@ class TestMethods(unittest.TestCase):
             try:
                 for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', accounting_mode=x):
                     print(flow)
-                    pass
             except ValueError:
                 value_errors += 1
         udps = [lambda y: y+1, "NFPlugin"]
@@ -145,7 +137,6 @@ class TestMethods(unittest.TestCase):
             try:
                 for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', udps=x):
                     print(flow)
-                    pass
             except ValueError:
                 value_errors += 1
         n_dissections = ["yes", -1, 256]
@@ -153,7 +144,6 @@ class TestMethods(unittest.TestCase):
             try:
                 for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', n_dissections=x):
                     print(flow)
-                    pass
             except ValueError:
                 value_errors += 1
         statistical_analysis = ["yes", 89]
@@ -161,7 +151,6 @@ class TestMethods(unittest.TestCase):
             try:
                 for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', statistical_analysis=x):
                     print(flow)
-                    pass
             except ValueError:
                 value_errors += 1
         splt_analysis = [-1, 256, "yes"]
@@ -169,7 +158,6 @@ class TestMethods(unittest.TestCase):
             try:
                 for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', splt_analysis=x):
                     print(flow)
-                    pass
             except ValueError:
                 value_errors += 1
         n_meters = ["yes", -1]
@@ -177,7 +165,6 @@ class TestMethods(unittest.TestCase):
             try:
                 for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', n_meters=x):
                     print(flow)
-                    pass
             except ValueError:
                 value_errors += 1
         performance_report = ["yes", -1]
@@ -185,7 +172,6 @@ class TestMethods(unittest.TestCase):
             try:
                 for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', performance_report=x):
                     print(flow)
-                    pass
             except ValueError:
                 value_errors += 1
         self.assertEqual(value_errors, 31)

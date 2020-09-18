@@ -967,10 +967,6 @@ struct ndpi_flow_struct {
     } telnet;
 
     struct {
-      char answer[96];
-    } mdns;
-
-    struct {
       char version[32];
     } ubntac2;
 

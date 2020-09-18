@@ -1360,9 +1360,14 @@ void dissector_process_info(struct ndpi_detection_module_struct *dissector, stru
   }
   // TLS: We populate requested server name with the server name identifier extracted in client hello.
   //      Then we add JA3 fingerprints for both client and server: https://github.com/salesforce/ja3
-  else if ((is_ndpi_proto(flow, NDPI_PROTOCOL_TLS)) || (flow->ndpi_flow->protos.stun_ssl.ssl.ja3_client[0] != '\0')) {
+  // We also add QUIC user Agent ID in case of QUIC protocol.
+  else if ((is_ndpi_proto(flow, NDPI_PROTOCOL_TLS)) ||
+           (flow->ndpi_flow->protos.stun_ssl.ssl.ja3_client[0] != '\0') ||
+           is_ndpi_proto(flow, NDPI_PROTOCOL_QUIC)) {
     snprintf(flow->requested_server_name, sizeof(flow->requested_server_name), "%s",
              flow->ndpi_flow->protos.stun_ssl.ssl.client_requested_server_name);
+    snprintf(flow->user_agent, sizeof(flow->user_agent), "%s",
+             flow->ndpi_flow->http.user_agent ? flow->ndpi_flow->http.user_agent : "");
     snprintf(flow->c_hash, sizeof(flow->c_hash), "%s",
              flow->ndpi_flow->protos.stun_ssl.ssl.ja3_client);
     snprintf(flow->s_hash, sizeof(flow->s_hash), "%s",

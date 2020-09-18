@@ -178,8 +178,8 @@ NFlow(id=0,
       requested_server_name='facebook.com',
       client_fingerprint='bfcc1a3891601edb4f137ab7ab25b840',
       server_fingerprint='2d1eb5817ece335c24904f516ad5da12',
-      http_user_agent='',
-      http_content_type='')
+      user_agent='',
+      content_type='')
  ```
 
 ### Post-mortem statistical flow features extraction

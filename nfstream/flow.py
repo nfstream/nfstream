@@ -171,8 +171,8 @@ class NFlow(object):
                  'requested_server_name',
                  'client_fingerprint',
                  'server_fingerprint',
-                 'http_user_agent',
-                 'http_content_type',
+                 'user_agent',
+                 'content_type',
                  '_C',
                  'udps')
 
@@ -264,8 +264,8 @@ class NFlow(object):
             self.requested_server_name = ffi.string(self._C.requested_server_name).decode('utf-8', errors='ignore')
             self.client_fingerprint = ffi.string(self._C.c_hash).decode('utf-8', errors='ignore')
             self.server_fingerprint = ffi.string(self._C.s_hash).decode('utf-8', errors='ignore')
-            self.http_user_agent = ffi.string(self._C.user_agent).decode('utf-8', errors='ignore')
-            self.http_content_type = ffi.string(self._C.content_type).decode('utf-8', errors='ignore')
+            self.user_agent = ffi.string(self._C.user_agent).decode('utf-8', errors='ignore')
+            self.content_type = ffi.string(self._C.content_type).decode('utf-8', errors='ignore')
         if splt:  # If splt_analysis set (>0), we unpack the arrays structures.
             self.splt_direction = ffi.unpack(self._C.splt_direction, splt)
             self.splt_ps = ffi.unpack(self._C.splt_ps, splt)
@@ -392,8 +392,8 @@ class NFlow(object):
                 self.requested_server_name = ffi.string(self._C.requested_server_name).decode('utf-8', errors='ignore')
                 self.client_fingerprint = ffi.string(self._C.c_hash).decode('utf-8', errors='ignore')
                 self.server_fingerprint = ffi.string(self._C.s_hash).decode('utf-8', errors='ignore')
-                self.http_user_agent = ffi.string(self._C.user_agent).decode('utf-8', errors='ignore')
-                self.http_content_type = ffi.string(self._C.content_type).decode('utf-8', errors='ignore')
+                self.user_agent = ffi.string(self._C.user_agent).decode('utf-8', errors='ignore')
+                self.content_type = ffi.string(self._C.content_type).decode('utf-8', errors='ignore')
                 self.application_is_guessed = self._C.guessed
         if splt:
             if sync_mode: # Same for splt, once we reach splt limit, there is no need to sync it anymore.
