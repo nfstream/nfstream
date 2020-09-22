@@ -25,6 +25,7 @@ matrix:
             - libnl-genl-3-dev
             - flex
             - bison
+            - libpcap-dev
 
     - os: linux
       arch: arm64
@@ -51,6 +52,7 @@ matrix:
             - libnl-genl-3-dev
             - flex
             - bison
+            - libpcap-dev
 
     - os: linux
       arch: arm64
@@ -77,6 +79,7 @@ matrix:
             - libnl-genl-3-dev
             - flex
             - bison
+            - libpcap-dev
 
 install:
   - git clone --branch libgpg-error-1.39 https://github.com/gpg/libgpg-error
@@ -116,7 +119,7 @@ install:
   - cd ..
   - python3 -m pip install --upgrade pip
   - python3 -m pip install --upgrade setuptools wheel twine codecov
-  - python3 -m pip install -r requirements.txt
+  - travis_wait python3 -m pip install -r requirements.txt
   - python3 setup.py bdist_wheel
   - ls dist/
 
