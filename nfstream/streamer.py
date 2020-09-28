@@ -261,7 +261,7 @@ class NFStreamer(object):
         n_meters = self.n_meters
         try:
             for i in range(n_meters):
-                performances.append([mp.Value('i', 0), mp.Value('i', 0), mp.Value('i', 0)])
+                performances.append([mp.Value('Q', 0), mp.Value('Q', 0), mp.Value('Q', 0)])
                 meters.append(mp.Process(target=meter_workflow,
                                          args=(self.source,
                                                self.snapshot_length,
