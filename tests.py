@@ -22,7 +22,7 @@ import json
 import os
 import csv
 from nfstream import NFStreamer, NFPlugin
-from nfstream.plugin import SPLT
+from nfstream.plugins import SPLT
 
 
 def get_files_list(path):
