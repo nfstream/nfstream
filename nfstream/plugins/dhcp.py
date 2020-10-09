@@ -16,9 +16,9 @@ If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 """
 
+from nfstream import NFPlugin
 from enum import Enum
 import ipaddress
-from nfstream import NFPlugin
 import dpkt
 
 
@@ -33,8 +33,8 @@ class MsgType(Enum):
     INFORM = 8
 
 
-class Dhcp(NFPlugin):
-    """dhcp plugin
+class DHCP(NFPlugin):
+    """ DHCP plugin
 
     This plugin extracts client information from DHCP sessions, and split flow
     on transaction completion to prevent several sessions to be considered as 
@@ -68,7 +68,7 @@ class Dhcp(NFPlugin):
             options = []
 
             for opt in dhcp.opts:
-                if opt[0] == 12:  #  Hostname
+                if opt[0] == 12:  # Hostname
                     hostname = opt[1].decode('utf-8', errors='replace')
                     if len(hostname) > 0:
                         flow.udps.dhcp_12 = hostname
@@ -76,7 +76,7 @@ class Dhcp(NFPlugin):
                     msg_type = MsgType(int.from_bytes(opt[1], "big"))
                 elif opt[0] == 60:  # Vendor class identifier
                     flow.udps.dhcp_60 = opt[1].decode('utf-8')
-                elif opt[0] == 77: # User class id
+                elif opt[0] == 77:  # User class id
                     flow.udps.dhcp_77 = opt[1].decode('utf-8')
                 elif opt[0] == 57:  # Maximum DHCP Message Size
                     flow.udps.dhcp_57 = int.from_bytes(opt[1], "big")

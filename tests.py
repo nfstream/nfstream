@@ -21,8 +21,8 @@ import pandas as pd
 import json
 import os
 import csv
-from nfstream import NFStreamer, NFPlugin
-from nfstream.plugins import SPLT
+from nfstream import NFStreamer
+from nfstream.plugins import SPLT, DHCP, FlowSlicer
 
 
 def get_files_list(path):
@@ -58,17 +58,6 @@ def build_ndpi_dict(path):
     for file in list_gt:
         ndpi[file.split('/')[-1]] = get_app_dict(file)
     return ndpi
-
-
-class OnePacketExpire(NFPlugin):
-    def on_init(self, packet, flow):
-        flow.expiration_id = -1
-
-
-class FourPacketExpire(NFPlugin):
-    def on_update(self, packet, flow):
-        if flow.bidirectional_packets == 4:
-            flow.expiration_id = -1
 
 
 class TestMethods(unittest.TestCase):
@@ -195,14 +184,14 @@ class TestMethods(unittest.TestCase):
         self.assertEqual(last_id, 27)
         # Custom expiration
 
-        streamer_expiration = NFStreamer(source='tests/pcap/google_ssl.pcap', udps=OnePacketExpire(),
+        streamer_expiration = NFStreamer(source='tests/pcap/google_ssl.pcap', udps=FlowSlicer(limit=1),
                                          n_meters=int(os.getenv('MAX_NFMETERS', 0)))
         last_id = 0
         for flow in streamer_expiration:
             last_id = flow.id
         self.assertEqual(last_id, 27)
 
-        streamer_expiration = NFStreamer(source='tests/pcap/google_ssl.pcap', udps=FourPacketExpire(),
+        streamer_expiration = NFStreamer(source='tests/pcap/google_ssl.pcap', udps=FlowSlicer(limit=4),
                                          n_meters=int(os.getenv('MAX_NFMETERS', 0)))
         last_id = 0
         for flow in streamer_expiration:
@@ -395,6 +384,18 @@ class TestMethods(unittest.TestCase):
         self.assertEqual(ps, nps)
         self.assertEqual(piat, npiat)
         print("{}\t: \033[94mOK\033[0m".format(".Test SPLT analysis".ljust(60, ' ')))
+
+    def test_dhcp(self):
+        print("\n----------------------------------------------------------------------")
+        dhcp_df = NFStreamer(source='tests/pcap/dhcp.pcap',
+                             n_dissections=0,
+                             n_meters=int(os.getenv('MAX_NFMETERS', 0)),
+                             udps=DHCP()
+                             ).to_pandas().sort_values(by=['src_ip']).reset_index(drop=True)
+        self.assertEqual(dhcp_df["udps.dhcp_55"][0], "1,3,6,42")
+        self.assertEqual(dhcp_df["udps.dhcp_options"][0], "[53, 61, 50, 54, 55]")
+        self.assertEqual(dhcp_df["udps.dhcp_addr"][1], "192.168.0.10")
+        print("{}\t: \033[94mOK\033[0m".format(".Test DHCP plugin".ljust(60, ' ')))
 
 
 if __name__ == '__main__':

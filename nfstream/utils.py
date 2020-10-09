@@ -26,6 +26,8 @@ def csv_converter(values):
     """ convert non numeric values to using their __str__ method and ensure quoting """
     for idx in range(len(values)):
         if not isinstance(values[idx], float) and not isinstance(values[idx], int):
+            if values[idx] is None:
+                values[idx] = ""
             values[idx] = str(values[idx])
             values[idx] = values[idx].replace('\"', '\\"')
             values[idx] = "\"" + values[idx] + "\""

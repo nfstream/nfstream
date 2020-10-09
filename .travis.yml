@@ -120,7 +120,7 @@ install:
   - python3 -m pip install --upgrade pip
   - python3 -m pip install --upgrade setuptools wheel twine codecov
   - travis_wait python3 -m pip install -r requirements.txt
-  - python3 setup.py bdist_wheel
+  - travis_wait python3 setup.py bdist_wheel
   - ls dist/
 
 script:
