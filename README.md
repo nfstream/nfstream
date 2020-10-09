@@ -443,6 +443,7 @@ As with any packet monitoring tool, **NFStream** could potentially be misused.
 The following people contributed to NFStream:
 * [**Zied Aouini**](mailto:aouinizied@gmail.com): Creator and main developer.
 * [**Adrian Pekar**](mailto:adrian.pekar@gmail.com): Testing, datasets generation and storage.
+* [**Romain Picard**](mailto:romain.picard@oakbits.com): Several Plugins implementation.
 * [**Radion Bikmukhamedov**](mailto:radion.bikmukhamedov@pm.me): Initial work on SPLT analysis NFPlugin.
 
 ### Supporting organizations

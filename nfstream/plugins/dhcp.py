@@ -1,3 +1,21 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+------------------------------------------------------------------------------------------------------------------------
+dhcp.py
+Copyright (C) 2019-20 - NFStream Developers
+This file is part of NFStream, a Flexible Network Data Analysis Framework (https://www.nfstream.org/).
+NFStream is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+version.
+NFStream is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
+You should have received a copy of the GNU Lesser General Public License along with NFStream.
+If not, see <http://www.gnu.org/licenses/>.
+------------------------------------------------------------------------------------------------------------------------
+"""
+
 from enum import Enum
 import ipaddress
 from nfstream import NFPlugin
@@ -54,9 +72,9 @@ class Dhcp(NFPlugin):
                     hostname = opt[1].decode('utf-8', errors='replace')
                     if len(hostname) > 0:
                         flow.udps.dhcp_12 = hostname
-                elif opt[0] == 53:  #  Msg type
+                elif opt[0] == 53:  # Msg type
                     msg_type = MsgType(int.from_bytes(opt[1], "big"))
-                elif opt[0] == 60:  #  Vendor class identifier
+                elif opt[0] == 60:  # Vendor class identifier
                     flow.udps.dhcp_60 = opt[1].decode('utf-8')
                 elif opt[0] == 77: # User class id
                     flow.udps.dhcp_77 = opt[1].decode('utf-8')
