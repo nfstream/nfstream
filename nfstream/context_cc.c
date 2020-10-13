@@ -393,6 +393,108 @@ int nfstream_handle_ipv6_extension_headers(const uint8_t **l4ptr, uint16_t *l4le
 
 
 /**
+ * get_nf_packet_tcp_info: TCP transport infos processing.
+ */
+void get_nf_packet_tcp_info(const uint8_t *l4, uint16_t l4_packet_len, struct nf_packet *nf_pkt,
+                            struct nfstream_tcphdr **tcph, uint16_t *sport, uint16_t *dport,
+                            uint32_t l4_data_len, uint8_t **payload, uint16_t *payload_len ) {
+  unsigned tcp_len;
+  *tcph = (struct nfstream_tcphdr *)l4;
+  *sport = (*tcph)->source, *dport = (*tcph)->dest;
+  tcp_len = nfstream_min(4*(*tcph)->doff, l4_packet_len);
+  *payload = (uint8_t*)&l4[tcp_len];
+  *payload_len = nfstream_max(0, l4_packet_len-4*(*tcph)->doff);
+  l4_data_len = l4_packet_len - sizeof(struct nfstream_tcphdr);
+  nf_pkt->fin = (*tcph)->fin;
+  nf_pkt->syn = (*tcph)->syn;
+  nf_pkt->rst = (*tcph)->rst;
+  nf_pkt->psh = (*tcph)->psh;
+  nf_pkt->ack = (*tcph)->ack;
+  nf_pkt->urg = (*tcph)->urg;
+  nf_pkt->ece = (*tcph)->ece;
+  nf_pkt->cwr = (*tcph)->cwr;
+}
+
+
+/**
+ * get_nf_packet_udp_info: UDP transport infos processing.
+ */
+void get_nf_packet_udp_info(const uint8_t *l4, uint16_t l4_packet_len, struct nf_packet *nf_pkt,
+                            struct nfstream_udphdr **udph, uint16_t *sport, uint16_t *dport,
+                            uint32_t l4_data_len, uint8_t **payload, uint16_t *payload_len) {
+  *udph = (struct nfstream_udphdr *)l4;
+  *sport = (*udph)->source, *dport = (*udph)->dest;
+  *payload = (uint8_t*)&l4[sizeof(struct nfstream_udphdr)];
+  *payload_len = (l4_packet_len > sizeof(struct nfstream_udphdr)) ? l4_packet_len-sizeof(struct nfstream_udphdr) : 0;
+  l4_data_len = l4_packet_len - sizeof(struct nfstream_udphdr);
+  nf_pkt->fin = nf_pkt->syn = nf_pkt->rst = nf_pkt->psh = nf_pkt->ack = nf_pkt->urg = nf_pkt->ece = nf_pkt->cwr = 0;
+}
+
+
+/**
+ * get_nf_packet_icmp_info: ICMP transport infos processing.
+ */
+void get_nf_packet_icmp_info(const uint8_t *l4, uint16_t l4_packet_len, struct nf_packet *nf_pkt,
+                             uint16_t *sport, uint16_t *dport,
+                             uint32_t l4_data_len, uint8_t **payload, uint16_t *payload_len) {
+  *payload = (uint8_t*)&l4[sizeof(struct nfstream_icmphdr )];
+  *payload_len = (l4_packet_len > sizeof(struct nfstream_icmphdr)) ? l4_packet_len-sizeof(struct nfstream_icmphdr) : 0;
+  l4_data_len = l4_packet_len - sizeof(struct nfstream_icmphdr);
+  *sport = *dport = 0;
+  nf_pkt->fin = nf_pkt->syn = nf_pkt->rst = nf_pkt->psh = nf_pkt->ack = nf_pkt->urg = nf_pkt->ece = nf_pkt->cwr = 0;
+}
+
+
+/**
+ * get_nf_packet_icmp6_info: ICMPv6 transport infos processing.
+ */
+void get_nf_packet_icmp6_info(const uint8_t *l4, uint16_t l4_packet_len, struct nf_packet *nf_pkt,
+                              uint16_t *sport, uint16_t *dport,
+                              uint32_t l4_data_len, uint8_t **payload, uint16_t *payload_len) {
+  *payload = (uint8_t*)&l4[sizeof(struct nfstream_icmp6hdr)];
+  *payload_len = (l4_packet_len > sizeof(struct nfstream_icmp6hdr)) ? l4_packet_len-sizeof(struct nfstream_icmp6hdr) : 0;
+  l4_data_len = l4_packet_len - sizeof(struct nfstream_icmp6hdr);
+  *sport = *dport = 0;
+  nf_pkt->fin = nf_pkt->syn = nf_pkt->rst = nf_pkt->psh = nf_pkt->ack = nf_pkt->urg = nf_pkt->ece = nf_pkt->cwr = 0;
+}
+
+
+/**
+ * get_nf_packet_unknown_transport_info: Non TCP/UDP/ICMP/ICMPv6 infos processing.
+ */
+void get_nf_packet_unknown_transport_info(struct nf_packet *nf_pkt, uint16_t *sport, uint16_t *dport,
+                                          uint32_t l4_data_len) {
+  *sport = *dport = 0;
+  l4_data_len = 0;
+  nf_pkt->fin = nf_pkt->syn = nf_pkt->rst = nf_pkt->psh = nf_pkt->ack = nf_pkt->urg = nf_pkt->ece = nf_pkt->cwr = 0;
+}
+
+
+/**
+ * nf_pkt_fanout: Network flow packet fanout.
+ */
+int nf_pkt_fanout(struct nf_packet *nf_pkt, int mode, uint64_t hashval, int n_roots, int root_idx) {
+  if (mode == 0) { // Offline, we perform fanout like strategy
+    if ((hashval % n_roots) == root_idx) { // If packet match meter idx, he will consume it and process it.
+      return 1;
+    } else {
+      return 2; // Else it will be used as time ticker to ensure synchro across meters.
+    }
+  } else { // Live mode
+#ifdef __linux__
+    return 1; // Fanout already done by kernel on Linux
+#else // Macos do not provide kernel fanout, so we do it ourselves.
+    if ((hashval % n_roots) == root_idx) { // If packet match meter idx, he will consume it and process it.
+      return 1;
+    } else {
+      return 2; // Else it will be used as time ticker to ensure synchro across meters.
+    }
+#endif
+  }
+}
+
+
+/**
  * get_nf_packet_info: nf_packet structure filler.
  */
 int get_nf_packet_info(const uint8_t version,
@@ -416,14 +518,9 @@ int get_nf_packet_info(const uint8_t version,
   uint32_t l4_offset;
   const uint8_t *l3, *l4;
   uint32_t l4_data_len = 0XFEEDFACE;
-
   if (version == IPVERSION) {
-    if (ipsize < 20) {
-      return 0;
-    }
-    if ((iph->ihl * 4) > ipsize) {
-      return 0;
-    }
+    if (ipsize < 20) return 0;
+    if ((iph->ihl * 4) > ipsize) return 0;
     l4_offset = iph->ihl * 4;
     l3 = (const uint8_t*)iph;
   } else {
@@ -431,53 +528,19 @@ int get_nf_packet_info(const uint8_t version,
     if (sizeof(struct nfstream_ipv6hdr) > ipsize) return 0;
     l3 = (const uint8_t*)iph6;
   }
-
   if (nfstream_max(ntohs(iph->tot_len) , ipsize)< l4_offset + l4_packet_len) return 0;
-
   *proto = iph->protocol;
-
   l4 =& ((const uint8_t *) l3)[l4_offset];
-
   if (*proto == IPPROTO_TCP && l4_packet_len >= sizeof(struct nfstream_tcphdr)) { // TCP Processing
-    unsigned tcp_len;
-    *tcph = (struct nfstream_tcphdr *)l4;
-    *sport = (*tcph)->source, *dport = (*tcph)->dest;
-    tcp_len = nfstream_min(4*(*tcph)->doff, l4_packet_len);
-    *payload = (uint8_t*)&l4[tcp_len];
-    *payload_len = nfstream_max(0, l4_packet_len-4*(*tcph)->doff);
-    l4_data_len = l4_packet_len - sizeof(struct nfstream_tcphdr);
-    nf_pkt->fin = (*tcph)->fin;
-    nf_pkt->syn = (*tcph)->syn;
-    nf_pkt->rst = (*tcph)->rst;
-    nf_pkt->psh = (*tcph)->psh;
-    nf_pkt->ack = (*tcph)->ack;
-    nf_pkt->urg = (*tcph)->urg;
-    nf_pkt->ece = (*tcph)->ece;
-    nf_pkt->cwr = (*tcph)->cwr;
+    get_nf_packet_tcp_info(l4, l4_packet_len, nf_pkt, tcph, sport, dport, l4_data_len, payload, payload_len);
   } else if (*proto == IPPROTO_UDP && l4_packet_len >= sizeof(struct nfstream_udphdr)) { // UDP Processing
-    *udph = (struct nfstream_udphdr *)l4;
-    *sport = (*udph)->source, *dport = (*udph)->dest;
-    *payload = (uint8_t*)&l4[sizeof(struct nfstream_udphdr)];
-    *payload_len = (l4_packet_len > sizeof(struct nfstream_udphdr)) ? l4_packet_len-sizeof(struct nfstream_udphdr) : 0;
-    l4_data_len = l4_packet_len - sizeof(struct nfstream_udphdr);
-    nf_pkt->fin = nf_pkt->syn = nf_pkt->rst = nf_pkt->psh = nf_pkt->ack = nf_pkt->urg = nf_pkt->ece = nf_pkt->cwr = 0;
+    get_nf_packet_udp_info(l4, l4_packet_len, nf_pkt, udph, sport, dport, l4_data_len, payload, payload_len);
   } else if (*proto == IPPROTO_ICMP) { // ICMP Processing
-    *payload = (uint8_t*)&l4[sizeof(struct nfstream_icmphdr )];
-    *payload_len = (l4_packet_len > sizeof(struct nfstream_icmphdr)) ? l4_packet_len-sizeof(struct nfstream_icmphdr) : 0;
-    l4_data_len = l4_packet_len - sizeof(struct nfstream_icmphdr);
-    *sport = *dport = 0;
-    nf_pkt->fin = nf_pkt->syn = nf_pkt->rst = nf_pkt->psh = nf_pkt->ack = nf_pkt->urg = nf_pkt->ece = nf_pkt->cwr = 0;
+    get_nf_packet_icmp_info(l4, l4_packet_len, nf_pkt, sport, dport, l4_data_len, payload, payload_len);
   } else if (*proto == IPPROTO_ICMPV6) { // ICMPV6 Processing
-    *payload = (uint8_t*)&l4[sizeof(struct nfstream_icmp6hdr)];
-    *payload_len = (l4_packet_len > sizeof(struct nfstream_icmp6hdr)) ? l4_packet_len-sizeof(struct nfstream_icmp6hdr) : 0;
-    l4_data_len = l4_packet_len - sizeof(struct nfstream_icmp6hdr);
-    *sport = *dport = 0;
-    nf_pkt->fin = nf_pkt->syn = nf_pkt->rst = nf_pkt->psh = nf_pkt->ack = nf_pkt->urg = nf_pkt->ece = nf_pkt->cwr = 0;
+    get_nf_packet_icmp6_info(l4, l4_packet_len, nf_pkt, sport, dport, l4_data_len, payload, payload_len);
   } else {
-    // non TCP/UDP protocols
-    *sport = *dport = 0;
-    l4_data_len = 0;
-    nf_pkt->fin = nf_pkt->syn = nf_pkt->rst = nf_pkt->psh = nf_pkt->ack = nf_pkt->urg = nf_pkt->ece = nf_pkt->cwr = 0;
+    get_nf_packet_unknown_transport_info(nf_pkt, sport, dport, l4_data_len);
   }
   nf_pkt->protocol = iph->protocol;
   nf_pkt->vlan_id = vlan_id;
@@ -488,9 +551,6 @@ int get_nf_packet_info(const uint8_t version,
   nf_pkt->payload_size = *payload_len;
   nf_pkt->ip_content_len = ipsize;
   nf_pkt->delta_time = 0; // This will be filled by meter.
-  uint64_t hashval = 0; // Compute hashval as the sum of 6-tuple fields.
-
-  hashval = nf_pkt->protocol + nf_pkt->vlan_id + iph->saddr + iph->daddr + nf_pkt->src_port + nf_pkt->dst_port;
 
   if (version == IPVERSION) {
 	inet_ntop(AF_INET, &iph->saddr, nf_pkt->src_name, sizeof(nf_pkt->src_name));
@@ -503,23 +563,9 @@ int get_nf_packet_info(const uint8_t version,
 	nf_pkt->ip_size = ntohs(iph->tot_len);
 	nf_pkt->ip_content = (uint8_t *)iph6;
   }
-  if (mode == 0) { // Offline, we perform fanout like strategy
-    if ((hashval % n_roots) == root_idx) { // If packet match meter idx, he will consume it and process it.
-      return 1;
-    } else {
-      return 2; // Else it will be used as time ticker to ensure synchro across meters.
-    }
-  } else { // Live mode
-#ifdef __linux__
-      return 1; // Fanout already done by kernel on Linux
-#else // Macos do not provide kernel fanout, so we do it ourselves.
-    if ((hashval % n_roots) == root_idx) { // If packet match meter idx, he will consume it and process it.
-      return 1;
-    } else {
-      return 2; // Else it will be used as time ticker to ensure synchro across meters.
-    }
-#endif
-  }
+  uint64_t hashval = 0; // Compute hashval as the sum of 6-tuple fields.
+  hashval = nf_pkt->protocol + nf_pkt->vlan_id + iph->saddr + iph->daddr + nf_pkt->src_port + nf_pkt->dst_port;
+  return nf_pkt_fanout(nf_pkt, mode, hashval, n_roots, root_idx);
 }
 
 
