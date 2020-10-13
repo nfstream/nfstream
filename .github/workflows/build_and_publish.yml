@@ -87,10 +87,6 @@ jobs:
         sudo make install
         cd ..
         rm -rf nDPI
-        cd tests/
-        chmod a+x build_results.sh
-        ./build_results.sh
-        cd ..
         pip install wheel twine setuptools codecov
         pip install -r requirements.txt
         MACOSX_DEPLOYMENT_TARGET=10.14 python setup.py bdist_wheel
