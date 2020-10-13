@@ -19,16 +19,16 @@ If not, see <http://www.gnu.org/licenses/>.
 import multiprocessing as mp
 import pandas as pd
 import time as tm
-import secrets
 import os
 import platform
 from collections.abc import Iterable
 from psutil import net_if_addrs, cpu_count
-from hashlib import blake2b
 from os.path import isfile
 from .meter import meter_workflow
+from .anonymizer import NFAnonymizer
 from.plugin import NFPlugin
-from .utils import csv_converter, open_file, RepeatedTimer, update_performances, set_affinity
+from .utils import csv_converter, open_file, RepeatedTimer, update_performances, set_affinity, validate_flows_per_file
+from .utils import create_csv_file_path
 
 # Set fork as method to avoid issues on macos with spawn default value
 mp.set_start_method("fork")
@@ -313,21 +313,14 @@ class NFStreamer(object):
         except ValueError as observer_error: # job initiation failed due to some bad observer parameters.
             raise ValueError(observer_error)
 
-    def to_csv(self, path=None, ip_anonymization=False, flows_per_file=0):
-        if not isinstance(flows_per_file, int) or isinstance(flows_per_file, int) and flows_per_file < 0:
-            raise ValueError("Please specify a valid flows_per_file parameter (>= 0).")
-        chunked = True
-        chunk_idx = -1
+    def to_csv(self, path=None, columns_to_anonymize=(), flows_per_file=0):
+        validate_flows_per_file(flows_per_file)
+        chunked, chunk_idx = True, -1
         if flows_per_file == 0:
             chunked = False
-        if path is None:
-            output_path = str(self.source) + '.csv'
-        else:
-            output_path = path
-        total_flows = 0
-        chunk_flows = 0
-        # We generate a random secret key
-        crypto_key = secrets.token_bytes(64)
+        output_path = create_csv_file_path(path, self.source)
+        total_flows, chunk_flows = 0, 0
+        anon = NFAnonymizer(cols_names=columns_to_anonymize)
         f = None
         for flow in self:
             try:
@@ -338,18 +331,8 @@ class NFStreamer(object):
                     chunk_idx += 1
                     f = open_file(output_path, chunked, chunk_idx)
                     header = ','.join([str(i) for i in flow.keys()]) + "\n"
-                    src_ip_index = flow.keys().index("src_ip")
-                    dst_ip_index = flow.keys().index("dst_ip")
                     f.write(header.encode('utf-8'))
-                values = flow.values()
-                if ip_anonymization:
-                    # Anonymization use generated secret key to hash using blake2B algo src and dst IPs.
-                    values[src_ip_index] = blake2b(values[src_ip_index].encode(),
-                                                    digest_size=64,
-                                                    key=crypto_key).hexdigest()
-                    values[dst_ip_index] = blake2b(values[dst_ip_index].encode(),
-                                                   digest_size=64,
-                                                   key=crypto_key).hexdigest()
+                values = anon.process(flow)
                 csv_converter(values)
                 to_export = ','.join([str(i) for i in values]) + "\n"
                 f.write(to_export.encode('utf-8'))
@@ -362,12 +345,12 @@ class NFStreamer(object):
                 f.close()
         return total_flows
 
-    def to_pandas(self, ip_anonymization=False):
+    def to_pandas(self, columns_to_anonymize=()):
         """ streamer to pandas function """
         temp_file_path = "nfstream-{pid}-{iid}-{ts}?csv".format(pid=os.getpid(),
                                                                 iid=NFStreamer.streamer_id,
                                                                 ts=tm.time())
-        total_flows = self.to_csv(path=temp_file_path, ip_anonymization=ip_anonymization, flows_per_file=0)
+        total_flows = self.to_csv(path=temp_file_path, columns_to_anonymize=columns_to_anonymize, flows_per_file=0)
         if total_flows >= 0:
             df = pd.read_csv(temp_file_path)
             if total_flows != df.shape[0]:

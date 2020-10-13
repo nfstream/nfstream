@@ -22,6 +22,18 @@ import psutil
 from threading import Timer
 
 
+def validate_flows_per_file(n):
+    if not isinstance(n, int) or isinstance(n, int) and n < 0:
+        raise ValueError("Please specify a valid flows_per_file parameter (>= 0).")
+
+
+def create_csv_file_path(path, source):
+    if path is None:
+        return str(source) + '.csv'
+    else:
+        return path
+
+
 def csv_converter(values):
     """ convert non numeric values to using their __str__ method and ensure quoting """
     for idx, value in enumerate(values):

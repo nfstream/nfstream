@@ -37,7 +37,7 @@ def get_files_list(path):
 
 
 def ndpi_result(path):
-    subprocess.check_call(["ndpiReader", "-q", "-t", "-i", path, "-C", path + ".out", "-T", "20", "-U", "20"])
+    subprocess.check_call(["/usr/local/bin/ndpiReader", "-q", "-t", "-i", path, "-C", path + ".out", "-T", "20", "-U", "20"])
     path = path + ".out"
     with open(path) as csvfile:
         reader = csv.DictReader(csvfile)
@@ -52,7 +52,7 @@ def ndpi_result(path):
                 app[row['ndpi_proto']]["bytes"] += int(row['s_to_c_bytes']) + int(row['c_to_s_bytes'])
                 app[row['ndpi_proto']]["flows"] += 1
                 app[row['ndpi_proto']]['pkts'] += int(row['s_to_c_pkts']) + int(row['c_to_s_pkts'])
-    subprocess.check_call(["rm", path])
+    os.remove(path)
     return app
 
 
@@ -376,10 +376,10 @@ class TestMethods(unittest.TestCase):
         print("\n----------------------------------------------------------------------")
         df = NFStreamer(source='tests/steam.pcap',
                         statistical_analysis=True, n_meters=int(os.getenv('MAX_NFMETERS', 0)),
-                        n_dissections=20).to_pandas(ip_anonymization=False)
+                        n_dissections=20).to_pandas()
         df_anon = NFStreamer(source='tests/steam.pcap',
                              statistical_analysis=True, n_meters=int(os.getenv('MAX_NFMETERS', 0)),
-                             n_dissections=20).to_pandas(ip_anonymization=True)
+                             n_dissections=20).to_pandas(columns_to_anonymize=["src_ip", "dst_ip"])
         self.assertEqual(df_anon.shape[0], df.shape[0])
         self.assertEqual(df_anon.shape[1], df.shape[1])
         self.assertEqual(df_anon['src_ip'].nunique(), df['src_ip'].nunique())
@@ -387,11 +387,11 @@ class TestMethods(unittest.TestCase):
 
         total_flows = NFStreamer(source='tests/steam.pcap',
                                  statistical_analysis=True, n_meters=int(os.getenv('MAX_NFMETERS', 0)),
-                                 n_dissections=20).to_csv(ip_anonymization=False)
+                                 n_dissections=20).to_csv()
         df_from_csv = pd.read_csv('tests/steam.pcap.csv')
         total_flows_anon = NFStreamer(source='tests/steam.pcap',
                                       statistical_analysis=True, n_meters=int(os.getenv('MAX_NFMETERS', 0)),
-                                      n_dissections=20).to_csv(ip_anonymization=False)
+                                      n_dissections=20).to_csv()
         df_anon_from_csv = pd.read_csv('tests/steam.pcap.csv')
         self.assertEqual(total_flows, total_flows_anon)
         self.assertEqual(total_flows, df_from_csv.shape[0])
