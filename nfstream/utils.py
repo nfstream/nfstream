@@ -24,13 +24,14 @@ from threading import Timer
 
 def csv_converter(values):
     """ convert non numeric values to using their __str__ method and ensure quoting """
-    for idx in range(len(values)):
-        if not isinstance(values[idx], float) and not isinstance(values[idx], int):
-            if values[idx] is None:
+    for idx, value in enumerate(values):
+        if not isinstance(value, float) and not isinstance(value, int):
+            if value is None:
                 values[idx] = ""
-            values[idx] = str(values[idx])
-            values[idx] = values[idx].replace('\"', '\\"')
-            values[idx] = "\"" + values[idx] + "\""
+            else:
+                values[idx] = str(values[idx])
+                values[idx] = values[idx].replace('\"', '\\"')
+                values[idx] = "\"" + values[idx] + "\""
 
 
 def open_file(path, chunked, chunk_idx):

@@ -18,6 +18,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
 import pandas as pd
+import subprocess
 import json
 import os
 import csv
@@ -35,7 +36,9 @@ def get_files_list(path):
     return files
 
 
-def get_app_dict(path):
+def ndpi_result(path):
+    subprocess.check_call(["ndpiReader", "-q", "-t", "-i", path, "-C", path + ".out", "-T", "20", "-U", "20"])
+    path = path + ".out"
     with open(path) as csvfile:
         reader = csv.DictReader(csvfile)
         app = {}
@@ -49,20 +52,13 @@ def get_app_dict(path):
                 app[row['ndpi_proto']]["bytes"] += int(row['s_to_c_bytes']) + int(row['c_to_s_bytes'])
                 app[row['ndpi_proto']]["flows"] += 1
                 app[row['ndpi_proto']]['pkts'] += int(row['s_to_c_pkts']) + int(row['c_to_s_pkts'])
+    subprocess.check_call(["rm", path])
     return app
-
-
-def build_ndpi_dict(path):
-    list_gt = get_files_list(path)
-    ndpi = {}
-    for file in list_gt:
-        ndpi[file.split('/')[-1]] = get_app_dict(file)
-    return ndpi
 
 
 class TestMethods(unittest.TestCase):
 
-    def test_parameters_handling(self):
+    def test_source_parameter(self):
         print("\n----------------------------------------------------------------------")
         value_errors = 0
         source = ["inexisting.pcap", "lo", "lo0", 22]
@@ -72,111 +68,189 @@ class TestMethods(unittest.TestCase):
                     print(flow)
             except ValueError:
                 value_errors += 1
+        self.assertEqual(value_errors, 3)
+        print("{}\t: \033[94mOK\033[0m".format(".Test source parameter".ljust(60, ' ')))
+
+    def test_decode_tunnels_parameter(self):
+        print("\n----------------------------------------------------------------------")
+        value_errors = 0
         decode_tunnels = [33, "True"]
         for x in decode_tunnels:
             try:
-                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', decode_tunnels=x):
+                for flow in NFStreamer(source='tests/google_ssl.pcap', decode_tunnels=x):
                     print(flow)
             except ValueError:
                 value_errors += 1
+        self.assertEqual(value_errors, 2)
+        print("{}\t: \033[94mOK\033[0m".format(".Test decode_tunnels parameter".ljust(60, ' ')))
+
+    def test_bpf_filter_parameter(self):
+        print("\n----------------------------------------------------------------------")
+        value_errors = 0
         bpf_filter = ["my filter", 11]
         for x in bpf_filter:
             try:
-                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', bpf_filter=x):
+                for flow in NFStreamer(source='tests/google_ssl.pcap', bpf_filter=x):
                     print(flow)
             except ValueError:
                 value_errors += 1
+        self.assertEqual(value_errors, 1)
+        print("{}\t: \033[94mOK\033[0m".format(".Test bpf_filter parameter".ljust(60, ' ')))
+
+    def test_promiscuous_mode_parameter(self):
+        print("\n----------------------------------------------------------------------")
+        value_errors = 0
         promiscuous_mode = ["yes", 89]
         for x in promiscuous_mode:
             try:
-                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', promiscuous_mode=x):
+                for flow in NFStreamer(source='tests/google_ssl.pcap', promiscuous_mode=x):
                     print(flow)
             except ValueError:
                 value_errors += 1
+        self.assertEqual(value_errors, 2)
+        print("{}\t: \033[94mOK\033[0m".format(".Test promiscuous_mode parameter".ljust(60, ' ')))
+
+    def test_snapshot_length_parameter(self):
+        print("\n----------------------------------------------------------------------")
+        value_errors = 0
         snapshot_length = ["largest", -1]
         for x in snapshot_length:
             try:
-                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', snapshot_length=x):
+                for flow in NFStreamer(source='tests/google_ssl.pcap', snapshot_length=x):
                     print(flow)
             except ValueError:
                 value_errors += 1
+        self.assertEqual(value_errors, 2)
+        print("{}\t: \033[94mOK\033[0m".format(".Test snapshot_length parameter".ljust(60, ' ')))
+
+    def test_idle_timeout_parameter(self):
+        print("\n----------------------------------------------------------------------")
+        value_errors = 0
         idle_timeout = [-1, "idle"]
         for x in idle_timeout:
             try:
-                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', idle_timeout=x):
+                for flow in NFStreamer(source='tests/google_ssl.pcap', idle_timeout=x):
                     print(flow)
             except ValueError:
                 value_errors += 1
+        self.assertEqual(value_errors, 2)
+        print("{}\t: \033[94mOK\033[0m".format(".Test idle_timeout parameter".ljust(60, ' ')))
+
+    def test_active_timeout_parameter(self):
+        print("\n----------------------------------------------------------------------")
+        value_errors = 0
         active_timeout = [-1, "active"]
         for x in active_timeout:
             try:
-                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', active_timeout=x):
+                for flow in NFStreamer(source='tests/google_ssl.pcap', active_timeout=x):
                     print(flow)
             except ValueError:
                 value_errors += 1
+        self.assertEqual(value_errors, 2)
+        print("{}\t: \033[94mOK\033[0m".format(".Test active_timeout parameter".ljust(60, ' ')))
+
+    def test_accounting_mode_parameter(self):
+        print("\n----------------------------------------------------------------------")
+        value_errors = 0
         accounting_mode = [-1, 5, 'ip']
         for x in accounting_mode:
             try:
-                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', accounting_mode=x):
+                for flow in NFStreamer(source='tests/google_ssl.pcap', accounting_mode=x):
                     print(flow)
             except ValueError:
                 value_errors += 1
+        self.assertEqual(value_errors, 3)
+        print("{}\t: \033[94mOK\033[0m".format(".Test accounting_mode parameter".ljust(60, ' ')))
+
+    def test_udps_parameter(self):
+        print("\n----------------------------------------------------------------------")
+        value_errors = 0
         udps = [lambda y: y+1, "NFPlugin"]
         for x in udps:
             try:
-                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', udps=x):
+                for flow in NFStreamer(source='tests/google_ssl.pcap', udps=x):
                     print(flow)
             except ValueError:
                 value_errors += 1
+        self.assertEqual(value_errors, 2)
+        print("{}\t: \033[94mOK\033[0m".format(".Test udps parameter".ljust(60, ' ')))
+
+    def test_n_dissections_parameter(self):
+        print("\n----------------------------------------------------------------------")
+        value_errors = 0
         n_dissections = ["yes", -1, 256]
         for x in n_dissections:
             try:
-                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', n_dissections=x):
+                for flow in NFStreamer(source='tests/google_ssl.pcap', n_dissections=x):
                     print(flow)
             except ValueError:
                 value_errors += 1
+        self.assertEqual(value_errors, 3)
+        print("{}\t: \033[94mOK\033[0m".format(".Test n_dissections parameter".ljust(60, ' ')))
+
+    def test_statistical_analysis_parameter(self):
+        print("\n----------------------------------------------------------------------")
+        value_errors = 0
         statistical_analysis = ["yes", 89]
         for x in statistical_analysis:
             try:
-                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', statistical_analysis=x):
+                for flow in NFStreamer(source='tests/google_ssl.pcap', statistical_analysis=x):
                     print(flow)
             except ValueError:
                 value_errors += 1
+        self.assertEqual(value_errors, 2)
+        print("{}\t: \033[94mOK\033[0m".format(".Test statistical_analysis parameter".ljust(60, ' ')))
+
+    def test_splt_analysis_parameter(self):
+        print("\n----------------------------------------------------------------------")
+        value_errors = 0
         splt_analysis = [-1, 256, "yes"]
         for x in splt_analysis:
             try:
-                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', splt_analysis=x):
+                for flow in NFStreamer(source='tests/google_ssl.pcap', splt_analysis=x):
                     print(flow)
             except ValueError:
                 value_errors += 1
+        self.assertEqual(value_errors, 3)
+        print("{}\t: \033[94mOK\033[0m".format(".Test splt_analysis parameter".ljust(60, ' ')))
+
+    def test_n_meters_parameter(self):
+        print("\n----------------------------------------------------------------------")
+        value_errors = 0
         n_meters = ["yes", -1]
         for x in n_meters:
             try:
-                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', n_meters=x):
+                for flow in NFStreamer(source='tests/google_ssl.pcap', n_meters=x):
                     print(flow)
             except ValueError:
                 value_errors += 1
+        self.assertEqual(value_errors, 2)
+        print("{}\t: \033[94mOK\033[0m".format(".Test n_meters parameter".ljust(60, ' ')))
+
+    def test_performance_report_parameter(self):
+        print("\n----------------------------------------------------------------------")
+        value_errors = 0
         performance_report = ["yes", -1]
         for x in performance_report:
             try:
-                for flow in NFStreamer(source='tests/pcap/google_ssl.pcap', performance_report=x):
+                for flow in NFStreamer(source='tests/google_ssl.pcap', performance_report=x):
                     print(flow)
             except ValueError:
                 value_errors += 1
-        self.assertEqual(value_errors, 31)
-        print("{}\t: \033[94mOK\033[0m".format(".Test parameters handling".ljust(60, ' ')))
+        self.assertEqual(value_errors, 2)
+        print("{}\t: \033[94mOK\033[0m".format(".Test performance_report parameter".ljust(60, ' ')))
 
     def test_expiration_management(self):
         print("\n----------------------------------------------------------------------")
         # Idle expiration
-        streamer_expiration = NFStreamer(source='tests/pcap/google_ssl.pcap', idle_timeout=0,
+        streamer_expiration = NFStreamer(source='tests/google_ssl.pcap', idle_timeout=0,
                                          n_meters=int(os.getenv('MAX_NFMETERS', 0)))
         last_id = 0
         for flow in streamer_expiration:
             last_id = flow.id
         self.assertEqual(last_id, 27)
         # Active expiration
-        streamer_expiration = NFStreamer(source='tests/pcap/google_ssl.pcap', active_timeout=0,
+        streamer_expiration = NFStreamer(source='tests/google_ssl.pcap', active_timeout=0,
                                          n_meters=int(os.getenv('MAX_NFMETERS', 0)))
         last_id = 0
         for flow in streamer_expiration:
@@ -184,14 +258,14 @@ class TestMethods(unittest.TestCase):
         self.assertEqual(last_id, 27)
         # Custom expiration
 
-        streamer_expiration = NFStreamer(source='tests/pcap/google_ssl.pcap', udps=FlowSlicer(limit=1),
+        streamer_expiration = NFStreamer(source='tests/google_ssl.pcap', udps=FlowSlicer(limit=1),
                                          n_meters=int(os.getenv('MAX_NFMETERS', 0)))
         last_id = 0
         for flow in streamer_expiration:
             last_id = flow.id
         self.assertEqual(last_id, 27)
 
-        streamer_expiration = NFStreamer(source='tests/pcap/google_ssl.pcap', udps=FlowSlicer(limit=4),
+        streamer_expiration = NFStreamer(source='tests/google_ssl.pcap', udps=FlowSlicer(limit=4),
                                          n_meters=int(os.getenv('MAX_NFMETERS', 0)))
         last_id = 0
         for flow in streamer_expiration:
@@ -202,7 +276,7 @@ class TestMethods(unittest.TestCase):
 
     def test_statistical(self):
         print("\n----------------------------------------------------------------------")
-        statistical_streamer = NFStreamer(source='tests/pcap/google_ssl.pcap', statistical_analysis=True,
+        statistical_streamer = NFStreamer(source='tests/google_ssl.pcap', statistical_analysis=True,
                                           accounting_mode=1, n_meters=int(os.getenv('MAX_NFMETERS', 0)))
         for flow in statistical_streamer:
             self.assertEqual(flow.id, 0)
@@ -284,7 +358,7 @@ class TestMethods(unittest.TestCase):
 
     def test_fingerprint_extraction(self):
         print("\n----------------------------------------------------------------------")
-        fingerprint_streamer = NFStreamer(source='tests/pcap/facebook.pcap', statistical_analysis=True,
+        fingerprint_streamer = NFStreamer(source='tests/facebook.pcap', statistical_analysis=True,
                                           accounting_mode=1, n_meters=int(os.getenv('MAX_NFMETERS', 0)))
         for flow in fingerprint_streamer:
             self.assertEqual(flow.application_name, 'TLS.Facebook')
@@ -300,10 +374,10 @@ class TestMethods(unittest.TestCase):
 
     def test_export(self):
         print("\n----------------------------------------------------------------------")
-        df = NFStreamer(source='tests/pcap/steam.pcap',
+        df = NFStreamer(source='tests/steam.pcap',
                         statistical_analysis=True, n_meters=int(os.getenv('MAX_NFMETERS', 0)),
                         n_dissections=20).to_pandas(ip_anonymization=False)
-        df_anon = NFStreamer(source='tests/pcap/steam.pcap',
+        df_anon = NFStreamer(source='tests/steam.pcap',
                              statistical_analysis=True, n_meters=int(os.getenv('MAX_NFMETERS', 0)),
                              n_dissections=20).to_pandas(ip_anonymization=True)
         self.assertEqual(df_anon.shape[0], df.shape[0])
@@ -311,14 +385,14 @@ class TestMethods(unittest.TestCase):
         self.assertEqual(df_anon['src_ip'].nunique(), df['src_ip'].nunique())
         self.assertEqual(df_anon['dst_ip'].nunique(), df['dst_ip'].nunique())
 
-        total_flows = NFStreamer(source='tests/pcap/steam.pcap',
+        total_flows = NFStreamer(source='tests/steam.pcap',
                                  statistical_analysis=True, n_meters=int(os.getenv('MAX_NFMETERS', 0)),
                                  n_dissections=20).to_csv(ip_anonymization=False)
-        df_from_csv = pd.read_csv('tests/pcap/steam.pcap.csv')
-        total_flows_anon = NFStreamer(source='tests/pcap/steam.pcap',
+        df_from_csv = pd.read_csv('tests/steam.pcap.csv')
+        total_flows_anon = NFStreamer(source='tests/steam.pcap',
                                       statistical_analysis=True, n_meters=int(os.getenv('MAX_NFMETERS', 0)),
                                       n_dissections=20).to_csv(ip_anonymization=False)
-        df_anon_from_csv = pd.read_csv('tests/pcap/steam.pcap.csv')
+        df_anon_from_csv = pd.read_csv('tests/steam.pcap.csv')
         self.assertEqual(total_flows, total_flows_anon)
         self.assertEqual(total_flows, df_from_csv.shape[0])
         self.assertEqual(total_flows_anon, df_anon_from_csv.shape[0])
@@ -328,7 +402,7 @@ class TestMethods(unittest.TestCase):
 
     def test_bpf(self):
         print("\n----------------------------------------------------------------------")
-        streamer_test = NFStreamer(source='tests/pcap/facebook.pcap',
+        streamer_test = NFStreamer(source='tests/facebook.pcap',
                                    bpf_filter="src port 52066 or dst port 52066",
                                    n_meters=int(os.getenv('MAX_NFMETERS', 0)))
         last_id = 0
@@ -340,8 +414,7 @@ class TestMethods(unittest.TestCase):
         print("{}\t: \033[94mOK\033[0m".format(".Test BPF".ljust(60, ' ')))
 
     def test_ndpi_integration(self):
-        files = get_files_list("tests/pcap/")
-        ground_truth_ndpi = build_ndpi_dict("tests/result/")
+        files = get_files_list("tests/")
         print("\n----------------------------------------------------------------------")
         print(".Test nDPI integration on {} applications:".format(len(files)))
         ok_files = []
@@ -359,7 +432,7 @@ class TestMethods(unittest.TestCase):
                     except KeyError:
                         result[flow.application_name] = {"bytes": flow.bidirectional_bytes,
                                                          'flows': 1, 'pkts': flow.bidirectional_packets}
-            if result == ground_truth_ndpi[test_case_name]:
+            if result == ndpi_result(test_file):
                 ok_files.append(test_case_name)
                 print("{}\t: \033[94mOK\033[0m".format(test_case_name.ljust(60, ' ')))
             else:
@@ -368,7 +441,7 @@ class TestMethods(unittest.TestCase):
 
     def test_splt(self):
         print("\n----------------------------------------------------------------------")
-        splt_df = NFStreamer(source='tests/pcap/google_ssl.pcap', splt_analysis=5,
+        splt_df = NFStreamer(source='tests/google_ssl.pcap', splt_analysis=5,
                              n_meters=int(os.getenv('MAX_NFMETERS', 0)),
                              udps=SPLT(sequence_length=5, accounting_mode=0)).to_pandas()
         direction = json.loads(splt_df["udps.splt_direction"][0])
@@ -387,7 +460,7 @@ class TestMethods(unittest.TestCase):
 
     def test_dhcp(self):
         print("\n----------------------------------------------------------------------")
-        dhcp_df = NFStreamer(source='tests/pcap/dhcp.pcap',
+        dhcp_df = NFStreamer(source='tests/dhcp.pcap',
                              n_dissections=0,
                              n_meters=int(os.getenv('MAX_NFMETERS', 0)),
                              udps=DHCP()
