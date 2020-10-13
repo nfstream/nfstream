@@ -1784,10 +1784,10 @@ void meter_expire_flow(struct nf_flow *flow, uint8_t n_dissections, struct ndpi_
  */
 void meter_free_flow(struct nf_flow *flow, uint8_t n_dissections, uint8_t splt) {
   if (n_dissections) {
-    free_ndpi_data(flow); // two passes possible but we keep it as pointers are nullified no risk of double free.
+    free_ndpi_data(flow); // two passes possible but we keep it as pointers are nullified, no risk of double free.
   }
   if (splt) {
-    free_splt_data(flow); // two passes possible but we keep it as pointers are nullified and no risk of double free.
+    free_splt_data(flow); // two passes possible but we keep it as pointers are nullified, no risk of double free.
   }
   ndpi_free(flow);
   flow = NULL;
