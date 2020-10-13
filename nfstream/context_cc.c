@@ -34,8 +34,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __LITTLE_ENDIAN__
 #else
 #define __BIG_ENDIAN__
-#endif/* BYTE_ORDER */
-#endif/* __OPENBSD__ */
+#endif // BYTE_ORDER
+#endif //OPENBSD
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 #ifndef __LITTLE_ENDIAN__
 #define __LITTLE_ENDIAN__
@@ -335,7 +335,7 @@ typedef struct nf_packet {
   uint16_t vlan_id;
   char src_name[48], dst_name[48];
   uint8_t ip_version;
-  uint16_t fin:1, syn:1, rst:1, psh:1, ack:1, urg:1, ece:1, cwr:1; /* TCP Flags */
+  uint16_t fin:1, syn:1, rst:1, psh:1, ack:1, urg:1, ece:1, cwr:1; // TCP Flags
   uint16_t raw_size;
   uint16_t ip_size;
   uint16_t transport_size;
@@ -417,28 +417,28 @@ int get_nf_packet_info(const uint8_t version,
   const uint8_t *l3, *l4;
   uint32_t l4_data_len = 0XFEEDFACE;
 
-  if(version == IPVERSION) {
-    if(ipsize < 20) {
+  if (version == IPVERSION) {
+    if (ipsize < 20) {
       return 0;
     }
-    if((iph->ihl * 4) > ipsize) {
+    if ((iph->ihl * 4) > ipsize) {
       return 0;
     }
     l4_offset = iph->ihl * 4;
     l3 = (const uint8_t*)iph;
   } else {
     l4_offset = sizeof(struct nfstream_ipv6hdr);
-    if(sizeof(struct nfstream_ipv6hdr) > ipsize) return 0;
+    if (sizeof(struct nfstream_ipv6hdr) > ipsize) return 0;
     l3 = (const uint8_t*)iph6;
   }
 
-  if(nfstream_max(ntohs(iph->tot_len) , ipsize)< l4_offset + l4_packet_len) return 0;
+  if (nfstream_max(ntohs(iph->tot_len) , ipsize)< l4_offset + l4_packet_len) return 0;
 
   *proto = iph->protocol;
 
   l4 =& ((const uint8_t *) l3)[l4_offset];
 
-  if(*proto == IPPROTO_TCP && l4_packet_len >= sizeof(struct nfstream_tcphdr)) { // TCP Processing
+  if (*proto == IPPROTO_TCP && l4_packet_len >= sizeof(struct nfstream_tcphdr)) { // TCP Processing
     unsigned tcp_len;
     *tcph = (struct nfstream_tcphdr *)l4;
     *sport = (*tcph)->source, *dport = (*tcph)->dest;
@@ -461,13 +461,13 @@ int get_nf_packet_info(const uint8_t version,
     *payload_len = (l4_packet_len > sizeof(struct nfstream_udphdr)) ? l4_packet_len-sizeof(struct nfstream_udphdr) : 0;
     l4_data_len = l4_packet_len - sizeof(struct nfstream_udphdr);
     nf_pkt->fin = nf_pkt->syn = nf_pkt->rst = nf_pkt->psh = nf_pkt->ack = nf_pkt->urg = nf_pkt->ece = nf_pkt->cwr = 0;
-  } else if(*proto == IPPROTO_ICMP) { // ICMP Processing
+  } else if (*proto == IPPROTO_ICMP) { // ICMP Processing
     *payload = (uint8_t*)&l4[sizeof(struct nfstream_icmphdr )];
     *payload_len = (l4_packet_len > sizeof(struct nfstream_icmphdr)) ? l4_packet_len-sizeof(struct nfstream_icmphdr) : 0;
     l4_data_len = l4_packet_len - sizeof(struct nfstream_icmphdr);
     *sport = *dport = 0;
     nf_pkt->fin = nf_pkt->syn = nf_pkt->rst = nf_pkt->psh = nf_pkt->ack = nf_pkt->urg = nf_pkt->ece = nf_pkt->cwr = 0;
-  } else if(*proto == IPPROTO_ICMPV6) { // ICMPV6 Processing
+  } else if (*proto == IPPROTO_ICMPV6) { // ICMPV6 Processing
     *payload = (uint8_t*)&l4[sizeof(struct nfstream_icmp6hdr)];
     *payload_len = (l4_packet_len > sizeof(struct nfstream_icmp6hdr)) ? l4_packet_len-sizeof(struct nfstream_icmp6hdr) : 0;
     l4_data_len = l4_packet_len - sizeof(struct nfstream_icmp6hdr);
@@ -492,7 +492,7 @@ int get_nf_packet_info(const uint8_t version,
 
   hashval = nf_pkt->protocol + nf_pkt->vlan_id + iph->saddr + iph->daddr + nf_pkt->src_port + nf_pkt->dst_port;
 
-  if(version == IPVERSION) {
+  if (version == IPVERSION) {
 	inet_ntop(AF_INET, &iph->saddr, nf_pkt->src_name, sizeof(nf_pkt->src_name));
 	inet_ntop(AF_INET, &iph->daddr, nf_pkt->dst_name, sizeof(nf_pkt->dst_name));
 	nf_pkt->ip_size= ntohs(iph->tot_len);
@@ -547,7 +547,7 @@ static int get_nf_packet_info6(uint16_t vlan_id,
   uint8_t l4proto = iph6->ip6_hdr.ip6_un1_nxt;
   uint16_t ip_len = ntohs(iph6->ip6_hdr.ip6_un1_plen);
   const uint8_t *l4ptr = (((const uint8_t *) iph6) + sizeof(struct nfstream_ipv6hdr));
-  if(nfstream_handle_ipv6_extension_headers(&l4ptr, &ip_len, &l4proto) != 0) {
+  if (nfstream_handle_ipv6_extension_headers(&l4ptr, &ip_len, &l4proto) != 0) {
     return 0;
   }
   iph.protocol = l4proto;
@@ -587,7 +587,7 @@ int parse_packet(const uint64_t time,
   nf_pkt->time = time;
   nf_pkt->raw_size = rawsize;
   // According to IPVERSION, we extract required information for metering layer.
-  if(iph)
+  if (iph)
     return get_nf_packet_info(IPVERSION, vlan_id, tunnel_type, iph, NULL, ip_offset, ipsize, ntohs(iph->tot_len) - (iph->ihl * 4),
 			      &tcph, &udph, &sport, &dport, &proto, &payload, &payload_len, when, nf_pkt, n_roots, root_idx, mode);
   else
@@ -642,13 +642,13 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
   datalink_type = (int)pcap_datalink(pcap_handle);
 
  datalink_check:
-  if(header->caplen < eth_offset + 40) {
+  if (header->caplen < eth_offset + 40) {
     return 0;
   }
 
   switch(datalink_type) {
   case DLT_NULL:
-    if(ntohl(*((uint32_t*)&packet[eth_offset])) == 2)
+    if (ntohl(*((uint32_t*)&packet[eth_offset])) == 2)
       type = ETH_P_IP;
     else
       type = ETH_P_IPV6;
@@ -659,7 +659,7 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
   // Cisco PPP in HDLC-like framing: 50
   case DLT_PPP_SERIAL:
     chdlc = (struct nfstream_chdlc *) &packet[eth_offset];
-    ip_offset = sizeof(struct nfstream_chdlc); /* CHDLC_OFF = 4 */
+    ip_offset = sizeof(struct nfstream_chdlc); // CHDLC_OFF = 4
     type = ntohs(chdlc->proto_code);
     break;
 
@@ -667,7 +667,7 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
   case DLT_C_HDLC:
   case DLT_PPP:
     chdlc = (struct nfstream_chdlc *) &packet[eth_offset];
-    ip_offset = sizeof(struct nfstream_chdlc); /* CHDLC_OFF = 4 */
+    ip_offset = sizeof(struct nfstream_chdlc); // CHDLC_OFF = 4
     type = ntohs(chdlc->proto_code);
     break;
 
@@ -677,20 +677,20 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
     ip_offset = sizeof(struct nfstream_ethhdr) + eth_offset;
     check = ntohs(ethernet->h_proto);
 
-    if(check <= 1500)
+    if (check <= 1500)
       pyld_eth_len = check;
-    else if(check >= 1536)
+    else if (check >= 1536)
       type = check;
 
-    if(pyld_eth_len != 0) {
+    if (pyld_eth_len != 0) {
       llc = (struct nfstream_llc_header_snap *)(&packet[ip_offset]);
-      /* check for LLC layer with SNAP extension */
-      if(llc->dsap == SNAP || llc->ssap == SNAP) {
+      // check for LLC layer with SNAP extension */
+      if (llc->dsap == SNAP || llc->ssap == SNAP) {
 	type = llc->snap.proto_ID;
 	ip_offset += + 8;
       }
       // No SNAP extension: Spanning Tree pkt must be discarted
-      else if(llc->dsap == BSTP || llc->ssap == BSTP) {
+      else if (llc->dsap == BSTP || llc->ssap == BSTP) {
 	goto v4_warning;
       }
     }
@@ -708,11 +708,11 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
     radio_len = radiotap->len;
 
     // Check Bad FCS presence
-    if((radiotap->flags & BAD_FCS) == BAD_FCS) {
+    if ((radiotap->flags & BAD_FCS) == BAD_FCS) {
       return 0;
     }
 
-    if(header->caplen < (eth_offset + radio_len + sizeof(struct nfstream_wifi_header))) {
+    if (header->caplen < (eth_offset + radio_len + sizeof(struct nfstream_wifi_header))) {
       return 0;
     }
 
@@ -721,19 +721,19 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
     fc = wifi->fc;
 
     // Check wifi data presence
-    if(FCF_TYPE(fc) == WIFI_DATA) {
-      if((FCF_TO_DS(fc) && FCF_FROM_DS(fc) == 0x0) ||
+    if (FCF_TYPE(fc) == WIFI_DATA) {
+      if ((FCF_TO_DS(fc) && FCF_FROM_DS(fc) == 0x0) ||
 	 (FCF_TO_DS(fc) == 0x0 && FCF_FROM_DS(fc)))
 	wifi_len = 26; // +4 byte fcs
     } else   // No data frames
       break;
 
     // Check ether_type from LLC
-    if(header->caplen < (eth_offset + wifi_len + radio_len + sizeof(struct nfstream_llc_header_snap))) {
+    if (header->caplen < (eth_offset + wifi_len + radio_len + sizeof(struct nfstream_llc_header_snap))) {
       return 0;
     }
     llc = (struct nfstream_llc_header_snap*)(packet + eth_offset + wifi_len + radio_len);
-    if(llc->dsap == SNAP)
+    if (llc->dsap == SNAP)
       type = ntohs(llc->snap.proto_ID);
 
     // Set IP header offset
@@ -791,55 +791,54 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
     break;
   }
 
-  if(recheck_type)
+  if (recheck_type)
     goto ether_type_check;
 
 
  iph_check:
-  /* Check and set IP header size and total packet length */
-  if(header->caplen < ip_offset + sizeof(struct nfstream_iphdr)) {
+  // Check and set IP header size and total packet length
+  if (header->caplen < ip_offset + sizeof(struct nfstream_iphdr)) {
     return 0;
   }
 
   iph = (struct nfstream_iphdr *) &packet[ip_offset];
 
-  /* just work on Ethernet packets that contain IP */
-  if(type == ETH_P_IP && header->caplen >= ip_offset) {
+  // just work on Ethernet packets that contain IP */
+  if (type == ETH_P_IP && header->caplen >= ip_offset) {
     frag_off = ntohs(iph->frag_off);
-
     proto = iph->protocol;
   }
 
-  if(iph->version == IPVERSION) {
+  if (iph->version == IPVERSION) {
     ip_len = ((uint16_t)iph->ihl * 4);
     iph6 = NULL;
 
-    if(iph->protocol == IPPROTO_IPV6 || iph->protocol == IPPROTO_IPIP) {
+    if (iph->protocol == IPPROTO_IPV6 || iph->protocol == IPPROTO_IPIP) {
       ip_offset += ip_len;
-      if(ip_len > 0)
+      if (ip_len > 0)
         goto iph_check;
     }
 
-    if((frag_off & 0x1FFF) != 0) {
+    if ((frag_off & 0x1FFF) != 0) {
       return 0;
     }
-  } else if(iph->version == 6) {
-    if(header->caplen < ip_offset + sizeof(struct nfstream_ipv6hdr)) {
+  } else if (iph->version == 6) {
+    if (header->caplen < ip_offset + sizeof(struct nfstream_ipv6hdr)) {
       return 0;
     }
     iph6 = (struct nfstream_ipv6hdr *)&packet[ip_offset];
     proto = iph6->ip6_hdr.ip6_un1_nxt;
     ip_len = ntohs(iph6->ip6_hdr.ip6_un1_plen);
-    if(header->caplen < (ip_offset + sizeof(struct nfstream_ipv6hdr) + ntohs(iph6->ip6_hdr.ip6_un1_plen))) {
+    if (header->caplen < (ip_offset + sizeof(struct nfstream_ipv6hdr) + ntohs(iph6->ip6_hdr.ip6_un1_plen))) {
       return 0;
     }
 
     const uint8_t *l4ptr = (((const uint8_t *) iph6) + sizeof(struct nfstream_ipv6hdr));
-    if(nfstream_handle_ipv6_extension_headers(&l4ptr, &ip_len, &proto) != 0) {
+    if (nfstream_handle_ipv6_extension_headers(&l4ptr, &ip_len, &proto) != 0) {
       return 0;
     }
-    if(proto == IPPROTO_IPV6 || proto == IPPROTO_IPIP) {
-      if(l4ptr > packet) { /* Better safe than sorry */
+    if (proto == IPPROTO_IPV6 || proto == IPPROTO_IPIP) {
+      if (l4ptr > packet) { // Better safe than sorry
         ip_offset = (l4ptr - packet);
         goto iph_check;
       }
@@ -851,105 +850,97 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
     return 0;
   }
 
-  if(decode_tunnels && (proto == IPPROTO_UDP)) { // Tunnel decoding if configured by the user.
-    if(header->caplen < ip_offset + ip_len + sizeof(struct nfstream_udphdr)) {
+  if (decode_tunnels && (proto == IPPROTO_UDP)) { // Tunnel decoding if configured by the user.
+    if (header->caplen < ip_offset + ip_len + sizeof(struct nfstream_udphdr)) {
       return 0; // Too short for UDP header
     } else {
       struct nfstream_udphdr *udp = (struct nfstream_udphdr *)&packet[ip_offset+ip_len];
       uint16_t sport = ntohs(udp->source), dport = ntohs(udp->dest);
 
-      if((sport == GTP_U_V1_PORT) || (dport == GTP_U_V1_PORT)) {
-	// Check if it's GTPv1
-	unsigned offset = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
-	uint8_t flags = packet[offset];
-	uint8_t message_type = packet[offset+1];
+      if ((sport == GTP_U_V1_PORT) || (dport == GTP_U_V1_PORT)) {
+        // Check if it's GTPv1
+        unsigned offset = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
+        uint8_t flags = packet[offset];
+        uint8_t message_type = packet[offset+1];
+        tunnel_type = nfstream_gtp_tunnel;
 
-	tunnel_type = nfstream_gtp_tunnel;
-
-	if((((flags & 0xE0) >> 5) == 1) &&  // GTPv1
-	   (message_type == 0xFF)) { // T-PDU
-
-	  ip_offset = ip_offset+ip_len+sizeof(struct nfstream_udphdr)+8; // GTPv1 header len
-	  if(flags & 0x04) ip_offset += 1; // next_ext_header is present
-	  if(flags & 0x02) ip_offset += 4; // sequence_number is present (it also includes next_ext_header and pdu_number)
-	  if(flags & 0x01) ip_offset += 1; // pdu_number is present
-
-	  if(ip_offset < header->caplen) {
-	    iph = (struct nfstream_iphdr *)&packet[ip_offset];
-	    if(iph->version == 6) {
-	      iph6 = (struct nfstream_ipv6hdr *)&packet[ip_offset];
-	      iph = NULL;
-	    } else if(iph->version != IPVERSION) {
-	      goto v4_warning;
-	    }
-	  }
-	}
-      } else if((sport == TZSP_PORT) || (dport == TZSP_PORT)) {
-	// https://en.wikipedia.org/wiki/TZSP
-	if(header->caplen < ip_offset + ip_len + sizeof(struct nfstream_udphdr) + 4) {
-      return 0;
-	}
-
-	unsigned offset           = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
-	uint8_t version       = packet[offset];
-	uint8_t ts_type       = packet[offset+1];
-	uint16_t encapsulates = ntohs(*((uint16_t*)&packet[offset+2]));
-
-	tunnel_type = nfstream_tzsp_tunnel;
-
-	if((version == 1) && (ts_type == 0) && (encapsulates == 1)) {
-	  uint8_t stop = 0;
-
-	  offset += 4;
-
-	  while((!stop) && (offset < header->caplen)) {
-	    uint8_t tag_type = packet[offset];
-	    uint8_t tag_len;
-
-	    switch(tag_type) {
-	    case 0: // PADDING Tag
-	      tag_len = 1;
-	      break;
-	    case 1: // END Tag
-	      tag_len = 1, stop = 1;
-	      break;
-	    default:
-	      tag_len = packet[offset+1];
-	      break;
-	    }
-
-	    offset += tag_len;
-
-	    if(offset >= header->caplen) {
+        if ((((flags & 0xE0) >> 5) == 1) && (message_type == 0xFF)) { // T-PDU
+          ip_offset = ip_offset+ip_len+sizeof(struct nfstream_udphdr)+8; // GTPv1 header len
+          if (flags & 0x04) ip_offset += 1; // next_ext_header is present
+          if (flags & 0x02) ip_offset += 4; // seq_number is present (it also includes next_ext_header and pdu_number)
+          if (flags & 0x01) ip_offset += 1; // pdu_number is present
+          if (ip_offset < header->caplen) {
+            iph = (struct nfstream_iphdr *)&packet[ip_offset];
+            if (iph->version == 6) {
+              iph6 = (struct nfstream_ipv6hdr *)&packet[ip_offset];
+              iph = NULL;
+            } else if (iph->version != IPVERSION) {
+              goto v4_warning;
+            }
+          }
+        }
+      } else if ((sport == TZSP_PORT) || (dport == TZSP_PORT)) {
+        // https://en.wikipedia.org/wiki/TZSP
+        if (header->caplen < ip_offset + ip_len + sizeof(struct nfstream_udphdr) + 4) {
           return 0;
-	    }
-	    else {
-	      eth_offset = offset;
-	      goto datalink_check;
-	    }
-	  }
-	}
-      } else if(sport == NFSTREAM_CAPWAP_DATA_PORT) {
-	// We dissect ONLY CAPWAP traffic
-	unsigned offset = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
+        }
 
-	if((offset+1) < header->caplen) {
-	  uint8_t preamble = packet[offset];
+        unsigned offset           = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
+        uint8_t version       = packet[offset];
+        uint8_t ts_type       = packet[offset+1];
+        uint16_t encapsulates = ntohs(*((uint16_t*)&packet[offset+2]));
 
-	  if((preamble & 0x0F) == 0) { // CAPWAP header
-	    uint16_t msg_len = (packet[offset+1] & 0xF8) >> 1;
-	    offset += msg_len;
-	    if((offset + 32 < header->caplen) && (packet[offset] == 0x02)) {
-	      // IEEE 802.11 Data
-	      offset += 24;
-	      // LLC header is 8 bytes
-	      type = ntohs((uint16_t)*((uint16_t*)&packet[offset+6]));
-	      ip_offset = offset + 8;
-	      tunnel_type = nfstream_capwap_tunnel;
-	      goto iph_check;
+        tunnel_type = nfstream_tzsp_tunnel;
+
+        if ((version == 1) && (ts_type == 0) && (encapsulates == 1)) {
+          uint8_t stop = 0;
+          offset += 4;
+          while((!stop) && (offset < header->caplen)) {
+            uint8_t tag_type = packet[offset];
+            uint8_t tag_len;
+
+            switch(tag_type) {
+            case 0: // PADDING Tag
+              tag_len = 1;
+              break;
+            case 1: // END Tag
+              tag_len = 1, stop = 1;
+              break;
+            default:
+              tag_len = packet[offset+1];
+              break;
+            }
+
+            offset += tag_len;
+
+            if (offset >= header->caplen) {
+              return 0;
+            }
+            else {
+              eth_offset = offset;
+              goto datalink_check;
+            }
+          }
 	    }
-	  }
-	}
+      } else if ((sport == NFSTREAM_CAPWAP_DATA_PORT) || (dport == NFSTREAM_CAPWAP_DATA_PORT)) {
+	    // We decode CAPWAP DATA
+	    unsigned offset = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
+	    if ((offset+1) < header->caplen) {
+	      uint8_t preamble = packet[offset];
+	      if ((preamble & 0x0F) == 0) { // CAPWAP header
+	        uint16_t msg_len = (packet[offset+1] & 0xF8) >> 1;
+	        offset += msg_len;
+	          if ((offset + 32 < header->caplen) && (packet[offset] == 0x02)) {
+	            // IEEE 802.11 Data
+	            offset += 24;
+	            // LLC header is 8 bytes
+	            type = ntohs((uint16_t)*((uint16_t*)&packet[offset+6]));
+	            ip_offset = offset + 8;
+	            tunnel_type = nfstream_capwap_tunnel;
+	            goto iph_check;
+	          }
+	      }
+	    }
       }
     }
   }
@@ -1070,14 +1061,14 @@ int observer_set_snaplen(pcap_t * pcap_handle, int mode, int root_idx, unsigned 
  * observer_set_filter: Configure pcap_t with specified bpf_filter.
  */
 int observer_set_filter(pcap_t * pcap_handle, char * bpf_filter, int root_idx) {
-  if(bpf_filter != NULL) {
+  if (bpf_filter != NULL) {
     struct bpf_program fcode;
-    if(pcap_compile(pcap_handle, &fcode, bpf_filter, 1, 0xFFFFFF00) < 0) {
+    if (pcap_compile(pcap_handle, &fcode, bpf_filter, 1, 0xFFFFFF00) < 0) {
       if (root_idx == 0) printf("ERROR: Unable to compile BPF filter.\n");
       pcap_close(pcap_handle);
       return 1;
     } else {
-      if(pcap_setfilter(pcap_handle, &fcode) < 0) {
+      if (pcap_setfilter(pcap_handle, &fcode) < 0) {
 	    if (root_idx == 0) printf("ERROR: Unable to compile BPF filter.\n");
 	    pcap_close(pcap_handle);
 	    return 1;
@@ -1380,9 +1371,9 @@ void dissector_process_info(struct ndpi_detection_module_struct *dissector, stru
  * free_ndpi_data: nDPI references freer.
  */
 void free_ndpi_data(struct nf_flow *flow) {
-  if(flow->ndpi_flow) { ndpi_flow_free(flow->ndpi_flow); flow->ndpi_flow = NULL; }
-  if(flow->ndpi_src) { ndpi_free(flow->ndpi_src); flow->ndpi_src = NULL; }
-  if(flow->ndpi_dst) { ndpi_free(flow->ndpi_dst); flow->ndpi_dst = NULL; }
+  if (flow->ndpi_flow) { ndpi_flow_free(flow->ndpi_flow); flow->ndpi_flow = NULL; }
+  if (flow->ndpi_src) { ndpi_free(flow->ndpi_src); flow->ndpi_src = NULL; }
+  if (flow->ndpi_dst) { ndpi_free(flow->ndpi_dst); flow->ndpi_dst = NULL; }
 }
 
 
@@ -1390,9 +1381,9 @@ void free_ndpi_data(struct nf_flow *flow) {
  * free_splt_data: splt fields freer.
  */
 void free_splt_data(struct nf_flow *flow) {
-  if(flow->splt_direction) { ndpi_free(flow->splt_direction); flow->splt_direction = NULL; }
-  if(flow->splt_ps) { ndpi_free(flow->splt_ps); flow->splt_ps = NULL; }
-  if(flow->splt_piat_ms) { ndpi_free(flow->splt_piat_ms); flow->splt_piat_ms = NULL; }
+  if (flow->splt_direction) { ndpi_free(flow->splt_direction); flow->splt_direction = NULL; }
+  if (flow->splt_ps) { ndpi_free(flow->splt_ps); flow->splt_ps = NULL; }
+  if (flow->splt_piat_ms) { ndpi_free(flow->splt_piat_ms); flow->splt_piat_ms = NULL; }
   flow->splt_closed = 1;
 }
 
@@ -1405,7 +1396,7 @@ struct nf_flow *meter_initialize_flow(struct nf_packet *packet, uint8_t accounti
                                       struct ndpi_detection_module_struct *dissector) {
 
   struct nf_flow *flow = (struct nf_flow*)ndpi_malloc(sizeof(struct nf_flow));
-  if(flow == NULL) return NULL; // not enough memory for flow.
+  if (flow == NULL) return NULL; // not enough memory for flow.
   memset(flow, 0, sizeof(struct nf_flow));
 
   if (splt) {
@@ -1620,7 +1611,7 @@ uint8_t meter_update_flow(struct nf_flow *flow, struct nf_packet *packet, uint64
         flow->detection_completed = 1;
       }
     } else {
-      if (flow->detection_completed == 1) flow->detection_completed = 2; /* trigger the copy only once on sync mode.*/
+      if (flow->detection_completed == 1) flow->detection_completed = 2; // trigger the copy only once on sync mode.
     }
   }
 
