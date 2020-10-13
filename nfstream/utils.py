@@ -30,8 +30,7 @@ def validate_flows_per_file(n):
 def create_csv_file_path(path, source):
     if path is None:
         return str(source) + '.csv'
-    else:
-        return path
+    return path
 
 
 def csv_converter(values):
