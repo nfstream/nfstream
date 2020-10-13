@@ -19,3 +19,4 @@ If not, see <http://www.gnu.org/licenses/>.
 from .splt import SPLT
 from .slicer import FlowSlicer
 from .dhcp import DHCP
+from .mdns import MDNS
