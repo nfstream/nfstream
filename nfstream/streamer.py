@@ -221,6 +221,7 @@ class NFStreamer(object):
             pass
         else:
             raise ValueError("Please specify a valid n_meters parameter (>=1 or 0 for auto scaling).")
+        print(os.sched_getaffinity(0))
         c_cores = cpu_count(logical=False)
         # We exclude hyperthreding as in case of high load this will results in contention.
         if value == 0:
