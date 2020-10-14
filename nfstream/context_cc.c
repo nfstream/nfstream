@@ -471,6 +471,36 @@ void get_nf_packet_unknown_transport_info(struct nf_packet *nf_pkt, uint16_t *sp
 
 
 /**
+ * fill_nf_packet_info: fill required nf packet information.
+ */
+void fill_nf_packet_info(struct nf_packet *nf_pkt, uint16_t *sport, uint16_t *dport, uint32_t l4_data_len,
+                         uint16_t *payload_len, const struct nfstream_iphdr *iph, const struct nfstream_ipv6hdr *iph6,
+                         uint16_t ipsize, const uint8_t version, uint16_t vlan_id) {
+  nf_pkt->protocol = iph->protocol;
+  nf_pkt->vlan_id = vlan_id;
+  nf_pkt->src_port = htons(*sport);
+  nf_pkt->dst_port = htons(*dport);
+  nf_pkt->ip_version = version;
+  nf_pkt->transport_size = l4_data_len;
+  nf_pkt->payload_size = *payload_len;
+  nf_pkt->ip_content_len = ipsize;
+  nf_pkt->delta_time = 0; // This will be filled by meter.
+
+  if (version == IPVERSION) {
+	inet_ntop(AF_INET, &iph->saddr, nf_pkt->src_name, sizeof(nf_pkt->src_name));
+	inet_ntop(AF_INET, &iph->daddr, nf_pkt->dst_name, sizeof(nf_pkt->dst_name));
+	nf_pkt->ip_size= ntohs(iph->tot_len);
+	nf_pkt->ip_content = (uint8_t *)iph;
+  } else {
+	inet_ntop(AF_INET6, &iph6->ip6_src, nf_pkt->src_name, sizeof(nf_pkt->src_name));
+	inet_ntop(AF_INET6, &iph6->ip6_dst, nf_pkt->dst_name, sizeof(nf_pkt->dst_name));
+	nf_pkt->ip_size = ntohs(iph->tot_len);
+	nf_pkt->ip_content = (uint8_t *)iph6;
+  }
+}
+
+
+/**
  * nf_pkt_fanout: Network flow packet fanout.
  */
 int nf_pkt_fanout(struct nf_packet *nf_pkt, int mode, uint64_t hashval, int n_roots, int root_idx) {
@@ -542,27 +572,7 @@ int get_nf_packet_info(const uint8_t version,
   } else {
     get_nf_packet_unknown_transport_info(nf_pkt, sport, dport, l4_data_len);
   }
-  nf_pkt->protocol = iph->protocol;
-  nf_pkt->vlan_id = vlan_id;
-  nf_pkt->src_port = htons(*sport);
-  nf_pkt->dst_port = htons(*dport);
-  nf_pkt->ip_version = version;
-  nf_pkt->transport_size = l4_data_len;
-  nf_pkt->payload_size = *payload_len;
-  nf_pkt->ip_content_len = ipsize;
-  nf_pkt->delta_time = 0; // This will be filled by meter.
-
-  if (version == IPVERSION) {
-	inet_ntop(AF_INET, &iph->saddr, nf_pkt->src_name, sizeof(nf_pkt->src_name));
-	inet_ntop(AF_INET, &iph->daddr, nf_pkt->dst_name, sizeof(nf_pkt->dst_name));
-	nf_pkt->ip_size= ntohs(iph->tot_len);
-	nf_pkt->ip_content = (uint8_t *)iph;
-  } else {
-	inet_ntop(AF_INET6, &iph6->ip6_src, nf_pkt->src_name, sizeof(nf_pkt->src_name));
-	inet_ntop(AF_INET6, &iph6->ip6_dst, nf_pkt->dst_name, sizeof(nf_pkt->dst_name));
-	nf_pkt->ip_size = ntohs(iph->tot_len);
-	nf_pkt->ip_content = (uint8_t *)iph6;
-  }
+  fill_nf_packet_info(nf_pkt, sport, dport, l4_data_len, payload_len, iph, iph6, ipsize, version, vlan_id);
   uint64_t hashval = 0; // Compute hashval as the sum of 6-tuple fields.
   hashval = nf_pkt->protocol + nf_pkt->vlan_id + iph->saddr + iph->daddr + nf_pkt->src_port + nf_pkt->dst_port;
   return nf_pkt_fanout(nf_pkt, mode, hashval, n_roots, root_idx);
