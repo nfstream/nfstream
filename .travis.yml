@@ -81,6 +81,33 @@ matrix:
             - bison
             - libpcap-dev
 
+    - os: linux
+      arch: arm64
+      language: python
+      python: '3.9'
+      env: PYTHON=/home/travis/virtualenv/python3.9.0/bin
+      cache:
+        directories:
+          - $HOME/.pip-cache/
+          - /home/travis/virtualenv/python3.9.0/lib/python3.9/site-packages
+      addons:
+        apt:
+          packages:
+            - autogen
+            - autoconf
+            - automake
+            - libtool
+            - pkg-config
+            - libjson-c-dev
+            - gettext
+            - libusb-1.0-0-dev
+            - libdbus-glib-1-dev
+            - libbluetooth-dev
+            - libnl-genl-3-dev
+            - flex
+            - bison
+            - libpcap-dev
+
 install:
   - git clone --branch libgpg-error-1.39 https://github.com/gpg/libgpg-error
   - cd libgpg-error
