@@ -105,13 +105,10 @@ def chunks(l, n):
     return (l[i:i+n] for i in range(0, len(l), n))
 
 
-def set_affinity(mask):
+def set_affinity(idx):
     if platform.system() == "Linux":
-        c_cores = psutil.cpu_count(logical=False)
         c_cpus = psutil.cpu_count(logical=True)
-        if c_cpus == c_cores:  # single threaded.
-            psutil.Process().cpu_affinity([mask,])
-        else:
-            if c_cpus == (2*c_cores):  # multi threaded
-                temp = list(chunks(range(c_cpus), 2))
-                psutil.Process().cpu_affinity(list(temp[mask]))
+        temp = list(chunks(range(c_cpus), 2))
+        x = len(temp)
+        psutil.Process().cpu_affinity(list(temp[idx%x]))
+        print("DEBUG: {} assigned to {}".format(idx, list(temp[idx%x])))

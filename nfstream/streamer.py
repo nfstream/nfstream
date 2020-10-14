@@ -221,17 +221,25 @@ class NFStreamer(object):
             pass
         else:
             raise ValueError("Please specify a valid n_meters parameter (>=1 or 0 for auto scaling).")
-        print(os.sched_getaffinity(0))
-        c_cores = cpu_count(logical=False)
-        # We exclude hyperthreding as in case of high load this will results in contention.
+        c_cpus, c_cores = cpu_count(logical=True), cpu_count(logical=False)
         if value == 0:
-            self._n_meters = c_cores - 1
+            if platform.system() == "Linux" and self._mode == 1:
+                self._n_meters = c_cpus - 1
+            else:
+                if c_cpus >= c_cores:
+                    if c_cpus == 2 * c_cores or c_cpus == c_cores: # multi-thread or single threaded
+                        self._n_meters = c_cores - 1
+                    else:
+                        i, d = divmod(c_cpus/2, 1)
+                        self._n_meters = i - 1
+                else: # weird case, fallback on cpu count.
+                    self._n_meters = c_cpus - 1
         else:
-            if (value + 1) <= c_cores:
+            if (value + 1) <= c_cpus:
                 self._n_meters = value
             else:  # avoid contention
-                print("WARNING: n_meters set to :{} in order to avoid contention.".format(c_cores - 1))
-                self._n_meters = c_cores - 1
+                print("WARNING: n_meters set to :{} in order to avoid contention.".format(c_cpus - 1))
+                self._n_meters = c_cpus - 1
         if self._n_meters == 0:  # one CPU case
             self._n_meters = 1
 
