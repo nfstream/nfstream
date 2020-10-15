@@ -41,6 +41,7 @@ class DHCP(NFPlugin):
     the same flow. The following information are retrieved:
 
     - dhcp_12 (Option 12, hostname): hostname is decoded as utf8 with special characters being replaced.
+    - dhcp_50 (Option 50, requested ip): The ip address requested by the client.
     - dhcp_55 (Option 55, parameter request list): The list of options requested by the client on REQUEST messages.
     - dhcp_57 (Option 57, user class id)
     - dhcp_60 (Option 60, vendor class identifier)
@@ -52,20 +53,28 @@ class DHCP(NFPlugin):
     """
     def on_init(self, packet, flow):
         flow.udps.dhcp_12 = None  # Sometimes hostname is missing from ndpi
+        flow.udps.dhcp_50 = None  # must be anonymized on export
         flow.udps.dhcp_55 = None  # Sometimes fingerprint is missing from ndpi
         flow.udps.dhcp_57 = None
         flow.udps.dhcp_60 = None
         flow.udps.dhcp_77 = None
         flow.udps.dhcp_options = []
-        flow.udps.dhcp_addr = None
+        flow.udps.dhcp_addr = None  # must be anonymized on export
+        self.on_update(packet, flow)
 
     def on_update(self, packet, flow):
-        if flow.dst_port in [67, 68]:
-            ip = dpkt.ip.IP(packet.ip_packet)
-            udp = ip.data
-            dhcp = dpkt.dhcp.DHCP(udp.data)
+        if flow.dst_port == 67:
+            try:
+                ip = dpkt.ip.IP(packet.ip_packet)
+                udp = ip.data
+                dhcp = dpkt.dhcp.DHCP(udp.data)
+            except (dpkt.NeedData, dpkt.UnpackError):
+                return
+
             msg_type = 0
             options = []
+            opt50 = None
+            opt55 = None
 
             for opt in dhcp.opts:
                 if opt[0] == 12:  # Hostname
@@ -82,12 +91,19 @@ class DHCP(NFPlugin):
                     flow.udps.dhcp_57 = int.from_bytes(opt[1], "big")
                 elif opt[0] == 55:  # parameter request list (aka fingerprint)
                     opt55 = ','.join(str(i) for i in opt[1])
+                elif opt[0] == 50:  # requested ip
+                    opt50 = ipaddress.ip_address(int.from_bytes(opt[1], "big"))
                 options.append(opt[0])
 
             if msg_type == MsgType.REQUEST:
                 flow.udps.dhcp_options = options
-                flow.udps.dhcp_55 = opt55
+                flow.udps.dhcp_55 = opt55 if opt55 is not None else None
+                flow.udps.dhcp_50 = str(opt50) if opt50 is not None else None
+                if flow.src_ip == '0.0.0.0':
+                    flow.expiration_id = -1
             if msg_type in [MsgType.ACK, MsgType.NACK, MsgType.INFORM, MsgType.DECLINE]:
                 flow.expiration_id = -1
             if msg_type == MsgType.ACK:
-                flow.udps.dhcp_addr = ipaddress.ip_address(dhcp.yiaddr)  # your (client) ip address
+                yiaddr = ipaddress.ip_address(dhcp.yiaddr)  # your (client) ip address
+                if yiaddr != ipaddress.ip_address(0):  # inform ack yiaddr is not set
+                    flow.udps.dhcp_addr = str(yiaddr)
