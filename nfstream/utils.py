@@ -111,4 +111,3 @@ def set_affinity(idx):
         temp = list(chunks(range(c_cpus), 2))
         x = len(temp)
         psutil.Process().cpu_affinity(list(temp[idx%x]))
-        print("DEBUG: {} assigned to {}".format(idx, list(temp[idx%x])))
