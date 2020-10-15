@@ -23,11 +23,13 @@ from threading import Timer
 
 
 def validate_flows_per_file(n):
+    """ simple parameter validator """
     if not isinstance(n, int) or isinstance(n, int) and n < 0:
         raise ValueError("Please specify a valid flows_per_file parameter (>= 0).")
 
 
 def create_csv_file_path(path, source):
+    """ file path creator """
     if path is None:
         return str(source) + '.csv'
     return path
@@ -46,6 +48,7 @@ def csv_converter(values):
 
 
 def open_file(path, chunked, chunk_idx):
+    """ File opener taking ckunk mode into consideration"""
     if not chunked:
         return open(path, 'wb')
     return open(path.replace("csv", "{}.csv".format(chunk_idx)), 'wb')
@@ -101,11 +104,13 @@ class RepeatedTimer(object):
 
 
 def chunks(l, n):
+    """ create list of chunks of size n from range l"""
     n = max(1, n)
     return (l[i:i+n] for i in range(0, len(l), n))
 
 
 def set_affinity(idx):
+    """ CPU affinity setter """
     if platform.system() == "Linux":
         c_cpus = psutil.cpu_count(logical=True)
         temp = list(chunks(range(c_cpus), 2))
