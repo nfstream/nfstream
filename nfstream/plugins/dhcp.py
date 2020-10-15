@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
 ------------------------------------------------------------------------------------------------------------------------
 dhcp.py
@@ -49,7 +46,6 @@ class DHCP(NFPlugin):
     - dhcp_options: The list of options present in the REQUEST message.
     - dhcp_addr: The IP address allocated to the client
 
-    This plugin depends on dpkt.
     """
     def on_init(self, packet, flow):
         flow.udps.dhcp_12 = None  # Sometimes hostname is missing from ndpi

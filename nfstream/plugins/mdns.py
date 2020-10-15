@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
 ------------------------------------------------------------------------------------------------------------------------
 mdns.py
@@ -22,15 +19,12 @@ import dpkt
 class MDNS(NFPlugin):
     """ MDNS plugin
 
-    This plugin extracts answer information from MDNS requests, and split flows
-    on 60 seconds periods. The following information are retrieved:
+    This plugin extracts answer information from MDNS requests. The following information are retrieved:
 
     - mdns_ptr: An ordered list of PTR answsers.
 
-    This plugin depends on dpkt.
     """
     def on_init(self, packet, flow):
-        self.init_ms = packet.time
         flow.udps.mdns_ptr = []
         self.on_update(packet, flow)
 
@@ -49,7 +43,4 @@ class MDNS(NFPlugin):
                         ptr = answer.ptrname.replace(',', ' ')
                         if ptr not in flow.udps.mdns_ptr:
                             flow.udps.mdns_ptr.append(ptr)
-
-            if (packet.time - self.init_ms) > 60000:
-                flow.expiration_id = -1
 

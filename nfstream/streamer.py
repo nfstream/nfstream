@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
 ------------------------------------------------------------------------------------------------------------------------
 streamer.py
@@ -43,8 +40,8 @@ class NFStreamer(object):
                  bpf_filter=None,
                  promiscuous_mode=True,
                  snapshot_length=1536,
-                 idle_timeout=15, # default value on wide range of netflow-enabled routers
-                 active_timeout=1800, # default value on wide range of netflow-enabled routers
+                 idle_timeout=60,
+                 active_timeout=300,
                  accounting_mode=0,
                  udps=None,
                  n_dissections=20,

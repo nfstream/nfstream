@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
 ------------------------------------------------------------------------------------------------------------------------
 tests.py
@@ -23,7 +20,7 @@ import json
 import os
 import csv
 from nfstream import NFStreamer
-from nfstream.plugins import SPLT, DHCP, FlowSlicer
+from nfstream.plugins import SPLT, DHCP, FlowSlicer, MDNS
 
 
 def get_files_list(path):
@@ -467,8 +464,22 @@ class TestMethods(unittest.TestCase):
                              ).to_pandas().sort_values(by=['src_ip']).reset_index(drop=True)
         self.assertEqual(dhcp_df["udps.dhcp_55"][0], "1,3,6,42")
         self.assertEqual(dhcp_df["udps.dhcp_options"][0], "[53, 61, 50, 54, 55]")
-        self.assertEqual(dhcp_df["udps.dhcp_addr"][1], "192.168.0.10")
+        self.assertEqual(dhcp_df["udps.dhcp_50"][0], "192.168.0.10")
         print("{}\t: \033[94mOK\033[0m".format(".Test DHCP plugin".ljust(60, ' ')))
+
+    def test_mdns(self):
+        print("\n----------------------------------------------------------------------")
+        mdns_df = NFStreamer(source='tests/mdns.pcap',
+                             n_dissections=0,
+                             n_meters=int(os.getenv('MAX_NFMETERS', 0)),
+                             udps=MDNS()
+                             ).to_pandas().sort_values(by=['src_ip']).reset_index(drop=True)
+        self.assertEqual(mdns_df["udps.mdns_ptr"][0], "['skynet.local', "
+                                                      "'skynet [00:1a:ef:17:c3:05]._workstation._tcp.local', "
+                                                      "'recombinator_mpd._mpd._tcp.local', '_mpd._tcp.local', "
+                                                      "'skynet._udisks-ssh._tcp.local', '_udisks-ssh._tcp.local', "
+                                                      "'_workstation._tcp.local']")
+        print("{}\t: \033[94mOK\033[0m".format(".Test MDNS plugin".ljust(60, ' ')))
 
 
 if __name__ == '__main__':
