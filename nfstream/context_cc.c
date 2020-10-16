@@ -774,16 +774,55 @@ int datalink_checker(const struct pcap_pkthdr *header, const uint8_t *packet, ui
 }
 
 
-/**
- * process_packet: Main packet processing function.
- */
-int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const uint8_t *packet, int decode_tunnels,
-                   struct nf_packet *nf_pkt, int n_roots, int root_idx, int mode) {
+void ether_type_checker(const struct pcap_pkthdr *header, const uint8_t *packet, uint16_t *type, uint16_t *vlan_id,
+                        uint16_t *ip_offset, uint8_t *recheck_type) {
   // MPLS header
   union mpls {
     uint32_t u32;
     struct nfstream_mpls_header mpls;
   } mpls;
+  switch((*type)) {
+  case VLAN:
+    (*vlan_id) = ((packet[(*ip_offset)] << 8) + packet[(*ip_offset)+1]) & 0xFFF;
+    (*type) = (packet[(*ip_offset)+2] << 8) + packet[(*ip_offset)+3];
+    (*ip_offset) += 4;
+
+    // double tagging for 802.1Q
+    while(((*type) == 0x8100) && (((bpf_u_int32)(*ip_offset)) < header->caplen)) {
+      (*vlan_id) = ((packet[(*ip_offset)] << 8) + packet[(*ip_offset)+1]) & 0xFFF;
+      (*type) = (packet[(*ip_offset)+2] << 8) + packet[(*ip_offset)+3];
+      (*ip_offset) += 4;
+    }
+    (*recheck_type) = 1;
+    break;
+  case MPLS_UNI:
+  case MPLS_MULTI:
+    mpls.u32 = *((uint32_t *) &packet[(*ip_offset)]);
+    mpls.u32 = ntohl(mpls.u32);
+    (*type) = ETH_P_IP, (*ip_offset) += 4;
+    while(!mpls.mpls.s && (((bpf_u_int32)(*ip_offset)) + 4 < header->caplen)) {
+      mpls.u32 = *((uint32_t *) &packet[(*ip_offset)]);
+      mpls.u32 = ntohl(mpls.u32);
+      (*ip_offset) += 4;
+    }
+    (*recheck_type) = 1;
+    break;
+  case PPPoE:
+    (*type) = ETH_P_IP;
+    (*ip_offset) += 8;
+    (*recheck_type) = 1;
+    break;
+  default:
+    break;
+  }
+}
+
+
+/**
+ * process_packet: Main packet processing function.
+ */
+int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const uint8_t *packet, int decode_tunnels,
+                   struct nf_packet *nf_pkt, int n_roots, int root_idx, int mode) {
   // IP header
   struct nfstream_iphdr *iph;
   // IPv6 header
@@ -804,57 +843,14 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
 
  ether_type_check:
   recheck_type = 0;
-
-  // check ether type
-  switch(type) {
-  case VLAN:
-    vlan_id = ((packet[ip_offset] << 8) + packet[ip_offset+1]) & 0xFFF;
-    type = (packet[ip_offset+2] << 8) + packet[ip_offset+3];
-    ip_offset += 4;
-
-    // double tagging for 802.1Q
-    while((type == 0x8100) && (((bpf_u_int32)ip_offset) < header->caplen)) {
-      vlan_id = ((packet[ip_offset] << 8) + packet[ip_offset+1]) & 0xFFF;
-      type = (packet[ip_offset+2] << 8) + packet[ip_offset+3];
-      ip_offset += 4;
-    }
-    recheck_type = 1;
-    break;
-
-  case MPLS_UNI:
-  case MPLS_MULTI:
-    mpls.u32 = *((uint32_t *) &packet[ip_offset]);
-    mpls.u32 = ntohl(mpls.u32);
-    type = ETH_P_IP, ip_offset += 4;
-
-    while(!mpls.mpls.s && (((bpf_u_int32)ip_offset) + 4 < header->caplen)) {
-      mpls.u32 = *((uint32_t *) &packet[ip_offset]);
-      mpls.u32 = ntohl(mpls.u32);
-      ip_offset += 4;
-    }
-    recheck_type = 1;
-    break;
-
-  case PPPoE:
-    type = ETH_P_IP;
-    ip_offset += 8;
-    recheck_type = 1;
-    break;
-
-  default:
-    break;
-  }
-
+  ether_type_checker(header, packet, &type, &vlan_id, &ip_offset, &recheck_type);
   if (recheck_type)
     goto ether_type_check;
 
 
  iph_check:
   // Check and set IP header size and total packet length
-  if (header->caplen < ip_offset + sizeof(struct nfstream_iphdr)) {
-    return 0;
-  }
-
+  if (header->caplen < ip_offset + sizeof(struct nfstream_iphdr)) return 0;
   iph = (struct nfstream_iphdr *) &packet[ip_offset];
 
   // just work on Ethernet packets that contain IP */
@@ -869,8 +865,7 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
 
     if (iph->protocol == IPPROTO_IPV6 || iph->protocol == IPPROTO_IPIP) {
       ip_offset += ip_len;
-      if (ip_len > 0)
-        goto iph_check;
+      if (ip_len > 0) goto iph_check;
     }
 
     if ((frag_off & 0x1FFF) != 0) {
