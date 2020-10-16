@@ -868,40 +868,32 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
       if (ip_len > 0) goto iph_check;
     }
 
-    if ((frag_off & 0x1FFF) != 0) {
-      return 0;
-    }
+    if ((frag_off & 0x1FFF) != 0) return 0;
+
   } else if (iph->version == 6) {
-    if (header->caplen < ip_offset + sizeof(struct nfstream_ipv6hdr)) {
-      return 0;
-    }
+    if (header->caplen < ip_offset + sizeof(struct nfstream_ipv6hdr)) return 0;
     iph6 = (struct nfstream_ipv6hdr *)&packet[ip_offset];
     proto = iph6->ip6_hdr.ip6_un1_nxt;
     ip_len = ntohs(iph6->ip6_hdr.ip6_un1_plen);
-    if (header->caplen < (ip_offset + sizeof(struct nfstream_ipv6hdr) + ntohs(iph6->ip6_hdr.ip6_un1_plen))) {
-      return 0;
-    }
+    if (header->caplen < (ip_offset + sizeof(struct nfstream_ipv6hdr) + ntohs(iph6->ip6_hdr.ip6_un1_plen))) return 0;
 
     const uint8_t *l4ptr = (((const uint8_t *) iph6) + sizeof(struct nfstream_ipv6hdr));
-    if (nfstream_handle_ipv6_extension_headers(&l4ptr, &ip_len, &proto) != 0) {
-      return 0;
-    }
+    if (nfstream_handle_ipv6_extension_headers(&l4ptr, &ip_len, &proto) != 0) return 0;
+
     if (proto == IPPROTO_IPV6 || proto == IPPROTO_IPIP) {
       if (l4ptr > packet) { // Better safe than sorry
         ip_offset = (l4ptr - packet);
         goto iph_check;
       }
     }
-
     iph = NULL;
   } else {
     return 0;
   }
 
   if (decode_tunnels && (proto == IPPROTO_UDP)) { // Tunnel decoding if configured by the user.
-    if (header->caplen < ip_offset + ip_len + sizeof(struct nfstream_udphdr)) {
-      return 0; // Too short for UDP header
-    } else {
+    if (header->caplen < ip_offset + ip_len + sizeof(struct nfstream_udphdr)) return 0; // Too short for UDP header
+    else {
       struct nfstream_udphdr *udp = (struct nfstream_udphdr *)&packet[ip_offset+ip_len];
       uint16_t sport = ntohs(udp->source), dport = ntohs(udp->dest);
 
