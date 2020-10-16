@@ -16,6 +16,7 @@ If not, see <http://www.gnu.org/licenses/>.
 from nfstream import NFPlugin
 import dpkt
 
+
 class MDNS(NFPlugin):
     """ MDNS plugin
 
@@ -43,4 +44,3 @@ class MDNS(NFPlugin):
                         ptr = answer.ptrname.replace(',', ' ')
                         if ptr not in flow.udps.mdns_ptr:
                             flow.udps.mdns_ptr.append(ptr)
-

@@ -58,6 +58,34 @@ class DHCP(NFPlugin):
         flow.udps.dhcp_addr = None  # must be anonymized on export
         self.on_update(packet, flow)
 
+    @staticmethod
+    def _process_options(flow, dhcp):
+        msg_type = 0
+        options = []
+        opt50 = None
+        opt55 = None
+
+        for opt in dhcp.opts:
+            if opt[0] == 12:  # Hostname
+                hostname = opt[1].decode('utf-8', errors='replace')
+                if len(hostname) > 0:
+                    flow.udps.dhcp_12 = hostname
+            elif opt[0] == 53:  # Msg type
+                msg_type = MsgType(int.from_bytes(opt[1], "big"))
+            elif opt[0] == 60:  # Vendor class identifier
+                flow.udps.dhcp_60 = opt[1].decode('utf-8')
+            elif opt[0] == 77:  # User class id
+                flow.udps.dhcp_77 = opt[1].decode('utf-8')
+            elif opt[0] == 57:  # Maximum DHCP Message Size
+                flow.udps.dhcp_57 = int.from_bytes(opt[1], "big")
+            elif opt[0] == 55:  # parameter request list (aka fingerprint)
+                opt55 = ','.join(str(i) for i in opt[1])
+            elif opt[0] == 50:  # requested ip
+                opt50 = ipaddress.ip_address(int.from_bytes(opt[1], "big"))
+            options.append(opt[0])
+
+        return msg_type, options, opt50, opt55
+
     def on_update(self, packet, flow):
         if flow.dst_port == 67:
             try:
@@ -67,35 +95,13 @@ class DHCP(NFPlugin):
             except (dpkt.NeedData, dpkt.UnpackError):
                 return
 
-            msg_type = 0
-            options = []
-            opt50 = None
-            opt55 = None
-
-            for opt in dhcp.opts:
-                if opt[0] == 12:  # Hostname
-                    hostname = opt[1].decode('utf-8', errors='replace')
-                    if len(hostname) > 0:
-                        flow.udps.dhcp_12 = hostname
-                elif opt[0] == 53:  # Msg type
-                    msg_type = MsgType(int.from_bytes(opt[1], "big"))
-                elif opt[0] == 60:  # Vendor class identifier
-                    flow.udps.dhcp_60 = opt[1].decode('utf-8')
-                elif opt[0] == 77:  # User class id
-                    flow.udps.dhcp_77 = opt[1].decode('utf-8')
-                elif opt[0] == 57:  # Maximum DHCP Message Size
-                    flow.udps.dhcp_57 = int.from_bytes(opt[1], "big")
-                elif opt[0] == 55:  # parameter request list (aka fingerprint)
-                    opt55 = ','.join(str(i) for i in opt[1])
-                elif opt[0] == 50:  # requested ip
-                    opt50 = ipaddress.ip_address(int.from_bytes(opt[1], "big"))
-                options.append(opt[0])
+            msg_type, options, opt50, opt55 = self._process_options(flow, dhcp)
 
             if msg_type == MsgType.REQUEST:
                 flow.udps.dhcp_options = options
                 flow.udps.dhcp_55 = opt55 if opt55 is not None else None
                 flow.udps.dhcp_50 = str(opt50) if opt50 is not None else None
-                if flow.src_ip == '0.0.0.0':
+                if flow.src_ip == str(ipaddress.ip_address(0)):
                     flow.expiration_id = -1
             if msg_type in [MsgType.ACK, MsgType.NACK, MsgType.INFORM, MsgType.DECLINE]:
                 flow.expiration_id = -1
