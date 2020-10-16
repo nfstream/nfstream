@@ -651,76 +651,118 @@ int parse_packet(const uint64_t time,
                         &payload, &payload_len, when, nf_pkt, n_roots, root_idx, mode);
 }
 
+
+/**
+ * dlt_null: null datatype processing
+ */
+void dlt_null(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, uint16_t *ip_offset) {
+  if (ntohl(*((uint32_t*)&packet[eth_offset])) == 2) (*type) = ETH_P_IP;
+  else (*type) = ETH_P_IPV6;
+  (*ip_offset) = 4 + eth_offset;
+}
+
+
+/**
+ * dlt_ppp_serial: cisco ppp processing
+ */
+void dlt_ppp_serial(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, uint16_t *ip_offset) {
+  const struct nfstream_chdlc *chdlc;
+  chdlc = (struct nfstream_chdlc *) &packet[eth_offset];
+  (*ip_offset) = sizeof(struct nfstream_chdlc); // CHDLC_OFF = 4
+  (*type) = ntohs(chdlc->proto_code);
+}
+
+
+/**
+ * dlt_en10mb: ethernet processing
+ */
+int dlt_en10mb(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, uint16_t *ip_offset, int *pyld_eth_len) {
+  const struct nfstream_ethhdr *ethernet;
+  const struct nfstream_llc_header_snap *llc;
+  int check = 0;
+  ethernet = (struct nfstream_ethhdr *) &packet[eth_offset];
+  (*ip_offset) = sizeof(struct nfstream_ethhdr) + eth_offset;
+  check = ntohs(ethernet->h_proto);
+  if (check <= 1500) (*pyld_eth_len) = check;
+  else if (check >= 1536) (*type) = check;
+
+  if ((*pyld_eth_len) != 0) {
+    llc = (struct nfstream_llc_header_snap *)(&packet[(*ip_offset)]);
+    // check for LLC layer with SNAP extension */
+    if (llc->dsap == SNAP || llc->ssap == SNAP) {
+      (*type) = llc->snap.proto_ID;
+      (*ip_offset) += + 8;
+    } else if (llc->dsap == BSTP || llc->ssap == BSTP) {
+      return 0;
+    }
+  }
+  return 1;
+}
+
+
+/**
+ * dlt_radiotap: radiotap link-layer processing
+ */
+int dlt_radiotap(const uint8_t *packet, const struct pcap_pkthdr *header, uint16_t eth_offset, uint16_t *type,
+                 uint16_t *ip_offset, uint16_t *radio_len, uint16_t *fc, int *wifi_len) {
+  const struct nfstream_radiotap_header *radiotap;
+  const struct nfstream_wifi_header *wifi;
+  const struct nfstream_llc_header_snap *llc;
+  radiotap = (struct nfstream_radiotap_header *) &packet[eth_offset];
+  (*radio_len) = radiotap->len;
+  if ((radiotap->flags & BAD_FCS) == BAD_FCS) return 0;
+  if (header->caplen < (eth_offset + (*radio_len) + sizeof(struct nfstream_wifi_header))) return 0;
+  // Calculate 802.11 header length (variable)
+  wifi = (struct nfstream_wifi_header*)( packet + eth_offset + (*radio_len));
+  (*fc) = wifi->fc;
+  // Check wifi data presence
+  if (FCF_TYPE((*fc)) == WIFI_DATA) {
+    if ((FCF_TO_DS((*fc)) && FCF_FROM_DS((*fc)) == 0x0) || (FCF_TO_DS((*fc)) == 0x0 && FCF_FROM_DS((*fc)))) (*wifi_len) = 26; // +4 byte fcs
+  } else return 1;
+  // Check ether_type from LLC
+  if (header->caplen < (eth_offset + (*wifi_len) + (*radio_len) + sizeof(struct nfstream_llc_header_snap))) return 0;
+  llc = (struct nfstream_llc_header_snap*)(packet + eth_offset + (*wifi_len) + (*radio_len));
+  if (llc->dsap == SNAP) (*type) = ntohs(llc->snap.proto_ID);
+  (*ip_offset) = (*wifi_len) + (*radio_len) + sizeof(struct nfstream_llc_header_snap) + eth_offset; // Set IP header offset
+  return 1;
+}
+
+
+/**
+ * dlt_linux_ssl: linux cooked capture processing
+ */
+void dlt_linux_ssl(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, uint16_t *ip_offset) {
+  (*type) = (packet[eth_offset+14] << 8) + packet[eth_offset+15];
+  (*ip_offset) = 16 + eth_offset;
+}
+
+
 /**
  * datalink_checker: compute offsets based on datalink type.
  */
 int datalink_checker(const struct pcap_pkthdr *header, const uint8_t *packet, uint16_t eth_offset, uint16_t *type,
                      int datalink_type, uint16_t *ip_offset, int *pyld_eth_len, uint16_t *radio_len, uint16_t *fc,
                      int *wifi_len) {
-  const struct nfstream_chdlc *chdlc;
-  const struct nfstream_ethhdr *ethernet;
-  const struct nfstream_llc_header_snap *llc;
-  const struct nfstream_radiotap_header *radiotap;
-  const struct nfstream_wifi_header *wifi;
-  int check = 0;
-
   if (header->caplen < eth_offset + 40) return 0;
   switch(datalink_type) {
   case DLT_NULL:
-    if (ntohl(*((uint32_t*)&packet[eth_offset])) == 2) (*type) = ETH_P_IP;
-    else (*type) = ETH_P_IPV6;
-    (*ip_offset) = 4 + eth_offset;
+    dlt_null(packet, eth_offset, type, ip_offset);
     break;
   case DLT_PPP_SERIAL: // Cisco PPP in HDLC-like framing: 50
-    chdlc = (struct nfstream_chdlc *) &packet[eth_offset];
-    (*ip_offset) = sizeof(struct nfstream_chdlc); // CHDLC_OFF = 4
-    (*type) = ntohs(chdlc->proto_code);
+    dlt_ppp_serial(packet, eth_offset, type, ip_offset);
     break;
   case DLT_C_HDLC:
   case DLT_PPP: // Cisco PPP: 9 or 104
-    chdlc = (struct nfstream_chdlc *) &packet[eth_offset];
-    (*ip_offset) = sizeof(struct nfstream_chdlc); // CHDLC_OFF = 4
-    (*type) = ntohs(chdlc->proto_code);
+    dlt_ppp_serial(packet, eth_offset, type, ip_offset);
     break;
   case DLT_EN10MB: // IEEE 802.3 Ethernet: 1
-    ethernet = (struct nfstream_ethhdr *) &packet[eth_offset];
-    (*ip_offset) = sizeof(struct nfstream_ethhdr) + eth_offset;
-    check = ntohs(ethernet->h_proto);
-    if (check <= 1500) (*pyld_eth_len) = check;
-    else if (check >= 1536) (*type) = check;
-
-    if ((*pyld_eth_len) != 0) {
-      llc = (struct nfstream_llc_header_snap *)(&packet[(*ip_offset)]);
-      // check for LLC layer with SNAP extension */
-      if (llc->dsap == SNAP || llc->ssap == SNAP) {
-        (*type) = llc->snap.proto_ID;
-        (*ip_offset) += + 8;
-      } else if (llc->dsap == BSTP || llc->ssap == BSTP) {
-        return 0;
-      }
-    }
+    if (!dlt_en10mb(packet, eth_offset, type, ip_offset, pyld_eth_len)) return 0;
     break;
   case DLT_LINUX_SLL: // Linux Cooked Capture: 113
-    (*type) = (packet[eth_offset+14] << 8) + packet[eth_offset+15];
-    (*ip_offset) = 16 + eth_offset;
+    dlt_linux_ssl(packet, eth_offset, type, ip_offset);
     break;
   case DLT_IEEE802_11_RADIO: // Radiotap link-layer: 127
-    radiotap = (struct nfstream_radiotap_header *) &packet[eth_offset];
-    (*radio_len) = radiotap->len;
-    if ((radiotap->flags & BAD_FCS) == BAD_FCS) return 0;
-    if (header->caplen < (eth_offset + (*radio_len) + sizeof(struct nfstream_wifi_header))) return 0;
-    // Calculate 802.11 header length (variable)
-    wifi = (struct nfstream_wifi_header*)( packet + eth_offset + (*radio_len));
-    (*fc) = wifi->fc;
-    // Check wifi data presence
-    if (FCF_TYPE((*fc)) == WIFI_DATA) {
-      if ((FCF_TO_DS((*fc)) && FCF_FROM_DS((*fc)) == 0x0) || (FCF_TO_DS((*fc)) == 0x0 && FCF_FROM_DS((*fc)))) (*wifi_len) = 26; // +4 byte fcs
-    } else break;
-    // Check ether_type from LLC
-    if (header->caplen < (eth_offset + (*wifi_len) + (*radio_len) + sizeof(struct nfstream_llc_header_snap))) return 0;
-    llc = (struct nfstream_llc_header_snap*)(packet + eth_offset + (*wifi_len) + (*radio_len));
-    if (llc->dsap == SNAP) (*type) = ntohs(llc->snap.proto_ID);
-    (*ip_offset) = (*wifi_len) + (*radio_len) + sizeof(struct nfstream_llc_header_snap) + eth_offset; // Set IP header offset
+    if (!dlt_radiotap(packet, header, eth_offset, type, ip_offset, radio_len, fc, wifi_len)) return 0;
     break;
   case DLT_RAW:
     (*ip_offset) = eth_offset = 0;
