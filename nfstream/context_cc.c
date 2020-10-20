@@ -940,11 +940,11 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
   }
 
   if (decode_tunnels && (proto == IPPROTO_UDP)) { // Tunnel decoding if configured by the user.
+
     if (header->caplen < ip_offset + ip_len + sizeof(struct nfstream_udphdr)) return 0; // Too short for UDP header
     else {
       struct nfstream_udphdr *udp = (struct nfstream_udphdr *)&packet[ip_offset+ip_len];
       uint16_t sport = ntohs(udp->source), dport = ntohs(udp->dest);
-
       if ((sport == GTP_U_V1_PORT) || (dport == GTP_U_V1_PORT)) {
         // Check if it's GTPv1
         unsigned offset = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
@@ -1018,23 +1018,17 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
 	      if ((preamble & 0x0F) == 0) { // CAPWAP header
 	        uint16_t msg_len = (packet[offset+1] & 0xF8) >> 1;
 	        offset += msg_len;
-	          if ((offset + 32 < header->caplen) && (packet[offset] == 0x02)) {
-	            // IEEE 802.11 Data
-	            const struct nfstream_wifi_header *wifi_hdr;
-                wifi_hdr = (struct nfstream_wifi_header*)(packet + offset);
-                // Check wifi data presence
-                if (FCF_TYPE(wifi_hdr->fc) == WIFI_DATA) {
-                  if (!((FCF_TO_DS(wifi_hdr->fc) && FCF_FROM_DS(wifi_hdr->fc) == 0x0) ||
-                      (FCF_TO_DS(wifi_hdr->fc) == 0x0 && FCF_FROM_DS(wifi_hdr->fc)))) return 0;
-                }
-                fill_mac_wifi_strings(nf_pkt, wifi_hdr);
-	            offset += 24;
-	            // LLC header is 8 bytes
-	            type = ntohs((uint16_t)*((uint16_t*)&packet[offset+6]));
-	            ip_offset = offset + 8;
-	            tunnel_type = nfstream_capwap_tunnel;
-	            goto iph_check;
-	          }
+	        if (offset + 32 < header->caplen) {
+	          const struct nfstream_wifi_header *wifi_hdr;
+              wifi_hdr = (struct nfstream_wifi_header*)(packet + offset);
+              fill_mac_wifi_strings(nf_pkt, wifi_hdr);
+	          offset += 24;
+	          // LLC header is 8 bytes
+	          type = ntohs((uint16_t)*((uint16_t*)&packet[offset+6]));
+	          ip_offset = offset + 8;
+	          tunnel_type = nfstream_capwap_tunnel;
+	          goto iph_check;
+	        }
 	      }
 	    }
       }
