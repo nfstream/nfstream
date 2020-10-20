@@ -15,7 +15,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from collections import namedtuple
 from math import sqrt
-import ipaddress
 
 # When NFStream is extended with plugins, packer C structure is pythonized using the following namedtuple.
 nf_packet = namedtuple('NFPacket', ['time',
@@ -26,7 +25,11 @@ nf_packet = namedtuple('NFPacket', ['time',
                                     'transport_size',
                                     'payload_size',
                                     'src_ip',
+                                    'src_mac',
+                                    'src_oui',
                                     'dst_ip',
+                                    'dst_mac',
+                                    'dst_oui',
                                     'src_port',
                                     'dst_port',
                                     'protocol',
@@ -46,6 +49,7 @@ nf_packet = namedtuple('NFPacket', ['time',
 class UDPS(object):
     """ dummy class that add udps slot the flexibility required for extensions """
 
+
 def pythonize_packet(packet, ffi):
     """ convert a cdata packet to a namedtuple """
     return nf_packet(time=packet.time,
@@ -55,8 +59,12 @@ def pythonize_packet(packet, ffi):
                      ip_size=packet.ip_size,
                      transport_size=packet.transport_size,
                      payload_size=packet.payload_size,
-                     src_ip=ffi.string(packet.src_name).decode('utf-8', errors='ignore'),
-                     dst_ip=ffi.string(packet.dst_name).decode('utf-8', errors='ignore'),
+                     src_ip=ffi.string(packet.src_ip_str).decode('utf-8', errors='ignore'),
+                     src_mac=ffi.string(packet.src_mac).decode('utf-8', errors='ignore'),
+                     src_oui=ffi.string(packet.src_oui).decode('utf-8', errors='ignore'),
+                     dst_ip=ffi.string(packet.dst_ip_str).decode('utf-8', errors='ignore'),
+                     dst_mac=ffi.string(packet.dst_mac).decode('utf-8', errors='ignore'),
+                     dst_oui=ffi.string(packet.dst_oui).decode('utf-8', errors='ignore'),
                      src_port=packet.src_port,
                      dst_port=packet.dst_port,
                      protocol=packet.protocol,
@@ -86,10 +94,12 @@ class NFlow(object):
     __slots__ = ('id',
                  'expiration_id',
                  'src_ip',
-                 'src_ip_is_private',
+                 'src_mac',
+                 'src_oui',
                  'src_port',
                  'dst_ip',
-                 'dst_ip_is_private',
+                 'dst_mac',
+                 'dst_oui',
                  'dst_port',
                  'protocol',
                  'ip_version',
@@ -180,10 +190,12 @@ class NFlow(object):
             raise OSError("Not enough memory for new flow creation.")
         # Here we go for the first copy in order to make defined slots available
         self.src_ip = ffi.string(self._C.src_ip).decode('utf-8', errors='ignore')
-        self.src_ip_is_private = int(ipaddress.ip_address(self.src_ip).is_private)
+        self.src_mac = ffi.string(self._C.src_mac).decode('utf-8', errors='ignore')
+        self.src_oui = ffi.string(self._C.src_oui).decode('utf-8', errors='ignore')
         self.src_port = self._C.src_port
         self.dst_ip = ffi.string(self._C.dst_ip).decode('utf-8', errors='ignore')
-        self.dst_ip_is_private = int(ipaddress.ip_address(self.dst_ip).is_private)
+        self.dst_mac = ffi.string(self._C.dst_mac).decode('utf-8', errors='ignore')
+        self.dst_oui = ffi.string(self._C.dst_oui).decode('utf-8', errors='ignore')
         self.dst_port = self._C.dst_port
         self.protocol = self._C.protocol
         self.ip_version = self._C.ip_version

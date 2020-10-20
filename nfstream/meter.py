@@ -60,8 +60,8 @@ def meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, n_dissectio
 
 def get_flow_key(packet, ffi):
     """ Create flow key from packet information (6-tuple) """
-    src_ip = ffi.string(packet.src_name).decode('utf-8', errors='ignore')
-    dst_ip = ffi.string(packet.dst_name).decode('utf-8', errors='ignore')
+    src_ip = ffi.string(packet.src_ip_str).decode('utf-8', errors='ignore')
+    dst_ip = ffi.string(packet.dst_ip_str).decode('utf-8', errors='ignore')
     return packet.protocol, packet.vlan_id, \
            min(src_ip, dst_ip), max(src_ip, dst_ip),\
            min(packet.src_port, packet.dst_port), max(packet.src_port, packet.dst_port)

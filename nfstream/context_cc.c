@@ -333,7 +333,7 @@ typedef struct nf_packet {
   uint16_t dst_port;
   uint8_t protocol;
   uint16_t vlan_id;
-  char src_name[48], dst_name[48];
+  char src_ip_str[48], dst_ip_str[48], src_mac[18], src_oui[9], dst_mac[18], dst_oui[9];
   uint8_t ip_version;
   uint16_t fin:1, syn:1, rst:1, psh:1, ack:1, urg:1, ece:1, cwr:1; // TCP Flags
   uint16_t raw_size;
@@ -487,13 +487,13 @@ void fill_nf_packet_info(struct nf_packet *nf_pkt, uint16_t *sport, uint16_t *dp
   nf_pkt->delta_time = 0; // This will be filled by meter.
 
   if (version == IPVERSION) {
-	inet_ntop(AF_INET, &iph->saddr, nf_pkt->src_name, sizeof(nf_pkt->src_name));
-	inet_ntop(AF_INET, &iph->daddr, nf_pkt->dst_name, sizeof(nf_pkt->dst_name));
+	inet_ntop(AF_INET, &iph->saddr, nf_pkt->src_ip_str, sizeof(nf_pkt->src_ip_str));
+	inet_ntop(AF_INET, &iph->daddr, nf_pkt->dst_ip_str, sizeof(nf_pkt->dst_ip_str));
 	nf_pkt->ip_size= ntohs(iph->tot_len);
 	nf_pkt->ip_content = (uint8_t *)iph;
   } else {
-	inet_ntop(AF_INET6, &iph6->ip6_src, nf_pkt->src_name, sizeof(nf_pkt->src_name));
-	inet_ntop(AF_INET6, &iph6->ip6_dst, nf_pkt->dst_name, sizeof(nf_pkt->dst_name));
+	inet_ntop(AF_INET6, &iph6->ip6_src, nf_pkt->src_ip_str, sizeof(nf_pkt->src_ip_str));
+	inet_ntop(AF_INET6, &iph6->ip6_dst, nf_pkt->dst_ip_str, sizeof(nf_pkt->dst_ip_str));
 	nf_pkt->ip_size = ntohs(iph->tot_len);
 	nf_pkt->ip_content = (uint8_t *)iph6;
   }
@@ -673,14 +673,60 @@ void dlt_ppp_serial(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, 
 }
 
 
+void fill_mac_ether_strings(struct nf_packet *nf_pkt, const struct nfstream_ethhdr * ether) {
+  snprintf(nf_pkt->src_mac,
+           sizeof(nf_pkt->src_mac),
+           "%02x:%02x:%02x:%02x:%02x:%02x",
+           ether->h_source[0], ether->h_source[1], ether->h_source[2],
+           ether->h_source[3], ether->h_source[4], ether->h_source[5]);
+  snprintf(nf_pkt->dst_mac,
+           sizeof(nf_pkt->dst_mac),
+           "%02x:%02x:%02x:%02x:%02x:%02x",
+           ether->h_dest[0], ether->h_dest[1], ether->h_dest[2],
+           ether->h_dest[3], ether->h_dest[4], ether->h_dest[5]);
+  snprintf(nf_pkt->src_oui,
+           sizeof(nf_pkt->src_oui),
+           "%02x:%02x:%02x",
+           ether->h_source[0], ether->h_source[1], ether->h_source[2]);
+  snprintf(nf_pkt->dst_oui,
+           sizeof(nf_pkt->dst_oui),
+           "%02x:%02x:%02x",
+           ether->h_dest[0], ether->h_dest[1], ether->h_dest[2]);
+}
+
+
+void fill_mac_wifi_strings(struct nf_packet *nf_pkt, const struct nfstream_wifi_header * wifi) {
+  snprintf(nf_pkt->src_mac,
+           sizeof(nf_pkt->src_mac),
+           "%02x:%02x:%02x:%02x:%02x:%02x",
+           wifi->trsm[0], wifi->trsm[1], wifi->trsm[2],
+           wifi->trsm[3], wifi->trsm[4], wifi->trsm[5]);
+  snprintf(nf_pkt->dst_mac,
+           sizeof(nf_pkt->dst_mac),
+           "%02x:%02x:%02x:%02x:%02x:%02x",
+           wifi->dest[0], wifi->dest[1], wifi->dest[2],
+           wifi->dest[3], wifi->dest[4], wifi->dest[5]);
+  snprintf(nf_pkt->src_oui,
+           sizeof(nf_pkt->src_oui),
+           "%02x:%02x:%02x",
+           wifi->trsm[0], wifi->trsm[1], wifi->trsm[2]);
+  snprintf(nf_pkt->dst_oui,
+           sizeof(nf_pkt->dst_oui),
+           "%02x:%02x:%02x",
+           wifi->dest[0], wifi->dest[1], wifi->dest[2]);
+}
+
+
 /**
  * dlt_en10mb: ethernet processing
  */
-int dlt_en10mb(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, uint16_t *ip_offset, int *pyld_eth_len) {
+int dlt_en10mb(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, uint16_t *ip_offset,
+               int *pyld_eth_len, struct nf_packet *nf_pkt) {
   const struct nfstream_ethhdr *ethernet;
   const struct nfstream_llc_header_snap *llc;
   int check = 0;
   ethernet = (struct nfstream_ethhdr *) &packet[eth_offset];
+  fill_mac_ether_strings(nf_pkt, ethernet);
   (*ip_offset) = sizeof(struct nfstream_ethhdr) + eth_offset;
   check = ntohs(ethernet->h_proto);
   if (check <= 1500) (*pyld_eth_len) = check;
@@ -704,7 +750,7 @@ int dlt_en10mb(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, uint1
  * dlt_radiotap: radiotap link-layer processing
  */
 int dlt_radiotap(const uint8_t *packet, const struct pcap_pkthdr *header, uint16_t eth_offset, uint16_t *type,
-                 uint16_t *ip_offset, uint16_t *radio_len, uint16_t *fc, int *wifi_len) {
+                 uint16_t *ip_offset, uint16_t *radio_len, uint16_t *fc, int *wifi_len, struct nf_packet *nf_pkt) {
   const struct nfstream_radiotap_header *radiotap;
   const struct nfstream_wifi_header *wifi;
   const struct nfstream_llc_header_snap *llc;
@@ -719,6 +765,7 @@ int dlt_radiotap(const uint8_t *packet, const struct pcap_pkthdr *header, uint16
   if (FCF_TYPE((*fc)) == WIFI_DATA) {
     if ((FCF_TO_DS((*fc)) && FCF_FROM_DS((*fc)) == 0x0) || (FCF_TO_DS((*fc)) == 0x0 && FCF_FROM_DS((*fc)))) (*wifi_len) = 26; // +4 byte fcs
   } else return 1;
+  fill_mac_wifi_strings(nf_pkt, wifi);
   // Check ether_type from LLC
   if (header->caplen < (eth_offset + (*wifi_len) + (*radio_len) + sizeof(struct nfstream_llc_header_snap))) return 0;
   llc = (struct nfstream_llc_header_snap*)(packet + eth_offset + (*wifi_len) + (*radio_len));
@@ -742,7 +789,7 @@ void dlt_linux_ssl(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, u
  */
 int datalink_checker(const struct pcap_pkthdr *header, const uint8_t *packet, uint16_t eth_offset, uint16_t *type,
                      int datalink_type, uint16_t *ip_offset, int *pyld_eth_len, uint16_t *radio_len, uint16_t *fc,
-                     int *wifi_len) {
+                     int *wifi_len, struct nf_packet *nf_pkt) {
   if (header->caplen < eth_offset + 40) return 0;
   switch(datalink_type) {
   case DLT_NULL:
@@ -756,13 +803,13 @@ int datalink_checker(const struct pcap_pkthdr *header, const uint8_t *packet, ui
     dlt_ppp_serial(packet, eth_offset, type, ip_offset);
     break;
   case DLT_EN10MB: // IEEE 802.3 Ethernet: 1
-    if (!dlt_en10mb(packet, eth_offset, type, ip_offset, pyld_eth_len)) return 0;
+    if (!dlt_en10mb(packet, eth_offset, type, ip_offset, pyld_eth_len, nf_pkt)) return 0;
     break;
   case DLT_LINUX_SLL: // Linux Cooked Capture: 113
     dlt_linux_ssl(packet, eth_offset, type, ip_offset);
     break;
   case DLT_IEEE802_11_RADIO: // Radiotap link-layer: 127
-    if (!dlt_radiotap(packet, header, eth_offset, type, ip_offset, radio_len, fc, wifi_len)) return 0;
+    if (!dlt_radiotap(packet, header, eth_offset, type, ip_offset, radio_len, fc, wifi_len, nf_pkt)) return 0;
     break;
   case DLT_RAW:
     (*ip_offset) = eth_offset = 0;
@@ -839,7 +886,8 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
   datalink_type = (int)pcap_datalink(pcap_handle);
 
  datalink_check:
-   if (!datalink_checker(header, packet, eth_offset, &type, datalink_type, &ip_offset, &pyld_eth_len, &radio_len, &fc, &wifi_len)) return 0;
+   if (!datalink_checker(header, packet, eth_offset, &type, datalink_type, &ip_offset, &pyld_eth_len, &radio_len, &fc,
+                         &wifi_len, nf_pkt)) return 0;
 
  ether_type_check:
   recheck_type = 0;
@@ -972,6 +1020,14 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
 	        offset += msg_len;
 	          if ((offset + 32 < header->caplen) && (packet[offset] == 0x02)) {
 	            // IEEE 802.11 Data
+	            const struct nfstream_wifi_header *wifi_hdr;
+                wifi_hdr = (struct nfstream_wifi_header*)(packet + offset);
+                // Check wifi data presence
+                if (FCF_TYPE(wifi_hdr->fc) == WIFI_DATA) {
+                  if (!((FCF_TO_DS(wifi_hdr->fc) && FCF_FROM_DS(wifi_hdr->fc) == 0x0) ||
+                      (FCF_TO_DS(wifi_hdr->fc) == 0x0 && FCF_FROM_DS(wifi_hdr->fc)))) return 0;
+                }
+                fill_mac_wifi_strings(nf_pkt, wifi_hdr);
 	            offset += 24;
 	            // LLC header is 8 bytes
 	            type = ntohs((uint16_t)*((uint16_t*)&packet[offset+6]));
@@ -1251,9 +1307,9 @@ void dissector_cleanup(struct ndpi_detection_module_struct *dissector) {
 
 // Flow main structure.
 typedef struct nf_flow {
-  char src_ip[48];
+  char src_ip[48], src_mac[18], src_oui[9];
   uint16_t src_port;
-  char dst_ip[48];
+  char dst_ip[48], dst_mac[18], dst_oui[9];
   uint16_t dst_port;
   uint8_t protocol;
   uint8_t ip_version;
@@ -1504,9 +1560,13 @@ struct nf_flow *meter_initialize_flow(struct nf_packet *packet, uint8_t accounti
   flow->bidirectional_last_seen_ms = packet->time;
   flow->src2dst_first_seen_ms = packet->time;
   flow->src2dst_last_seen_ms = packet->time;
-  memcpy(flow->src_ip, packet->src_name, 48);
+  memcpy(flow->src_ip, packet->src_ip_str, 48);
+  memcpy(flow->src_mac, packet->src_mac, 18);
+  memcpy(flow->src_oui, packet->src_oui, 9);
   flow->src_port = packet->src_port;
-  memcpy(flow->dst_ip, packet->dst_name, 48);
+  memcpy(flow->dst_ip, packet->dst_ip_str, 48);
+  memcpy(flow->dst_mac, packet->dst_mac, 18);
+  memcpy(flow->dst_oui, packet->dst_oui, 9);
   flow->dst_port = packet->dst_port;
   flow->protocol = packet->protocol;
   flow->ip_version = packet->ip_version;
@@ -1588,7 +1648,7 @@ uint8_t meter_update_flow(struct nf_flow *flow, struct nf_packet *packet, uint64
     packet->direction = 1;
   // Then IPs
   } else {
-    if ((memcmp(flow->src_ip, packet->src_name, 48) != 0) || (memcmp(flow->dst_ip, packet->dst_name, 48) != 0)) {
+    if ((memcmp(flow->src_ip, packet->src_ip_str, 48) != 0) || (memcmp(flow->dst_ip, packet->dst_ip_str, 48) != 0)) {
       packet->direction = 1;
     }
   }

@@ -33,7 +33,7 @@ typedef struct nf_packet {
   uint16_t dst_port;
   uint8_t protocol;
   uint16_t vlan_id;
-  char src_name[48], dst_name[48];
+  char src_ip_str[48], dst_ip_str[48], src_mac[18], src_oui[9], dst_mac[18], dst_oui[9];
   uint8_t ip_version;
   uint16_t fin:1, syn:1, rst:1, psh:1, ack:1, urg:1, ece:1, cwr:1; /* TCP Flags */
   uint16_t raw_size;
@@ -1085,9 +1085,9 @@ uint32_t flow_udp_size;
 
 cc_meter_headers = """
 typedef struct nf_flow {
-  char src_ip[48];
+  char src_ip[48], src_mac[18], src_oui[9];
   uint16_t src_port;
-  char dst_ip[48];
+  char dst_ip[48], dst_mac[18], dst_oui[9];
   uint16_t dst_port;
   uint8_t protocol;
   uint8_t ip_version;
