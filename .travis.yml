@@ -125,7 +125,4 @@ script:
 
 after_success:
   - python3 -m codecov
-  - |
-    if [ "${TRAVIS_PULL_REQUEST}" = "false" ] && [ ! -z "$TRAVIS_TAG" ]; then
-      python3 -m twine upload --skip-existing dist/*.whl
-    fi
+  - python3 -m twine upload --skip-existing dist/*.whl
