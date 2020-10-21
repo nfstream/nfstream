@@ -108,7 +108,7 @@ setup(
     long_description_content_type='text/markdown',
     author='Zied Aouini',
     author_email='aouinizied@gmail.com',
-    packages=['nfstream'],
+    packages=['nfstream', 'nfstream.plugins'],
     install_requires=install_requires,
     cmdclass=cmdclass,
     setup_requires=pytest_runner,
