@@ -279,8 +279,12 @@ class TestMethods(unittest.TestCase):
             self.assertEqual(flow.id, 0)
             self.assertEqual(flow.expiration_id, 0)
             self.assertEqual(flow.src_ip, '172.31.3.224')
+            self.assertEqual(flow.src_mac, '80:c6:ca:00:9e:9f')
+            self.assertEqual(flow.src_oui, '80:c6:ca')
             self.assertEqual(flow.src_port, 42835)
             self.assertEqual(flow.dst_ip, '216.58.212.100')
+            self.assertEqual(flow.dst_mac, '00:0e:8e:4d:b4:a8')
+            self.assertEqual(flow.dst_oui, '00:0e:8e')
             self.assertEqual(flow.dst_port, 443)
             self.assertEqual(flow.protocol, 6)
             self.assertEqual(flow.ip_version, 4)
@@ -472,6 +476,7 @@ class TestMethods(unittest.TestCase):
                              n_meters=int(os.getenv('MAX_NFMETERS', 0)),
                              udps=MDNS()
                              ).to_pandas().sort_values(by=['src_ip']).reset_index(drop=True)
+        print(mdns_df["udps.mdns_ptr"][0])
         self.assertEqual(mdns_df["udps.mdns_ptr"][0], "['skynet.local', "
                                                       "'skynet [00:1a:ef:17:c3:05]._workstation._tcp.local', "
                                                       "'recombinator_mpd._mpd._tcp.local', '_mpd._tcp.local', "

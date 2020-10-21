@@ -40,8 +40,8 @@ class NFStreamer(object):
                  bpf_filter=None,
                  promiscuous_mode=True,
                  snapshot_length=1536,
-                 idle_timeout=60,
-                 active_timeout=300,
+                 idle_timeout=120, # https://www.kernel.org/doc/Documentation/networking/nf_conntrack-sysctl.txt
+                 active_timeout=1800,
                  accounting_mode=0,
                  udps=None,
                  n_dissections=20,

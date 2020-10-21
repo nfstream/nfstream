@@ -129,7 +129,7 @@ my_streamer = NFStreamer(source="facebook.pcap", # or network interface
                          bpf_filter=None,
                          promiscuous_mode=True,
                          snapshot_length=1536,
-                         idle_timeout=15,
+                         idle_timeout=120,
                          active_timeout=1800,
                          accounting_mode=0,
                          udps=None,
@@ -149,10 +149,12 @@ for flow in my_streamer:
 NFlow(id=0,
       expiration_id=0,
       src_ip='192.168.43.18',
-      src_ip_is_private=1,
+      src_mac='30:52:cb:6c:9c:1b',
+      src_oui='30:52:cb',
       src_port=52066,
       dst_ip='66.220.156.68',
-      dst_ip_is_private=0,
+      dst_mac='98:0c:82:d3:3c:7c',
+      dst_oui='98:0c:82',
       dst_port=443,
       protocol=6,
       ip_version=4,
@@ -203,10 +205,12 @@ for flow in my_streamer:
 NFlow(id=0,
       expiration_id=0,
       src_ip='192.168.43.18',
-      src_ip_is_private=1,
+      src_mac='30:52:cb:6c:9c:1b',
+      src_oui='30:52:cb',
       src_port=52066,
       dst_ip='66.220.156.68',
-      dst_ip_is_private=0,
+      dst_mac='98:0c:82:d3:3c:7c',
+      dst_oui='98:0c:82',
       dst_port=443,
       protocol=6,
       ip_version=4,
@@ -298,10 +302,12 @@ for flow in my_streamer:
 NFlow(id=0,
       expiration_id=0,
       src_ip='192.168.43.18',
-      src_ip_is_private=1,
+      src_mac='30:52:cb:6c:9c:1b',
+      src_oui='30:52:cb',
       src_port=52066,
       dst_ip='66.220.156.68',
-      dst_ip_is_private=0,
+      dst_mac='98:0c:82:d3:3c:7c',
+      dst_oui='98:0c:82',
       dst_port=443,
       protocol=6,
       ip_version=4,
@@ -334,7 +340,7 @@ NFStream natively supports Pandas as export interface.
 ```python
 # See documentation for more details.
 # https://www.nfstream.org/docs/api#pandas-dataframe-conversion
-my_dataframe = NFStreamer(source='facebook.pcap').to_pandas(ip_anonymization=False)
+my_dataframe = NFStreamer(source='facebook.pcap').to_pandas(columns_to_anonymize=[])
 my_dataframe.head(5)
 ```
 
@@ -347,7 +353,7 @@ NFStream natively supports CSV file format as export interface.
 # https://www.nfstream.org/docs/api#csv-file-conversion
 flows_count = NFStreamer(source='facebook.pcap').to_csv(path=None,
                                                         flows_per_file=0,
-                                                        ip_anonymization=False)
+                                                        olumns_to_anonymize=[])
 ```
 
 ### Extending NFStream
