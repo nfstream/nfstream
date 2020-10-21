@@ -41,6 +41,6 @@ class NFAnonymizer(object):
                 setattr(flow, col_name, blake2b(getattr(flow, col_name).encode(),
                                                 digest_size=64,
                                                 key=self._secret).hexdigest())
-                return flow.values()
+            return flow.values()
         else:
             return flow.values()

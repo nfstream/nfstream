@@ -353,7 +353,7 @@ NFStream natively supports CSV file format as export interface.
 # https://www.nfstream.org/docs/api#csv-file-conversion
 flows_count = NFStreamer(source='facebook.pcap').to_csv(path=None,
                                                         flows_per_file=0,
-                                                        olumns_to_anonymize=[])
+                                                        columns_to_anonymize=[])
 ```
 
 ### Extending NFStream
