@@ -673,6 +673,22 @@ void dlt_ppp_serial(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, 
 }
 
 
+/**
+ * dlt_ppp: ppp processing
+ */
+void dlt_ppp(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, uint16_t *ip_offset) {
+  const struct nfstream_chdlc *chdlc;
+  if(packet[0] == 0x0f || packet[0] == 0x8f) {
+    chdlc = (struct nfstream_chdlc *) &packet[eth_offset];
+    (*ip_offset) = sizeof(struct ndpi_chdlc); /* CHDLC_OFF = 4 */
+    (*type) = ntohs(chdlc->proto_code);
+  } else {
+    (*ip_offset) = 2;
+    (*type) = ntohs(*((u_int16_t*)&packet[eth_offset]));
+  }
+}
+
+
 void fill_mac_ether_strings(struct nf_packet *nf_pkt, const struct nfstream_ethhdr * ether) {
   snprintf(nf_pkt->src_mac,
            sizeof(nf_pkt->src_mac),
@@ -800,7 +816,7 @@ int datalink_checker(const struct pcap_pkthdr *header, const uint8_t *packet, ui
     break;
   case DLT_C_HDLC:
   case DLT_PPP: // Cisco PPP: 9 or 104
-    dlt_ppp_serial(packet, eth_offset, type, ip_offset);
+    dlt_ppp(packet, eth_offset, type, ip_offset);
     break;
   case DLT_EN10MB: // IEEE 802.3 Ethernet: 1
     if (!dlt_en10mb(packet, eth_offset, type, ip_offset, pyld_eth_len, nf_pkt)) return 0;

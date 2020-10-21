@@ -105,7 +105,7 @@ install:
   - sudo make install
   - cd ..
   - rm -rf libpcap
-  - git clone --branch capwap-fix https://github.com/aouinizied/nDPI.git
+  - git clone --branch dev https://github.com/ntop/nDPI.git
   - cd nDPI
   - ./autogen.sh
   - ./configure

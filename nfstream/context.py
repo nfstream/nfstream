@@ -139,7 +139,7 @@ typedef enum {
   NDPI_TLS_OBSOLETE_VERSION,
   NDPI_TLS_WEAK_CIPHER,
   NDPI_TLS_CERTIFICATE_EXPIRED,
-  NDPI_TLS_CERTIFICATE_MISMATCH,
+  NDPI_TLS_CERTIFICATE_MISMATCH, /* 10 */
   NDPI_HTTP_SUSPICIOUS_USER_AGENT,
   NDPI_HTTP_NUMERIC_IP_HOST,
   NDPI_HTTP_SUSPICIOUS_URL,
@@ -149,9 +149,11 @@ typedef enum {
   NDPI_MALFORMED_PACKET,
   NDPI_SSH_OBSOLETE_CLIENT_VERSION_OR_CIPHER,
   NDPI_SSH_OBSOLETE_SERVER_VERSION_OR_CIPHER,
-  NDPI_SMB_INSECURE_VERSION,
+  NDPI_SMB_INSECURE_VERSION, /* 20 */
   NDPI_TLS_SUSPICIOUS_ESNI_USAGE,
   NDPI_UNSAFE_PROTOCOL,
+  NDPI_DNS_SUSPICIOUS_TRAFFIC,
+  NDPI_TLS_MISSING_SNI,
   /* Leave this as last member */
   NDPI_MAX_RISK /* must be <= 31 due to (**) */
 } ndpi_risk_enum;
@@ -595,6 +597,7 @@ struct ndpi_detection_module_struct;
 struct ndpi_flow_struct;
 
 struct ndpi_call_function_struct {
+  uint16_t ndpi_protocol_id;
   NDPI_PROTOCOL_BITMASK detection_bitmask;
   NDPI_PROTOCOL_BITMASK excluded_protocol_bitmask;
   uint32_t ndpi_selection_bitmask;
@@ -847,7 +850,7 @@ struct ndpi_flow_struct {
   uint16_t protocol_stack_info;
   /* init parameter, internal used to set up timestamp,... */
   uint16_t guessed_protocol_id, guessed_host_protocol_id, guessed_category, guessed_header_category;
-  uint8_t l4_proto, protocol_id_already_guessed:1, host_already_guessed:1,
+  uint8_t l4_proto, protocol_id_already_guessed:1, host_already_guessed:1, fail_with_unknown:1,
     init_finished:1, setup_packet_direction:1, packet_direction:1, check_extra_packets:1;
   /*
     if ndpi_struct->direction_detect_disable == 1
@@ -1009,9 +1012,6 @@ struct ndpi_flow_struct {
   /* NDPI_PROTOCOL_DIRECTCONNECT */
   uint8_t directconnect_stage:2;	      // 0 - 1
 
-  /* NDPI_PROTOCOL_YAHOO */
-  uint8_t sip_yahoo_voice:1;
-
   /* NDPI_PROTOCOL_HTTP */
   uint8_t http_detected:1;
 
@@ -1045,14 +1045,8 @@ struct ndpi_flow_struct {
   /* NDPI_PROTOCOL_RTMP */
   uint8_t rtmp_stage:2;
 
-  /* NDPI_PROTOCOL_PANDO */
-  uint8_t pando_stage:3;
-
   /* NDPI_PROTOCOL_STEAM */
   uint16_t steam_stage:3, steam_stage1:3, steam_stage2:2, steam_stage3:2;
-
-  /* NDPI_PROTOCOL_PPLIVE */
-  uint8_t pplive_stage1:3, pplive_stage2:2, pplive_stage3:2;
 
   /* NDPI_PROTOCOL_STARCRAFT */
   uint8_t starcraft_udp_stage : 3;	// 0-7

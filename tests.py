@@ -476,7 +476,6 @@ class TestMethods(unittest.TestCase):
                              n_meters=int(os.getenv('MAX_NFMETERS', 0)),
                              udps=MDNS()
                              ).to_pandas().sort_values(by=['src_ip']).reset_index(drop=True)
-        print(mdns_df["udps.mdns_ptr"][0])
         self.assertEqual(mdns_df["udps.mdns_ptr"][0], "['skynet.local', "
                                                       "'skynet [00:1a:ef:17:c3:05]._workstation._tcp.local', "
                                                       "'recombinator_mpd._mpd._tcp.local', '_mpd._tcp.local', "
