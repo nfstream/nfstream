@@ -6,6 +6,9 @@ matrix:
 
 pipeline:
   test:
+    platform:
+      os: linux
+      arch: arm64
     image: python:${PYTHON_VERSION}
     commands:
       - pip install -r requirements.txt
