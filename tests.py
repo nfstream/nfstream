@@ -418,8 +418,8 @@ class TestMethods(unittest.TestCase):
         print(".Test nDPI integration on {} applications:".format(len(files)))
         ok_files = []
         for test_file in files:
-            streamer_test = NFStreamer(source=test_file, n_dissections=20, n_meters=int(os.getenv('MAX_NFMETERS', 0)),
-                                       idle_timeout=31556952, active_timeout=31556952)
+            streamer_test = NFStreamer(source=test_file, n_dissections=20, n_meters=1,
+                                       idle_timeout=30000, active_timeout=31556952)
             test_case_name = test_file.split('/')[-1]
             result = {}
             for flow in streamer_test:
