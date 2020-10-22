@@ -6,7 +6,7 @@ platform:
   arch: arm64
 
 steps:
-- name: prerequisites-build
+- name: build
   image: python:3.6
   commands:
   - apt-get update
@@ -43,6 +43,8 @@ steps:
   - make install
   - cd ..
   - rm -rf nDPI
+  - pip install wheel twine setuptools codecov
+  - pip install -r requirements.txt
 
 ---
 kind: pipeline
@@ -52,7 +54,7 @@ platform:
   arch: arm64
 
 steps:
-- name: prerequisites-build
+- name: build
   image: python:3.7
   commands:
   - apt-get update
@@ -89,6 +91,9 @@ steps:
   - make install
   - cd ..
   - rm -rf nDPI
+  - pip install wheel twine setuptools codecov
+  - pip install -r requirements.txt
+
 ---
 kind: pipeline
 name: py38-on-arm64
@@ -97,7 +102,7 @@ platform:
   arch: arm64
 
 steps:
-- name: prerequisites-build
+- name: build
   image: python:3.8
   commands:
   - apt-get update
@@ -134,6 +139,9 @@ steps:
   - make install
   - cd ..
   - rm -rf nDPI
+  - pip install wheel twine setuptools codecov
+  - pip install -r requirements.txt
+
 ---
 kind: pipeline
 name: py39-on-arm64
@@ -142,7 +150,7 @@ platform:
   arch: arm64
 
 steps:
-- name: prerequisites-build
+- name: build
   image: python:3.9
   commands:
   - apt-get update
@@ -179,6 +187,8 @@ steps:
   - make install
   - cd ..
   - rm -rf nDPI
+  - pip install wheel twine setuptools codecov
+  - pip install -r requirements.txt
 
 ---
 kind: pipeline
@@ -188,7 +198,7 @@ platform:
   arch: arm
 
 steps:
-- name: prerequisites-build
+- name: build
   image: python:3.6
   commands:
   - apt-get update
@@ -225,6 +235,8 @@ steps:
   - make install
   - cd ..
   - rm -rf nDPI
+  - pip install wheel twine setuptools codecov
+  - pip install -r requirements.txt
 
 ---
 kind: pipeline
@@ -234,7 +246,7 @@ platform:
   arch: arm
 
 steps:
-- name: prerequisites-build
+- name: build
   image: python:3.7
   commands:
   - apt-get update
@@ -271,6 +283,9 @@ steps:
   - make install
   - cd ..
   - rm -rf nDPI
+  - pip install wheel twine setuptools codecov
+  - pip install -r requirements.txt
+
 ---
 kind: pipeline
 name: py38-on-arm32
@@ -279,7 +294,7 @@ platform:
   arch: arm
 
 steps:
-- name: prerequisites-build
+- name: build
   image: python:3.8
   commands:
   - apt-get update
@@ -316,6 +331,9 @@ steps:
   - make install
   - cd ..
   - rm -rf nDPI
+  - pip install wheel twine setuptools codecov
+  - pip install -r requirements.txt
+
 ---
 kind: pipeline
 name: py39-on-arm32
@@ -324,7 +342,7 @@ platform:
   arch: arm
 
 steps:
-- name: prerequisites-build
+- name: build
   image: python:3.9
   commands:
   - apt-get update
@@ -361,3 +379,5 @@ steps:
   - make install
   - cd ..
   - rm -rf nDPI
+  - pip install wheel twine setuptools codecov
+  - pip install -r requirements.txt
