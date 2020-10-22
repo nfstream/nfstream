@@ -12,6 +12,37 @@ steps:
   - apt-get update
   - apt-get -y install autogen autoconf automake libtool pkg-config libjson-c-dev gettext libusb-1.0-0-dev
   - apt-get -y install libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison libpcap-dev
+  - git clone --branch libgpg-error-1.39 https://github.com/gpg/libgpg-error
+  - cd libgpg-error
+  - ./autogen.sh
+  - ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc --disable-nls
+  - make
+  - make install
+  - cd ..
+  - rm -rf libgpg-error
+  - git clone --branch libgcrypt-1.8.6 https://github.com/gpg/libgcrypt
+  - cd libgcrypt
+  - ./autogen.sh
+  - ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc
+  - make
+  - make install
+  - cd ..
+  - rm -rf libgcrypt
+  - git clone --branch fanout https://github.com/tsnoam/libpcap
+  - cd libpcap
+  - ./configure --enable-ipv6 --disable-universal --enable-dbus=no --without-libnl
+  - make
+  - make install
+  - cd ..
+  - rm -rf libpcap
+  - git clone --branch dev https://github.com/ntop/nDPI.git
+  - cd nDPI
+  - ./autogen.sh
+  - ./configure
+  - make
+  - make install
+  - cd ..
+  - rm -rf nDPI
 
 ---
 kind: pipeline
@@ -27,6 +58,37 @@ steps:
   - apt-get update
   - apt-get -y install autogen autoconf automake libtool pkg-config libjson-c-dev gettext libusb-1.0-0-dev
   - apt-get -y install libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison libpcap-dev
+  - git clone --branch libgpg-error-1.39 https://github.com/gpg/libgpg-error
+  - cd libgpg-error
+  - ./autogen.sh
+  - ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc --disable-nls
+  - make
+  - make install
+  - cd ..
+  - rm -rf libgpg-error
+  - git clone --branch libgcrypt-1.8.6 https://github.com/gpg/libgcrypt
+  - cd libgcrypt
+  - ./autogen.sh
+  - ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc
+  - make
+  - make install
+  - cd ..
+  - rm -rf libgcrypt
+  - git clone --branch fanout https://github.com/tsnoam/libpcap
+  - cd libpcap
+  - ./configure --enable-ipv6 --disable-universal --enable-dbus=no --without-libnl
+  - make
+  - make install
+  - cd ..
+  - rm -rf libpcap
+  - git clone --branch dev https://github.com/ntop/nDPI.git
+  - cd nDPI
+  - ./autogen.sh
+  - ./configure
+  - make
+  - make install
+  - cd ..
+  - rm -rf nDPI
 ---
 kind: pipeline
 name: py38-on-arm64
@@ -41,6 +103,37 @@ steps:
   - apt-get update
   - apt-get -y install autogen autoconf automake libtool pkg-config libjson-c-dev gettext libusb-1.0-0-dev
   - apt-get -y install libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison libpcap-dev
+  - git clone --branch libgpg-error-1.39 https://github.com/gpg/libgpg-error
+  - cd libgpg-error
+  - ./autogen.sh
+  - ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc --disable-nls
+  - make
+  - make install
+  - cd ..
+  - rm -rf libgpg-error
+  - git clone --branch libgcrypt-1.8.6 https://github.com/gpg/libgcrypt
+  - cd libgcrypt
+  - ./autogen.sh
+  - ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc
+  - make
+  - make install
+  - cd ..
+  - rm -rf libgcrypt
+  - git clone --branch fanout https://github.com/tsnoam/libpcap
+  - cd libpcap
+  - ./configure --enable-ipv6 --disable-universal --enable-dbus=no --without-libnl
+  - make
+  - make install
+  - cd ..
+  - rm -rf libpcap
+  - git clone --branch dev https://github.com/ntop/nDPI.git
+  - cd nDPI
+  - ./autogen.sh
+  - ./configure
+  - make
+  - make install
+  - cd ..
+  - rm -rf nDPI
 ---
 kind: pipeline
 name: py39-on-arm64
@@ -55,6 +148,37 @@ steps:
   - apt-get update
   - apt-get -y install autogen autoconf automake libtool pkg-config libjson-c-dev gettext libusb-1.0-0-dev
   - apt-get -y install libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison libpcap-dev
+  - git clone --branch libgpg-error-1.39 https://github.com/gpg/libgpg-error
+  - cd libgpg-error
+  - ./autogen.sh
+  - ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc --disable-nls
+  - make
+  - make install
+  - cd ..
+  - rm -rf libgpg-error
+  - git clone --branch libgcrypt-1.8.6 https://github.com/gpg/libgcrypt
+  - cd libgcrypt
+  - ./autogen.sh
+  - ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc
+  - make
+  - make install
+  - cd ..
+  - rm -rf libgcrypt
+  - git clone --branch fanout https://github.com/tsnoam/libpcap
+  - cd libpcap
+  - ./configure --enable-ipv6 --disable-universal --enable-dbus=no --without-libnl
+  - make
+  - make install
+  - cd ..
+  - rm -rf libpcap
+  - git clone --branch dev https://github.com/ntop/nDPI.git
+  - cd nDPI
+  - ./autogen.sh
+  - ./configure
+  - make
+  - make install
+  - cd ..
+  - rm -rf nDPI
 
 ---
 kind: pipeline
@@ -70,6 +194,37 @@ steps:
   - apt-get update
   - apt-get -y install autogen autoconf automake libtool pkg-config libjson-c-dev gettext libusb-1.0-0-dev
   - apt-get -y install libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison libpcap-dev
+  - git clone --branch libgpg-error-1.39 https://github.com/gpg/libgpg-error
+  - cd libgpg-error
+  - ./autogen.sh
+  - ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc --disable-nls
+  - make
+  - make install
+  - cd ..
+  - rm -rf libgpg-error
+  - git clone --branch libgcrypt-1.8.6 https://github.com/gpg/libgcrypt
+  - cd libgcrypt
+  - ./autogen.sh
+  - ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc
+  - make
+  - make install
+  - cd ..
+  - rm -rf libgcrypt
+  - git clone --branch fanout https://github.com/tsnoam/libpcap
+  - cd libpcap
+  - ./configure --enable-ipv6 --disable-universal --enable-dbus=no --without-libnl
+  - make
+  - make install
+  - cd ..
+  - rm -rf libpcap
+  - git clone --branch dev https://github.com/ntop/nDPI.git
+  - cd nDPI
+  - ./autogen.sh
+  - ./configure
+  - make
+  - make install
+  - cd ..
+  - rm -rf nDPI
 
 ---
 kind: pipeline
@@ -85,6 +240,37 @@ steps:
   - apt-get update
   - apt-get -y install autogen autoconf automake libtool pkg-config libjson-c-dev gettext libusb-1.0-0-dev
   - apt-get -y install libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison libpcap-dev
+  - git clone --branch libgpg-error-1.39 https://github.com/gpg/libgpg-error
+  - cd libgpg-error
+  - ./autogen.sh
+  - ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc --disable-nls
+  - make
+  - make install
+  - cd ..
+  - rm -rf libgpg-error
+  - git clone --branch libgcrypt-1.8.6 https://github.com/gpg/libgcrypt
+  - cd libgcrypt
+  - ./autogen.sh
+  - ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc
+  - make
+  - make install
+  - cd ..
+  - rm -rf libgcrypt
+  - git clone --branch fanout https://github.com/tsnoam/libpcap
+  - cd libpcap
+  - ./configure --enable-ipv6 --disable-universal --enable-dbus=no --without-libnl
+  - make
+  - make install
+  - cd ..
+  - rm -rf libpcap
+  - git clone --branch dev https://github.com/ntop/nDPI.git
+  - cd nDPI
+  - ./autogen.sh
+  - ./configure
+  - make
+  - make install
+  - cd ..
+  - rm -rf nDPI
 ---
 kind: pipeline
 name: py38-on-arm32
@@ -99,6 +285,37 @@ steps:
   - apt-get update
   - apt-get -y install autogen autoconf automake libtool pkg-config libjson-c-dev gettext libusb-1.0-0-dev
   - apt-get -y install libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison libpcap-dev
+  - git clone --branch libgpg-error-1.39 https://github.com/gpg/libgpg-error
+  - cd libgpg-error
+  - ./autogen.sh
+  - ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc --disable-nls
+  - make
+  - make install
+  - cd ..
+  - rm -rf libgpg-error
+  - git clone --branch libgcrypt-1.8.6 https://github.com/gpg/libgcrypt
+  - cd libgcrypt
+  - ./autogen.sh
+  - ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc
+  - make
+  - make install
+  - cd ..
+  - rm -rf libgcrypt
+  - git clone --branch fanout https://github.com/tsnoam/libpcap
+  - cd libpcap
+  - ./configure --enable-ipv6 --disable-universal --enable-dbus=no --without-libnl
+  - make
+  - make install
+  - cd ..
+  - rm -rf libpcap
+  - git clone --branch dev https://github.com/ntop/nDPI.git
+  - cd nDPI
+  - ./autogen.sh
+  - ./configure
+  - make
+  - make install
+  - cd ..
+  - rm -rf nDPI
 ---
 kind: pipeline
 name: py39-on-arm32
@@ -113,3 +330,34 @@ steps:
   - apt-get update
   - apt-get -y install autogen autoconf automake libtool pkg-config libjson-c-dev gettext libusb-1.0-0-dev
   - apt-get -y install libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison libpcap-dev
+  - git clone --branch libgpg-error-1.39 https://github.com/gpg/libgpg-error
+  - cd libgpg-error
+  - ./autogen.sh
+  - ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc --disable-nls
+  - make
+  - make install
+  - cd ..
+  - rm -rf libgpg-error
+  - git clone --branch libgcrypt-1.8.6 https://github.com/gpg/libgcrypt
+  - cd libgcrypt
+  - ./autogen.sh
+  - ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc
+  - make
+  - make install
+  - cd ..
+  - rm -rf libgcrypt
+  - git clone --branch fanout https://github.com/tsnoam/libpcap
+  - cd libpcap
+  - ./configure --enable-ipv6 --disable-universal --enable-dbus=no --without-libnl
+  - make
+  - make install
+  - cd ..
+  - rm -rf libpcap
+  - git clone --branch dev https://github.com/ntop/nDPI.git
+  - cd nDPI
+  - ./autogen.sh
+  - ./configure
+  - make
+  - make install
+  - cd ..
+  - rm -rf nDPI
