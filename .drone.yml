@@ -61,7 +61,7 @@ kind: pipeline
 name: py36-on-arm32
 
 platform:
-  arch: arm32
+  arch: arm
 
 steps:
 - name: prerequisites-build
@@ -76,7 +76,7 @@ kind: pipeline
 name: py37-on-arm32
 
 platform:
-  arch: arm32
+  arch: arm
 
 steps:
 - name: prerequisites-build
@@ -90,7 +90,7 @@ kind: pipeline
 name: py38-on-arm32
 
 platform:
-  arch: arm32
+  arch: arm
 
 steps:
 - name: prerequisites-build
@@ -104,7 +104,7 @@ kind: pipeline
 name: py39-on-arm32
 
 platform:
-  arch: arm32
+  arch: arm
 
 steps:
 - name: prerequisites-build
