@@ -23,4 +23,3 @@ steps:
   image: python:3.7
   commands:
   - pip install -r requirements.txt
-...
