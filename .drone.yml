@@ -45,6 +45,8 @@ steps:
   - rm -rf nDPI
   - pip install wheel twine setuptools codecov
   - pip install -r requirements.txt
+  - python setup.py bdist_wheel
+  - ls dist/
 
 ---
 kind: pipeline
@@ -93,6 +95,8 @@ steps:
   - rm -rf nDPI
   - pip install wheel twine setuptools codecov
   - pip install -r requirements.txt
+  - python setup.py bdist_wheel
+  - ls dist/
 
 ---
 kind: pipeline
@@ -141,6 +145,8 @@ steps:
   - rm -rf nDPI
   - pip install wheel twine setuptools codecov
   - pip install -r requirements.txt
+  - python setup.py bdist_wheel
+  - ls dist/
 
 ---
 kind: pipeline
@@ -189,6 +195,8 @@ steps:
   - rm -rf nDPI
   - pip install wheel twine setuptools codecov
   - pip install -r requirements.txt
+  - python setup.py bdist_wheel
+  - ls dist/
 
 ---
 kind: pipeline
@@ -237,6 +245,8 @@ steps:
   - rm -rf nDPI
   - pip install wheel twine setuptools codecov
   - pip install -r requirements.txt
+  - python setup.py bdist_wheel
+  - ls dist/
 
 ---
 kind: pipeline
@@ -285,6 +295,8 @@ steps:
   - rm -rf nDPI
   - pip install wheel twine setuptools codecov
   - pip install -r requirements.txt
+  - python setup.py bdist_wheel
+  - ls dist/
 
 ---
 kind: pipeline
@@ -333,6 +345,8 @@ steps:
   - rm -rf nDPI
   - pip install wheel twine setuptools codecov
   - pip install -r requirements.txt
+  - python setup.py bdist_wheel
+  - ls dist/
 
 ---
 kind: pipeline
@@ -381,3 +395,5 @@ steps:
   - rm -rf nDPI
   - pip install wheel twine setuptools codecov
   - pip install -r requirements.txt
+  - python setup.py bdist_wheel
+  - ls dist/
