@@ -1,25 +1,22 @@
----
-kind: pipeline
-name: test-on-amd64
+local Pipeline(name, image, arch) = {
+  kind: "pipeline",
+  platform:
+    arch: arch
+  name: name,
+  steps: [
+    {
+      name: "test",
+      image: image,
+      commands: [
+        "pip install -r requirements.txt",
+        "pytest"
+      ]
+    }
+  ]
+};
 
-platform:
-  arch: amd64
-
-steps:
-- name: test
-  image: python:3.6
-  commands:
-  - pip install -r requirements.txt
-
----
-kind: pipeline
-name: test-on-arm64
-
-platform:
-  arch: arm64
-
-steps:
-- name: test
-  image: python:3.6
-  commands:
-  - pip install -r requirements.txt
+[
+  Pipeline("python-3-6-arm64", "python:3.6", "arm64"),
+  Pipeline("python-3-7-arm64", "python:3.7", "arm64"),
+  Pipeline("python-3-8-arm64", "python:3.8", "arm64"),
+]
