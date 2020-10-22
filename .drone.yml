@@ -1,14 +1,27 @@
-matrix:
-  PYTHON_VERSION:
-    - 3.6
-    - 3.7
-    - 3.8
+---
+kind: pipeline
+type: kubernetes
+name: python-3-6
+platform:
+  os: linux
+  arch: arm64
 
-pipeline:
-  test:
-    platform:
-      os: linux
-      arch: arm64
-    image: python:${PYTHON_VERSION}
-    commands:
-      - pip install -r requirements.txt
+steps:
+- name: test
+  image: python:3.6
+  commands:
+  - pip install -r requirements.txt
+
+---
+kind: pipeline
+type: kubernetes
+name: python-3-7
+platform:
+  os: linux
+  arch: arm64
+
+steps:
+- name: test
+  image: python:3.7
+  commands:
+  - pip install -r requirements.txt
