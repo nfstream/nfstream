@@ -42,5 +42,4 @@ class NFAnonymizer(object):
                                                 digest_size=64,
                                                 key=self._secret).hexdigest())
             return flow.values()
-        else:
-            return flow.values()
+        return flow.values()

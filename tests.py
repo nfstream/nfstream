@@ -392,6 +392,7 @@ class TestMethods(unittest.TestCase):
                                       statistical_analysis=True, n_meters=int(os.getenv('MAX_NFMETERS', 0)),
                                       n_dissections=20).to_csv()
         df_anon_from_csv = pd.read_csv('tests/steam.pcap.csv')
+        os.remove('tests/steam.pcap.csv')
         self.assertEqual(total_flows, total_flows_anon)
         self.assertEqual(total_flows, df_from_csv.shape[0])
         self.assertEqual(total_flows_anon, df_anon_from_csv.shape[0])
