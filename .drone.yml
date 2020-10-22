@@ -55,3 +55,61 @@ steps:
   - apt-get update
   - apt-get -y install autogen autoconf automake libtool pkg-config libjson-c-dev gettext libusb-1.0-0-dev
   - apt-get -y install libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison libpcap-dev
+
+---
+kind: pipeline
+name: py36-on-arm32
+
+platform:
+  arch: arm32
+
+steps:
+- name: prerequisites-build
+  image: python:3.6
+  commands:
+  - apt-get update
+  - apt-get -y install autogen autoconf automake libtool pkg-config libjson-c-dev gettext libusb-1.0-0-dev
+  - apt-get -y install libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison libpcap-dev
+
+---
+kind: pipeline
+name: py37-on-arm32
+
+platform:
+  arch: arm32
+
+steps:
+- name: prerequisites-build
+  image: python:3.7
+  commands:
+  - apt-get update
+  - apt-get -y install autogen autoconf automake libtool pkg-config libjson-c-dev gettext libusb-1.0-0-dev
+  - apt-get -y install libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison libpcap-dev
+---
+kind: pipeline
+name: py38-on-arm32
+
+platform:
+  arch: arm32
+
+steps:
+- name: prerequisites-build
+  image: python:3.8
+  commands:
+  - apt-get update
+  - apt-get -y install autogen autoconf automake libtool pkg-config libjson-c-dev gettext libusb-1.0-0-dev
+  - apt-get -y install libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison libpcap-dev
+---
+kind: pipeline
+name: py39-on-arm32
+
+platform:
+  arch: arm32
+
+steps:
+- name: prerequisites-build
+  image: python:3.9
+  commands:
+  - apt-get update
+  - apt-get -y install autogen autoconf automake libtool pkg-config libjson-c-dev gettext libusb-1.0-0-dev
+  - apt-get -y install libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison libpcap-dev
