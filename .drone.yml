@@ -1,10 +1,9 @@
 ---
 kind: pipeline
-type: kubernetes
-name: python-3-6
+name: test-on-amd64
+
 platform:
-  os: linux
-  arch: arm64
+  arch: amd64
 
 steps:
 - name: test
@@ -14,14 +13,13 @@ steps:
 
 ---
 kind: pipeline
-type: kubernetes
-name: python-3-7
+name: test-on-arm64
+
 platform:
-  os: linux
   arch: arm64
 
 steps:
 - name: test
-  image: python:3.7
+  image: python:3.6
   commands:
   - pip install -r requirements.txt
