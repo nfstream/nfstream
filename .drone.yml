@@ -1,22 +1,57 @@
-local Pipeline(name, image, arch) = {
-  kind: "pipeline",
-  platform:
-    arch: arch
-  name: name,
-  steps: [
-    {
-      name: "test",
-      image: image,
-      commands: [
-        "pip install -r requirements.txt",
-        "pytest"
-      ]
-    }
-  ]
-};
+---
+kind: pipeline
+name: py36-on-arm64
 
-[
-  Pipeline("python-3-6-arm64", "python:3.6", "arm64"),
-  Pipeline("python-3-7-arm64", "python:3.7", "arm64"),
-  Pipeline("python-3-8-arm64", "python:3.8", "arm64"),
-]
+platform:
+  arch: arm64
+
+steps:
+- name: prerequisites-build
+  image: python:3.6
+  commands:
+  - sudo apt-get update
+  - sudo apt-get install autogen autoconf automake libtool pkg-config libjson-c-dev gettext libusb-1.0-0-dev
+  - sudo apt-get install libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison libpcap-dev
+
+---
+kind: pipeline
+name: py37-on-arm64
+
+platform:
+  arch: arm64
+
+steps:
+- name: prerequisites-build
+  image: python:3.7
+  commands:
+  - sudo apt-get update
+  - sudo apt-get install autogen autoconf automake libtool pkg-config libjson-c-dev gettext libusb-1.0-0-dev
+  - sudo apt-get install libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison libpcap-dev
+---
+kind: pipeline
+name: py38-on-arm64
+
+platform:
+  arch: arm64
+
+steps:
+- name: prerequisites-build
+  image: python:3.8
+  commands:
+  - sudo apt-get update
+  - sudo apt-get install autogen autoconf automake libtool pkg-config libjson-c-dev gettext libusb-1.0-0-dev
+  - sudo apt-get install libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison libpcap-dev
+---
+kind: pipeline
+name: py39-on-arm64
+
+platform:
+  arch: arm64
+
+steps:
+- name: prerequisites-build
+  image: python:3.9
+  commands:
+  - sudo apt-get update
+  - sudo apt-get install autogen autoconf automake libtool pkg-config libjson-c-dev gettext libusb-1.0-0-dev
+  - sudo apt-get install libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison libpcap-dev
