@@ -1400,9 +1400,9 @@ typedef struct nf_flow {
 
 
 /**
- * meter_account_packet: Return packet_size according to configured accounting mode.
+ * get_packet_size: Return packet_size according to configured accounting mode.
  */
-uint16_t meter_account_packet(struct nf_packet *packet, uint8_t accounting_mode) {
+uint16_t get_packet_size(struct nf_packet *packet, uint8_t accounting_mode) {
   if (accounting_mode == 0) return packet->raw_size;
   else if (accounting_mode == 1) return packet->ip_size;
   else if (accounting_mode == 2) return packet->transport_size;
@@ -1487,75 +1487,376 @@ void free_splt_data(struct nf_flow *flow) {
 
 
 /**
+ * update_bidirectional_tcp_flags: update bidirectional tcp flags flow counters.
+ */
+void update_bidirectional_tcp_flags(struct nf_flow *flow, struct nf_packet *packet) {
+  flow->bidirectional_syn_packets += packet->syn;
+  flow->bidirectional_cwr_packets += packet->cwr;
+  flow->bidirectional_ece_packets += packet->ece;
+  flow->bidirectional_urg_packets += packet->urg;
+  flow->bidirectional_ack_packets += packet->ack;
+  flow->bidirectional_psh_packets += packet->psh;
+  flow->bidirectional_rst_packets += packet->rst;
+  flow->bidirectional_fin_packets += packet->fin;
+}
+
+
+/**
+ * update_src2dst_tcp_flags: update src2dst tcp flags flow counters.
+ */
+void update_src2dst_tcp_flags(struct nf_flow *flow, struct nf_packet *packet) {
+  flow->src2dst_syn_packets += packet->syn;
+  flow->src2dst_cwr_packets += packet->cwr;
+  flow->src2dst_ece_packets += packet->ece;
+  flow->src2dst_urg_packets += packet->urg;
+  flow->src2dst_ack_packets += packet->ack;
+  flow->src2dst_psh_packets += packet->psh;
+  flow->src2dst_rst_packets += packet->rst;
+  flow->src2dst_fin_packets += packet->fin;
+}
+
+
+/**
+ * update_dst2src_tcp_flags: update dst2src tcp flags flow counters.
+ */
+void update_dst2src_tcp_flags(struct nf_flow *flow, struct nf_packet *packet) {
+  flow->dst2src_syn_packets += packet->syn;
+  flow->dst2src_cwr_packets += packet->cwr;
+  flow->dst2src_ece_packets += packet->ece;
+  flow->dst2src_urg_packets += packet->urg;
+  flow->dst2src_ack_packets += packet->ack;
+  flow->dst2src_psh_packets += packet->psh;
+  flow->dst2src_rst_packets += packet->rst;
+  flow->dst2src_fin_packets += packet->fin;
+}
+
+
+/**
+ * expiration_handler: flow expiration handler.
+ */
+uint8_t expiration_handler(struct nf_flow *flow, struct nf_packet *packet,
+                           uint64_t idle_timeout, uint64_t active_timeout) {
+  if ((packet->time - flow->bidirectional_last_seen_ms) >= idle_timeout) return 1; // Inactive expiration
+  if ((packet->time - flow->bidirectional_first_seen_ms) >= active_timeout) return 2; // active expiration
+  // TCP natural expiration with id 3?
+  return 0;
+}
+
+
+uint8_t init_splt(struct nf_flow *flow, uint8_t splt, uint16_t packet_size) {
+  flow->splt_direction = (int8_t*)ndpi_malloc(sizeof(int8_t) * splt); // direction on int8 is more than sufficient.
+  if (flow->splt_direction == NULL) {
+    ndpi_free(flow);
+    return 0;
+  }
+  memset(flow->splt_direction, -1, sizeof(int8_t) * splt); // Fill it with -1 as missing data value.
+  // ps array allocation.
+  flow->splt_ps = (int32_t*)ndpi_malloc(sizeof(int32_t) * splt);
+  if (flow->splt_ps == NULL) {
+    ndpi_free(flow);
+    return 0;
+  }
+  memset(flow->splt_ps, -1, sizeof(int32_t) * splt); //-1 for missing values
+  // piat_ms array allocation
+  flow->splt_piat_ms = (int64_t*)ndpi_malloc(sizeof(int64_t) * splt); // int64 as time diff between two uint64.
+  if (flow->splt_piat_ms == NULL) {
+    ndpi_free(flow);
+    return 0;
+  }
+  memset(flow->splt_piat_ms, -1, sizeof(int64_t) * splt); // -1 for missing values
+  // SPLT values initialization
+  flow->splt_direction[0] = 0; // First packet always src->dst
+  flow->splt_ps[0] = packet_size;
+  flow->splt_piat_ms[0] = 0; // We set first piat to zero.
+  return 1;
+}
+
+
+/**
+ * update_splt: compute sequence of packet length and time.
+ */
+void update_splt(uint8_t splt, struct nf_flow *flow, struct nf_packet *packet,
+                 uint16_t packet_size, uint64_t bidirectional_piat_ms) {
+  if ((flow->bidirectional_packets - 1) < splt) {
+      flow->splt_direction[flow->bidirectional_packets - 1] = packet->direction;
+      flow->splt_ps[flow->bidirectional_packets - 1] = packet_size;
+      flow->splt_piat_ms[flow->bidirectional_packets - 1] = bidirectional_piat_ms;
+  }
+}
+
+
+/**
+ * set_packet_direction: compute packet direction.
+ */
+void set_packet_direction(struct nf_flow *flow, struct nf_packet *packet) {
+  // We first check ports to determine direction.
+  if ((flow->src_port != packet->src_port) || (flow->src_port != packet->src_port)) {
+    packet->direction = 1;
+  // Then IPs
+  } else {
+    if ((memcmp(flow->src_ip, packet->src_ip_str, 48) != 0) || (memcmp(flow->dst_ip, packet->dst_ip_str, 48) != 0)) {
+      packet->direction = 1;
+    }
+  }
+}
+
+
+/**
+ * init_bidirectional_dissection: bidirectional dissection initialization.
+ */
+uint8_t init_bidirectional_dissection(struct ndpi_detection_module_struct *dissector, uint8_t n_dissections,
+                                   struct nf_flow *flow, struct nf_packet *packet) {
+  flow->ndpi_flow = (struct ndpi_flow_struct *)ndpi_flow_malloc(SIZEOF_FLOW_STRUCT);
+  if (flow->ndpi_flow == NULL) {
+    ndpi_free(flow);
+    return 0;
+  } else {
+    memset(flow->ndpi_flow, 0, SIZEOF_FLOW_STRUCT);
+  }
+  flow->ndpi_src = (struct ndpi_id_struct *)ndpi_calloc(1, SIZEOF_ID_STRUCT);
+  if (flow->ndpi_src == NULL)  {
+    ndpi_free(flow);
+    return 0;
+  }
+  flow->ndpi_dst = (struct ndpi_id_struct *)ndpi_calloc(1, SIZEOF_ID_STRUCT);
+  if (flow->ndpi_dst == NULL) {
+    ndpi_free(flow);
+    return 0;
+  }
+  // First packet are dissected.
+  flow->detected_protocol = ndpi_detection_process_packet(dissector, flow->ndpi_flow, packet->ip_content,
+                                                          packet->ip_content_len, packet->time, flow->ndpi_src,
+                                                          flow->ndpi_dst);
+  dissector_process_info(dissector, flow); // Then we collect possible infos.
+  if ((flow->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) && (n_dissections == 1)) {
+    // Not identified and we are limited to 1, we try to guess.
+    flow->detected_protocol = ndpi_detection_giveup(dissector, flow->ndpi_flow, 1, &flow->guessed);
+    dissector_process_info(dissector, flow); // Collect potentially guessed infos.
+    flow->detection_completed = 1; // Close it.
+    free_ndpi_data(flow); // Release dissector references.
+  }
+  return 1;
+}
+
+
+/**
+ * update_bidirectional_dissection: bidirectional dissection processing.
+ */
+void update_bidirectional_dissection(struct ndpi_detection_module_struct *dissector, uint8_t n_dissections,
+                                     struct nf_flow *flow, struct nf_packet *packet) {
+  if (flow->detection_completed == 0) { // application not detected yet.
+    // We dissect only if still unknown or known and we didn't dissect all possible information yet.
+    uint8_t still_dissect = (flow->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) ||
+                             ((flow->detected_protocol.app_protocol != NDPI_PROTOCOL_UNKNOWN)
+                               && ndpi_extra_dissection_possible(dissector, flow->ndpi_flow));
+    if (still_dissect) { // Go for it.
+      if (packet->direction == 0) { // Check direction in order to give the dissector the right direction references.
+        flow->detected_protocol = ndpi_detection_process_packet(dissector, flow->ndpi_flow, packet->ip_content,
+                                                                packet->ip_content_len, packet->time, flow->ndpi_src,
+                                                                flow->ndpi_dst);
+      } else {
+        flow->detected_protocol = ndpi_detection_process_packet(dissector, flow->ndpi_flow, packet->ip_content,
+                                                                packet->ip_content_len, packet->time, flow->ndpi_dst,
+                                                                flow->ndpi_src);
+      }
+      dissector_process_info(dissector, flow); // Collect information to flow structure.
+    } else { // We are done -> Known and no extra dissection possible.
+      // We release nDPI references as we are done.
+      free_ndpi_data(flow);
+      flow->detection_completed = 1; // Detection end. (detection_completed is used to trigger copy on sync mode)
+      // Note we didn't collect information as this is already done in previous loop.
+    }
+
+    if (n_dissections == flow->bidirectional_packets) { // if we reach user defined limit and application is unknown
+      if (flow->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) {
+        flow->detected_protocol = ndpi_detection_giveup(dissector, flow->ndpi_flow, 1, &flow->guessed);
+        dissector_process_info(dissector, flow); // copy guessed infos if present.
+      } // We reach it and detection is done, release references.
+      free_ndpi_data(flow);
+      flow->detection_completed = 1;
+    }
+  } else {
+    if (flow->detection_completed == 1) flow->detection_completed = 2; // trigger the copy only once on sync mode.
+  }
+}
+
+
+void init_bidirectional_ps(struct nf_flow *flow, uint16_t packet_size) {
+  flow->bidirectional_min_ps += packet_size;
+  flow->bidirectional_mean_ps += packet_size;
+  flow->bidirectional_max_ps += packet_size;
+}
+
+
+void update_bidirectional_ps(struct nf_flow *flow, uint16_t packet_size) {
+  if (packet_size > flow->bidirectional_max_ps) flow->bidirectional_max_ps = packet_size;
+  if (packet_size < flow->bidirectional_min_ps) flow->bidirectional_min_ps = packet_size;
+  double bidirectional_mean_ps = flow->bidirectional_mean_ps;
+  flow->bidirectional_mean_ps += (packet_size - bidirectional_mean_ps) / flow->bidirectional_packets;
+  flow->bidirectional_stddev_ps += (packet_size - bidirectional_mean_ps) * (packet_size - flow->bidirectional_mean_ps);
+}
+
+
+void init_bidirectional_piat_ms(struct nf_flow *flow, uint64_t bidirectional_piat_ms) {
+  flow->bidirectional_min_piat_ms += bidirectional_piat_ms;
+  flow->bidirectional_mean_piat_ms += bidirectional_piat_ms;
+  flow->bidirectional_max_piat_ms += bidirectional_piat_ms;
+}
+
+
+void update_bidirectional_piat_ms(struct nf_flow *flow, uint64_t bidirectional_piat_ms) {
+  if (bidirectional_piat_ms > flow->bidirectional_max_piat_ms) flow->bidirectional_max_piat_ms = bidirectional_piat_ms;
+  if (bidirectional_piat_ms < flow->bidirectional_min_piat_ms) flow->bidirectional_min_piat_ms = bidirectional_piat_ms;
+  double bidirectional_mean_piat_ms = flow->bidirectional_mean_piat_ms;
+  flow->bidirectional_mean_piat_ms += (bidirectional_piat_ms - bidirectional_mean_piat_ms)/(flow->bidirectional_packets-1);
+  flow->bidirectional_stddev_piat_ms += (bidirectional_piat_ms - bidirectional_mean_piat_ms)
+                                         * (bidirectional_piat_ms - flow->bidirectional_mean_piat_ms);
+}
+
+
+void init_src2dst_ps(struct nf_flow *flow, uint16_t packet_size) {
+  flow->src2dst_min_ps += packet_size;
+  flow->src2dst_mean_ps += packet_size;
+  flow->src2dst_max_ps += packet_size;
+}
+
+
+void update_src2dst_ps(struct nf_flow *flow, uint16_t packet_size) {
+  if (packet_size > flow->src2dst_max_ps) flow->src2dst_max_ps = packet_size;
+  if (packet_size < flow->src2dst_min_ps) flow->src2dst_min_ps = packet_size;
+  double src2dst_mean_ps = flow->src2dst_mean_ps;
+  flow->src2dst_mean_ps += (packet_size - src2dst_mean_ps)/flow->src2dst_packets;
+  flow->src2dst_stddev_ps += (packet_size - src2dst_mean_ps)*(packet_size - flow->src2dst_mean_ps);
+}
+
+
+void init_src2dst_piat_ms(struct nf_flow *flow, uint64_t src2dst_piat_ms) {
+  flow->src2dst_min_piat_ms += src2dst_piat_ms;
+  flow->src2dst_mean_piat_ms += src2dst_piat_ms;
+  flow->src2dst_max_piat_ms += src2dst_piat_ms;
+}
+
+
+void update_src2dst_piat_ms(struct nf_flow *flow, uint64_t src2dst_piat_ms) {
+  if (src2dst_piat_ms > flow->src2dst_max_piat_ms) flow->src2dst_max_piat_ms = src2dst_piat_ms;
+  if (src2dst_piat_ms < flow->src2dst_min_piat_ms) flow->src2dst_min_piat_ms = src2dst_piat_ms;
+  double src2dst_mean_piat_ms = flow->src2dst_mean_piat_ms;
+  flow->src2dst_mean_piat_ms += (src2dst_piat_ms - src2dst_mean_piat_ms)/(flow->src2dst_packets-1);
+  flow->src2dst_stddev_piat_ms += (src2dst_piat_ms - src2dst_mean_piat_ms)*(src2dst_piat_ms - flow->src2dst_mean_piat_ms);
+}
+
+
+void init_dst2src_ps(struct nf_flow *flow, uint16_t packet_size) {
+  flow->dst2src_min_ps += packet_size;
+  flow->dst2src_mean_ps += packet_size;
+  flow->dst2src_max_ps += packet_size;
+}
+
+
+void update_dst2src_ps(struct nf_flow *flow, uint16_t packet_size) {
+  if (packet_size > flow->dst2src_max_ps) flow->dst2src_max_ps = packet_size;
+  if (packet_size < flow->dst2src_min_ps) flow->dst2src_min_ps = packet_size;
+  double dst2src_mean_ps = flow->dst2src_mean_ps;
+  flow->dst2src_mean_ps += (packet_size - dst2src_mean_ps)/flow->dst2src_packets;
+  flow->dst2src_stddev_ps += (packet_size - dst2src_mean_ps)*(packet_size - flow->dst2src_mean_ps);
+}
+
+
+void init_dst2src_piat_ms(struct nf_flow *flow, uint64_t dst2src_piat_ms) {
+  flow->dst2src_min_piat_ms += dst2src_piat_ms;
+  flow->dst2src_mean_piat_ms += dst2src_piat_ms;
+  flow->dst2src_max_piat_ms += dst2src_piat_ms;
+}
+
+
+void update_dst2src_piat_ms(struct nf_flow *flow, uint64_t dst2src_piat_ms) {
+  if (dst2src_piat_ms > flow->dst2src_max_piat_ms) flow->dst2src_max_piat_ms = dst2src_piat_ms;
+  if (dst2src_piat_ms < flow->dst2src_min_piat_ms) flow->dst2src_min_piat_ms = dst2src_piat_ms;
+  double dst2src_mean_piat_ms = flow->dst2src_mean_piat_ms;
+  flow->dst2src_mean_piat_ms += (dst2src_piat_ms - dst2src_mean_piat_ms)/(flow->dst2src_packets-1);
+  flow->dst2src_stddev_piat_ms += (dst2src_piat_ms - dst2src_mean_piat_ms)*(dst2src_piat_ms - flow->dst2src_mean_piat_ms);
+}
+
+
+void update_bidirectional_flow(struct ndpi_detection_module_struct *dissector, uint8_t n_dissections, uint8_t splt,
+                               uint8_t statistics, uint16_t packet_size, struct nf_flow *flow, struct nf_packet *packet) {
+  uint64_t bidirectional_piat_ms = packet->time - flow->bidirectional_last_seen_ms;
+  packet->delta_time = bidirectional_piat_ms; // This will be exposed as NFPacket feature.
+  flow->bidirectional_packets++;
+  update_splt(splt, flow, packet, packet_size, bidirectional_piat_ms);
+  flow->bidirectional_last_seen_ms = packet->time;
+  flow->bidirectional_duration_ms = flow->bidirectional_last_seen_ms - flow->bidirectional_first_seen_ms;
+  if (n_dissections) update_bidirectional_dissection(dissector, n_dissections, flow, packet);
+  flow->bidirectional_bytes += packet_size;
+  if (statistics == 1) {
+    update_bidirectional_tcp_flags(flow, packet);
+    update_bidirectional_ps(flow, packet_size);
+    // Packet interarrival time need at least 2 packets.
+    if (flow->bidirectional_packets == 2) init_bidirectional_piat_ms(flow, bidirectional_piat_ms);
+    else update_bidirectional_piat_ms(flow, bidirectional_piat_ms);
+  }
+}
+
+
+void update_src2dst_flow(uint8_t statistics, uint16_t packet_size, struct nf_flow *flow, struct nf_packet *packet) {
+  flow->src2dst_packets++;
+  uint64_t src2dst_piat_ms = packet->time - flow->src2dst_last_seen_ms;
+  flow->src2dst_last_seen_ms = packet->time;
+  flow->src2dst_duration_ms = flow->src2dst_last_seen_ms - flow->src2dst_first_seen_ms;
+  flow->src2dst_bytes += packet_size;
+  if (statistics == 1) {
+    update_src2dst_ps(flow, packet_size);
+    update_src2dst_tcp_flags(flow, packet);
+    if (flow->src2dst_packets == 2) init_src2dst_piat_ms(flow, src2dst_piat_ms);
+    else update_src2dst_piat_ms(flow, src2dst_piat_ms);
+  }
+}
+
+
+void update_dst2src_flow(uint8_t statistics, uint16_t packet_size, struct nf_flow *flow, struct nf_packet *packet) {
+  flow->dst2src_packets++;
+  flow->dst2src_bytes += packet_size;
+  if (flow->dst2src_packets == 1) {
+    flow->dst2src_first_seen_ms = packet->time;
+    flow->dst2src_last_seen_ms = packet->time;
+    if (statistics == 1) {
+      init_dst2src_ps(flow, packet_size);
+      update_dst2src_tcp_flags(flow, packet);
+    }
+  } else {
+    uint64_t dst2src_piat_ms = packet->time - flow->dst2src_last_seen_ms;
+    flow->dst2src_last_seen_ms = packet->time;
+    flow->dst2src_duration_ms = flow->dst2src_last_seen_ms - flow->dst2src_first_seen_ms;
+    if (statistics == 1) {
+      update_dst2src_ps(flow, packet_size);
+      update_dst2src_tcp_flags(flow, packet);
+      if (flow->dst2src_packets == 2) init_dst2src_piat_ms(flow, dst2src_piat_ms);
+      else update_dst2src_piat_ms(flow, dst2src_piat_ms);
+    }
+  }
+}
+
+/**
  * meter_initialize_flow: Initialize flow based on packet values and set packet direction.
  */
 struct nf_flow *meter_initialize_flow(struct nf_packet *packet, uint8_t accounting_mode, uint8_t statistics,
                                       uint8_t splt, uint8_t n_dissections,
                                       struct ndpi_detection_module_struct *dissector) {
-
   struct nf_flow *flow = (struct nf_flow*)ndpi_malloc(sizeof(struct nf_flow));
   if (flow == NULL) return NULL; // not enough memory for flow.
   memset(flow, 0, sizeof(struct nf_flow));
+  // All packet sizes and bytes related metrics are reported according to user specified mode.
+  // This will allow us to provide a flexible choice without duplicating unnecessary information.
+  uint16_t packet_size = get_packet_size(packet, accounting_mode);
 
   if (splt) {
-    flow->splt_direction = (int8_t*)ndpi_malloc(sizeof(int8_t) * splt); // direction on int8 is more than sufficient.
-    if (flow->splt_direction == NULL) {
-      ndpi_free(flow);
-      return NULL;
-    }
-    memset(flow->splt_direction, -1, sizeof(int8_t) * splt); // Fill it with -1 as missing data value.
-
-    // Same here but for packet sizes, we decide to use int32 as packet size are computed on uint16.
-    flow->splt_ps = (int32_t*)ndpi_malloc(sizeof(int32_t) * splt);
-    if (flow->splt_ps == NULL) {
-      ndpi_free(flow);
-      return NULL;
-    }
-    memset(flow->splt_ps, -1, sizeof(int32_t) * splt); //-1 for missing values
-
-    flow->splt_piat_ms = (int64_t*)ndpi_malloc(sizeof(int64_t) * splt); // int64 as time diff between two uint64.
-    if (flow->splt_piat_ms == NULL) {
-      ndpi_free(flow);
-      return NULL;
-    }
-    memset(flow->splt_piat_ms, -1, sizeof(int64_t) * splt); // -1 for missing values
+    uint8_t splt_init_success = init_splt(flow, splt, packet_size);
+    if (!splt_init_success) return NULL;
   }
 
-  if (n_dissections) { // we are configured to dissect, we initialize structures required by the dissection.
-    flow->ndpi_flow = (struct ndpi_flow_struct *)ndpi_flow_malloc(SIZEOF_FLOW_STRUCT);
-
-    if (flow->ndpi_flow == NULL) {
-      ndpi_free(flow);
-      return NULL;
-    } else {
-      memset(flow->ndpi_flow, 0, SIZEOF_FLOW_STRUCT);
-    }
-    flow->ndpi_src = (struct ndpi_id_struct *)ndpi_calloc(1, SIZEOF_ID_STRUCT);
-    if (flow->ndpi_src == NULL)  {
-      ndpi_free(flow);
-      return NULL;
-    }
-    flow->ndpi_dst = (struct ndpi_id_struct *)ndpi_calloc(1, SIZEOF_ID_STRUCT);
-    if (flow->ndpi_dst == NULL) {
-      ndpi_free(flow);
-      return NULL;
-    }
-    // First packet are dissected.
-    flow->detected_protocol = ndpi_detection_process_packet(dissector,
-                                                             flow->ndpi_flow,
-                                                             packet->ip_content,
-                                                             packet->ip_content_len,
-                                                             packet->time,
-                                                             flow->ndpi_src,
-                                                             flow->ndpi_dst);
-    dissector_process_info(dissector, flow); // Then we collect possible infos.
-    if ((flow->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) && (n_dissections == 1)) {
-      // Not identified and we are limited to 1, we try to guess.
-      flow->detected_protocol = ndpi_detection_giveup(dissector, flow->ndpi_flow, 1, &flow->guessed);
-      dissector_process_info(dissector, flow); // Collect potentially guessed infos.
-      flow->detection_completed = 1; // Close it.
-      free_ndpi_data(flow); // Release dissector references.
-    }
+  if (n_dissections) { // we are configured to dissect
+    uint8_t init_bidirectional_dissection_success = init_bidirectional_dissection(dissector, n_dissections, flow, packet);
+    if (!init_bidirectional_dissection_success) return NULL;
   }
   // Classical flow initialization.
   flow->bidirectional_first_seen_ms = packet->time;
@@ -1575,58 +1876,13 @@ struct nf_flow *meter_initialize_flow(struct nf_packet *packet, uint8_t accounti
   flow->vlan_id = packet->vlan_id;
   flow->bidirectional_packets = 1;
   flow->src2dst_packets = 1;
-  // All packet sizes and bytes related metrics are reported accoring to user specified mode.
-  // This will allow us to provide a flexible choice without duplicating unnecessary information.
-  uint16_t packet_size = meter_account_packet(packet, accounting_mode);
-
-  // SPLT initialization
-  if (splt) {
-      flow->splt_direction[0] = 0; // First packet always src->dst
-      flow->splt_ps[0] = packet_size;
-      flow->splt_piat_ms[0] = 0; // We set first piat to zero.
-  }
-
   flow->bidirectional_bytes += packet_size;
   flow->src2dst_bytes += packet_size;
   if (statistics == 1) {
-    flow->bidirectional_min_ps += packet_size;
-    flow->bidirectional_mean_ps += packet_size;
-    flow->bidirectional_max_ps += packet_size;
-    flow->src2dst_min_ps += packet_size;
-    flow->src2dst_mean_ps += packet_size;
-    flow->src2dst_max_ps += packet_size;
-    if (packet->syn) {
-      flow->bidirectional_syn_packets++;
-      flow->src2dst_syn_packets++;
-    }
-    if (packet->cwr) {
-      flow->bidirectional_cwr_packets++;
-      flow->src2dst_cwr_packets++;
-    }
-    if (packet->ece) {
-      flow->bidirectional_ece_packets++;
-      flow->src2dst_ece_packets++;
-    }
-    if (packet->urg) {
-      flow->bidirectional_urg_packets++;
-      flow->src2dst_urg_packets++;
-    }
-    if (packet->ack) {
-      flow->bidirectional_ack_packets++;
-      flow->src2dst_ack_packets++;
-    }
-    if (packet->psh) {
-      flow->bidirectional_psh_packets++;
-      flow->src2dst_psh_packets++;
-    }
-    if (packet->rst) {
-      flow->bidirectional_rst_packets++;
-      flow->src2dst_rst_packets++;
-    }
-    if (packet->fin) {
-      flow->bidirectional_fin_packets++;
-      flow->src2dst_fin_packets++;
-    }
+    init_bidirectional_ps(flow, packet_size);
+    init_src2dst_ps(flow, packet_size);
+    update_bidirectional_tcp_flags(flow, packet);
+    update_src2dst_tcp_flags(flow, packet);
   }
   return flow; // we return a pointer to the created flow in order to be cached by Python side.
 }
@@ -1638,228 +1894,13 @@ struct nf_flow *meter_initialize_flow(struct nf_packet *packet, uint8_t accounti
 uint8_t meter_update_flow(struct nf_flow *flow, struct nf_packet *packet, uint64_t idle_timeout,
                            uint64_t active_timeout, uint8_t accounting_mode, uint8_t statistics, uint8_t splt,
                            uint8_t n_dissections, struct ndpi_detection_module_struct *dissector) {
-  if ((packet->time - flow->bidirectional_last_seen_ms) >= idle_timeout) {
-    return 1; // Inactive expiration
-  }
-  if ((packet->time - flow->bidirectional_first_seen_ms) >= active_timeout) {
-    return 2; // active expiration
-  }
-
-  // We first check ports to determine direction.
-  if ((flow->src_port != packet->src_port) || (flow->src_port != packet->src_port)) {
-    packet->direction = 1;
-  // Then IPs
-  } else {
-    if ((memcmp(flow->src_ip, packet->src_ip_str, 48) != 0) || (memcmp(flow->dst_ip, packet->dst_ip_str, 48) != 0)) {
-      packet->direction = 1;
-    }
-  }
-  // --------------------------------------- bidirectional processing --------------------------------------------------
-  uint64_t bidirectional_piat_ms = packet->time - flow->bidirectional_last_seen_ms;
-  packet->delta_time = bidirectional_piat_ms; // This will be exposed as NFPacket feature.
-  uint16_t packet_size = meter_account_packet(packet, accounting_mode);
-
-  // SPLT update
-  if (flow->bidirectional_packets < splt) { // Keep in mind that we didn't incremented bidirectional_packets yet.
-      flow->splt_direction[flow->bidirectional_packets] = packet->direction; // equivalent to (current_pkt-1) index.
-      flow->splt_ps[flow->bidirectional_packets] = packet_size;
-      flow->splt_piat_ms[flow->bidirectional_packets] = bidirectional_piat_ms;
-  }
-
-  flow->bidirectional_last_seen_ms = packet->time;
-  flow->bidirectional_duration_ms = flow->bidirectional_last_seen_ms - flow->bidirectional_first_seen_ms;
-  flow->bidirectional_packets++;
-
-  if (n_dissections) { // NFStream dissection logic start.
-    if (flow->detection_completed == 0) { // application not detected yet.
-      // We dissect only if still unknown or known and we didn't dissect all possible information yet.
-      uint8_t still_dissect = (flow->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) ||
-                              ((flow->detected_protocol.app_protocol != NDPI_PROTOCOL_UNKNOWN)
-                                && ndpi_extra_dissection_possible(dissector, flow->ndpi_flow));
-      if (still_dissect) { // Go for it.
-        if (packet->direction == 0) { // Check direction in order to give the dissector the right direction references.
-                                      // Mainly: ndpi_src and ndpi_dst
-          flow->detected_protocol = ndpi_detection_process_packet(dissector,
-                                                                   flow->ndpi_flow,
-                                                                   packet->ip_content,
-                                                                   packet->ip_content_len,
-                                                                   packet->time,
-                                                                   flow->ndpi_src,
-                                                                   flow->ndpi_dst);
-        } else {
-          flow->detected_protocol = ndpi_detection_process_packet(dissector,
-                                                                   flow->ndpi_flow,
-                                                                   packet->ip_content,
-                                                                   packet->ip_content_len,
-                                                                   packet->time,
-                                                                   flow->ndpi_dst,
-                                                                   flow->ndpi_src);
-        }
-        dissector_process_info(dissector, flow); // Collect information to flow structure.
-      } else { // We are done -> Known and no extra dissection possible.
-        // We release nDPI references as we are done.
-        free_ndpi_data(flow);
-        flow->detection_completed = 1; // Detection end. (detection_completed is used to trigger copy on sync mode)
-        // Note we didn't collect information as this is already done in previous loop.
-      }
-
-      if (n_dissections == flow->bidirectional_packets) { // if we reach user defined limit.,
-        // and application is unknown, so we try to guess it.
-        if (flow->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) {
-            flow->detected_protocol = ndpi_detection_giveup(dissector, flow->ndpi_flow, 1, &flow->guessed);
-            dissector_process_info(dissector, flow); // copy guessed infos if present.
-        } // We reach it and detection is done, release references.
-        free_ndpi_data(flow);
-        flow->detection_completed = 1;
-      }
-    } else {
-      if (flow->detection_completed == 1) flow->detection_completed = 2; // trigger the copy only once on sync mode.
-    }
-  }
-
-  flow->bidirectional_bytes += packet_size;
-  if (statistics == 1) { // Classic statistical analysis per flow direction (min, maxn mean, stddev)
-                         // Note that for stddev we use online variance algorithm (Welford)
-    if (packet_size > flow->bidirectional_max_ps) flow->bidirectional_max_ps = packet_size;
-    if (packet_size < flow->bidirectional_min_ps) flow->bidirectional_min_ps = packet_size;
-    double bidirectional_mean_ps = flow->bidirectional_mean_ps;
-    flow->bidirectional_mean_ps += (packet_size - bidirectional_mean_ps)/flow->bidirectional_packets;
-    flow->bidirectional_stddev_ps += (packet_size - bidirectional_mean_ps)*(packet_size - flow->bidirectional_mean_ps);
-
-    // TCP Flags statistical counters
-    if (packet->syn) flow->bidirectional_syn_packets++;
-    if (packet->cwr) flow->bidirectional_cwr_packets++;
-    if (packet->ece) flow->bidirectional_ece_packets++;
-    if (packet->urg) flow->bidirectional_urg_packets++;
-    if (packet->ack) flow->bidirectional_ack_packets++;
-    if (packet->psh) flow->bidirectional_psh_packets++;
-    if (packet->rst) flow->bidirectional_rst_packets++;
-    if (packet->fin) flow->bidirectional_fin_packets++;
-
-    // Packet interarrival time need at least 2 packets :).
-    if (flow->bidirectional_packets == 2) {
-      flow->bidirectional_min_piat_ms += bidirectional_piat_ms;
-      flow->bidirectional_mean_piat_ms += bidirectional_piat_ms;
-      flow->bidirectional_max_piat_ms += bidirectional_piat_ms;
-    } else { // We are at least at the third packet.
-      if (bidirectional_piat_ms > flow->bidirectional_max_piat_ms) {
-        flow->bidirectional_max_piat_ms = bidirectional_piat_ms;
-      }
-      if (bidirectional_piat_ms < flow->bidirectional_min_piat_ms) {
-        flow->bidirectional_min_piat_ms = bidirectional_piat_ms;
-      }
-      double bidirectional_mean_piat_ms = flow->bidirectional_mean_piat_ms;
-      flow->bidirectional_mean_piat_ms += (bidirectional_piat_ms - bidirectional_mean_piat_ms)/(flow->bidirectional_packets-1);
-      flow->bidirectional_stddev_piat_ms += (bidirectional_piat_ms - bidirectional_mean_piat_ms)*(bidirectional_piat_ms - flow->bidirectional_mean_piat_ms);
-    }
-  }
-
-  if (packet->direction == 0) { // ------------------ src2dst processing -----------------------------------------------
-    // Same computation logic applied to bidirectional but per direction oriented.
-    flow->src2dst_packets++;
-    uint64_t src2dst_piat_ms = packet->time - flow->src2dst_last_seen_ms;
-    flow->src2dst_last_seen_ms = packet->time;
-    flow->src2dst_duration_ms = flow->src2dst_last_seen_ms - flow->src2dst_first_seen_ms;
-    flow->src2dst_bytes += packet_size;
-    if (statistics == 1) {
-      if (packet_size > flow->src2dst_max_ps) {
-        flow->src2dst_max_ps = packet_size;
-      }
-      if (packet_size < flow->src2dst_min_ps) {
-        flow->src2dst_min_ps = packet_size;
-      }
-
-      double src2dst_mean_ps = flow->src2dst_mean_ps;
-      flow->src2dst_mean_ps += (packet_size - src2dst_mean_ps)/flow->src2dst_packets;
-      flow->src2dst_stddev_ps += (packet_size - src2dst_mean_ps)*(packet_size - flow->src2dst_mean_ps);
-
-      if (packet->syn) flow->src2dst_syn_packets++;
-      if (packet->cwr) flow->src2dst_cwr_packets++;
-      if (packet->ece) flow->src2dst_ece_packets++;
-      if (packet->urg) flow->src2dst_urg_packets++;
-      if (packet->ack) flow->src2dst_ack_packets++;
-      if (packet->psh) flow->src2dst_psh_packets++;
-      if (packet->rst) flow->src2dst_rst_packets++;
-      if (packet->fin) flow->src2dst_fin_packets++;
-
-      if (flow->src2dst_packets == 2) {
-        flow->src2dst_min_piat_ms += src2dst_piat_ms;
-        flow->src2dst_mean_piat_ms += src2dst_piat_ms;
-        flow->src2dst_max_piat_ms += src2dst_piat_ms;
-      } else {
-        if (src2dst_piat_ms > flow->src2dst_max_piat_ms) {
-          flow->src2dst_max_piat_ms = src2dst_piat_ms;
-        }
-        if (src2dst_piat_ms < flow->src2dst_min_piat_ms) {
-          flow->src2dst_min_piat_ms = src2dst_piat_ms;
-        }
-        double src2dst_mean_piat_ms = flow->src2dst_mean_piat_ms;
-        flow->src2dst_mean_piat_ms += (src2dst_piat_ms - src2dst_mean_piat_ms)/(flow->src2dst_packets-1);
-        flow->src2dst_stddev_piat_ms += (src2dst_piat_ms - src2dst_mean_piat_ms)*(src2dst_piat_ms - flow->src2dst_mean_piat_ms);
-      }
-    }
-  } else { // --------------------------------------- dst2src processing -----------------------------------------------
-    flow->dst2src_packets++;
-    flow->dst2src_bytes += packet_size;
-    if (flow->dst2src_packets == 1) { // The only difference is that first packet on dst_to_src direction can hit us
-                                      // on update.
-      flow->dst2src_first_seen_ms = packet->time;
-      flow->dst2src_last_seen_ms = packet->time;
-      if (statistics == 1) {
-        flow->dst2src_min_ps += packet_size;
-        flow->dst2src_mean_ps += packet_size;
-        flow->dst2src_max_ps += packet_size;
-        if (packet->syn) flow->dst2src_syn_packets++;
-        if (packet->cwr) flow->dst2src_cwr_packets++;
-        if (packet->ece) flow->dst2src_ece_packets++;
-        if (packet->urg) flow->dst2src_urg_packets++;
-        if (packet->ack) flow->dst2src_ack_packets++;
-        if (packet->psh) flow->dst2src_psh_packets++;
-        if (packet->rst) flow->dst2src_rst_packets++;
-        if (packet->fin) flow->dst2src_fin_packets++;
-      }
-    } else {
-      uint64_t dst2src_piat_ms = packet->time - flow->dst2src_last_seen_ms;
-      flow->dst2src_last_seen_ms = packet->time;
-      flow->dst2src_duration_ms = flow->dst2src_last_seen_ms - flow->dst2src_first_seen_ms;
-      if (statistics == 1) {
-        if (packet_size > flow->dst2src_max_ps) {
-          flow->dst2src_max_ps = packet_size;
-        }
-        if (packet_size < flow->dst2src_min_ps) {
-          flow->dst2src_min_ps = packet_size;
-        }
-        double dst2src_mean_ps = flow->dst2src_mean_ps;
-        flow->dst2src_mean_ps += (packet_size - dst2src_mean_ps)/flow->dst2src_packets;
-        flow->dst2src_stddev_ps += (packet_size - dst2src_mean_ps)*(packet_size - flow->dst2src_mean_ps);
-
-        if (packet->syn) flow->dst2src_syn_packets++;
-        if (packet->cwr) flow->dst2src_cwr_packets++;
-        if (packet->ece) flow->dst2src_ece_packets++;
-        if (packet->urg) flow->dst2src_urg_packets++;
-        if (packet->ack) flow->dst2src_ack_packets++;
-        if (packet->psh) flow->dst2src_psh_packets++;
-        if (packet->rst) flow->dst2src_rst_packets++;
-        if (packet->fin) flow->dst2src_fin_packets++;
-
-        if (flow->dst2src_packets == 2) {
-          flow->dst2src_min_piat_ms += dst2src_piat_ms;
-          flow->dst2src_mean_piat_ms += dst2src_piat_ms;
-          flow->dst2src_max_piat_ms += dst2src_piat_ms;
-        } else {
-          if (dst2src_piat_ms > flow->dst2src_max_piat_ms) {
-            flow->dst2src_max_piat_ms = dst2src_piat_ms;
-          }
-          if (dst2src_piat_ms < flow->dst2src_min_piat_ms) {
-            flow->dst2src_min_piat_ms = dst2src_piat_ms;
-          }
-          double dst2src_mean_piat_ms = flow->dst2src_mean_piat_ms;
-          flow->dst2src_mean_piat_ms += (dst2src_piat_ms - dst2src_mean_piat_ms)/(flow->dst2src_packets-1);
-          flow->dst2src_stddev_piat_ms += (dst2src_piat_ms - dst2src_mean_piat_ms)*(dst2src_piat_ms - flow->dst2src_mean_piat_ms);
-        }
-      }
-    }
-  }
+  uint8_t expired = expiration_handler(flow, packet, idle_timeout, active_timeout);
+  if (expired) return expired;
+  set_packet_direction(flow, packet);
+  uint16_t packet_size = get_packet_size(packet, accounting_mode);
+  update_bidirectional_flow(dissector, n_dissections, splt, statistics, packet_size, flow, packet);
+  if (packet->direction == 0) update_src2dst_flow(statistics, packet_size, flow, packet);
+  else update_dst2src_flow(statistics, packet_size, flow, packet);
   return 0; // Update done, we return 0.
 }
 
