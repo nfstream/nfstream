@@ -31,13 +31,14 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 
-def setup_context_cc():
+def setup_engine():
     platform_compiler = "gcc"
     if sys.platform == 'darwin':
         platform_compiler = "clang"
-    print("\nSetting up context_cc. Platform: {plat}, Byteorder: {bo}".format(plat=sys.platform, bo=sys.byteorder))
-    subprocess.check_call([platform_compiler, '-I/usr/local/include/ndpi', '-shared', '-o', 'nfstream/context_cc.so',
-                           '-g', '-fPIC', '-DPIC', '-O2', '-Wall', 'nfstream/context_cc.c',
+    print("\nSetting up engine. Platform: {plat}, Byteorder: {bo}".format(plat=sys.platform, bo=sys.byteorder))
+    subprocess.check_call([platform_compiler, '-I/usr/local/include/ndpi', '-shared', '-o',
+                           'nfstream/engine/engine.so',
+                           '-g', '-fPIC', '-DPIC', '-O2', '-Wall', 'nfstream/engine/engine.c',
                            # Required compiled static libs
                            '/usr/local/lib/libpcap.a',
                            '/usr/local/lib/libndpi.a',
@@ -57,7 +58,7 @@ class BuildNativeCommand(build_ext):
         if os.name != 'posix':  # Windows case
             pass
         else:
-            setup_context_cc()
+            setup_engine()
         build_ext.run(self)
 
 
@@ -108,7 +109,7 @@ setup(
     long_description_content_type='text/markdown',
     author='Zied Aouini',
     author_email='aouinizied@gmail.com',
-    packages=['nfstream', 'nfstream.plugins'],
+    packages=['nfstream', 'nfstream.plugins', 'nfstream.engine'],
     install_requires=install_requires,
     cmdclass=cmdclass,
     setup_requires=pytest_runner,

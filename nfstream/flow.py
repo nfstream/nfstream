@@ -308,7 +308,7 @@ class NFlow(object):
         if sync:  # Running with NFPlugins
             for udp in udps:
                 udp.on_expire(self)  # Call each Plugin on_expire entrypoint
-        lib.meter_free_flow(self._C, n_dissections, splt)  # then free C struct
+        lib.meter_free_flow(self._C, n_dissections, splt, 1)  # then free C struct
         del self._C  # and remove it from NFlow slots.
         return self
 
@@ -409,7 +409,7 @@ class NFlow(object):
                     self.splt_piat_ms = ffi.unpack(self._C.splt_piat_ms, splt)
                 else:
                     if self._C.splt_closed == 0:  # we also release the memory to keep only the obtained list.
-                        lib.flow_free_splt_data(self._C)
+                        lib.meter_free_flow(self._C, n_dissections, splt, 0)  # free SPLT
             else:
                 self.splt_direction = ffi.unpack(self._C.splt_direction, splt)
                 self.splt_ps = ffi.unpack(self._C.splt_ps, splt)

@@ -1,6 +1,6 @@
 /*
 ------------------------------------------------------------------------------------------------------------------------
-context_cc.c
+engine.c
 Copyright (C) 2019-20 - NFStream Developers
 This file is part of NFStream, a Flexible Network Data Analysis Framework (https://www.nfstream.org/).
 NFStream is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
@@ -13,17 +13,17 @@ If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 */
 
+#include <ndpi_api.h>
+#include <ndpi_main.h>
+#include <ndpi_typedefs.h>
+#include <pcap.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <netinet/in.h>
 #include <math.h>
-#include <pcap.h>
 #include <stdint.h>
 #include <string.h>
 #include <sys/time.h>
-#include <ndpi_api.h>
-#include <ndpi_main.h>
-#include <ndpi_typedefs.h>
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 #include <machine/endian.h>
 #endif
@@ -63,13 +63,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #define PACK_ON
 #define PACK_OFF  __attribute__((packed))
 
-
-/*
-------------------------------------------------------------------------------------------------------------------------
-                                           Observer Layer
-------------------------------------------------------------------------------------------------------------------------
-*/
-
 #define TICK_RESOLUTION          1000
 #define	IPVERSION	4
 #ifndef ETH_P_IP
@@ -100,6 +93,17 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef DLT_LINUX_SLL
 #define DLT_LINUX_SLL  113
 #endif
+
+
+/*
+------------------------------------------------------------------------------------------------------------------------
+                                           Engine Internals
+------------------------------------------------------------------------------------------------------------------------
+*/
+
+
+/***************************************** Packet layer ***************************************************************/
+
 
 typedef enum {
   nfstream_no_tunnel = 0,
@@ -351,6 +355,7 @@ typedef struct nf_stat {
   unsigned dropped_by_interface;
 } nf_stat_t;
 
+
 /**
  * handle_ipv6_extension_headers: Handle IPv6 extensions header.
  */
@@ -463,7 +468,7 @@ void get_nf_packet_unknown_transport_info(struct nf_packet *nf_pkt, uint16_t *sp
 
 
 /**
- * fill_nf_packet_info: fill required nf packet information.
+ * fill_nf_packet_info: Fill required nf packet information.
  */
 void fill_nf_packet_info(struct nf_packet *nf_pkt, uint16_t *sport, uint16_t *dport, uint32_t l4_data_len,
                          uint16_t *payload_len, const struct nfstream_iphdr *iph, const struct nfstream_ipv6hdr *iph6,
@@ -672,7 +677,7 @@ void dlt_ppp(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, uint16_
   const struct nfstream_chdlc *chdlc;
   if(packet[0] == 0x0f || packet[0] == 0x8f) {
     chdlc = (struct nfstream_chdlc *) &packet[eth_offset];
-    (*ip_offset) = sizeof(struct ndpi_chdlc); /* CHDLC_OFF = 4 */
+    (*ip_offset) = sizeof(struct nfstream_chdlc); /* CHDLC_OFF = 4 */
     (*type) = ntohs(chdlc->proto_code);
   } else {
     (*ip_offset) = 2;
@@ -681,6 +686,9 @@ void dlt_ppp(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, uint16_
 }
 
 
+/**
+ * fill_mac_ether_strings: nf_packet ether info filler.
+ */
 void fill_mac_ether_strings(struct nf_packet *nf_pkt, const struct nfstream_ethhdr * ether) {
   snprintf(nf_pkt->src_mac,
            sizeof(nf_pkt->src_mac),
@@ -703,6 +711,9 @@ void fill_mac_ether_strings(struct nf_packet *nf_pkt, const struct nfstream_ethh
 }
 
 
+/**
+ * fill_mac_wifi_strings: nf_packet wifi info filler.
+ */
 void fill_mac_wifi_strings(struct nf_packet *nf_pkt, const struct nfstream_wifi_header * wifi) {
   snprintf(nf_pkt->src_mac,
            sizeof(nf_pkt->src_mac),
@@ -726,7 +737,7 @@ void fill_mac_wifi_strings(struct nf_packet *nf_pkt, const struct nfstream_wifi_
 
 
 /**
- * dlt_en10mb: ethernet processing
+ * dlt_en10mb: Ethernet processing
  */
 int dlt_en10mb(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, uint16_t *ip_offset,
                int *pyld_eth_len, struct nf_packet *nf_pkt) {
@@ -755,7 +766,7 @@ int dlt_en10mb(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, uint1
 
 
 /**
- * dlt_radiotap: radiotap link-layer processing
+ * dlt_radiotap: Radiotap link-layer processing
  */
 int dlt_radiotap(const uint8_t *packet, const struct pcap_pkthdr *header, uint16_t eth_offset, uint16_t *type,
                  uint16_t *ip_offset, uint16_t *radio_len, uint16_t *fc, int *wifi_len, struct nf_packet *nf_pkt) {
@@ -784,7 +795,7 @@ int dlt_radiotap(const uint8_t *packet, const struct pcap_pkthdr *header, uint16
 
 
 /**
- * dlt_linux_ssl: linux cooked capture processing
+ * dlt_linux_ssl: Linux cooked capture processing
  */
 void dlt_linux_ssl(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, uint16_t *ip_offset) {
   (*type) = (packet[eth_offset+14] << 8) + packet[eth_offset+15];
@@ -793,7 +804,7 @@ void dlt_linux_ssl(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, u
 
 
 /**
- * datalink_checker: compute offsets based on datalink type.
+ * datalink_checker: Compute offsets based on datalink type.
  */
 int datalink_checker(const struct pcap_pkthdr *header, const uint8_t *packet, uint16_t eth_offset, uint16_t *type,
                      int datalink_type, uint16_t *ip_offset, int *pyld_eth_len, uint16_t *radio_len, uint16_t *fc,
@@ -829,6 +840,9 @@ int datalink_checker(const struct pcap_pkthdr *header, const uint8_t *packet, ui
 }
 
 
+/**
+ * ether_type_checker: Check ether type.
+ */
 void ether_type_checker(const struct pcap_pkthdr *header, const uint8_t *packet, uint16_t *type, uint16_t *vlan_id,
                         uint16_t *ip_offset, uint8_t *recheck_type) {
   // MPLS header
@@ -1047,264 +1061,7 @@ int process_packet(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
 }
 
 
-/**
- * observer_open: Open a pcap file or a specified device.
- */
-pcap_t * observer_open(const uint8_t * pcap_file, int mode, int root_idx) {
-  pcap_t * pcap_handle = NULL;
-  char pcap_error_buffer[PCAP_ERRBUF_SIZE];
-  if (mode == 0) {
-    pcap_handle = pcap_open_offline((char*)pcap_file, pcap_error_buffer);
-  }
-  if (mode == 1) {
-    pcap_handle = pcap_create((char*)pcap_file, pcap_error_buffer);
-  }
-  if (pcap_handle != NULL) {
-    return pcap_handle;
-  } else {
-    if (root_idx == 0) printf("ERROR: Unable to open source %s: %s\n", pcap_file, pcap_error_buffer);
-    return NULL;
-  }
-}
-
-
-/**
- * observer_set_fanout: set fanout mode.
- */
-int observer_set_fanout(pcap_t * pcap_handle, int mode, int root_idx) {
-  int set_fanout = 0;
-  if (mode == 0) return set_fanout;
-  else {
-#ifdef __linux__
-    set_fanout = pcap_set_fanout_linux(pcap_handle, 1, 0x8000, 0);
-    if (set_fanout != 0) {
-      pcap_close(pcap_handle);
-      if (root_idx == 0) printf("ERROR: Unable to setup fanout mode.\n");
-    }
-#endif
-  return set_fanout;
-  }
-}
-
-
-/**
- * observer_activate: activate observer.
- */
-int observer_activate(pcap_t * pcap_handle, int mode, int root_idx) {
-  int set_activate = 0;
-  if (mode == 0) return set_activate;
-  else {
-    set_activate = pcap_activate(pcap_handle);
-    if (set_activate != 0) {
-      pcap_close(pcap_handle);
-      if (root_idx == 0) printf("ERROR: Unable to activate source.\n");
-    }
-  return set_activate;
-  }
-}
-
-
-/**
- * observer_set_timeout: set buffer timeout.
- */
-int observer_set_timeout(pcap_t * pcap_handle, int mode, int root_idx) {
-  int set_timeout = 0;
-  if (mode == 0) return set_timeout;
-  else {
-    set_timeout = pcap_set_timeout(pcap_handle, 1000);
-    if (set_timeout != 0) {
-      pcap_close(pcap_handle);
-      if (root_idx == 0) printf("ERROR: Unable to set buffer timeout.\n");
-    }
-  return set_timeout;
-  }
-}
-
-
-/**
- * observer_set_promisc: set promisc mode.
- */
-int observer_set_promisc(pcap_t * pcap_handle, int mode, int root_idx, int promisc) {
-  int set_promisc = 0;
-  if (mode == 0) return set_promisc;
-  else {
-    set_promisc = pcap_set_promisc(pcap_handle, promisc);
-    if (set_promisc != 0) {
-      pcap_close(pcap_handle);
-      if (root_idx == 0) printf("ERROR: Unable to set promisc mode.\n");
-    }
-  return set_promisc;
-  }
-}
-
-
-/**
- * observer_set_snaplen: set snaplen.
- */
-int observer_set_snaplen(pcap_t * pcap_handle, int mode, int root_idx, unsigned snaplen) {
-  int set_snaplen = 0;
-  if (mode == 0) return set_snaplen;
-  else {
-    set_snaplen = pcap_set_snaplen(pcap_handle, snaplen);
-    if (set_snaplen != 0) {
-      pcap_close(pcap_handle);
-      if (root_idx == 0) printf("ERROR: Unable to set snaplen.\n");
-    }
-  return set_snaplen;
-  }
-}
-
-
-/**
- * observer_set_filter: Configure pcap_t with specified bpf_filter.
- */
-int observer_set_filter(pcap_t * pcap_handle, char * bpf_filter, int root_idx) {
-  if (bpf_filter != NULL) {
-    struct bpf_program fcode;
-    if (pcap_compile(pcap_handle, &fcode, bpf_filter, 1, 0xFFFFFF00) < 0) {
-      if (root_idx == 0) printf("ERROR: Unable to compile BPF filter.\n");
-      pcap_close(pcap_handle);
-      return 1;
-    } else {
-      if (pcap_setfilter(pcap_handle, &fcode) < 0) {
-	    if (root_idx == 0) printf("ERROR: Unable to compile BPF filter.\n");
-	    pcap_close(pcap_handle);
-	    return 1;
-      } else {
-	    return 0;
-	  }
-    }
-  } else {
-    return 0;
-  }
-}
-
-/**
- * observer_next: Get next packet information from pcap handle.
- */
-int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tunnels, int n_roots, int root_idx, int mode) {
-  struct pcap_pkthdr *hdr = NULL;
-  const uint8_t *data = NULL;
-  int rv_handle = pcap_next_ex(pcap_handle, &hdr, &data);
-  if (rv_handle == 1) { // Everything is OK.
-    int rv_processor = process_packet(pcap_handle, hdr, data, decode_tunnels, nf_pkt, n_roots, root_idx, mode);
-    if (rv_processor == 0) {
-        return 0; // Packet ignored due to parsing
-    } else if (rv_processor == 1) { // Packet parsed correctly and match root_idx
-        return 1;
-    } else { // Packet parsed correctly and do not match root_idx, will use it as time ticker
-        return 2;
-    }
-  } else {
-    if (rv_handle == 0) {
-    // See the following for full explanation:
-    // https://github.com/the-tcpdump-group/libpcap/issues/572#issuecomment-576039197
-    // We are using blocking mode and a timeout. So libpcap behavior will depend on used capture mechanism
-      if ((hdr == NULL) || (data == NULL)) { // Timeout with no packet
-        return -1;
-      } else { // packet read at buffer timeout
-        int rv_processor = process_packet(pcap_handle, hdr, data, decode_tunnels, nf_pkt, n_roots, root_idx, mode);
-        if (rv_processor == 0) {
-          return 0; // Packet ignored due to parsing
-        } else if (rv_processor == 1) { // Packet parsed correctly and match root_idx
-          return 1;
-        } else { // Packet parsed correctly and do not match root_idx, will use it as time ticker
-          return 2;
-        }
-      }
-    }
-    if (rv_handle == -2) {
-        return -2; // End of file
-    }
-  }
-  return -1;
-}
-
-
-/**
- * observer_stats: Get observer stats.
- */
-void observer_stats(pcap_t * pcap_handle, struct nf_stat *nf_statistics, unsigned mode) {
-  if (mode == 0) return;
-  else {
-    struct pcap_stat statistics;
-    int ret = pcap_stats(pcap_handle, &statistics);
-    if (ret == 0) {
-      nf_statistics->received = statistics.ps_recv;
-      nf_statistics->dropped = statistics.ps_drop;
-      nf_statistics->dropped_by_interface = statistics.ps_ifdrop;
-    } else {
-      printf("Error: Unable to read interface performance statistics.");
-    }
-  }
-}
-
-
-/**
- * observer_close: Close observer handle.
- */
-void observer_close(pcap_t * pcap_handle) {
-  pcap_breakloop(pcap_handle);
-  pcap_close(pcap_handle);
-}
-
-/*
-------------------------------------------------------------------------------------------------------------------------
-                                           Dissector Layer
-------------------------------------------------------------------------------------------------------------------------
-*/
-
-
-typedef struct dissector_checker {
-// We will check these following structure sizes at initialization.
-uint32_t flow_size;
-uint32_t id_size;
-uint32_t flow_tcp_size;
-uint32_t flow_udp_size;
-} dissector_checker_t;
-
-
-/**
- * dissector_init: Dissector initializer.
- */
-struct ndpi_detection_module_struct *dissector_init(struct dissector_checker *checker) {
-  // Check if headers match the ffi declarations and initialize dissector.
-  ndpi_init_prefs init_prefs = ndpi_no_prefs;
-  if (checker->flow_size != ndpi_detection_get_sizeof_ndpi_flow_struct()) return NULL;
-  if (checker->id_size != ndpi_detection_get_sizeof_ndpi_id_struct()) return NULL;
-  if (checker->flow_tcp_size != ndpi_detection_get_sizeof_ndpi_flow_tcp_struct()) return NULL;
-  if (checker->flow_udp_size != ndpi_detection_get_sizeof_ndpi_flow_udp_struct()) return NULL;
-  return ndpi_init_detection_module(init_prefs);
-}
-
-/**
- * dissector_configure: Dissector initializer.
- */
-void dissector_configure(struct ndpi_detection_module_struct *dissector) {
-    if (dissector == NULL) {
-      return;
-    } else {
-      NDPI_PROTOCOL_BITMASK protos;
-      NDPI_BITMASK_SET_ALL(protos); // Set bitmask for ALL protocols
-      ndpi_set_protocol_detection_bitmask2(dissector, &protos);
-      ndpi_finalize_initalization(dissector);
-    }
-}
-
-/**
- * dissector_cleanup: Dissector cleaner.
- */
-void dissector_cleanup(struct ndpi_detection_module_struct *dissector) {
-  if (dissector == NULL) return;
-  else return ndpi_exit_detection_module(dissector);
-}
-
-
-/*
-------------------------------------------------------------------------------------------------------------------------
-                                           Meter Layer
-------------------------------------------------------------------------------------------------------------------------
-*/
+/***************************************** Flow layer *****************************************************************/
 
 
 // Flow main structure.
@@ -1420,7 +1177,7 @@ uint8_t flow_is_ndpi_proto(struct nf_flow *flow, uint16_t id) {
 
 
 /**
- * flow_bidirectional_dissection_collect_info: dissection informations collector.
+ * flow_bidirectional_dissection_collect_info: Dissection info collector.
  */
 void flow_bidirectional_dissection_collect_info(struct ndpi_detection_module_struct *dissector, struct nf_flow *flow) {
   // We copy useful information to fileds in our flow structure in order to release dissector references at early stage.
@@ -1476,7 +1233,7 @@ void flow_free_ndpi_data(struct nf_flow *flow) {
 
 
 /**
- * flow_free_splt_data: splt fields freer.
+ * flow_free_splt_data: SPLT fields freer.
  */
 void flow_free_splt_data(struct nf_flow *flow) {
   if (flow->splt_direction) { ndpi_free(flow->splt_direction); flow->splt_direction = NULL; }
@@ -1487,7 +1244,7 @@ void flow_free_splt_data(struct nf_flow *flow) {
 
 
 /**
- * flow_update_bidirectional_tcp_flags: update bidirectional tcp flags flow counters.
+ * flow_update_bidirectional_tcp_flags: Update bidirectional tcp flags flow counters.
  */
 void flow_update_bidirectional_tcp_flags(struct nf_flow *flow, struct nf_packet *packet) {
   flow->bidirectional_syn_packets += packet->syn;
@@ -1502,7 +1259,7 @@ void flow_update_bidirectional_tcp_flags(struct nf_flow *flow, struct nf_packet 
 
 
 /**
- * flow_update_src2dst_tcp_flags: update src2dst tcp flags flow counters.
+ * flow_update_src2dst_tcp_flags: Update src2dst tcp flags flow counters.
  */
 void flow_update_src2dst_tcp_flags(struct nf_flow *flow, struct nf_packet *packet) {
   flow->src2dst_syn_packets += packet->syn;
@@ -1517,7 +1274,7 @@ void flow_update_src2dst_tcp_flags(struct nf_flow *flow, struct nf_packet *packe
 
 
 /**
- * flow_update_dst2src_tcp_flags: update dst2src tcp flags flow counters.
+ * flow_update_dst2src_tcp_flags: Update dst2src tcp flags flow counters.
  */
 void flow_update_dst2src_tcp_flags(struct nf_flow *flow, struct nf_packet *packet) {
   flow->dst2src_syn_packets += packet->syn;
@@ -1532,7 +1289,7 @@ void flow_update_dst2src_tcp_flags(struct nf_flow *flow, struct nf_packet *packe
 
 
 /**
- * flow_expiration_handler: flow expiration handler.
+ * flow_expiration_handler: Flow expiration handler.
  */
 uint8_t flow_expiration_handler(struct nf_flow *flow, struct nf_packet *packet,
                            uint64_t idle_timeout, uint64_t active_timeout) {
@@ -1544,7 +1301,7 @@ uint8_t flow_expiration_handler(struct nf_flow *flow, struct nf_packet *packet,
 
 
 /**
- * flow_init_splt: flow splt structure initializer.
+ * flow_init_splt: Flow SPLT structure initializer.
  */
 uint8_t flow_init_splt(struct nf_flow *flow, uint8_t splt, uint16_t packet_size) {
   flow->splt_direction = (int8_t*)ndpi_malloc(sizeof(int8_t) * splt); // direction on int8 is more than sufficient.
@@ -1576,7 +1333,7 @@ uint8_t flow_init_splt(struct nf_flow *flow, uint8_t splt, uint16_t packet_size)
 
 
 /**
- * flow_update_splt: flow splt structure updater.
+ * flow_update_splt: Flow SPLT structure updater.
  */
 void flow_update_splt(uint8_t splt, struct nf_flow *flow, struct nf_packet *packet,
                  uint16_t packet_size, uint64_t bidirectional_piat_ms) {
@@ -1589,7 +1346,7 @@ void flow_update_splt(uint8_t splt, struct nf_flow *flow, struct nf_packet *pack
 
 
 /**
- * flow_set_packet_direction: compute flow packet direction.
+ * flow_set_packet_direction: Compute flow packet direction.
  */
 void flow_set_packet_direction(struct nf_flow *flow, struct nf_packet *packet) {
   // We first check ports to determine direction.
@@ -1605,7 +1362,7 @@ void flow_set_packet_direction(struct nf_flow *flow, struct nf_packet *packet) {
 
 
 /**
- * flow_init_bidirectional_dissection: flow bidirectional dissection initialization.
+ * flow_init_bidirectional_dissection: Flow bidirectional dissection initialization.
  */
 uint8_t flow_init_bidirectional_dissection(struct ndpi_detection_module_struct *dissector, uint8_t n_dissections,
                                            struct nf_flow *flow, struct nf_packet *packet) {
@@ -1643,7 +1400,7 @@ uint8_t flow_init_bidirectional_dissection(struct ndpi_detection_module_struct *
 
 
 /**
- * flow_update_bidirectional_dissection: flow bidirectional dissection updater.
+ * flow_update_bidirectional_dissection: Flow bidirectional dissection updater.
  */
 void flow_update_bidirectional_dissection(struct ndpi_detection_module_struct *dissector, uint8_t n_dissections,
                                           struct nf_flow *flow, struct nf_packet *packet) {
@@ -1685,7 +1442,7 @@ void flow_update_bidirectional_dissection(struct ndpi_detection_module_struct *d
 
 
 /**
- * flow_init_bidirectional_ps: flow bidirectional packet sizes statistics initializer.
+ * flow_init_bidirectional_ps: Flow bidirectional packet sizes statistics initializer.
  */
 void flow_init_bidirectional_ps(struct nf_flow *flow, uint16_t packet_size) {
   flow->bidirectional_min_ps += packet_size;
@@ -1695,7 +1452,7 @@ void flow_init_bidirectional_ps(struct nf_flow *flow, uint16_t packet_size) {
 
 
 /**
- * flow_update_bidirectional_ps: flow bidirectional packet sizes statistics updater.
+ * flow_update_bidirectional_ps: Flow bidirectional packet sizes statistics updater.
  */
 void flow_update_bidirectional_ps(struct nf_flow *flow, uint16_t packet_size) {
   if (packet_size > flow->bidirectional_max_ps) flow->bidirectional_max_ps = packet_size;
@@ -1707,7 +1464,7 @@ void flow_update_bidirectional_ps(struct nf_flow *flow, uint16_t packet_size) {
 
 
 /**
- * flow_init_bidirectional_piat_ms: flow bidirectional piat statistics initializer.
+ * flow_init_bidirectional_piat_ms: Flow bidirectional piat statistics initializer.
  */
 void flow_init_bidirectional_piat_ms(struct nf_flow *flow, uint64_t bidirectional_piat_ms) {
   flow->bidirectional_min_piat_ms += bidirectional_piat_ms;
@@ -1717,20 +1474,21 @@ void flow_init_bidirectional_piat_ms(struct nf_flow *flow, uint64_t bidirectiona
 
 
 /**
- * flow_update_bidirectional_piat_ms: flow bidirectional piat statistics updater.
+ * flow_update_bidirectional_piat_ms: Flow bidirectional piat statistics updater.
  */
 void flow_update_bidirectional_piat_ms(struct nf_flow *flow, uint64_t bidirectional_piat_ms) {
   if (bidirectional_piat_ms > flow->bidirectional_max_piat_ms) flow->bidirectional_max_piat_ms = bidirectional_piat_ms;
   if (bidirectional_piat_ms < flow->bidirectional_min_piat_ms) flow->bidirectional_min_piat_ms = bidirectional_piat_ms;
   double bidirectional_mean_piat_ms = flow->bidirectional_mean_piat_ms;
-  flow->bidirectional_mean_piat_ms += (bidirectional_piat_ms - bidirectional_mean_piat_ms)/(flow->bidirectional_packets-1);
+  flow->bidirectional_mean_piat_ms += (bidirectional_piat_ms - bidirectional_mean_piat_ms)
+                                      / (flow->bidirectional_packets-1);
   flow->bidirectional_stddev_piat_ms += (bidirectional_piat_ms - bidirectional_mean_piat_ms)
-                                         * (bidirectional_piat_ms - flow->bidirectional_mean_piat_ms);
+                                        * (bidirectional_piat_ms - flow->bidirectional_mean_piat_ms);
 }
 
 
 /**
- * flow_init_src2dst_ps: flow src2dst packet sizes statistics initializer.
+ * flow_init_src2dst_ps: Flow src2dst packet sizes statistics initializer.
  */
 void flow_init_src2dst_ps(struct nf_flow *flow, uint16_t packet_size) {
   flow->src2dst_min_ps += packet_size;
@@ -1740,7 +1498,7 @@ void flow_init_src2dst_ps(struct nf_flow *flow, uint16_t packet_size) {
 
 
 /**
- * flow_update_src2dst_ps: flow src2dst packet sizes statistics updater.
+ * flow_update_src2dst_ps: Flow src2dst packet sizes statistics updater.
  */
 void flow_update_src2dst_ps(struct nf_flow *flow, uint16_t packet_size) {
   if (packet_size > flow->src2dst_max_ps) flow->src2dst_max_ps = packet_size;
@@ -1752,7 +1510,7 @@ void flow_update_src2dst_ps(struct nf_flow *flow, uint16_t packet_size) {
 
 
 /**
- * flow_init_src2dst_piat_ms: flow src2dst piat statistics initializer.
+ * flow_init_src2dst_piat_ms: Flow src2dst piat statistics initializer.
  */
 void flow_init_src2dst_piat_ms(struct nf_flow *flow, uint64_t src2dst_piat_ms) {
   flow->src2dst_min_piat_ms += src2dst_piat_ms;
@@ -1762,19 +1520,20 @@ void flow_init_src2dst_piat_ms(struct nf_flow *flow, uint64_t src2dst_piat_ms) {
 
 
 /**
- * flow_update_src2dst_piat_ms: flow src2dst piat statistics updater.
+ * flow_update_src2dst_piat_ms: Flow src2dst piat statistics updater.
  */
 void flow_update_src2dst_piat_ms(struct nf_flow *flow, uint64_t src2dst_piat_ms) {
   if (src2dst_piat_ms > flow->src2dst_max_piat_ms) flow->src2dst_max_piat_ms = src2dst_piat_ms;
   if (src2dst_piat_ms < flow->src2dst_min_piat_ms) flow->src2dst_min_piat_ms = src2dst_piat_ms;
   double src2dst_mean_piat_ms = flow->src2dst_mean_piat_ms;
   flow->src2dst_mean_piat_ms += (src2dst_piat_ms - src2dst_mean_piat_ms)/(flow->src2dst_packets-1);
-  flow->src2dst_stddev_piat_ms += (src2dst_piat_ms - src2dst_mean_piat_ms)*(src2dst_piat_ms - flow->src2dst_mean_piat_ms);
+  flow->src2dst_stddev_piat_ms += (src2dst_piat_ms - src2dst_mean_piat_ms)
+                                  * (src2dst_piat_ms - flow->src2dst_mean_piat_ms);
 }
 
 
 /**
- * flow_init_dst2src_ps: flow dst2src packet sizes statistics initializer.
+ * flow_init_dst2src_ps: Flow dst2src packet sizes statistics initializer.
  */
 void flow_init_dst2src_ps(struct nf_flow *flow, uint16_t packet_size) {
   flow->dst2src_min_ps += packet_size;
@@ -1784,7 +1543,7 @@ void flow_init_dst2src_ps(struct nf_flow *flow, uint16_t packet_size) {
 
 
 /**
- * flow_update_dst2src_ps: flow dst2src packet sizes statistics updater.
+ * flow_update_dst2src_ps: Flow dst2src packet sizes statistics updater.
  */
 void flow_update_dst2src_ps(struct nf_flow *flow, uint16_t packet_size) {
   if (packet_size > flow->dst2src_max_ps) flow->dst2src_max_ps = packet_size;
@@ -1796,7 +1555,7 @@ void flow_update_dst2src_ps(struct nf_flow *flow, uint16_t packet_size) {
 
 
 /**
- * flow_init_dst2src_piat_ms: flow dst2src piat statistics initializer.
+ * flow_init_dst2src_piat_ms: Flow dst2src piat statistics initializer.
  */
 void flow_init_dst2src_piat_ms(struct nf_flow *flow, uint64_t dst2src_piat_ms) {
   flow->dst2src_min_piat_ms += dst2src_piat_ms;
@@ -1806,22 +1565,64 @@ void flow_init_dst2src_piat_ms(struct nf_flow *flow, uint64_t dst2src_piat_ms) {
 
 
 /**
- * flow_update_dst2src_piat_ms: flow dst2src piat statistics updater.
+ * flow_update_dst2src_piat_ms: Flow dst2src piat statistics updater.
  */
 void flow_update_dst2src_piat_ms(struct nf_flow *flow, uint64_t dst2src_piat_ms) {
   if (dst2src_piat_ms > flow->dst2src_max_piat_ms) flow->dst2src_max_piat_ms = dst2src_piat_ms;
   if (dst2src_piat_ms < flow->dst2src_min_piat_ms) flow->dst2src_min_piat_ms = dst2src_piat_ms;
   double dst2src_mean_piat_ms = flow->dst2src_mean_piat_ms;
   flow->dst2src_mean_piat_ms += (dst2src_piat_ms - dst2src_mean_piat_ms)/(flow->dst2src_packets-1);
-  flow->dst2src_stddev_piat_ms += (dst2src_piat_ms - dst2src_mean_piat_ms)*(dst2src_piat_ms - flow->dst2src_mean_piat_ms);
+  flow->dst2src_stddev_piat_ms += (dst2src_piat_ms - dst2src_mean_piat_ms) *
+                                  (dst2src_piat_ms - flow->dst2src_mean_piat_ms);
 }
 
 
 /**
- * flow_update_bidirectional: bidirectional flow updater.
+ * flow_init_bidirectional: Flow bidirectional initializer.
+ */
+uint8_t flow_init_bidirectional(struct ndpi_detection_module_struct *dissector, uint8_t n_dissections, uint8_t splt,
+                                uint8_t statistics, uint16_t packet_size, struct nf_flow *flow,
+                                struct nf_packet *packet) {
+  if (splt) {
+    uint8_t splt_init_success = flow_init_splt(flow, splt, packet_size);
+    if (!splt_init_success) return 0;
+  }
+
+  if (n_dissections) { // we are configured to dissect
+    uint8_t init_bidirectional_dissection_success = flow_init_bidirectional_dissection(dissector, n_dissections,
+                                                                                       flow, packet);
+    if (!init_bidirectional_dissection_success) return 0;
+  }
+  // Classical flow initialization.
+  flow->bidirectional_first_seen_ms = packet->time;
+  flow->bidirectional_last_seen_ms = packet->time;
+  memcpy(flow->src_ip, packet->src_ip_str, 48);
+  memcpy(flow->src_mac, packet->src_mac, 18);
+  memcpy(flow->src_oui, packet->src_oui, 9);
+  flow->src_port = packet->src_port;
+  memcpy(flow->dst_ip, packet->dst_ip_str, 48);
+  memcpy(flow->dst_mac, packet->dst_mac, 18);
+  memcpy(flow->dst_oui, packet->dst_oui, 9);
+  flow->dst_port = packet->dst_port;
+  flow->protocol = packet->protocol;
+  flow->ip_version = packet->ip_version;
+  flow->vlan_id = packet->vlan_id;
+  flow->bidirectional_packets = 1;
+  flow->bidirectional_bytes += packet_size;
+  if (statistics == 1) {
+    flow_init_bidirectional_ps(flow, packet_size);
+    flow_update_bidirectional_tcp_flags(flow, packet);
+  }
+  return 1;
+}
+
+
+/**
+ * flow_update_bidirectional: Flow bidirectional updater.
  */
 void flow_update_bidirectional(struct ndpi_detection_module_struct *dissector, uint8_t n_dissections, uint8_t splt,
-                               uint8_t statistics, uint16_t packet_size, struct nf_flow *flow, struct nf_packet *packet) {
+                               uint8_t statistics, uint16_t packet_size, struct nf_flow *flow,
+                               struct nf_packet *packet) {
   uint64_t bidirectional_piat_ms = packet->time - flow->bidirectional_last_seen_ms;
   packet->delta_time = bidirectional_piat_ms; // This will be exposed as NFPacket feature.
   flow->bidirectional_packets++;
@@ -1841,7 +1642,22 @@ void flow_update_bidirectional(struct ndpi_detection_module_struct *dissector, u
 
 
 /**
- * flow_update_src2dst: src2dst flow updater.
+ * flow_init_src2dst: Flow src2dst initializer.
+ */
+void flow_init_src2dst(uint8_t statistics, uint16_t packet_size, struct nf_flow *flow, struct nf_packet *packet) {
+  flow->src2dst_first_seen_ms = packet->time;
+  flow->src2dst_last_seen_ms = packet->time;
+  flow->src2dst_packets = 1;
+  flow->src2dst_bytes += packet_size;
+  if (statistics == 1) {
+    flow_init_src2dst_ps(flow, packet_size);
+    flow_update_src2dst_tcp_flags(flow, packet);
+  }
+}
+
+
+/**
+ * flow_update_src2dst: Flow src2dst updater.
  */
 void flow_update_src2dst(uint8_t statistics, uint16_t packet_size, struct nf_flow *flow, struct nf_packet *packet) {
   flow->src2dst_packets++;
@@ -1859,7 +1675,7 @@ void flow_update_src2dst(uint8_t statistics, uint16_t packet_size, struct nf_flo
 
 
 /**
- * flow_update_dst2src: dst2src flow updater.
+ * flow_update_dst2src: Flow dst2src updater.
  */
 void flow_update_dst2src(uint8_t statistics, uint16_t packet_size, struct nf_flow *flow, struct nf_packet *packet) {
   flow->dst2src_packets++;
@@ -1885,6 +1701,271 @@ void flow_update_dst2src(uint8_t statistics, uint16_t packet_size, struct nf_flo
 }
 
 
+/*
+------------------------------------------------------------------------------------------------------------------------
+                                           Engine APIs
+------------------------------------------------------------------------------------------------------------------------
+*/
+
+
+/***************************************** Capture APIs ***************************************************************/
+
+
+/**
+ * capture_open: Open a pcap file or a specified device.
+ */
+pcap_t * capture_open(const uint8_t * pcap_file, int mode, int root_idx) {
+  pcap_t * pcap_handle = NULL;
+  char pcap_error_buffer[PCAP_ERRBUF_SIZE];
+  if (mode == 0) {
+    pcap_handle = pcap_open_offline((char*)pcap_file, pcap_error_buffer);
+  }
+  if (mode == 1) {
+    pcap_handle = pcap_create((char*)pcap_file, pcap_error_buffer);
+  }
+  if (pcap_handle != NULL) {
+    return pcap_handle;
+  } else {
+    if (root_idx == 0) printf("ERROR: Unable to open source %s: %s\n", pcap_file, pcap_error_buffer);
+    return NULL;
+  }
+}
+
+
+/**
+ * capture_set_fanout: Set fanout mode.
+ */
+int capture_set_fanout(pcap_t * pcap_handle, int mode, int root_idx) {
+  int set_fanout = 0;
+  if (mode == 0) return set_fanout;
+  else {
+#ifdef __linux__
+    set_fanout = pcap_set_fanout_linux(pcap_handle, 1, 0x8000, 0);
+    if (set_fanout != 0) {
+      pcap_close(pcap_handle);
+      if (root_idx == 0) printf("ERROR: Unable to setup fanout mode.\n");
+    }
+#endif
+  return set_fanout;
+  }
+}
+
+
+/**
+ * capture_activate: Activate capture.
+ */
+int capture_activate(pcap_t * pcap_handle, int mode, int root_idx) {
+  int set_activate = 0;
+  if (mode == 0) return set_activate;
+  else {
+    set_activate = pcap_activate(pcap_handle);
+    if (set_activate != 0) {
+      pcap_close(pcap_handle);
+      if (root_idx == 0) printf("ERROR: Unable to activate source.\n");
+    }
+  return set_activate;
+  }
+}
+
+
+/**
+ * capture_set_timeout: Set buffer timeout.
+ */
+int capture_set_timeout(pcap_t * pcap_handle, int mode, int root_idx) {
+  int set_timeout = 0;
+  if (mode == 0) return set_timeout;
+  else {
+    set_timeout = pcap_set_timeout(pcap_handle, 1000);
+    if (set_timeout != 0) {
+      pcap_close(pcap_handle);
+      if (root_idx == 0) printf("ERROR: Unable to set buffer timeout.\n");
+    }
+  return set_timeout;
+  }
+}
+
+
+/**
+ * capture_set_promisc: Set promisc mode.
+ */
+int capture_set_promisc(pcap_t * pcap_handle, int mode, int root_idx, int promisc) {
+  int set_promisc = 0;
+  if (mode == 0) return set_promisc;
+  else {
+    set_promisc = pcap_set_promisc(pcap_handle, promisc);
+    if (set_promisc != 0) {
+      pcap_close(pcap_handle);
+      if (root_idx == 0) printf("ERROR: Unable to set promisc mode.\n");
+    }
+  return set_promisc;
+  }
+}
+
+
+/**
+ * capture_set_snaplen: Set snaplen.
+ */
+int capture_set_snaplen(pcap_t * pcap_handle, int mode, int root_idx, unsigned snaplen) {
+  int set_snaplen = 0;
+  if (mode == 0) return set_snaplen;
+  else {
+    set_snaplen = pcap_set_snaplen(pcap_handle, snaplen);
+    if (set_snaplen != 0) {
+      pcap_close(pcap_handle);
+      if (root_idx == 0) printf("ERROR: Unable to set snaplen.\n");
+    }
+  return set_snaplen;
+  }
+}
+
+
+/**
+ * capture_set_filter: Configure pcap_t with specified bpf_filter.
+ */
+int capture_set_filter(pcap_t * pcap_handle, char * bpf_filter, int root_idx) {
+  if (bpf_filter != NULL) {
+    struct bpf_program fcode;
+    if (pcap_compile(pcap_handle, &fcode, bpf_filter, 1, 0xFFFFFF00) < 0) {
+      if (root_idx == 0) printf("ERROR: Unable to compile BPF filter.\n");
+      pcap_close(pcap_handle);
+      return 1;
+    } else {
+      if (pcap_setfilter(pcap_handle, &fcode) < 0) {
+	    if (root_idx == 0) printf("ERROR: Unable to compile BPF filter.\n");
+	    pcap_close(pcap_handle);
+	    return 1;
+      } else {
+	    return 0;
+	  }
+    }
+  } else {
+    return 0;
+  }
+}
+
+
+/**
+ * capture_next: Get next packet information from pcap handle.
+ */
+int capture_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tunnels, int n_roots, int root_idx,
+                 int mode) {
+  struct pcap_pkthdr *hdr = NULL;
+  const uint8_t *data = NULL;
+  int rv_handle = pcap_next_ex(pcap_handle, &hdr, &data);
+  if (rv_handle == 1) { // Everything is OK.
+    int rv_processor = process_packet(pcap_handle, hdr, data, decode_tunnels, nf_pkt, n_roots, root_idx, mode);
+    if (rv_processor == 0) {
+        return 0; // Packet ignored due to parsing
+    } else if (rv_processor == 1) { // Packet parsed correctly and match root_idx
+        return 1;
+    } else { // Packet parsed correctly and do not match root_idx, will use it as time ticker
+        return 2;
+    }
+  } else {
+    if (rv_handle == 0) {
+    // See the following for full explanation:
+    // https://github.com/the-tcpdump-group/libpcap/issues/572#issuecomment-576039197
+    // We are using blocking mode and a timeout. So libpcap behavior will depend on used capture mechanism
+      if ((hdr == NULL) || (data == NULL)) { // Timeout with no packet
+        return -1;
+      } else { // packet read at buffer timeout
+        int rv_processor = process_packet(pcap_handle, hdr, data, decode_tunnels, nf_pkt, n_roots, root_idx, mode);
+        if (rv_processor == 0) {
+          return 0; // Packet ignored due to parsing
+        } else if (rv_processor == 1) { // Packet parsed correctly and match root_idx
+          return 1;
+        } else { // Packet parsed correctly and do not match root_idx, will use it as time ticker
+          return 2;
+        }
+      }
+    }
+    if (rv_handle == -2) {
+        return -2; // End of file
+    }
+  }
+  return -1;
+}
+
+
+/**
+ * capture_stats: Get capture stats.
+ */
+void capture_stats(pcap_t * pcap_handle, struct nf_stat *nf_statistics, unsigned mode) {
+  if (mode == 0) return;
+  else {
+    struct pcap_stat statistics;
+    int ret = pcap_stats(pcap_handle, &statistics);
+    if (ret == 0) {
+      nf_statistics->received = statistics.ps_recv;
+      nf_statistics->dropped = statistics.ps_drop;
+      nf_statistics->dropped_by_interface = statistics.ps_ifdrop;
+    } else {
+      printf("Error: Unable to read interface performance statistics.");
+    }
+  }
+}
+
+
+/**
+ * capture_close: Close capture handle.
+ */
+void capture_close(pcap_t * pcap_handle) {
+  pcap_breakloop(pcap_handle);
+  pcap_close(pcap_handle);
+}
+
+
+/***************************************** Dissector APIs *************************************************************/
+
+
+typedef struct dissector_checker {
+// We will check these following structure sizes at initialization.
+uint32_t flow_size;
+uint32_t id_size;
+uint32_t flow_tcp_size;
+uint32_t flow_udp_size;
+} dissector_checker_t;
+
+
+/**
+ * dissector_init: Dissector initializer.
+ */
+struct ndpi_detection_module_struct *dissector_init(struct dissector_checker *checker) {
+  // Check if headers match the ffi declarations and initialize dissector.
+  ndpi_init_prefs init_prefs = ndpi_no_prefs;
+  if (checker->flow_size != ndpi_detection_get_sizeof_ndpi_flow_struct()) return NULL;
+  if (checker->id_size != ndpi_detection_get_sizeof_ndpi_id_struct()) return NULL;
+  if (checker->flow_tcp_size != ndpi_detection_get_sizeof_ndpi_flow_tcp_struct()) return NULL;
+  if (checker->flow_udp_size != ndpi_detection_get_sizeof_ndpi_flow_udp_struct()) return NULL;
+  return ndpi_init_detection_module(init_prefs);
+}
+
+/**
+ * dissector_configure: Dissector initializer.
+ */
+void dissector_configure(struct ndpi_detection_module_struct *dissector) {
+    if (dissector == NULL) {
+      return;
+    } else {
+      NDPI_PROTOCOL_BITMASK protos;
+      NDPI_BITMASK_SET_ALL(protos); // Set bitmask for ALL protocols
+      ndpi_set_protocol_detection_bitmask2(dissector, &protos);
+      ndpi_finalize_initalization(dissector);
+    }
+}
+
+/**
+ * dissector_cleanup: Dissector cleaner.
+ */
+void dissector_cleanup(struct ndpi_detection_module_struct *dissector) {
+  if (dissector == NULL) return;
+  else return ndpi_exit_detection_module(dissector);
+}
+
+
+/***************************************** Meter APIs *****************************************************************/
+
+
 /**
  * meter_initialize_flow: Initialize flow based on packet values and set packet direction.
  */
@@ -1897,43 +1978,10 @@ struct nf_flow *meter_initialize_flow(struct nf_packet *packet, uint8_t accounti
   // All packet sizes and bytes related metrics are reported according to user specified mode.
   // This will allow us to provide a flexible choice without duplicating unnecessary information.
   uint16_t packet_size = flow_get_packet_size(packet, accounting_mode);
-
-  if (splt) {
-    uint8_t splt_init_success = flow_init_splt(flow, splt, packet_size);
-    if (!splt_init_success) return NULL;
-  }
-
-  if (n_dissections) { // we are configured to dissect
-    uint8_t init_bidirectional_dissection_success = flow_init_bidirectional_dissection(dissector, n_dissections,
-                                                                                       flow, packet);
-    if (!init_bidirectional_dissection_success) return NULL;
-  }
-  // Classical flow initialization.
-  flow->bidirectional_first_seen_ms = packet->time;
-  flow->bidirectional_last_seen_ms = packet->time;
-  flow->src2dst_first_seen_ms = packet->time;
-  flow->src2dst_last_seen_ms = packet->time;
-  memcpy(flow->src_ip, packet->src_ip_str, 48);
-  memcpy(flow->src_mac, packet->src_mac, 18);
-  memcpy(flow->src_oui, packet->src_oui, 9);
-  flow->src_port = packet->src_port;
-  memcpy(flow->dst_ip, packet->dst_ip_str, 48);
-  memcpy(flow->dst_mac, packet->dst_mac, 18);
-  memcpy(flow->dst_oui, packet->dst_oui, 9);
-  flow->dst_port = packet->dst_port;
-  flow->protocol = packet->protocol;
-  flow->ip_version = packet->ip_version;
-  flow->vlan_id = packet->vlan_id;
-  flow->bidirectional_packets = 1;
-  flow->src2dst_packets = 1;
-  flow->bidirectional_bytes += packet_size;
-  flow->src2dst_bytes += packet_size;
-  if (statistics == 1) {
-    flow_init_bidirectional_ps(flow, packet_size);
-    flow_init_src2dst_ps(flow, packet_size);
-    flow_update_bidirectional_tcp_flags(flow, packet);
-    flow_update_src2dst_tcp_flags(flow, packet);
-  }
+  uint8_t flow_init_bidirectional_success = flow_init_bidirectional(dissector, n_dissections, splt, statistics,
+                                                                    packet_size, flow, packet);
+  if (!flow_init_bidirectional_success) return NULL;
+  flow_init_src2dst(statistics, packet_size, flow, packet);
   return flow; // we return a pointer to the created flow in order to be cached by Python side.
 }
 
@@ -1975,13 +2023,13 @@ void meter_expire_flow(struct nf_flow *flow, uint8_t n_dissections, struct ndpi_
 /**
  * meter_free_flow: Flow structure freer.
  */
-void meter_free_flow(struct nf_flow *flow, uint8_t n_dissections, uint8_t splt) {
-  if (n_dissections) {
-    flow_free_ndpi_data(flow); // two passes possible but we keep it as pointers are nullified, no risk of double free.
+void meter_free_flow(struct nf_flow *flow, uint8_t n_dissections, uint8_t splt, uint8_t full) {
+  if (full) {
+    if (n_dissections) flow_free_ndpi_data(flow);
+    if (splt) flow_free_splt_data(flow);
+    ndpi_free(flow);
+    flow = NULL;
+  } else { // SPLT only
+    flow_free_splt_data(flow);
   }
-  if (splt) {
-    flow_free_splt_data(flow); // two passes possible but we keep it as pointers are nullified, no risk of double free.
-  }
-  ndpi_free(flow);
-  flow = NULL;
 }

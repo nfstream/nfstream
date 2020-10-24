@@ -1,6 +1,6 @@
 """
 ------------------------------------------------------------------------------------------------------------------------
-context.py
+engine.py
 Copyright (C) 2019-20 - NFStream Developers
 This file is part of NFStream, a Flexible Network Data Analysis Framework (https://www.nfstream.org/).
 NFStream is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
@@ -17,12 +17,12 @@ from os.path import abspath, dirname
 import cffi
 
 # We declare here all headers and APIs of native nfstream, This will include:
-#   - headers and APIs for observation stage (packet capture and processing).
+#   - headers and APIs for capture stage (packet capture and processing).
 #   - headers and APIs for nDPI (the dissection part).
 #   - headers and APIs for Metering stage (flow intialization, update, expiration and cleaning)
-# We group it in a "context" initialized by meter as start in order to share the same ffi instance between stages.
+# We group it in an "engine" initialized by meter as start in order to share the same ffi instance between stages.
 
-cc_observer_headers = """
+cc_capture_headers = """
 struct pcap;
 typedef struct pcap pcap_t;
 typedef struct nf_packet {
@@ -1169,17 +1169,17 @@ typedef struct nf_flow {
 } nf_flow_t;
 """
 
-cc_observer_apis = """
-pcap_t * observer_open(const uint8_t * pcap_file, int mode, int root_idx);
-int observer_set_fanout(pcap_t * pcap_handle, int mode, int root_idx);
-int observer_set_timeout(pcap_t * pcap_handle, int mode, int root_idx);
-int observer_set_promisc(pcap_t * pcap_handle, int mode, int root_idx, int promisc);
-int observer_set_snaplen(pcap_t * pcap_handle, int mode, int root_idx, unsigned snaplen);
-int observer_set_filter(pcap_t * pcap_handle, char * bpf_filter, int root_idx);
-int observer_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tunnels, int n_roots, int root_idx, int mode);
-void observer_stats(pcap_t * pcap_handle, struct nf_stat *nf_statistics, unsigned mode);
-void observer_close(pcap_t * pcap_handle);
-int observer_activate(pcap_t * pcap_handle, int mode, int root_idx);
+cc_capture_apis = """
+pcap_t * capture_open(const uint8_t * pcap_file, int mode, int root_idx);
+int capture_set_fanout(pcap_t * pcap_handle, int mode, int root_idx);
+int capture_set_timeout(pcap_t * pcap_handle, int mode, int root_idx);
+int capture_set_promisc(pcap_t * pcap_handle, int mode, int root_idx, int promisc);
+int capture_set_snaplen(pcap_t * pcap_handle, int mode, int root_idx, unsigned snaplen);
+int capture_set_filter(pcap_t * pcap_handle, char * bpf_filter, int root_idx);
+int capture_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tunnels, int n_roots, int root_idx, int mode);
+void capture_stats(pcap_t * pcap_handle, struct nf_stat *nf_statistics, unsigned mode);
+void capture_close(pcap_t * pcap_handle);
+int capture_activate(pcap_t * pcap_handle, int mode, int root_idx);
 """
 
 cc_dissector_apis = """
@@ -1196,20 +1196,19 @@ uint8_t meter_update_flow(struct nf_flow *flow, struct nf_packet *packet, uint64
                           uint64_t active_timeout, uint8_t accounting_mode, uint8_t statistics, uint8_t splt,
                           uint8_t n_dissections, struct ndpi_detection_module_struct *dissector);
 void meter_expire_flow(struct nf_flow *flow, uint8_t n_dissections, struct ndpi_detection_module_struct *dissector);
-void meter_free_flow(struct nf_flow *flow, uint8_t n_dissections, uint8_t splt);
-void flow_free_splt_data(struct nf_flow *flow);
+void meter_free_flow(struct nf_flow *flow, uint8_t n_dissections, uint8_t splt, uint8_t full);
 """
 
 
-def create_context():
-    """ context creation function, return the loaded native nfstream context and it's ffi interface"""
+def create_engine():
+    """ engine creation function, return the loaded native nfstream engine and it's ffi interface"""
     ffi = cffi.FFI()
-    lib = ffi.dlopen(dirname(abspath(__file__)) + '/context_cc.so')
-    ffi.cdef(cc_observer_headers)
+    lib = ffi.dlopen(dirname(abspath(__file__)) + '/engine.so')
+    ffi.cdef(cc_capture_headers)
     ffi.cdef(cc_dissector_headers_packed, packed=True, override=True)
     ffi.cdef(cc_dissector_headers, override=True)
     ffi.cdef(cc_meter_headers, override=True)
-    ffi.cdef(cc_observer_apis, override=True)
+    ffi.cdef(cc_capture_apis, override=True)
     ffi.cdef(cc_dissector_apis, override=True)
     ffi.cdef(cc_meter_apis, override=True)
     return ffi, lib

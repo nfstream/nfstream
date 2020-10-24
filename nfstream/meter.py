@@ -14,7 +14,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from collections import OrderedDict
-from .context import create_context
+from nfstream.engine import create_engine
 from .flow import NFlow
 from .utils import set_affinity
 
@@ -143,33 +143,33 @@ def setup_dissector(ffi, lib, n_dissections):
     return dissector
 
 
-def setup_observer(ffi, lib, root_idx, source, snaplen, promisc, mode, bpf_filter):
-    """ Setup observer options """
-    observer = lib.observer_open(bytes(source, 'utf-8'), mode, root_idx)
-    if observer == ffi.NULL:
+def setup_capture(ffi, lib, root_idx, source, snaplen, promisc, mode, bpf_filter):
+    """ Setup capture options """
+    capture = lib.capture_open(bytes(source, 'utf-8'), mode, root_idx)
+    if capture == ffi.NULL:
         return
-    fanout_set_failed = lib.observer_set_fanout(observer, mode, root_idx)
+    fanout_set_failed = lib.capture_set_fanout(capture, mode, root_idx)
     if fanout_set_failed:
         return
-    timeout_set_failed = lib.observer_set_timeout(observer, mode, root_idx)
+    timeout_set_failed = lib.capture_set_timeout(capture, mode, root_idx)
     if timeout_set_failed:
         return
-    promisc_set_failed = lib.observer_set_promisc(observer, mode, root_idx, int(promisc))
+    promisc_set_failed = lib.capture_set_promisc(capture, mode, root_idx, int(promisc))
     if promisc_set_failed:
         return
-    snaplen_set_failed = lib.observer_set_snaplen(observer, mode, root_idx, snaplen)
+    snaplen_set_failed = lib.capture_set_snaplen(capture, mode, root_idx, snaplen)
     if snaplen_set_failed:
         return
     if bpf_filter is not None:
-        filter_set_failed = lib.observer_set_filter(observer, bytes(bpf_filter, 'utf-8'), root_idx)
+        filter_set_failed = lib.capture_set_filter(capture, bytes(bpf_filter, 'utf-8'), root_idx)
         if filter_set_failed:
             return
-    return observer
+    return capture
 
 
-def track(lib, observer, mode, interface_stats, tracker, processed, ignored):
+def track(lib, capture, mode, interface_stats, tracker, processed, ignored):
     """ Update shared performance values """
-    lib.observer_stats(observer, interface_stats, mode)
+    lib.capture_stats(capture, interface_stats, mode)
     tracker[0].value = interface_stats.dropped
     tracker[1].value = processed
     tracker[2].value = ignored
@@ -180,9 +180,9 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
                    channel, tracker, lock):
     """ Metering workflow """
     set_affinity(root_idx+1)
-    ffi, lib = create_context()
-    observer = setup_observer(ffi, lib, root_idx, source, snaplen, promisc, mode, bpf_filter)
-    if observer is None:
+    ffi, lib = create_engine()
+    capture = setup_capture(ffi, lib, root_idx, source, snaplen, promisc, mode, bpf_filter)
+    if capture is None:
         ffi.dlclose(lib)
         channel.put(None)
         return
@@ -202,14 +202,14 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
     else:
         lock.acquire()
         lock.release()
-    activation_failed = lib.observer_activate(observer, mode, root_idx)
+    activation_failed = lib.capture_activate(capture, mode, root_idx)
     if activation_failed:
         ffi.dlclose(lib)
         channel.put(None)
         return
     while remaining_packets:
         nf_packet = ffi.new("struct nf_packet *")
-        ret = lib.observer_next(observer, nf_packet, decode_tunnels, n_roots, root_idx, mode)
+        ret = lib.capture_next(capture, nf_packet, decode_tunnels, n_roots, root_idx, mode)
         if ret > 0:  # Valid must be processed by meter
             packet_time = nf_packet.time
             if packet_time > meter_tick:
@@ -243,14 +243,14 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
         else:  # End of file
             remaining_packets = False  # end of loop
         if meter_tick - meter_track_tick >= meter_track_interval:  # Performance tracking
-            track(lib, observer, mode, interface_stats, tracker, processed_packets, ignored_packets)
+            track(lib, capture, mode, interface_stats, tracker, processed_packets, ignored_packets)
             meter_track_tick = meter_tick
     # Expire all remaining flows in the cache.
     meter_cleanup(cache, channel, udps, sync, n_dissections, statistics, splt, ffi, lib, dissector)
-    # Close observer
-    lib.observer_close(observer)
+    # Close capture
+    lib.capture_close(capture)
     # Clean dissector
     lib.dissector_cleanup(dissector)
-    # Release context library
+    # Release engine library
     ffi.dlclose(lib)
     channel.put(None)
