@@ -31,14 +31,14 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 
-def setup_engine():
+def setup_engine_cc():
     platform_compiler = "gcc"
     if sys.platform == 'darwin':
         platform_compiler = "clang"
-    print("\nSetting up engine. Platform: {plat}, Byteorder: {bo}".format(plat=sys.platform, bo=sys.byteorder))
+    print("\nSetting up engine_cc. Platform: {plat}, Byteorder: {bo}".format(plat=sys.platform, bo=sys.byteorder))
     subprocess.check_call([platform_compiler, '-I/usr/local/include/ndpi', '-shared', '-o',
-                           'nfstream/engine/engine.so',
-                           '-g', '-fPIC', '-DPIC', '-O2', '-Wall', 'nfstream/engine/engine.c',
+                           'nfstream/engine/engine_cc.so',
+                           '-g', '-fPIC', '-DPIC', '-O2', '-Wall', 'nfstream/engine/engine_cc.c',
                            # Required compiled static libs
                            '/usr/local/lib/libpcap.a',
                            '/usr/local/lib/libndpi.a',
@@ -58,7 +58,7 @@ class BuildNativeCommand(build_ext):
         if os.name != 'posix':  # Windows case
             pass
         else:
-            setup_engine()
+            setup_engine_cc()
         build_ext.run(self)
 
 

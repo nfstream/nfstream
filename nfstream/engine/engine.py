@@ -1203,7 +1203,7 @@ void meter_free_flow(struct nf_flow *flow, uint8_t n_dissections, uint8_t splt, 
 def create_engine():
     """ engine creation function, return the loaded native nfstream engine and it's ffi interface"""
     ffi = cffi.FFI()
-    lib = ffi.dlopen(dirname(abspath(__file__)) + '/engine.so')
+    lib = ffi.dlopen(dirname(abspath(__file__)) + '/engine_cc.so')
     ffi.cdef(cc_capture_headers)
     ffi.cdef(cc_dissector_headers_packed, packed=True, override=True)
     ffi.cdef(cc_dissector_headers, override=True)
