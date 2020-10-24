@@ -409,7 +409,7 @@ class NFlow(object):
                     self.splt_piat_ms = ffi.unpack(self._C.splt_piat_ms, splt)
                 else:
                     if self._C.splt_closed == 0:  # we also release the memory to keep only the obtained list.
-                        lib.free_splt_data(self._C)
+                        lib.flow_free_splt_data(self._C)
             else:
                 self.splt_direction = ffi.unpack(self._C.splt_direction, splt)
                 self.splt_ps = ffi.unpack(self._C.splt_ps, splt)

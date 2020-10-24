@@ -1197,7 +1197,7 @@ uint8_t meter_update_flow(struct nf_flow *flow, struct nf_packet *packet, uint64
                           uint8_t n_dissections, struct ndpi_detection_module_struct *dissector);
 void meter_expire_flow(struct nf_flow *flow, uint8_t n_dissections, struct ndpi_detection_module_struct *dissector);
 void meter_free_flow(struct nf_flow *flow, uint8_t n_dissections, uint8_t splt);
-void free_splt_data(struct nf_flow *flow);
+void flow_free_splt_data(struct nf_flow *flow);
 """
 
 
