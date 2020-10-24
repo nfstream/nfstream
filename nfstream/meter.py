@@ -14,7 +14,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from collections import OrderedDict
-from nfstream.engine import create_engine
+from .engine import create_engine
 from .flow import NFlow
 from .utils import set_affinity
 
