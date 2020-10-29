@@ -466,6 +466,7 @@ struct ndpi_flow_tcp_struct {
 
   /* NDPI_PROTOCOL_SKYPE */
   uint8_t skype_packet_id;
+  uint8_t skype_crc[4];
 
   /* NDPI_PROTOCOL_CITRIX */
   uint8_t citrix_packet_id;
