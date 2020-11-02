@@ -465,9 +465,13 @@ class TestMethods(unittest.TestCase):
                              n_meters=int(os.getenv('MAX_NFMETERS', 0)),
                              udps=DHCP()
                              ).to_pandas().sort_values(by=['src_ip']).reset_index(drop=True)
-        self.assertEqual(dhcp_df["udps.dhcp_55"][0], "1,3,6,42")
-        self.assertEqual(dhcp_df["udps.dhcp_options"][0], "[53, 61, 50, 54, 55]")
-        self.assertEqual(dhcp_df["udps.dhcp_50"][0], "192.168.0.10")
+        self.assertEqual(dhcp_df["udps.dhcp_msg_type"][0], "MsgType.DISCOVER")
+        self.assertEqual(dhcp_df["udps.dhcp_50"][1], "192.168.0.10")
+        self.assertEqual(dhcp_df["udps.dhcp_55"][1], "1,3,6,42")
+        self.assertEqual(dhcp_df["udps.dhcp_options"][1], "[53, 61, 50, 54, 55]")
+        self.assertEqual(dhcp_df["udps.dhcp_msg_type"][1], "MsgType.REQUEST")
+        self.assertEqual(dhcp_df["udps.dhcp_oui"][1], "00:0b:82")
+        self.assertEqual(dhcp_df.shape[0], 3)
         print("{}\t: \033[94mOK\033[0m".format(".Test DHCP plugin".ljust(60, ' ')))
 
     def test_mdns(self):
