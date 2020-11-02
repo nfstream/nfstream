@@ -34,7 +34,7 @@ def get_files_list(path):
 
 
 def ndpi_result(path):
-    subprocess.check_call(["/usr/local/bin/ndpiReader", "-q", "-t", "-i", path, "-C", path + ".out", "-T", "20", "-U", "20"])
+    subprocess.check_call(["/usr/bin/ndpiReader", "-q", "-t", "-i", path, "-C", path + ".out", "-T", "20", "-U", "20"])
     path = path + ".out"
     with open(path) as csvfile:
         reader = csv.DictReader(csvfile)
