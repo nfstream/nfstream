@@ -75,7 +75,7 @@ jobs:
         git clone --branch fanout https://github.com/tsnoam/libpcap
         cd libpcap
         ./configure --enable-ipv6 --disable-universal --enable-dbus=no --without-libnl
-        make
+        sudo make
         sudo make install
         cd ..
         rm -rf libpcap
@@ -84,7 +84,6 @@ jobs:
         ./autogen.sh
         ./configure
         make
-        sudo make install
         cd ..
         rm -rf nDPI
         pip install wheel twine setuptools codecov
