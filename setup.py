@@ -41,7 +41,7 @@ def setup_engine_cc():
                            '-g', '-fPIC', '-DPIC', '-O2', '-Wall', 'nfstream/engine/engine_cc.c',
                            # Required compiled static libs
                            '/usr/local/lib/libpcap.a',
-                           '/usr/local/lib/libndpi.a',
+                           '/usr/lib/libndpi.a',
                            '/usr/local/lib/libgcrypt.a',
                            '/usr/local/lib/libgpg-error.a'
                            ])

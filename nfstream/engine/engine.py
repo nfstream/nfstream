@@ -466,7 +466,6 @@ struct ndpi_flow_tcp_struct {
 
   /* NDPI_PROTOCOL_SKYPE */
   uint8_t skype_packet_id;
-  uint8_t skype_crc[4];
 
   /* NDPI_PROTOCOL_CITRIX */
   uint8_t citrix_packet_id;
@@ -518,6 +517,7 @@ struct ndpi_flow_udp_struct {
 
   /* NDPI_PROTOCOL_SKYPE */
   uint8_t skype_packet_id;
+  uint8_t skype_crc[4];
 
   /* NDPI_PROTOCOL_TEAMVIEWER */
   uint8_t teamviewer_stage;
@@ -744,6 +744,7 @@ struct ndpi_detection_module_struct {
   uint32_t ticks_per_second;
 
   uint16_t num_tls_blocks_to_follow;
+  uint8_t skip_tls_blocks_until_change_cipher:1, _notused:7;
 
   char custom_category_labels[NUM_CUSTOM_CATEGORIES][CUSTOM_CATEGORY_LABEL_LEN];
   /* callback function buffer */
