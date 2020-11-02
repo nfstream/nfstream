@@ -110,7 +110,8 @@ install:
   - ./autogen.sh
   - ./configure
   - make
-  - sudo make install
+  - sudo cp example/ndpiReader /usr/local/bin/ndpiReader
+  - sudo cp src/lib/libndpi.a /usr/local/lib/libndpi.a
   - cd ..
   - rm -rf nDPI
   - python3 -m pip install --upgrade pip
