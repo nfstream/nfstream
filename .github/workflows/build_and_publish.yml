@@ -16,7 +16,7 @@ jobs:
     name: ${{ matrix.python-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         os: ["ubuntu-latest", "macOS-latest"]
         python-version: [pypy3, 3.9, 3.8, 3.7, 3.6]
@@ -83,7 +83,7 @@ jobs:
         cd nDPI
         ./autogen.sh
         ./configure
-        sudo make
+        make
         sudo make install
         cd ..
         rm -rf nDPI
