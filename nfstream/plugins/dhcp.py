@@ -16,6 +16,7 @@ If not, see <http://www.gnu.org/licenses/>.
 from nfstream import NFPlugin
 from enum import Enum
 import ipaddress
+import struct
 import dpkt
 
 
@@ -56,6 +57,8 @@ class DHCP(NFPlugin):
         flow.udps.dhcp_77 = None
         flow.udps.dhcp_options = []
         flow.udps.dhcp_addr = None  # must be anonymized on export
+        flow.udps.dhcp_msg_type = None
+        flow.udps.dhcp_oui = None
         self.on_update(packet, flow)
 
     @staticmethod
@@ -98,14 +101,17 @@ class DHCP(NFPlugin):
             msg_type, options, opt50, opt55 = self._process_options(flow, dhcp)
 
             if msg_type == MsgType.REQUEST:
+                mac = struct.unpack('BBBBBB', dhcp.chaddr)
+                flow.udps.dhcp_oui = '{:02x}:{:02x}:{:02x}'.format(mac[0], mac[1], mac[2])
                 flow.udps.dhcp_options = options
                 flow.udps.dhcp_55 = opt55 if opt55 is not None else None
                 flow.udps.dhcp_50 = str(opt50) if opt50 is not None else None
-                if flow.src_ip == str(ipaddress.ip_address(0)):
-                    flow.expiration_id = -1
-            if msg_type in [MsgType.ACK, MsgType.NACK, MsgType.INFORM, MsgType.DECLINE]:
+                ciaddr = ipaddress.ip_address(dhcp.ciaddr)
+                if ciaddr != ipaddress.ip_address(0):
+                    flow.udps.dhcp_addr = str(ciaddr)
+
+            if msg_type in [MsgType.ACK, MsgType.NACK, MsgType.INFORM, MsgType.DECLINE] or flow.src_ip == str(ipaddress.ip_address(0)):
                 flow.expiration_id = -1
-            if msg_type == MsgType.ACK:
-                yiaddr = ipaddress.ip_address(dhcp.yiaddr)  # your (client) ip address
-                if yiaddr != ipaddress.ip_address(0):  # inform ack yiaddr is not set
-                    flow.udps.dhcp_addr = str(yiaddr)
+
+            if flow.udps.dhcp_msg_type is None:
+                flow.udps.dhcp_msg_type = msg_type
