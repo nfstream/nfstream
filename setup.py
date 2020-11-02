@@ -36,7 +36,7 @@ def setup_engine_cc():
     if sys.platform == 'darwin':
         platform_compiler = "clang"
     print("\nSetting up engine_cc. Platform: {plat}, Byteorder: {bo}".format(plat=sys.platform, bo=sys.byteorder))
-    subprocess.check_call([platform_compiler, '-I/usr/include/ndpi', '-shared', '-o',
+    subprocess.check_call([platform_compiler, '-I/usr/local/include/ndpi', '-shared', '-o',
                            'nfstream/engine/engine_cc.so',
                            '-g', '-fPIC', '-DPIC', '-O2', '-Wall', 'nfstream/engine/engine_cc.c',
                            # Required compiled static libs
