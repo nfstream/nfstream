@@ -227,8 +227,7 @@ class NFStreamer(object):
                     if c_cpus == 2 * c_cores or c_cpus == c_cores: # multi-thread or single threaded
                         self._n_meters = c_cores - 1
                     else:
-                        i, d = divmod(c_cpus/2, 1)
-                        self._n_meters = i - 1
+                        self._n_meters = int(divmod(c_cpus/2, 1)[0]) - 1
                 else: # weird case, fallback on cpu count.
                     self._n_meters = c_cpus - 1
         else:
