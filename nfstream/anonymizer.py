@@ -37,12 +37,14 @@ class NFAnonymizer(object):
 
     def process(self, flow):
         if self._enabled:
-            if self._cols_index is None:
+            if self._cols_index is None: # First flow, we extract indexes of cols to anonymize.
                 self._cols_index = []
                 for col_name in self._cols_names:
                     keys = flow.keys()
-                    self._cols_index.append(keys.index(col_name))
-                print(self._cols_index )
+                    try:
+                        self._cols_index.append(keys.index(col_name))
+                    except ValueError:
+                        print("WARNING: NFlow do not have {} attribute. Skipping anonymization.")
             values = flow.values()
             for col_idx in self._cols_index:
                 if values[col_idx] is not None:
