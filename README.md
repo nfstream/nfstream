@@ -340,9 +340,20 @@ NFStream natively supports Pandas as export interface.
 ```python
 # See documentation for more details.
 # https://www.nfstream.org/docs/api#pandas-dataframe-conversion
-my_dataframe = NFStreamer(source='facebook.pcap').to_pandas(columns_to_anonymize=[])
+from nfstream import NFStreamer
+my_dataframe = NFStreamer(source='teams.pcap').to_pandas()[["src_ip",
+                                                            "src_port",
+                                                            "dst_ip", 
+                                                            "dst_port", 
+                                                            "protocol",
+                                                            "bidirectional_packets",
+                                                            "bidirectional_bytes",
+                                                            "application_name"]]
 my_dataframe.head(5)
 ```
+
+![Pandas](https://raw.githubusercontent.com/nfstream/nfstream/master/assets/pandas_df.png?raw=true)
+
 
 ### CSV export interface
 
