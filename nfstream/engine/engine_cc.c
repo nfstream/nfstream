@@ -783,6 +783,24 @@ void packet_dlt_linux_ssl(const uint8_t *packet, uint16_t eth_offset, uint16_t *
 
 
 /**
+ * packet_dlt_ipv4: Raw IPv4
+ */
+void packet_dlt_ipv4(uint16_t *type, uint16_t *ip_offset) {
+  (*type) = ETH_P_IP;
+  (*ip_offset) = 0;
+}
+
+
+/**
+ * packet_dlt_ipv6: Raw IPv6
+ */
+void packet_dlt_ipv6(uint16_t *type, uint16_t *ip_offset) {
+  (*type) = ETH_P_IPV6;
+  (*ip_offset) = 0;
+}
+
+
+/**
  * packet_datalink_checker: Compute offsets based on datalink type.
  */
 int packet_datalink_checker(const struct pcap_pkthdr *header, const uint8_t *packet, uint16_t eth_offset, uint16_t *type,
@@ -799,6 +817,13 @@ int packet_datalink_checker(const struct pcap_pkthdr *header, const uint8_t *pac
   case DLT_C_HDLC:
   case DLT_PPP: // Cisco PPP: 9 or 104
     packet_dlt_ppp(packet, eth_offset, type, ip_offset);
+    break;
+  case DLT_IPV4:
+    packet_dlt_ipv4(type, ip_offset);
+    break;
+  case DLT_IPV6:
+    packet_dlt_ipv6(type, ip_offset);
+    ip_offset = 0;
     break;
   case DLT_EN10MB: // IEEE 802.3 Ethernet: 1
     if (!packet_dlt_en10mb(packet, eth_offset, type, ip_offset, pyld_eth_len, nf_pkt)) return 0;
