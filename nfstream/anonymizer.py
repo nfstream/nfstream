@@ -24,7 +24,7 @@ class NFAnonymizer(object):
     """
     __slots__ = ('_secret',
                  '_cols_names',
-                 "_cols_index",
+                 '_cols_index',
                  "_enabled")
 
     def __init__(self, cols_names):
@@ -37,9 +37,17 @@ class NFAnonymizer(object):
 
     def process(self, flow):
         if self._enabled:
-            for col_name in self._cols_names:
-                setattr(flow, col_name, blake2b(getattr(flow, col_name).encode(),
-                                                digest_size=64,
-                                                key=self._secret).hexdigest())
-            return flow.values()
+            if self._cols_index is None:
+                self._cols_index = []
+                for col_name in self._cols_names:
+                    keys = flow.keys()
+                    self._cols_index.append(keys.index(col_name))
+                print(self._cols_index )
+            values = flow.values()
+            for col_idx in self._cols_index:
+                if values[col_idx] is not None:
+                    values[col_idx] = blake2b(str(values[col_idx]).encode(),
+                                              digest_size=64,
+                                              key=self._secret).hexdigest()
+            return values
         return flow.values()
