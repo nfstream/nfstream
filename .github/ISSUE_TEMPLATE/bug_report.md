@@ -26,6 +26,7 @@ If applicable, add screenshots to help explain your problem.
 **Desktop (please complete the following information):**
  - OS: [e.g. Ubuntu]
  - Python version [e.g. 3.6, 3.7]
+ - NFStream version [e.g 6.2.1, 6.2.0]
 
 **Additional context**
 Add any other context about the problem here.
