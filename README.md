@@ -72,7 +72,10 @@ across experiments.
   <td><b>Code Quality</b></td>
   <td>
     <a href="https://lgtm.com/projects/g/nfstream/nfstream/context:python">
-    <img src="https://img.shields.io/lgtm/grade/python/github/nfstream/nfstream.svg?logo=lgtm&style=for-the-badge&logoWidth=18)" alt="Quality" />
+    <img src="https://img.shields.io/lgtm/grade/python/github/nfstream/nfstream?label=LGTM%3A%20Python&logo=lgtm&style=for-the-badge&logoWidth=18)" alt="Quality" />
+    </a>
+    <a href="https://www.codefactor.io/repository/github/nfstream/nfstream">
+    <img src="https://img.shields.io/codefactor/grade/github/nfstream/nfstream?label=codefactor%3A%20Python%2C%20C&logo=codefactor&style=for-the-badge&logoWidth=18)" alt="Quality" />
     </a>
   </td>
 </tr>
