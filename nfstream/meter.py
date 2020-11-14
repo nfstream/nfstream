@@ -143,7 +143,7 @@ def setup_dissector(ffi, lib, n_dissections):
     return dissector
 
 
-def setup_capture(ffi, lib, root_idx, source, snaplen, promisc, mode, bpf_filter):
+def setup_capture(ffi, lib, root_idx, source, snaplen, promisc, mode):
     """ Setup capture options """
     capture = lib.capture_open(bytes(source, 'utf-8'), mode, root_idx)
     if capture == ffi.NULL:
@@ -160,11 +160,25 @@ def setup_capture(ffi, lib, root_idx, source, snaplen, promisc, mode, bpf_filter
     snaplen_set_failed = lib.capture_set_snaplen(capture, mode, root_idx, snaplen)
     if snaplen_set_failed:
         return
+    return capture
+
+
+def setup_filter(capture, lib, root_idx, bpf_filter):
+    """ Compile and setup BPF filter """
     if bpf_filter is not None:
         filter_set_failed = lib.capture_set_filter(capture, bytes(bpf_filter, 'utf-8'), root_idx)
         if filter_set_failed:
-            return
-    return capture
+            return False
+    return True
+
+
+def activate_capture(capture, lib, root_idx, bpf_filter, mode):
+    """ Capture activation function """
+    activation_failed = lib.capture_activate(capture, mode, root_idx)
+    if activation_failed:
+        return False
+    else:
+        return setup_filter(capture, lib, root_idx, bpf_filter)
 
 
 def track(lib, capture, mode, interface_stats, tracker, processed, ignored):
@@ -181,7 +195,7 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
     """ Metering workflow """
     set_affinity(root_idx+1)
     ffi, lib = create_engine()
-    capture = setup_capture(ffi, lib, root_idx, source, snaplen, promisc, mode, bpf_filter)
+    capture = setup_capture(ffi, lib, root_idx, source, snaplen, promisc, mode)
     if capture is None:
         ffi.dlclose(lib)
         channel.put(None)
@@ -202,8 +216,8 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
     else:
         lock.acquire()
         lock.release()
-    activation_failed = lib.capture_activate(capture, mode, root_idx)
-    if activation_failed:
+    # Here the last operation, BPF filtering setup and activation.
+    if not activate_capture(capture, lib, root_idx, bpf_filter, mode):
         ffi.dlclose(lib)
         channel.put(None)
         return
