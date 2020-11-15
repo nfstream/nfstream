@@ -17,10 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'cpp', 'python' ]
-        # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python' ]
-        # Learn more:
-        # https://docs.github.com/github/finding-security-vulnerabilities-and-errors-in-your-code/configuring-code-scanning#changing-the-languages-that-are-analyzed
+        language: ['python' , 'cpp']
 
     steps:
     - name: Checkout repository
@@ -31,26 +28,47 @@ jobs:
       uses: github/codeql-action/init@v1
       with:
         languages: ${{ matrix.language }}
-        # If you wish to specify custom queries, you can do so here or in a config file.
-        # By default, queries listed here will override any specified in a config file.
-        # Prefix the list here with "+" to use these queries and those in the config file.
-        # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
-    # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
-    # If this step fails, then you should remove it and run the build manually (see below)
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v1
-
-    # ℹ️ Command-line programs to run using the OS shell.
-    # 📚 https://git.io/JvXDl
-
-    # ✏️ If the Autobuild fails above, remove it and uncomment the following three lines
-    #    and modify them (or add more) to build your code if your project
-    #    uses a compiled language
-
-    #- run: |
-    #   make bootstrap
-    #   make release
+    - run: |
+       sudo apt-get update
+       sudo apt-get install autoconf automake libtool pkg-config gettext libjson-c-dev libpcap-dev
+       sudo apt-get install libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison
+       git clone --branch libgpg-error-1.39 https://github.com/gpg/libgpg-error
+       cd libgpg-error
+       ./autogen.sh
+       ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc --disable-nls
+       make
+       sudo make install
+       cd ..
+       rm -rf libgpg-error
+       git clone --branch libgcrypt-1.8.6 https://github.com/gpg/libgcrypt
+       cd libgcrypt
+       ./autogen.sh
+       ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc
+       make
+       sudo make install
+       cd ..
+       rm -rf libgcrypt
+       git clone --branch fanout https://github.com/tsnoam/libpcap
+       cd libpcap
+       ./configure --enable-ipv6 --disable-universal --enable-dbus=no --without-libnl
+       make
+       sudo make install
+       cd ..
+       rm -rf libpcap
+       git clone --branch dev https://github.com/ntop/nDPI.git
+       cd nDPI
+       ./autogen.sh
+       ./configure
+       make
+       sudo mkdir /usr/local/include/ndpi
+       sudo cp -a src/include/. /usr/local/include/ndpi/
+       sudo cp example/ndpiReader /usr/local/bin/ndpiReader
+       sudo cp src/lib/libndpi.a /usr/local/lib/libndpi.a
+       cd ..
+       rm -rf nDPI
+       pip install -r requirements.txt
+       python setup.py bdist_wheel
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
