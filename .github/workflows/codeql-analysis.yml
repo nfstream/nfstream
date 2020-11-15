@@ -67,8 +67,8 @@ jobs:
        sudo cp src/lib/libndpi.a /usr/local/lib/libndpi.a
        cd ..
        rm -rf nDPI
-       pip install -r requirements.txt
-       python setup.py bdist_wheel
+       pip3 install -r requirements.txt
+       python3 setup.py bdist_wheel
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
