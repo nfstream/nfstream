@@ -72,7 +72,9 @@ class NFStreamer(object):
 
     @source.setter
     def source(self, value):
-        if not isinstance(value, str):
+        try:
+            value = str(os.fspath(value))
+        except TypeError:
             raise ValueError("Please specify a pcap file path or a valid network interface name as source.")
         available_interfaces = net_if_addrs().keys()
         if value in available_interfaces:
@@ -356,7 +358,7 @@ class NFStreamer(object):
                                                                 iid=NFStreamer.streamer_id,
                                                                 ts=tm.time())
         total_flows = self.to_csv(path=temp_file_path, columns_to_anonymize=columns_to_anonymize, flows_per_file=0)
-        if total_flows >= 0:
+        if total_flows > 0: # If there is flows, return Dataframe else return None.
             df = pd.read_csv(temp_file_path)
             if total_flows != df.shape[0]:
                 print("WARNING: {} flows ignored by pandas type conversion. Consider using to_csv() "
