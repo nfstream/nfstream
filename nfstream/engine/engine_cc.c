@@ -806,7 +806,7 @@ void packet_dlt_ipv6(uint16_t *type, uint16_t *ip_offset) {
 int packet_datalink_checker(const struct pcap_pkthdr *header, const uint8_t *packet, uint16_t eth_offset, uint16_t *type,
                             int datalink_type, uint16_t *ip_offset, int *pyld_eth_len, uint16_t *radio_len, uint16_t *fc,
                             int *wifi_len, struct nf_packet *nf_pkt) {
-  if (header->caplen < eth_offset + 40) return 0;
+  if (header->caplen < eth_offset + 28) return 0; /* 28 = min IP + min UDP */
   switch(datalink_type) {
   case DLT_NULL:
     packet_dlt_null(packet, eth_offset, type, ip_offset);
