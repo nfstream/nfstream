@@ -392,7 +392,7 @@ class NFlow(object):
             self.dst2src_fin_packets = self._C.dst2src_fin_packets
         if n_dissections:  # If dissection set (>0)
             # We minimize updates to a single one, when detection completed.
-            if self._C.detection_completed == 1:
+            if self._C.detection_completed < 2:
                 self.application_name = ffi.string(self._C.application_name).decode('utf-8', errors='ignore')
                 self.application_category_name = ffi.string(self._C.category_name).decode('utf-8', errors='ignore')
                 self.requested_server_name = ffi.string(self._C.requested_server_name).decode('utf-8', errors='ignore')
