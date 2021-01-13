@@ -154,6 +154,7 @@ typedef enum {
   NDPI_UNSAFE_PROTOCOL,
   NDPI_DNS_SUSPICIOUS_TRAFFIC,
   NDPI_TLS_MISSING_SNI,
+  NDPI_HTTP_SUSPICIOUS_CONTENT,
   /* Leave this as last member */
   NDPI_MAX_RISK /* must be <= 31 due to (**) */
 } ndpi_risk_enum;
@@ -249,7 +250,6 @@ struct ndpi_lru_cache {
 typedef union
 {
   uint32_t ipv4;
-  uint8_t ipv4_uint8_t[4];
   struct ndpi_in6_addr ipv6;
 } ndpi_ip_addr_t;
 
@@ -286,7 +286,7 @@ struct ndpi_id_struct {
   /* NDPI_PROTOCOL_ZATTOO */
   uint32_t zattoo_ts;
 
-  /* NDPI_PROTOCOL_UNENCRYPTED_JABBER */
+  /* NDPI_PROTOCOL_JABBER */
   uint32_t jabber_stun_or_ft_ts;
 
   /* NDPI_PROTOCOL_DIRECTCONNECT */
@@ -305,7 +305,7 @@ struct ndpi_id_struct {
   uint16_t bt_port_t[NDPI_BT_PORTS];
   uint16_t bt_port_u[NDPI_BT_PORTS];
 
-  /* NDPI_PROTOCOL_UNENCRYPTED_JABBER */
+  /* NDPI_PROTOCOL_JABBER */
 #define JABBER_MAX_STUN_PORTS 6
   uint16_t jabber_voice_stun_port[JABBER_MAX_STUN_PORTS];
   uint16_t jabber_file_transfer_port[2];
@@ -323,7 +323,7 @@ struct ndpi_id_struct {
   /* NDPI_PROTOCOL_IRC */
   uint8_t irc_number_of_port;
 
-  /* NDPI_PROTOCOL_UNENCRYPTED_JABBER */
+  /* NDPI_PROTOCOL_JABBER */
   uint8_t jabber_voice_stun_used_ports;
 
   /* NDPI_PROTOCOL_SIP */
@@ -415,6 +415,7 @@ struct ndpi_flow_tcp_struct {
     struct {
       uint8_t *buffer;
       unsigned buffer_len, buffer_used;
+      uint32_t next_seq[2]; /* Directions */
     } message;
 
     void* srv_cert_fingerprint_ctx; /* SHA-1 */
@@ -591,7 +592,7 @@ struct ndpi_packet_struct {
 
   uint8_t tls_certificate_detected:4, tls_certificate_num_checks:4;
   uint8_t packet_lines_parsed_complete:1,
-  packet_direction:1, empty_line_position_set:1, pad:5;
+  packet_direction:1, empty_line_position_set:1, http_check_content:1, pad:4;
 };
 
 struct ndpi_detection_module_struct;
@@ -687,12 +688,13 @@ typedef enum {
     in ndpi_main.c
   */
 
-  NDPI_PROTOCOL_NUM_CATEGORIES
+  NDPI_PROTOCOL_NUM_CATEGORIES,
   /*
     NOTE: Keep this as last member
     Unused as value but useful to getting the number of elements
     in this datastructure
   */
+  NDPI_PROTOCOL_ANY_CATEGORY /* Used to handle wildcards */
 } ndpi_protocol_category_t;
 
 typedef struct ndpi_proto_defaults {
@@ -896,7 +898,7 @@ struct ndpi_flow_struct {
   */
   struct {
     ndpi_http_method method;
-    char *url, *content_type, *user_agent;
+    char *url, *content_type /* response */, *request_content_type /* e.g. for POST */, *user_agent;
     uint8_t num_request_headers, num_response_headers;
     uint8_t request_version; /* 0=1.0 and 1=1.1. Create an enum for this? */
     uint16_t response_status_code; /* 200, 404, etc. */
@@ -932,7 +934,7 @@ struct ndpi_flow_struct {
       struct {
       char ssl_version_str[12];
       uint16_t ssl_version, server_names_len;
-      char client_requested_server_name[64], *server_names,
+      char client_requested_server_name[256], *server_names,
       *alpn, *tls_supported_versions, *issuerDN, *subjectDN;
       uint32_t notBefore, notAfter;
       char ja3_client[33], ja3_server[33];
