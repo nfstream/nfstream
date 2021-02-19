@@ -63,9 +63,6 @@ across experiments.
     <a href="https://github.com/nfstream/nfstream/actions?query=workflow%3Abuild">
     <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build/master?logo=github&style=for-the-badge" alt="Github WorkFlows" />
     </a>
-    <a href="https://travis-ci.com/github/nfstream/nfstream">
-    <img src="https://img.shields.io/travis/com/nfstream/nfstream?logo=travis&style=for-the-badge" alt="Travis CI" />
-    </a>
   </td>
 </tr>
 <tr>
