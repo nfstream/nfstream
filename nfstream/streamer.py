@@ -79,7 +79,7 @@ class NFStreamer(object):
         available_interfaces = net_if_addrs().keys()
         if value in available_interfaces:
             self._mode = 1
-        elif ".pcap" in value[-5:] and isfile(value):
+        elif (".pcap" in value[-5:] or ".pcapng" in value[-7:]) and isfile(value):
             self._mode = 0
         else:
             raise ValueError("Please specify a pcap file path or a valid network interface name as source.")

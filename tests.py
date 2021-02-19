@@ -27,7 +27,7 @@ def get_files_list(path):
     files = []
     for r, d, f in os.walk(path):
         for file in f:
-            if '.pcap' == file[-5:]:
+            if '.pcap' == file[-5:] or ".pcapng" == file[-7:]:
                 files.append(os.path.join(r, file))
     files.sort()
     return files
