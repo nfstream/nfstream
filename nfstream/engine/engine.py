@@ -155,6 +155,9 @@ typedef enum {
   NDPI_DNS_SUSPICIOUS_TRAFFIC,
   NDPI_TLS_MISSING_SNI,
   NDPI_HTTP_SUSPICIOUS_CONTENT,
+  NDPI_RISKY_ASN,
+  NDPI_RISKY_DOMAIN,
+  NDPI_RISKY_COUNTRY,
   /* Leave this as last member */
   NDPI_MAX_RISK /* must be <= 31 due to (**) */
 } ndpi_risk_enum;
@@ -338,6 +341,14 @@ struct ndpi_id_struct {
   uint32_t rtsp_ts_set:1;
 };
 
+
+typedef struct message {
+  uint8_t *buffer;
+  unsigned buffer_len, buffer_used, max_expected;
+  uint32_t next_seq[2]; /* Directions */
+} message_t;
+    
+    
 struct ndpi_flow_tcp_struct {
   /* NDPI_PROTOCOL_MAIL_SMTP */
   uint16_t smtp_command_bitmask;
@@ -412,17 +423,11 @@ struct ndpi_flow_tcp_struct {
   uint32_t telnet_stage:2;			// 0 - 2
 
   struct {
-    struct {
-      uint8_t *buffer;
-      unsigned buffer_len, buffer_used;
-      uint32_t next_seq[2]; /* Directions */
-    } message;
-
+    message_t message;
     void* srv_cert_fingerprint_ctx; /* SHA-1 */
-
     /* NDPI_PROTOCOL_TLS */
     uint8_t hello_processed:1, certificate_processed:1, subprotocol_detected:1, fingerprint_set:1, _pad:4; 
-    uint8_t sha1_certificate_fingerprint[20], num_tls_blocks;
+    uint8_t num_tls_blocks;
     int16_t tls_application_blocks_len[NDPI_MAX_NUM_TLS_APPL_BLOCKS];
   } tls;
 
@@ -816,8 +821,7 @@ struct ndpi_detection_module_struct {
   uint32_t jabber_file_transfer_timeout;
   uint8_t ip_version_limit;
   /* NDPI_PROTOCOL_BITTORRENT */
-  struct hash_ip4p_table *bt_ht;
-  struct hash_ip4p_table *bt6_ht;
+  struct hash_ip4p_table *bt_ht, *bt6_ht;
   /* BT_ANNOUNCE */
   struct bt_announce *bt_ann;
   int    bt_ann_len;
@@ -863,7 +867,7 @@ struct ndpi_flow_struct {
   uint32_t next_tcp_seq_nr[2];
   uint8_t max_extra_packets_to_check;
   uint8_t num_extra_packets_checked;
-  uint8_t num_processed_pkts; /* <= WARNING it can wrap but we do expect people to giveup earlier */
+  uint16_t num_processed_pkts; /* <= WARNING it can wrap but we do expect people to giveup earlier */
 
   int (*extra_packets_func) (struct ndpi_detection_module_struct *, struct ndpi_flow_struct *flow);
   /*
@@ -902,6 +906,7 @@ struct ndpi_flow_struct {
     uint8_t num_request_headers, num_response_headers;
     uint8_t request_version; /* 0=1.0 and 1=1.1. Create an enum for this? */
     uint16_t response_status_code; /* 200, 404, etc. */
+    uint8_t detected_os[32]; /* Via HTTP/QUIC User-Agent */
   } http;
 
   /* 
@@ -939,19 +944,21 @@ struct ndpi_flow_struct {
       uint32_t notBefore, notAfter;
       char ja3_client[33], ja3_server[33];
       uint16_t server_cipher;
+      uint8_t sha1_certificate_fingerprint[20];
       struct {
         uint16_t cipher_suite;
         char *esni;
       } encrypted_sni;
       ndpi_cipher_weakness server_unsafe_cipher;
-      } ssl;
+      } tls_quic;
 
       struct {
-      uint8_t num_udp_pkts, num_processed_pkts, num_binding_requests;
+        uint8_t num_udp_pkts, num_binding_requests;
+        uint16_t num_processed_pkts;
       } stun;
 
       /* We can have STUN over SSL/TLS thus they need to live together */
-    } stun_ssl;
+    } tls_quic_stun;
 
     struct {
       char client_signature[48], server_signature[48];
@@ -975,8 +982,6 @@ struct ndpi_flow_struct {
     } ubntac2;
 
     struct {
-      /* Via HTTP User-Agent */
-      uint8_t detected_os[32];
       /* Via HTTP X-Forwarded-For */
       uint8_t nat_ip[24];
     } http;
