@@ -157,7 +157,8 @@ typedef enum {
   NDPI_HTTP_SUSPICIOUS_CONTENT,
   NDPI_RISKY_ASN,
   NDPI_RISKY_DOMAIN,
-  NDPI_RISKY_COUNTRY,
+  NDPI_MALICIOUS_JA3,
+  NDPI_MALICIOUS_SHA1,
   /* Leave this as last member */
   NDPI_MAX_RISK /* must be <= 31 due to (**) */
 } ndpi_risk_enum;
@@ -785,12 +786,14 @@ struct ndpi_detection_module_struct {
   unsigned ndpi_num_supported_protocols;
   unsigned ndpi_num_custom_protocols;
 
-  /* HTTP/DNS/HTTPS host matching */
+  /* HTTP/DNS/HTTPS/QUIC host matching */
   ndpi_automa host_automa,                     /* Used for DNS/HTTPS */
     content_automa,                            /* Used for HTTP subprotocol_detection */
     subprotocol_automa,                        /* Used for HTTP subprotocol_detection */
-    bigrams_automa, impossible_bigrams_automa; /* TOR */
-  /* IMPORTANT: please update ndpi_finalize_initalization() whenever you add a new automa */
+    bigrams_automa, trigrams_automa, impossible_bigrams_automa, /* TOR */
+    risky_domain_automa, tls_cert_subject_automa,
+    malicious_ja3_automa, malicious_sha1_automa;
+  /* IMPORTANT: please update ndpi_finalize_initialization() whenever you add a new automa */
 
   struct {
     ndpi_automa hostnames, hostnames_shadow;

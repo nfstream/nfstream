@@ -1941,7 +1941,7 @@ void dissector_configure(struct ndpi_detection_module_struct *dissector) {
       NDPI_PROTOCOL_BITMASK protos;
       NDPI_BITMASK_SET_ALL(protos); // Set bitmask for ALL protocols
       ndpi_set_protocol_detection_bitmask2(dissector, &protos);
-      ndpi_finalize_initalization(dissector);
+      ndpi_finalize_initialization(dissector);
     }
 }
 
