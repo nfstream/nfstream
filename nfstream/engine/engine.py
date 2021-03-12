@@ -752,7 +752,7 @@ struct ndpi_detection_module_struct {
   uint32_t ticks_per_second;
 
   uint16_t num_tls_blocks_to_follow;
-  uint8_t skip_tls_blocks_until_change_cipher:1, _notused:7;
+  uint8_t skip_tls_blocks_until_change_cipher:1, enable_ja3_plus:1, _notused:6;
 
   char custom_category_labels[NUM_CUSTOM_CATEGORIES][CUSTOM_CATEGORY_LABEL_LEN];
   /* callback function buffer */
@@ -1167,7 +1167,7 @@ typedef struct nf_flow {
   uint8_t splt_closed;
   char application_name[40];
   char category_name[40];
-  char requested_server_name[240];
+  char requested_server_name[256];
   char c_hash[48];
   char s_hash[48];
   char content_type[64];
