@@ -47,6 +47,9 @@ across experiments.
     <a href="https://github.com/nfstream/nfstream/actions?query=workflow%3Abuild">
     <img src="https://img.shields.io/pypi/pyversions/nfstream?logo=python&style=for-the-badge" alt="python3" />
     </a>
+    <a href="https://github.com/nfstream/nfstream/actions?query=workflow%3Abuild">
+    <img src="https://img.shields.io/badge/pypy-3.6%20%7C%203.7-blue?logo=pypy&style=for-the-badge" alt="pypy3" />
+    </a>
   </td>
 </tr>
 <tr>
