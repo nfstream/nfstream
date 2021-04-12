@@ -17,6 +17,10 @@ import json
 import platform
 import psutil
 from threading import Timer
+from collections import namedtuple
+
+
+InternalError = namedtuple('InternalError', ['id', 'message'])
 
 
 def validate_flows_per_file(n):

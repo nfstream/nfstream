@@ -1705,7 +1705,7 @@ void flow_update_dst2src(uint8_t statistics, uint16_t packet_size, struct nf_flo
 /**
  * capture_open: Open a pcap file or a specified device.
  */
-pcap_t * capture_open(const uint8_t * pcap_file, int mode, int root_idx) {
+pcap_t * capture_open(const uint8_t * pcap_file, int mode, char * child_error) {
   pcap_t * pcap_handle = NULL;
   char pcap_error_buffer[PCAP_ERRBUF_SIZE];
   if (mode == 0) {
@@ -1717,7 +1717,7 @@ pcap_t * capture_open(const uint8_t * pcap_file, int mode, int root_idx) {
   if (pcap_handle != NULL) {
     return pcap_handle;
   } else {
-    if (root_idx == 0) printf("ERROR: Unable to open source %s: %s\n", pcap_file, pcap_error_buffer);
+    snprintf(child_error, 256, "%s", pcap_error_buffer);
     return NULL;
   }
 }
@@ -1726,7 +1726,7 @@ pcap_t * capture_open(const uint8_t * pcap_file, int mode, int root_idx) {
 /**
  * capture_set_fanout: Set fanout mode.
  */
-int capture_set_fanout(pcap_t * pcap_handle, int mode, int root_idx) {
+int capture_set_fanout(pcap_t * pcap_handle, int mode, char * child_error) {
   int set_fanout = 0;
   if (mode == 0) return set_fanout;
   else {
@@ -1734,7 +1734,7 @@ int capture_set_fanout(pcap_t * pcap_handle, int mode, int root_idx) {
     set_fanout = pcap_set_fanout_linux(pcap_handle, 1, 0x8000, 0);
     if (set_fanout != 0) {
       pcap_close(pcap_handle);
-      if (root_idx == 0) printf("ERROR: Unable to setup fanout mode.\n");
+      snprintf(child_error, 256, "%s", "Unable to setup fanout mode.");
     }
 #endif
   return set_fanout;
@@ -1745,14 +1745,14 @@ int capture_set_fanout(pcap_t * pcap_handle, int mode, int root_idx) {
 /**
  * capture_activate: Activate capture.
  */
-int capture_activate(pcap_t * pcap_handle, int mode, int root_idx) {
+int capture_activate(pcap_t * pcap_handle, int mode, char * child_error) {
   int set_activate = 0;
   if (mode == 0) return set_activate;
   else {
     set_activate = pcap_activate(pcap_handle);
     if (set_activate != 0) {
       pcap_close(pcap_handle);
-      if (root_idx == 0) printf("ERROR: Unable to activate source.\n");
+      snprintf(child_error, 256, "%s", "Unable to activate source.");
     }
   return set_activate;
   }
@@ -1762,14 +1762,14 @@ int capture_activate(pcap_t * pcap_handle, int mode, int root_idx) {
 /**
  * capture_set_timeout: Set buffer timeout.
  */
-int capture_set_timeout(pcap_t * pcap_handle, int mode, int root_idx) {
+int capture_set_timeout(pcap_t * pcap_handle, int mode, char * child_error) {
   int set_timeout = 0;
   if (mode == 0) return set_timeout;
   else {
     set_timeout = pcap_set_timeout(pcap_handle, 1000);
     if (set_timeout != 0) {
       pcap_close(pcap_handle);
-      if (root_idx == 0) printf("ERROR: Unable to set buffer timeout.\n");
+      snprintf(child_error, 256, "Unable to set buffer timeout.");
     }
   return set_timeout;
   }
@@ -1779,14 +1779,14 @@ int capture_set_timeout(pcap_t * pcap_handle, int mode, int root_idx) {
 /**
  * capture_set_promisc: Set promisc mode.
  */
-int capture_set_promisc(pcap_t * pcap_handle, int mode, int root_idx, int promisc) {
+int capture_set_promisc(pcap_t * pcap_handle, int mode, char * child_error, int promisc) {
   int set_promisc = 0;
   if (mode == 0) return set_promisc;
   else {
     set_promisc = pcap_set_promisc(pcap_handle, promisc);
     if (set_promisc != 0) {
       pcap_close(pcap_handle);
-      if (root_idx == 0) printf("ERROR: Unable to set promisc mode.\n");
+      snprintf(child_error, 256, "Unable to set promisc mode.");
     }
   return set_promisc;
   }
@@ -1796,14 +1796,14 @@ int capture_set_promisc(pcap_t * pcap_handle, int mode, int root_idx, int promis
 /**
  * capture_set_snaplen: Set snaplen.
  */
-int capture_set_snaplen(pcap_t * pcap_handle, int mode, int root_idx, unsigned snaplen) {
+int capture_set_snaplen(pcap_t * pcap_handle, int mode, char * child_error, unsigned snaplen) {
   int set_snaplen = 0;
   if (mode == 0) return set_snaplen;
   else {
     set_snaplen = pcap_set_snaplen(pcap_handle, snaplen);
     if (set_snaplen != 0) {
       pcap_close(pcap_handle);
-      if (root_idx == 0) printf("ERROR: Unable to set snaplen.\n");
+      snprintf(child_error, 256, "Unable to set snaplen.");
     }
   return set_snaplen;
   }
@@ -1813,16 +1813,16 @@ int capture_set_snaplen(pcap_t * pcap_handle, int mode, int root_idx, unsigned s
 /**
  * capture_set_filter: Configure pcap_t with specified bpf_filter.
  */
-int capture_set_filter(pcap_t * pcap_handle, char * bpf_filter, int root_idx) {
+int capture_set_filter(pcap_t * pcap_handle, char * bpf_filter, char * child_error) {
   if (bpf_filter != NULL) {
     struct bpf_program fcode;
     if (pcap_compile(pcap_handle, &fcode, bpf_filter, 1, 0xFFFFFF00) < 0) {
-      if (root_idx == 0) printf("ERROR: Unable to compile BPF filter.\n");
+      snprintf(child_error, 256, "Unable to compile BPF filter.");
       pcap_close(pcap_handle);
       return 1;
     } else {
       if (pcap_setfilter(pcap_handle, &fcode) < 0) {
-	    if (root_idx == 0) printf("ERROR: Unable to compile BPF filter.\n");
+	    snprintf(child_error, 256, "Unable to compile BPF filter.");
 	    pcap_close(pcap_handle);
 	    return 1;
       } else {
@@ -1891,7 +1891,7 @@ void capture_stats(pcap_t * pcap_handle, struct nf_stat *nf_statistics, unsigned
       nf_statistics->dropped = statistics.ps_drop;
       nf_statistics->dropped_by_interface = statistics.ps_ifdrop;
     } else {
-      printf("Error: Unable to read interface performance statistics.");
+      printf("Warning: Error while reading interface performance statistics.");
     }
   }
 }

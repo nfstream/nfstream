@@ -1181,16 +1181,16 @@ typedef struct nf_flow {
 """
 
 cc_capture_apis = """
-pcap_t * capture_open(const uint8_t * pcap_file, int mode, int root_idx);
-int capture_set_fanout(pcap_t * pcap_handle, int mode, int root_idx);
-int capture_set_timeout(pcap_t * pcap_handle, int mode, int root_idx);
-int capture_set_promisc(pcap_t * pcap_handle, int mode, int root_idx, int promisc);
-int capture_set_snaplen(pcap_t * pcap_handle, int mode, int root_idx, unsigned snaplen);
-int capture_set_filter(pcap_t * pcap_handle, char * bpf_filter, int root_idx);
+pcap_t * capture_open(const uint8_t * pcap_file, int mode, char * child_error);
+int capture_set_fanout(pcap_t * pcap_handle, int mode, char * child_error);
+int capture_set_timeout(pcap_t * pcap_handle, int mode, char * child_error);
+int capture_set_promisc(pcap_t * pcap_handle, int mode, char * child_error, int promisc);
+int capture_set_snaplen(pcap_t * pcap_handle, int mode, char * child_error, unsigned snaplen);
+int capture_set_filter(pcap_t * pcap_handle, char * bpf_filter, char * child_error);
 int capture_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tunnels, int n_roots, int root_idx, int mode);
 void capture_stats(pcap_t * pcap_handle, struct nf_stat *nf_statistics, unsigned mode);
 void capture_close(pcap_t * pcap_handle);
-int capture_activate(pcap_t * pcap_handle, int mode, int root_idx);
+int capture_activate(pcap_t * pcap_handle, int mode, char * child_error);
 """
 
 cc_dissector_apis = """

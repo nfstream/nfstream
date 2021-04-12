@@ -255,13 +255,14 @@ class NFStreamer(object):
         self._performance_report = value
 
     def __iter__(self):
-        set_affinity(0) # we pin streamer to core 0 as it's the less intensive task and several services runs
-                        # by default on this core.
+        set_affinity(0)  # we pin streamer to core 0 as it's the less intensive task and several services runs
+        #                  by default on this core.
         lock = mp.Lock()
         lock.acquire()
         meters = []
         performances = []
         n_terminated = 0
+        child_error = None
         rt = None
         channel = mp.Queue(maxsize=32767)  # Backpressure strategy.
         # We set it to (2^15-1) to cope with OSX maximum semaphore value.
@@ -304,9 +305,15 @@ class NFStreamer(object):
                         if n_terminated == n_meters:
                             break  # We finish up when all metering jobs are terminated
                     else:
-                        recv.id = idx_generator.value  # Unify ID
-                        idx_generator.value = idx_generator.value + 1
-                        yield recv
+                        if recv.id == -2:  # Error message
+                            for i in range(n_meters):  # We break workflow loop
+                                meters[i].terminate()
+                            child_error = recv.message
+                            break
+                        else:
+                            recv.id = idx_generator.value  # Unify ID
+                            idx_generator.value = idx_generator.value + 1
+                            yield recv
                 except KeyboardInterrupt:
                     for i in range(n_meters):  # We break workflow loop
                         meters[i].terminate()
@@ -317,7 +324,9 @@ class NFStreamer(object):
                 rt.stop()
             channel.close()  # We close the queue
             channel.join_thread()  # and we join its thread
-        except ValueError as observer_error: # job initiation failed due to some bad observer parameters.
+            if child_error is not None:
+                raise ValueError(child_error)
+        except ValueError as observer_error:  # job initiation failed due to some bad observer parameters.
             raise ValueError(observer_error)
 
     def to_csv(self, path=None, columns_to_anonymize=(), flows_per_file=0):

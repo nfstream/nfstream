@@ -65,7 +65,7 @@ class TestMethods(unittest.TestCase):
                     print(flow)
             except ValueError:
                 value_errors += 1
-        self.assertEqual(value_errors, 3)
+        self.assertEqual(value_errors, 4)
         print("{}\t: \033[94mOK\033[0m".format(".Test source parameter".ljust(60, ' ')))
 
     def test_decode_tunnels_parameter(self):
@@ -91,7 +91,7 @@ class TestMethods(unittest.TestCase):
                     print(flow)
             except ValueError:
                 value_errors += 1
-        self.assertEqual(value_errors, 1)
+        self.assertEqual(value_errors, 2)
         print("{}\t: \033[94mOK\033[0m".format(".Test bpf_filter parameter".ljust(60, ' ')))
 
     def test_promiscuous_mode_parameter(self):

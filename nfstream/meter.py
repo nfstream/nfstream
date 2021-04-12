@@ -16,7 +16,7 @@ If not, see <http://www.gnu.org/licenses/>.
 from collections import OrderedDict
 from .engine import create_engine
 from .flow import NFlow
-from .utils import set_affinity
+from .utils import set_affinity, InternalError
 
 
 class NFCache(OrderedDict):
@@ -143,42 +143,42 @@ def setup_dissector(ffi, lib, n_dissections):
     return dissector
 
 
-def setup_capture(ffi, lib, root_idx, source, snaplen, promisc, mode):
+def setup_capture(ffi, lib, source, snaplen, promisc, mode, error_child):
     """ Setup capture options """
-    capture = lib.capture_open(bytes(source, 'utf-8'), mode, root_idx)
+    capture = lib.capture_open(bytes(source, 'utf-8'), mode, error_child)
     if capture == ffi.NULL:
         return
-    fanout_set_failed = lib.capture_set_fanout(capture, mode, root_idx)
+    fanout_set_failed = lib.capture_set_fanout(capture, mode, error_child)
     if fanout_set_failed:
         return
-    timeout_set_failed = lib.capture_set_timeout(capture, mode, root_idx)
+    timeout_set_failed = lib.capture_set_timeout(capture, mode, error_child)
     if timeout_set_failed:
         return
-    promisc_set_failed = lib.capture_set_promisc(capture, mode, root_idx, int(promisc))
+    promisc_set_failed = lib.capture_set_promisc(capture, mode, error_child, int(promisc))
     if promisc_set_failed:
         return
-    snaplen_set_failed = lib.capture_set_snaplen(capture, mode, root_idx, snaplen)
+    snaplen_set_failed = lib.capture_set_snaplen(capture, mode, error_child, snaplen)
     if snaplen_set_failed:
         return
     return capture
 
 
-def setup_filter(capture, lib, root_idx, bpf_filter):
+def setup_filter(capture, lib, error_child, bpf_filter):
     """ Compile and setup BPF filter """
     if bpf_filter is not None:
-        filter_set_failed = lib.capture_set_filter(capture, bytes(bpf_filter, 'utf-8'), root_idx)
+        filter_set_failed = lib.capture_set_filter(capture, bytes(bpf_filter, 'utf-8'), error_child)
         if filter_set_failed:
             return False
     return True
 
 
-def activate_capture(capture, lib, root_idx, bpf_filter, mode):
+def activate_capture(capture, lib, error_child, bpf_filter, mode):
     """ Capture activation function """
-    activation_failed = lib.capture_activate(capture, mode, root_idx)
+    activation_failed = lib.capture_activate(capture, mode, error_child)
     if activation_failed:
         return False
     else:
-        return setup_filter(capture, lib, root_idx, bpf_filter)
+        return setup_filter(capture, lib, error_child, bpf_filter)
 
 
 def track(lib, capture, mode, interface_stats, tracker, processed, ignored):
@@ -195,10 +195,12 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
     """ Metering workflow """
     set_affinity(root_idx+1)
     ffi, lib = create_engine()
-    capture = setup_capture(ffi, lib, root_idx, source, snaplen, promisc, mode)
+    error_child = ffi.new("char[256]")
+    capture = setup_capture(ffi, lib, source, snaplen, promisc, mode, error_child)
     if capture is None:
         ffi.dlclose(lib)
-        channel.put(None)
+        if root_idx == 0:
+            channel.put(InternalError(-2, ffi.string(error_child).decode('utf-8', errors='ignore')))
         return
     meter_tick, meter_scan_tick, meter_track_tick = 0, 0, 0  # meter, idle scan and perf track timelines
     meter_scan_interval, meter_track_interval = 10, 1000  # we scan each 10 msecs and update perf each sec.
@@ -217,9 +219,10 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
         lock.acquire()
         lock.release()
     # Here the last operation, BPF filtering setup and activation.
-    if not activate_capture(capture, lib, root_idx, bpf_filter, mode):
+    if not activate_capture(capture, lib, error_child, bpf_filter, mode):
         ffi.dlclose(lib)
-        channel.put(None)
+        if root_idx == 0:
+            channel.put(InternalError(-2, ffi.string(error_child).decode('utf-8', errors='ignore')))
         return
     while remaining_packets:
         nf_packet = ffi.new("struct nf_packet *")
