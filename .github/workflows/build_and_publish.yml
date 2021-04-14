@@ -99,8 +99,10 @@ jobs:
         ls dist/
     - name: Testing and coverage report generation
       run: |
-        coverage run tests.py
-        coverage combine
+        echo "Testing ..."
+        python -m coverage run tests.py
+        echo "Combining ..."
+        python -m coverage combine
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
     - name: Publish on Pypi
