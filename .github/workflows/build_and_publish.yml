@@ -98,10 +98,10 @@ jobs:
       run: |
         ls dist/
     - name: Testing and coverage report generation
+      # Disable temporary coverage on MACOS
+      if: startsWith(matrix.os, 'ubuntu')
       run: |
-        echo "Testing ..."
         python -m coverage run tests.py
-        echo "Combining ..."
         python -m coverage combine
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1

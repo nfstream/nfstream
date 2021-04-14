@@ -267,7 +267,6 @@ class NFStreamer(object):
         channel = mp.Queue(maxsize=32767)  # Backpressure strategy.
         # We set it to (2^15-1) to cope with OSX maximum semaphore value.
         n_meters = self.n_meters
-        print("DEBUG: {}".format(n_meters))
         try:
             for i in range(n_meters):
                 performances.append([mp.Value('I', 0), mp.Value('I', 0), mp.Value('I', 0)])
