@@ -34,8 +34,6 @@ jobs:
       with:
         path: .cache/pip
         key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashFiles('**/ci_requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
     - name: Install ubuntu Prerequisites
       if: startsWith(matrix.os, 'ubuntu')
       run: |
