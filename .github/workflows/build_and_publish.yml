@@ -34,7 +34,7 @@ jobs:
       run: |
         python -c "import sys; print(sys.version.split("" "")[0])"
         echo "::set-output name=dir::$(python -c "import sys; print(\"/opt/hostedtoolcache/Python/\" + sys.version.split("" "")[0] + \"/lib/\")")"
-        ls ${{ steps.set-cache.outputs.dir }}
+        echo ${{ steps.set-cache.outputs.dir }}
     - name: Set cache location for Ubuntu (PyPy)
       if: |
         startsWith(matrix.os, 'ubuntu') &&
@@ -42,7 +42,7 @@ jobs:
       run: |
         python -c "import sys; print(sys.version.split("" "")[0])"
         echo "::set-output name=dir::$(python -c "import sys; print(\"/opt/hostedtoolcache/PyPy/\" + sys.version.split("" "")[0] + \"/lib/\")")"
-        ls ${{ steps.set-cache.outputs.dir }}
+        echo ${{ steps.set-cache.outputs.dir }}
     - name: Set cache location for macOS (Python)
       if: |
         startsWith(matrix.os, 'macOS') &&
@@ -50,7 +50,7 @@ jobs:
       run: |
         python -c "import sys; print(sys.version.split("" "")[0])"
         echo "::set-output name=dir::$(python -c "import sys; print(\"/Users/runner/hostedtoolcache/Python/\" + sys.version.split("" "")[0] + \"/lib/\")")"
-        ls ${{ steps.set-cache.outputs.dir }}
+        echo ${{ steps.set-cache.outputs.dir }}
     - name: Set cache location for macOS (PyPy)
       if: |
         startsWith(matrix.os, 'macOS') &&
@@ -58,7 +58,7 @@ jobs:
       run: |
         python -c "import sys; print(sys.version.split("" "")[0])"
         echo "::set-output name=dir::$(python -c "import sys; print(\"/Users/runner/hostedtoolcache/PyPy/\" + sys.version.split("" "")[0] + \"/lib/\")")"
-        ls ${{ steps.set-cache.outputs.dir }}
+        echo ${{ steps.set-cache.outputs.dir }}
     - name: Pip cache
       uses: actions/cache@v2
       id: pip-cache
