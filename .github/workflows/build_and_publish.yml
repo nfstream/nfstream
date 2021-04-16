@@ -26,6 +26,10 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+    # Caching improves build time, we use pythonLocation to cache everything including wheels to avoid building
+    # wheels at each build (pandas/Pypy is extremely time consuming)
+    # sed replacement is performed to rectify PyPy path which ends with /bin
+    # cache key takes into account the Python version of the runner to avoid version mismatch on updates.
     - name: Get pip cache path
       id: get-pip-path
       run: |
