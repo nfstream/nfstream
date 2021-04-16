@@ -98,8 +98,7 @@ jobs:
       run: |
         ls dist/
     - name: Testing and coverage report generation
-      # Disable temporary coverage on MACOS (comment if statement to enable it once fixed)
-      if: startsWith(matrix.os, 'ubuntu')
+      # if: startsWith(matrix.os, 'ubuntu') # Disable temporary coverage on MACOS
       run: |
         python -m coverage run tests.py
         python -m coverage combine
