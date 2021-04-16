@@ -26,15 +26,19 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Display Python version
+    - name: Get pip cache path
+      id: get-pip-path
       run: |
         python -c "import sys; print(sys.version)"
+        id=$(echo ${{ env.pythonLocation }} | sed 's/\/bin//g')
+        echo "::set-output name=id::$id"
+
     - name: Pip cache
       uses: actions/cache@v2
       id: pip-cache
       with:
-        path: ${{ env.pythonLocation }}
-        key: ${{ env.pythonLocation }}-${{ hashFiles('setup.py') }}-${{ hashFiles('dev-requirements.txt') }}
+        path: ${{ steps.get-pip-path.outputs.id }}
+        key: ${{ steps.get-pip-path.outputs.id }}-${{ hashFiles('setup.py') }}-${{ hashFiles('dev-requirements.txt') }}
     - name: Install ubuntu Prerequisites
       if: startsWith(matrix.os, 'ubuntu')
       run: |
