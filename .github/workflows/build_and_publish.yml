@@ -23,48 +23,18 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
-      id: set-cache
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Set cache location for Ubuntu (Python)
-      if: |
-        startsWith(matrix.os, 'ubuntu') &&
-        startsWith(matrix.python-version, '3')
+    - name: Display Python version
       run: |
-        python -c "import sys; print(sys.version.split("" "")[0])"
-        echo "::set-output name=dir::$(python -c "import sys; print(\"/opt/hostedtoolcache/Python/\" + sys.version.split("" "")[0] + \"/lib/\")")"
-        echo ${{ steps.set-cache.outputs.dir }}
-    - name: Set cache location for Ubuntu (PyPy)
-      if: |
-        startsWith(matrix.os, 'ubuntu') &&
-        startsWith(matrix.python-version, 'pypy')
-      run: |
-        python -c "import sys; print(sys.version.split("" "")[0])"
-        echo "::set-output name=dir::$(python -c "import sys; print(\"/opt/hostedtoolcache/PyPy/\" + sys.version.split("" "")[0] + \"/lib/\")")"
-        echo ${{ steps.set-cache.outputs.dir }}
-    - name: Set cache location for macOS (Python)
-      if: |
-        startsWith(matrix.os, 'macOS') &&
-        startsWith(matrix.python-version, '3')
-      run: |
-        python -c "import sys; print(sys.version.split("" "")[0])"
-        echo "::set-output name=dir::$(python -c "import sys; print(\"/Users/runner/hostedtoolcache/Python/\" + sys.version.split("" "")[0] + \"/lib/\")")"
-        echo ${{ steps.set-cache.outputs.dir }}
-    - name: Set cache location for macOS (PyPy)
-      if: |
-        startsWith(matrix.os, 'macOS') &&
-        startsWith(matrix.python-version, 'pypy')
-      run: |
-        python -c "import sys; print(sys.version.split("" "")[0])"
-        echo "::set-output name=dir::$(python -c "import sys; print(\"/Users/runner/hostedtoolcache/PyPy/\" + sys.version.split("" "")[0] + \"/lib/\")")"
-        echo ${{ steps.set-cache.outputs.dir }}
+        python -c "import sys; print(sys.version)"
     - name: Pip cache
       uses: actions/cache@v2
       id: pip-cache
       with:
-        path: .cache/pip
-        key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashFiles('**/ci_requirements.txt') }}
+        path: ${{ env.pythonLocation }}
+        key: ${{ env.pythonLocation }}-${{ hashFiles('setup.py') }}-${{ hashFiles('dev-requirements.txt') }}
     - name: Install ubuntu Prerequisites
       if: startsWith(matrix.os, 'ubuntu')
       run: |
@@ -78,7 +48,7 @@ jobs:
     - name: Installing NFStream requirements
       if: steps.pip-cache.outputs.cache-hit != 'true'
       run: |
-        pip install -r ci_requirements.txt
+        pip install -r dev_requirements.txt
     - name: Build Engine dependencies
       run: |
         git clone --branch libgpg-error-1.39 https://github.com/gpg/libgpg-error
