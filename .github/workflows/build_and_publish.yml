@@ -9,8 +9,7 @@ on:
   release:
     types: [created]
   schedule:
-    # nightly build at 00:00.
-    - cron:  '0 10 * * *'
+    - cron:  '0 12 * * *'
 jobs:
   test:
     name: ${{ matrix.python-version }} on ${{ matrix.os }}
@@ -22,28 +21,21 @@ jobs:
         python-version: [pypy-3.7, pypy3, 3.9, 3.8, 3.7, 3.6]
 
     steps:
-    - uses: actions/checkout@v2.3.4
+    - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2.2.2
+      uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-
-    - name: Get pip cache dir
-      id: pip-cache
-      run: |
-        python -m pip install --upgrade pip setuptools wheel
-        echo "::set-output name=dir::$(pip cache dir)"
-
-    - name: Pip cache
-      uses: actions/cache@v2.1.5
-      with:
-        path: ${{ steps.pip-cache.outputs.dir }}
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-
     - name: Display Python version
       run: python -c "import sys; print(sys.version)"
+    - name: Pip cache
+      uses: actions/cache@v2
+      id: pip-cache
+      with:
+        path: .cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/ci_requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
     - name: Install ubuntu Prerequisites
       if: startsWith(matrix.os, 'ubuntu')
       run: |
@@ -54,7 +46,11 @@ jobs:
       if: startsWith(matrix.os, 'macOS')
       run: |
         brew install autoconf automake libtool pkg-config gettext json-c
-    - name: Installing package dependencies
+    - name: Installing NFStream requirements
+      if: steps.pip-cache.outputs.cache-hit != 'true'
+      run: |
+        pip install -r ci_requirements.txt
+    - name: Build Engine dependencies
       run: |
         git clone --branch libgpg-error-1.39 https://github.com/gpg/libgpg-error
         cd libgpg-error
@@ -90,10 +86,7 @@ jobs:
         sudo cp src/lib/libndpi.a /usr/local/lib/libndpi.a
         cd ..
         rm -rf nDPI
-        pip install wheel twine setuptools codecov
-        pip install -r requirements.txt
         MACOSX_DEPLOYMENT_TARGET=10.14 python setup.py bdist_wheel
-        ls nfstream/
     - name: Generated wheel
       run: |
         ls dist/
@@ -104,7 +97,7 @@ jobs:
         python -m coverage run tests.py
         python -m coverage combine
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1.3.2
+      uses: codecov/codecov-action@v1
     - name: Publish on Pypi
       if: startsWith(github.ref, 'refs/tags/')
       env:

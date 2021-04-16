@@ -1,0 +1,9 @@
+cffi>=1.14.0
+psutil>=5.7.0
+numpy<=1.18.5
+pandas>=1.0.3
+dpkt>=1.9.4
+wheel>=0.36.2
+twine>=3.4.1
+setuptools>=56.0.0
+codecov>=2.1.11
