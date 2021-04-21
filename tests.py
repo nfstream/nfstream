@@ -267,14 +267,14 @@ class TestMethods(unittest.TestCase):
 
         print("{}\t: \033[94mOK\033[0m".format(".Test expiration management".ljust(60, ' ')))
 
-    def tunnel_decoding(self):
+    def test_tunnel_decoding(self):
         print("\n----------------------------------------------------------------------")
         decode_streamer = NFStreamer(source='tests/gtp-u.pcap', statistical_analysis=True, decode_tunnels=True)
         for flow in decode_streamer:
             self.assertEqual(flow.tunnel_id, 1)
         decode_streamer.decode_tunnels = False
         for flow in decode_streamer:
-            self.assertRaises(AttributeError, getattr(flow, "tunnel_id"))
+            self.assertRaises(AttributeError, getattr, flow, "tunnel_id")
         del decode_streamer
         print("{}\t: \033[94mOK\033[0m".format(".Test tunnels decoding".ljust(60, ' ')))
 
