@@ -42,6 +42,7 @@ typedef struct nf_packet {
   uint16_t payload_size;
   uint16_t ip_content_len;
   uint8_t *ip_content;
+  unsigned tunnel_id;
 } nf_packet_t;
 typedef struct nf_stat {
   unsigned received;
@@ -1098,6 +1099,7 @@ typedef struct nf_flow {
   uint8_t protocol;
   uint8_t ip_version;
   uint16_t vlan_id;
+  unsigned tunnel_id;
   uint64_t bidirectional_first_seen_ms;
   uint64_t bidirectional_last_seen_ms;
   uint64_t bidirectional_duration_ms;

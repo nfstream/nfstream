@@ -267,6 +267,17 @@ class TestMethods(unittest.TestCase):
 
         print("{}\t: \033[94mOK\033[0m".format(".Test expiration management".ljust(60, ' ')))
 
+    def tunnel_decoding(self):
+        print("\n----------------------------------------------------------------------")
+        decode_streamer = NFStreamer(source='tests/gtp-u.pcap', statistical_analysis=True, decode_tunnels=True)
+        for flow in decode_streamer:
+            self.assertEqual(flow.tunnel_id, 1)
+        decode_streamer.decode_tunnels = False
+        for flow in decode_streamer:
+            self.assertRaises(AttributeError, getattr(flow, "tunnel_id"))
+        del decode_streamer
+        print("{}\t: \033[94mOK\033[0m".format(".Test tunnels decoding".ljust(60, ' ')))
+
     def test_statistical(self):
         print("\n----------------------------------------------------------------------")
         statistical_streamer = NFStreamer(source='tests/google_ssl.pcap', statistical_analysis=True, accounting_mode=1)
@@ -284,6 +295,7 @@ class TestMethods(unittest.TestCase):
             self.assertEqual(flow.protocol, 6)
             self.assertEqual(flow.ip_version, 4)
             self.assertEqual(flow.vlan_id, 0)
+            self.assertEqual(flow.tunnel_id, 0)
             self.assertEqual(flow.bidirectional_first_seen_ms, 1434443394683)
             self.assertEqual(flow.bidirectional_last_seen_ms, 1434443401353)
             self.assertEqual(flow.bidirectional_duration_ms, 6670)

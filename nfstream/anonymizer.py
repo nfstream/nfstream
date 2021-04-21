@@ -16,6 +16,7 @@ If not, see <http://www.gnu.org/licenses/>.
 from hashlib import blake2b
 import secrets
 
+
 class NFAnonymizer(object):
     """
         NFAnonymizer: NFStream anonymization implementation.

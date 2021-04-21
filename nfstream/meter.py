@@ -64,11 +64,11 @@ def get_flow_key(packet, ffi):
     dst_ip = ffi.string(packet.dst_ip_str).decode('utf-8', errors='ignore')
     return packet.protocol, packet.vlan_id, \
            min(src_ip, dst_ip), max(src_ip, dst_ip),\
-           min(packet.src_port, packet.dst_port), max(packet.src_port, packet.dst_port)
+           min(packet.src_port, packet.dst_port), max(packet.src_port, packet.dst_port), packet.tunnel_id
 
 
 def consume(packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps, sync, accounting_mode, n_dissections,
-            statistics, splt, dissector):
+            statistics, splt, dissector, decode_tunnels):
     """ consume a packet and produce flow """
     # We maintain state for active flows computation 1 for creation, 0 for update/cut, -1 for custom expire
     flow_key = get_flow_key(packet, ffi)
@@ -87,7 +87,7 @@ def consume(packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps
                 del flow
                 try:
                     cache[flow_key] = NFlow(packet, ffi, lib, udps, sync, accounting_mode, n_dissections,
-                                            statistics, splt, dissector)
+                                            statistics, splt, dissector, decode_tunnels)
                 except OSError:
                     print("WARNING: Failed to allocate memory space for flow creation. Flow creation aborted.")
                 state = 0
@@ -96,7 +96,8 @@ def consume(packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps
     except KeyError:  # create flow
         try:
             if sync:
-                flow = NFlow(packet, ffi, lib, udps, sync, accounting_mode, n_dissections, statistics, splt, dissector)
+                flow = NFlow(packet, ffi, lib, udps, sync, accounting_mode, n_dissections, statistics, splt, dissector,
+                             decode_tunnels)
                 if flow.expiration_id == -1:  # A user Plugin forced expiration on the first packet
                     channel.put(flow.expire(udps, sync, n_dissections, statistics, splt, ffi, lib, dissector))
                     del flow
@@ -106,7 +107,7 @@ def consume(packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps
                     state = 1
             else:
                 cache[flow_key] = NFlow(packet, ffi, lib, udps, sync, accounting_mode, n_dissections, statistics, splt,
-                                        dissector)
+                                        dissector, decode_tunnels)
                 state = 1
         except OSError:
             print("WARNING: Failed to allocate memory space for flow creation. Flow creation aborted.")
@@ -241,7 +242,7 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
                     meter_scan_tick = meter_tick
                 # Consume packet and return diff
                 diff = consume(nf_packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps, sync,
-                               accounting_mode, n_dissections, statistics, splt, dissector)
+                               accounting_mode, n_dissections, statistics, splt, dissector, decode_tunnels)
                 active_flows += diff
                 if go_scan:
                     idles = meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, n_dissections,

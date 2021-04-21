@@ -110,7 +110,6 @@ typedef enum {
   nfstream_gtp_tunnel,
   nfstream_capwap_tunnel,
   nfstream_tzsp_tunnel,
-  nfstream_l2tp_tunnel,
 } nfstream_packet_tunnel;
 
 
@@ -346,6 +345,7 @@ typedef struct nf_packet {
   uint16_t payload_size;
   uint16_t ip_content_len;
   uint8_t *ip_content;
+  unsigned tunnel_id;
 } nf_packet_t;
 
 
@@ -521,7 +521,7 @@ int packet_fanout(struct nf_packet *nf_pkt, int mode, uint64_t hashval, int n_ro
 /**
  * packet_get_ip_info: nf_packet structure filler.
  */
-int packet_get_ip_info(const uint8_t version, uint16_t vlan_id, nfstream_packet_tunnel tunnel_type,
+int packet_get_ip_info(const uint8_t version, uint16_t vlan_id, nfstream_packet_tunnel tunnel_id,
                        const struct nfstream_iphdr *iph, const struct nfstream_ipv6hdr *iph6, uint16_t ip_offset,
                        uint16_t ipsize, uint16_t l4_packet_len, struct nfstream_tcphdr **tcph,
                        struct nfstream_udphdr **udph, uint16_t *sport, uint16_t *dport, uint8_t *proto,
@@ -556,7 +556,9 @@ int packet_get_ip_info(const uint8_t version, uint16_t vlan_id, nfstream_packet_
   }
   packet_get_info(nf_pkt, sport, dport, l4_data_len, payload_len, iph, iph6, ipsize, version, vlan_id);
   uint64_t hashval = 0; // Compute hashval as the sum of 6-tuple fields.
-  hashval = nf_pkt->protocol + nf_pkt->vlan_id + iph->saddr + iph->daddr + nf_pkt->src_port + nf_pkt->dst_port;
+  hashval = nf_pkt->protocol + nf_pkt->vlan_id + iph->saddr + iph->daddr + nf_pkt->src_port + nf_pkt->dst_port +
+            tunnel_id;
+  nf_pkt->tunnel_id = tunnel_id;
   return packet_fanout(nf_pkt, mode, hashval, n_roots, root_idx);
 }
 
@@ -564,7 +566,7 @@ int packet_get_ip_info(const uint8_t version, uint16_t vlan_id, nfstream_packet_
 /**
  * packet_get_ipv6_info: Convert IPv6 headers to IPv4.
  */
-static int packet_get_ipv6_info(uint16_t vlan_id, nfstream_packet_tunnel tunnel_type,
+static int packet_get_ipv6_info(uint16_t vlan_id, nfstream_packet_tunnel tunnel_id,
                                 const struct nfstream_ipv6hdr *iph6, uint16_t ip_offset, uint16_t ipsize,
                                 struct nfstream_tcphdr **tcph, struct nfstream_udphdr **udph,
                                 uint16_t *sport, uint16_t *dport, uint8_t *proto, uint8_t **payload,
@@ -584,7 +586,7 @@ static int packet_get_ipv6_info(uint16_t vlan_id, nfstream_packet_tunnel tunnel_
   }
   iph.protocol = l4proto;
   iph.tot_len = iph6->ip6_hdr.ip6_un1_plen;
-  return(packet_get_ip_info(6, vlan_id, tunnel_type, &iph, iph6, ip_offset, ipsize, ntohs(iph6->ip6_hdr.ip6_un1_plen),
+  return(packet_get_ip_info(6, vlan_id, tunnel_id, &iph, iph6, ip_offset, ipsize, ntohs(iph6->ip6_hdr.ip6_un1_plen),
 	     tcph, udph, sport, dport, proto, payload, payload_len, when, nf_pkt, n_roots, root_idx, mode));
 }
 
@@ -594,7 +596,7 @@ static int packet_get_ipv6_info(uint16_t vlan_id, nfstream_packet_tunnel tunnel_
  */
 int packet_parse(const uint64_t time,
                  uint16_t vlan_id,
-                 nfstream_packet_tunnel tunnel_type,
+                 nfstream_packet_tunnel tunnel_id,
                  const struct nfstream_iphdr *iph,
                  struct nfstream_ipv6hdr *iph6,
                  uint16_t ip_offset,
@@ -617,11 +619,11 @@ int packet_parse(const uint64_t time,
   nf_pkt->raw_size = rawsize;
   // According to IPVERSION, we extract required information for metering layer.
   if (iph)
-    return packet_get_ip_info(IPVERSION, vlan_id, tunnel_type, iph, NULL, ip_offset, ipsize,
+    return packet_get_ip_info(IPVERSION, vlan_id, tunnel_id, iph, NULL, ip_offset, ipsize,
                               ntohs(iph->tot_len) - (iph->ihl * 4), &tcph, &udph, &sport, &dport, &proto, &payload,
                               &payload_len, when, nf_pkt, n_roots, root_idx, mode);
   else
-    return packet_get_ipv6_info(vlan_id, tunnel_type, iph6, ip_offset, ipsize, &tcph, &udph, &sport, &dport, &proto,
+    return packet_get_ipv6_info(vlan_id, tunnel_id, iph6, ip_offset, ipsize, &tcph, &udph, &sport, &dport, &proto,
                                 &payload, &payload_len, when, nf_pkt, n_roots, root_idx, mode);
 }
 
@@ -899,7 +901,7 @@ int packet_process(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
   struct nfstream_iphdr *iph;
   // IPv6 header
   struct nfstream_ipv6hdr *iph6;
-  nfstream_packet_tunnel tunnel_type = nfstream_no_tunnel;
+  nfstream_packet_tunnel tunnel_id = nfstream_no_tunnel;
   uint16_t eth_offset = 0, radio_len = 0, fc = 0, type = 0, ip_offset = 0, ip_len = 0, frag_off = 0, vlan_id = 0;
   int wifi_len = 0, pyld_eth_len = 0;
   uint8_t proto = 0, recheck_type = 0;
@@ -969,27 +971,46 @@ int packet_process(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
     else {
       struct nfstream_udphdr *udp = (struct nfstream_udphdr *)&packet[ip_offset+ip_len];
       uint16_t sport = ntohs(udp->source), dport = ntohs(udp->dest);
-      if ((sport == GTP_U_V1_PORT) || (dport == GTP_U_V1_PORT)) {
+      if (((sport == GTP_U_V1_PORT) || (dport == GTP_U_V1_PORT)) && ((ip_offset + ip_len +
+                                                                      sizeof(struct nfstream_udphdr) + 8)
+                                                                      < header->caplen)
+                                                                      ) {
         // Check if it's GTPv1
         unsigned offset = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
         uint8_t flags = packet[offset];
         uint8_t message_type = packet[offset+1];
-        tunnel_type = nfstream_gtp_tunnel;
-        if ((((flags & 0xE0) >> 5) == 1) && (message_type == 0xFF)) { // T-PDU
-          ip_offset = ip_offset+ip_len+sizeof(struct nfstream_udphdr)+8; // GTPv1 header len
-          if (flags & 0x04) ip_offset += 1; // next_ext_header is present
-          if (flags & 0x02) ip_offset += 4; // seq_number is present (it also includes next_ext_header and pdu_number)
-          if (flags & 0x01) ip_offset += 1; // pdu_number is present
-          if (ip_offset < header->caplen) {
-            iph = (struct nfstream_iphdr *)&packet[ip_offset];
-            if (iph->version == 6) {
-              iph6 = (struct nfstream_ipv6hdr *)&packet[ip_offset];
-              iph = NULL;
-            } else if (iph->version != IPVERSION) {
-              return 0;
+        uint8_t exts_parsing_error = 0;
+
+        if((((flags & 0xE0) >> 5) == 1 /* GTPv1 */) && (message_type == 0xFF /* T-PDU */)) {
+          offset += 8; /* GTPv1 header len */
+          if (flags & 0x07) offset += 4; /* sequence_number + pdu_number + next_ext_header fields */
+          /* Extensions parsing */
+          if (flags & 0x04) {
+            unsigned int ext_length = 0;
+            while (offset < header->caplen) {
+              ext_length = packet[offset] << 2;
+              offset += ext_length;
+              if (offset >= header->caplen || ext_length == 0) {
+                exts_parsing_error = 1;
+                break;
+              }
+              if (packet[offset - 1] == 0) break;
             }
           }
-        }
+
+          if (offset < header->caplen && !exts_parsing_error) {
+	        /* Ok, valid GTP-U */
+	        tunnel_id = nfstream_gtp_tunnel;
+	        ip_offset = offset;
+	        iph = (struct nfstream_iphdr *)&packet[ip_offset];
+	        if (iph->version == 6) {
+	          iph6 = (struct nfstream_ipv6hdr *)&packet[ip_offset];
+	          iph = NULL;
+	        } else if (iph->version != IPVERSION) {
+	          return 0;
+	        }
+	      }
+	    }
       } else if ((sport == TZSP_PORT) || (dport == TZSP_PORT)) {
         // https://en.wikipedia.org/wiki/TZSP
         if (header->caplen < ip_offset + ip_len + sizeof(struct nfstream_udphdr) + 4) return 0;
@@ -997,14 +1018,14 @@ int packet_process(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
         uint8_t version = packet[offset];
         uint8_t ts_type = packet[offset+1];
         uint16_t encapsulates = ntohs(*((uint16_t*)&packet[offset+2]));
-        tunnel_type = nfstream_tzsp_tunnel;
+        tunnel_id = nfstream_tzsp_tunnel;
         if ((version == 1) && (ts_type == 0) && (encapsulates == 1)) {
           uint8_t stop = 0;
           offset += 4;
           while((!stop) && (offset < header->caplen)) {
             uint8_t tag_type = packet[offset];
             uint8_t tag_len;
-            switch(tag_type) {
+            switch (tag_type) {
             case 0: // PADDING Tag
               tag_len = 1;
               break;
@@ -1039,7 +1060,7 @@ int packet_process(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
 	          // LLC header is 8 bytes
 	          type = ntohs((uint16_t)*((uint16_t*)&packet[offset+6]));
 	          ip_offset = offset + 8;
-	          tunnel_type = nfstream_capwap_tunnel;
+	          tunnel_id = nfstream_capwap_tunnel;
 	          goto iph_check;
 	        }
 	      }
@@ -1047,7 +1068,7 @@ int packet_process(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
       }
     }
   }
-  return packet_parse(time, vlan_id, tunnel_type, iph, iph6, ip_offset, header->caplen - ip_offset, header->len,
+  return packet_parse(time, vlan_id, tunnel_id, iph, iph6, ip_offset, header->caplen - ip_offset, header->len,
                       header, packet, header->ts, nf_pkt, n_roots, root_idx, mode);
 }
 
@@ -1064,6 +1085,7 @@ typedef struct nf_flow {
   uint8_t protocol;
   uint8_t ip_version;
   uint16_t vlan_id;
+  unsigned tunnel_id;
   uint64_t bidirectional_first_seen_ms;
   uint64_t bidirectional_last_seen_ms;
   uint64_t bidirectional_duration_ms;
@@ -1587,6 +1609,7 @@ uint8_t flow_init_bidirectional(struct ndpi_detection_module_struct *dissector, 
   // Classical flow initialization.
   flow->bidirectional_first_seen_ms = packet->time;
   flow->bidirectional_last_seen_ms = packet->time;
+  flow->tunnel_id = packet->tunnel_id;
   memcpy(flow->src_ip, packet->src_ip_str, 48);
   memcpy(flow->src_mac, packet->src_mac, 18);
   memcpy(flow->src_oui, packet->src_oui, 9);

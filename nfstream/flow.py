@@ -43,7 +43,8 @@ nf_packet = namedtuple('NFPacket', ['time',
                                     'ack',
                                     'psh',
                                     'rst',
-                                    'fin'])
+                                    'fin',
+                                    'tunnel_id'])
 
 
 class UDPS(object):
@@ -78,7 +79,8 @@ def pythonize_packet(packet, ffi):
                      ack=packet.ack,
                      psh=packet.psh,
                      rst=packet.rst,
-                     fin=packet.fin)
+                     fin=packet.fin,
+                     tunnel_id=packet.tunnel_id)
 
 
 class NFlow(object):
@@ -104,6 +106,7 @@ class NFlow(object):
                  'protocol',
                  'ip_version',
                  'vlan_id',
+                 'tunnel_id',
                  'bidirectional_first_seen_ms',
                  'bidirectional_last_seen_ms',
                  'bidirectional_duration_ms',
@@ -181,7 +184,8 @@ class NFlow(object):
                  '_C',
                  'udps')
 
-    def __init__(self, packet, ffi, lib, udps, sync, accounting_mode, n_dissections, statistics, splt, dissector):
+    def __init__(self, packet, ffi, lib, udps, sync, accounting_mode, n_dissections, statistics, splt, dissector,
+                 decode_tunnels):
         self.id = -1  # id always at -1 and will be handled by NFStreamer side.
         self.expiration_id = 0
         # Initialize C structure.
@@ -215,7 +219,9 @@ class NFlow(object):
         self.dst2src_duration_ms = self._C.dst2src_duration_ms
         self.dst2src_packets = self._C.dst2src_packets
         self.dst2src_bytes = self._C.dst2src_bytes
-        if statistics: # if statistical analysis set, we activate statistical slots.
+        if decode_tunnels:
+            self.tunnel_id = self._C.tunnel_id
+        if statistics:  # if statistical analysis set, we activate statistical slots.
             self.bidirectional_min_ps = self._C.bidirectional_min_ps
             self.bidirectional_mean_ps = self._C.bidirectional_mean_ps
             self.bidirectional_stddev_ps = self._C.bidirectional_stddev_ps
