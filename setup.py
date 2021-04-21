@@ -128,6 +128,6 @@ setup(
         'Topic :: Scientific/Engineering :: Artificial Intelligence'
     ],
     project_urls={
-        'GitHub': 'https://github.com/aouinizied/nfstream',
+        'GitHub': 'https://github.com/nfstream/nfstream',
     }
 )
