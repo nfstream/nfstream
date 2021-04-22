@@ -57,184 +57,114 @@ class TestMethods(unittest.TestCase):
 
     def test_source_parameter(self):
         print("\n----------------------------------------------------------------------")
-        value_errors = 0
-        source = ["inexisting.pcap", "lo", "lo0", 22]
+        source = ["inexisting.pcap", "lo0", "lo", 11]
         for x in source:
-            try:
-                for flow in NFStreamer(source=x):
-                    print(flow)
-            except ValueError:
-                value_errors += 1
-        self.assertEqual(value_errors, 4)
+            with self.assertRaises(ValueError):
+                NFStreamer(source=x).to_pandas()
         print("{}\t: \033[94mOK\033[0m".format(".Test source parameter".ljust(60, ' ')))
 
     def test_decode_tunnels_parameter(self):
         print("\n----------------------------------------------------------------------")
-        value_errors = 0
         decode_tunnels = [33, "True"]
         for x in decode_tunnels:
-            try:
-                for flow in NFStreamer(source='tests/google_ssl.pcap', decode_tunnels=x):
-                    print(flow)
-            except ValueError:
-                value_errors += 1
-        self.assertEqual(value_errors, 2)
+            with self.assertRaises(ValueError):
+                NFStreamer(source='tests/google_ssl.pcap', decode_tunnels=x)
         print("{}\t: \033[94mOK\033[0m".format(".Test decode_tunnels parameter".ljust(60, ' ')))
 
     def test_bpf_filter_parameter(self):
         print("\n----------------------------------------------------------------------")
-        value_errors = 0
         bpf_filter = ["my filter", 11]
         for x in bpf_filter:
-            try:
-                for flow in NFStreamer(source='tests/google_ssl.pcap', bpf_filter=x):
-                    print(flow)
-            except ValueError:
-                value_errors += 1
-        self.assertEqual(value_errors, 2)
+            with self.assertRaises(ValueError):
+                NFStreamer(source='tests/google_ssl.pcap', bpf_filter=x).to_pandas()
         print("{}\t: \033[94mOK\033[0m".format(".Test bpf_filter parameter".ljust(60, ' ')))
 
     def test_promiscuous_mode_parameter(self):
         print("\n----------------------------------------------------------------------")
-        value_errors = 0
         promiscuous_mode = ["yes", 89]
         for x in promiscuous_mode:
-            try:
-                for flow in NFStreamer(source='tests/google_ssl.pcap', promiscuous_mode=x):
-                    print(flow)
-            except ValueError:
-                value_errors += 1
-        self.assertEqual(value_errors, 2)
+            with self.assertRaises(ValueError):
+                NFStreamer(source='tests/google_ssl.pcap', promiscuous_mode=x)
         print("{}\t: \033[94mOK\033[0m".format(".Test promiscuous_mode parameter".ljust(60, ' ')))
 
     def test_snapshot_length_parameter(self):
         print("\n----------------------------------------------------------------------")
-        value_errors = 0
         snapshot_length = ["largest", -1]
         for x in snapshot_length:
-            try:
-                for flow in NFStreamer(source='tests/google_ssl.pcap', snapshot_length=x):
-                    print(flow)
-            except ValueError:
-                value_errors += 1
-        self.assertEqual(value_errors, 2)
+            with self.assertRaises(ValueError):
+                NFStreamer(source='tests/google_ssl.pcap', snapshot_length=x)
         print("{}\t: \033[94mOK\033[0m".format(".Test snapshot_length parameter".ljust(60, ' ')))
 
     def test_idle_timeout_parameter(self):
         print("\n----------------------------------------------------------------------")
-        value_errors = 0
         idle_timeout = [-1, "idle"]
         for x in idle_timeout:
-            try:
-                for flow in NFStreamer(source='tests/google_ssl.pcap', idle_timeout=x):
-                    print(flow)
-            except ValueError:
-                value_errors += 1
-        self.assertEqual(value_errors, 2)
+            with self.assertRaises(ValueError):
+                NFStreamer(source='tests/google_ssl.pcap', idle_timeout=x)
         print("{}\t: \033[94mOK\033[0m".format(".Test idle_timeout parameter".ljust(60, ' ')))
 
     def test_active_timeout_parameter(self):
         print("\n----------------------------------------------------------------------")
-        value_errors = 0
         active_timeout = [-1, "active"]
         for x in active_timeout:
-            try:
-                for flow in NFStreamer(source='tests/google_ssl.pcap', active_timeout=x):
-                    print(flow)
-            except ValueError:
-                value_errors += 1
-        self.assertEqual(value_errors, 2)
+            with self.assertRaises(ValueError):
+                NFStreamer(source='tests/google_ssl.pcap', active_timeout=x)
         print("{}\t: \033[94mOK\033[0m".format(".Test active_timeout parameter".ljust(60, ' ')))
 
     def test_accounting_mode_parameter(self):
         print("\n----------------------------------------------------------------------")
-        value_errors = 0
         accounting_mode = [-1, 5, 'ip']
         for x in accounting_mode:
-            try:
-                for flow in NFStreamer(source='tests/google_ssl.pcap', accounting_mode=x):
-                    print(flow)
-            except ValueError:
-                value_errors += 1
-        self.assertEqual(value_errors, 3)
+            with self.assertRaises(ValueError):
+                NFStreamer(source='tests/google_ssl.pcap', accounting_mode=x)
         print("{}\t: \033[94mOK\033[0m".format(".Test accounting_mode parameter".ljust(60, ' ')))
 
     def test_udps_parameter(self):
         print("\n----------------------------------------------------------------------")
-        value_errors = 0
         udps = [lambda y: y+1, "NFPlugin"]
         for x in udps:
-            try:
-                for flow in NFStreamer(source='tests/google_ssl.pcap', udps=x):
-                    print(flow)
-            except ValueError:
-                value_errors += 1
-        self.assertEqual(value_errors, 2)
+            with self.assertRaises(ValueError):
+                NFStreamer(source='tests/google_ssl.pcap', udps=x)
         print("{}\t: \033[94mOK\033[0m".format(".Test udps parameter".ljust(60, ' ')))
 
     def test_n_dissections_parameter(self):
         print("\n----------------------------------------------------------------------")
-        value_errors = 0
         n_dissections = ["yes", -1, 256]
         for x in n_dissections:
-            try:
-                for flow in NFStreamer(source='tests/google_ssl.pcap', n_dissections=x):
-                    print(flow)
-            except ValueError:
-                value_errors += 1
-        self.assertEqual(value_errors, 3)
+            with self.assertRaises(ValueError):
+                NFStreamer(source='tests/google_ssl.pcap', n_dissections=x)
         print("{}\t: \033[94mOK\033[0m".format(".Test n_dissections parameter".ljust(60, ' ')))
 
     def test_statistical_analysis_parameter(self):
         print("\n----------------------------------------------------------------------")
-        value_errors = 0
         statistical_analysis = ["yes", 89]
         for x in statistical_analysis:
-            try:
-                for flow in NFStreamer(source='tests/google_ssl.pcap', statistical_analysis=x):
-                    print(flow)
-            except ValueError:
-                value_errors += 1
-        self.assertEqual(value_errors, 2)
+            with self.assertRaises(ValueError):
+                NFStreamer(source='tests/google_ssl.pcap', statistical_analysis=x)
         print("{}\t: \033[94mOK\033[0m".format(".Test statistical_analysis parameter".ljust(60, ' ')))
 
     def test_splt_analysis_parameter(self):
         print("\n----------------------------------------------------------------------")
-        value_errors = 0
         splt_analysis = [-1, 256, "yes"]
         for x in splt_analysis:
-            try:
-                for flow in NFStreamer(source='tests/google_ssl.pcap', splt_analysis=x):
-                    print(flow)
-            except ValueError:
-                value_errors += 1
-        self.assertEqual(value_errors, 3)
+            with self.assertRaises(ValueError):
+                NFStreamer(source='tests/google_ssl.pcap', splt_analysis=x)
         print("{}\t: \033[94mOK\033[0m".format(".Test splt_analysis parameter".ljust(60, ' ')))
 
     def test_n_meters_parameter(self):
         print("\n----------------------------------------------------------------------")
-        value_errors = 0
         n_meters = ["yes", -1]
         for x in n_meters:
-            try:
-                for flow in NFStreamer(source='tests/google_ssl.pcap', n_meters=x):
-                    print(flow)
-            except ValueError:
-                value_errors += 1
-        self.assertEqual(value_errors, 2)
+            with self.assertRaises(ValueError):
+                NFStreamer(source='tests/google_ssl.pcap', n_meters=x)
         print("{}\t: \033[94mOK\033[0m".format(".Test n_meters parameter".ljust(60, ' ')))
 
     def test_performance_report_parameter(self):
         print("\n----------------------------------------------------------------------")
-        value_errors = 0
         performance_report = ["yes", -1]
         for x in performance_report:
-            try:
-                for flow in NFStreamer(source='tests/google_ssl.pcap', performance_report=x):
-                    print(flow)
-            except ValueError:
-                value_errors += 1
-        self.assertEqual(value_errors, 2)
+            with self.assertRaises(ValueError):
+                NFStreamer(source='tests/google_ssl.pcap', performance_report=x)
         print("{}\t: \033[94mOK\033[0m".format(".Test performance_report parameter".ljust(60, ' ')))
 
     def test_expiration_management(self):
