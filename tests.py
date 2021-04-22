@@ -363,8 +363,6 @@ class TestMethods(unittest.TestCase):
             if result == ndpi_result(test_file):
                 ok_files.append(test_case_name)
                 print("{}\t: \033[94mOK\033[0m".format(test_case_name.ljust(60, ' ')))
-            else:
-                print("{}\t: \033[31mKO\033[0m".format(test_case_name.ljust(60, ' ')))
         self.assertEqual(len(files), len(ok_files))
 
     def test_splt(self):
