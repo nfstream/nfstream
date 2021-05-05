@@ -161,11 +161,12 @@ typedef enum {
   NDPI_MALICIOUS_JA3,
   NDPI_MALICIOUS_SHA1_CERTIFICATE,
   NDPI_DESKTOP_OR_FILE_SHARING_SESSION,
+  NDPI_TLS_UNCOMMON_ALPN,
   /* Leave this as last member */
-  NDPI_MAX_RISK /* must be <= 31 due to (**) */
+  NDPI_MAX_RISK /* must be <= 63 due to (**) */
 } ndpi_risk_enum;
 
-typedef uint32_t ndpi_risk;
+typedef uint64_t ndpi_risk;
 
 /* NDPI_VISIT */
 typedef enum {
