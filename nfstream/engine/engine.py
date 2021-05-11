@@ -858,6 +858,16 @@ typedef enum {
   ndpi_cipher_insecure = NDPI_CIPHER_INSECURE
 } ndpi_cipher_weakness;
 
+#define MAX_NUM_TLS_SIGNATURE_ALGORITHMS 16
+
+struct tls_euristics {
+  /*
+    TLS euristics for detecting browsers usage
+    NOTE: expect false positives
+  */
+  uint8_t is_safari_tls:1, is_firefox_tls:1, notused:6;
+};
+
 struct ndpi_flow_struct {
   uint16_t detected_protocol_stack[2];
   uint16_t protocol_stack_info;
@@ -950,6 +960,7 @@ struct ndpi_flow_struct {
       char ja3_client[33], ja3_server[33];
       uint16_t server_cipher;
       uint8_t sha1_certificate_fingerprint[20];
+      struct tls_euristics browser_euristics;
       struct {
         uint16_t cipher_suite;
         char *esni;
@@ -1084,10 +1095,10 @@ struct ndpi_flow_struct {
 };
 
 typedef struct dissector_checker {
-uint32_t flow_size;
-uint32_t id_size;
-uint32_t flow_tcp_size;
-uint32_t flow_udp_size;
+  uint32_t flow_size;
+  uint32_t id_size;
+  uint32_t flow_tcp_size;
+  uint32_t flow_udp_size;
 } dissector_checker_t;
 """
 
