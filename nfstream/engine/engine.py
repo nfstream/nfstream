@@ -838,6 +838,10 @@ struct ndpi_detection_module_struct {
   /* NDPI_PROTOCOL_STUN and subprotocols */
   struct ndpi_lru_cache *stun_cache;
   
+  /* NDPI_PROTOCOL_TLS and subprotocols */
+  struct ndpi_lru_cache *tls_cert_cache;
+  
+  /* NDPI_PROTOCOL_MINING and subprotocols */
   struct ndpi_lru_cache *mining_cache;
 
   /* NDPI_PROTOCOL_MSTEAMS */
@@ -865,7 +869,7 @@ struct tls_euristics {
     TLS euristics for detecting browsers usage
     NOTE: expect false positives
   */
-  uint8_t is_safari_tls:1, is_firefox_tls:1, notused:6;
+  uint8_t is_safari_tls:1, is_firefox_tls:1, is_chrome_tls:1, notused:5;
 };
 
 struct ndpi_flow_struct {
