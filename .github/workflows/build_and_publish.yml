@@ -98,7 +98,7 @@ jobs:
       run: |
         ls dist/
     - name: Testing and coverage report generation
-      # if: startsWith(matrix.os, 'ubuntu') # Disable on MACOS
+      if: startsWith(matrix.os, 'ubuntu') # Disable on MACOS
       run: |
         python -m coverage run tests.py
         python -m coverage combine
