@@ -1201,7 +1201,7 @@ typedef struct nf_flow {
 
 cc_capture_apis = """
 pcap_t * capture_open(const uint8_t * pcap_file, int mode, char * child_error);
-int capture_set_fanout(pcap_t * pcap_handle, int mode, char * child_error);
+int capture_set_fanout(pcap_t * pcap_handle, int mode, char * child_error, int group_id);
 int capture_set_timeout(pcap_t * pcap_handle, int mode, char * child_error);
 int capture_set_promisc(pcap_t * pcap_handle, int mode, char * child_error, int promisc);
 int capture_set_snaplen(pcap_t * pcap_handle, int mode, char * child_error, unsigned snaplen);

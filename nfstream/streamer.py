@@ -14,6 +14,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 import multiprocessing as mp
+import threading
 import pandas as pd
 import time as tm
 import os
@@ -33,6 +34,7 @@ mp.set_start_method("fork")
 
 class NFStreamer(object):
     streamer_id = 0  # class id generator
+    glock = threading.Lock()
     """ Network Flow Streamer """
     def __init__(self,
                  source=None,
@@ -49,7 +51,9 @@ class NFStreamer(object):
                  splt_analysis=0,
                  n_meters=0,
                  performance_report=0):
-        NFStreamer.streamer_id += 1
+        with NFStreamer.glock:
+            NFStreamer.streamer_id += 1
+            self._idx = NFStreamer.streamer_id
         self._mode = 0
         self.source = source
         self.decode_tunnels = decode_tunnels
@@ -267,6 +271,8 @@ class NFStreamer(object):
         channel = mp.Queue(maxsize=32767)  # Backpressure strategy.
         # We set it to (2^15-1) to cope with OSX maximum semaphore value.
         n_meters = self.n_meters
+        group_id = os.getpid() + self._idx  # Used for fanout on Linux systems
+        # print("group_id = {} = {} + {}".format(group_id, os.getpid(), self._idx))
         try:
             for i in range(n_meters):
                 performances.append([mp.Value('I', 0), mp.Value('I', 0), mp.Value('I', 0)])
@@ -288,7 +294,8 @@ class NFStreamer(object):
                                                self.splt_analysis,
                                                channel,
                                                performances[i],
-                                               lock,)))
+                                               lock,
+                                               group_id,)))
                 meters[i].daemon = True  # demonize meter
                 meters[i].start()
             idx_generator = mp.Value('i', 0)

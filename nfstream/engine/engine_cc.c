@@ -1749,12 +1749,12 @@ pcap_t * capture_open(const uint8_t * pcap_file, int mode, char * child_error) {
 /**
  * capture_set_fanout: Set fanout mode.
  */
-int capture_set_fanout(pcap_t * pcap_handle, int mode, char * child_error) {
+int capture_set_fanout(pcap_t * pcap_handle, int mode, char * child_error, int group_id) {
   int set_fanout = 0;
   if (mode == 0) return set_fanout;
   else {
 #ifdef __linux__
-    set_fanout = pcap_set_fanout_linux(pcap_handle, 1, 0x8000, 0);
+    set_fanout = pcap_set_fanout_linux(pcap_handle, 1, 0x8000, (uint16_t) group_id);
     if (set_fanout != 0) {
       pcap_close(pcap_handle);
       snprintf(child_error, 256, "%s", "Unable to setup fanout mode.");

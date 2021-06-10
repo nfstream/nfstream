@@ -144,12 +144,12 @@ def setup_dissector(ffi, lib, n_dissections):
     return dissector
 
 
-def setup_capture(ffi, lib, source, snaplen, promisc, mode, error_child):
+def setup_capture(ffi, lib, source, snaplen, promisc, mode, error_child, group_id):
     """ Setup capture options """
     capture = lib.capture_open(bytes(source, 'utf-8'), mode, error_child)
     if capture == ffi.NULL:
         return
-    fanout_set_failed = lib.capture_set_fanout(capture, mode, error_child)
+    fanout_set_failed = lib.capture_set_fanout(capture, mode, error_child, group_id)
     if fanout_set_failed:
         return
     timeout_set_failed = lib.capture_set_timeout(capture, mode, error_child)
@@ -192,12 +192,12 @@ def track(lib, capture, mode, interface_stats, tracker, processed, ignored):
 
 def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots, root_idx, mode,
                    idle_timeout, active_timeout, accounting_mode, udps, n_dissections, statistics, splt,
-                   channel, tracker, lock):
+                   channel, tracker, lock, group_id):
     """ Metering workflow """
     set_affinity(root_idx+1)
     ffi, lib = create_engine()
     error_child = ffi.new("char[256]")
-    capture = setup_capture(ffi, lib, source, snaplen, promisc, mode, error_child)
+    capture = setup_capture(ffi, lib, source, snaplen, promisc, mode, error_child, group_id)
     if capture is None:
         ffi.dlclose(lib)
         if root_idx == 0:
