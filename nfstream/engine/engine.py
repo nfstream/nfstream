@@ -605,11 +605,11 @@ struct ndpi_detection_module_struct;
 struct ndpi_flow_struct;
 
 struct ndpi_call_function_struct {
-  uint16_t ndpi_protocol_id;
   NDPI_PROTOCOL_BITMASK detection_bitmask;
   NDPI_PROTOCOL_BITMASK excluded_protocol_bitmask;
-  uint32_t ndpi_selection_bitmask;
   void (*func) (struct ndpi_detection_module_struct *, struct ndpi_flow_struct *flow);
+  uint32_t ndpi_selection_bitmask;
+  uint16_t ndpi_protocol_id;
   uint8_t detection_feature;
 };
 
@@ -722,7 +722,6 @@ typedef struct ndpi_default_ports_tree_node {
 
 typedef struct _ndpi_automa {
   void *ac_automa; /* Real type is AC_AUTOMATA_t */
-  uint8_t ac_automa_finalized;
 } ndpi_automa;
 
 typedef struct ndpi_proto {
@@ -785,12 +784,13 @@ struct ndpi_detection_module_struct {
 
   unsigned ndpi_num_supported_protocols;
   unsigned ndpi_num_custom_protocols;
+  
+  int ac_automa_finalized;
 
   /* HTTP/DNS/HTTPS/QUIC host matching */
   ndpi_automa host_automa,                     /* Used for DNS/HTTPS */
     content_automa,                            /* Used for HTTP subprotocol_detection */
     subprotocol_automa,                        /* Used for HTTP subprotocol_detection */
-    bigrams_automa, trigrams_automa, impossible_bigrams_automa, /* TOR */
     risky_domain_automa, tls_cert_subject_automa,
     malicious_ja3_automa, malicious_sha1_automa;
   /* IMPORTANT: please update ndpi_finalize_initialization() whenever you add a new automa */
