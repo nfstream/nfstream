@@ -546,6 +546,10 @@ struct ndpi_flow_udp_struct {
   /* NDPI_PROTOCOL_WIREGUARD */
   uint8_t wireguard_stage;
   uint32_t wireguard_peer_index[2];
+  
+  /* NDPI_PROTOCOL_QUIC */
+  uint8_t *quic_reasm_buf;
+  uint32_t quic_reasm_buf_len;
 };
 
 struct ndpi_int_one_line_struct {
