@@ -1084,6 +1084,9 @@ struct ndpi_flow_struct {
   /* NDPI_PROTOCOL_STARCRAFT */
   uint8_t starcraft_udp_stage : 3;	// 0-7
 
+  /* NDPI_PROTOCOL_Z3950 */
+  uint8_t z3950_stage : 2; // 0-3
+  
   /* NDPI_PROTOCOL_OPENVPN */
   uint8_t ovpn_session_id[8];
   uint8_t ovpn_counter;
