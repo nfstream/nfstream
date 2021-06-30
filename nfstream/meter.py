@@ -178,8 +178,7 @@ def activate_capture(capture, lib, error_child, bpf_filter, mode):
     activation_failed = lib.capture_activate(capture, mode, error_child)
     if activation_failed:
         return False
-    else:
-        return setup_filter(capture, lib, error_child, bpf_filter)
+    return setup_filter(capture, lib, error_child, bpf_filter)
 
 
 def track(lib, capture, mode, interface_stats, tracker, processed, ignored):
