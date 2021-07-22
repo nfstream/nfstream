@@ -162,6 +162,8 @@ typedef enum {
   NDPI_MALICIOUS_SHA1_CERTIFICATE,
   NDPI_DESKTOP_OR_FILE_SHARING_SESSION,
   NDPI_TLS_UNCOMMON_ALPN,
+  NDPI_TLS_CERT_VALIDITY_TOO_LONG,
+  NDPI_TLS_EXTENSION_SUSPICIOUS,
   /* Leave this as last member */
   NDPI_MAX_RISK /* must be <= 63 due to (**) */
 } ndpi_risk_enum;
@@ -796,9 +798,10 @@ struct ndpi_detection_module_struct {
     content_automa,                            /* Used for HTTP subprotocol_detection */
     subprotocol_automa,                        /* Used for HTTP subprotocol_detection */
     risky_domain_automa, tls_cert_subject_automa,
-    malicious_ja3_automa, malicious_sha1_automa;
+    malicious_ja3_automa, malicious_sha1_automa,
+    host_risk_mask_automa;
   /* IMPORTANT: please update ndpi_finalize_initialization() whenever you add a new automa */
-
+  void *ip_risk_mask_ptree;
   struct {
     ndpi_automa hostnames, hostnames_shadow;
     void *ipAddresses, *ipAddresses_shadow; /* Patricia */

@@ -393,14 +393,14 @@ int packet_handle_ipv6_extension_headers(const uint8_t **l4ptr, uint16_t *l4len,
  */
 void packet_get_tcp_info(const uint8_t *l4, uint16_t l4_packet_len, struct nf_packet *nf_pkt,
                          struct nfstream_tcphdr **tcph, uint16_t *sport, uint16_t *dport,
-                         uint32_t l4_data_len, uint8_t **payload, uint16_t *payload_len ) {
+                         uint32_t *l4_data_len, uint8_t **payload, uint16_t *payload_len ) {
   unsigned tcp_len;
   *tcph = (struct nfstream_tcphdr *)l4;
   *sport = (*tcph)->source, *dport = (*tcph)->dest;
   tcp_len = nfstream_min(4*(*tcph)->doff, l4_packet_len);
   *payload = (uint8_t*)&l4[tcp_len];
   *payload_len = nfstream_max(0, l4_packet_len-4*(*tcph)->doff);
-  l4_data_len = l4_packet_len - sizeof(struct nfstream_tcphdr);
+  *l4_data_len = l4_packet_len - sizeof(struct nfstream_tcphdr);
   nf_pkt->fin = (*tcph)->fin;
   nf_pkt->syn = (*tcph)->syn;
   nf_pkt->rst = (*tcph)->rst;
@@ -417,12 +417,12 @@ void packet_get_tcp_info(const uint8_t *l4, uint16_t l4_packet_len, struct nf_pa
  */
 void packet_get_udp_info(const uint8_t *l4, uint16_t l4_packet_len, struct nf_packet *nf_pkt,
                          struct nfstream_udphdr **udph, uint16_t *sport, uint16_t *dport,
-                         uint32_t l4_data_len, uint8_t **payload, uint16_t *payload_len) {
+                         uint32_t *l4_data_len, uint8_t **payload, uint16_t *payload_len) {
   *udph = (struct nfstream_udphdr *)l4;
   *sport = (*udph)->source, *dport = (*udph)->dest;
   *payload = (uint8_t*)&l4[sizeof(struct nfstream_udphdr)];
   *payload_len = (l4_packet_len > sizeof(struct nfstream_udphdr)) ? l4_packet_len-sizeof(struct nfstream_udphdr) : 0;
-  l4_data_len = l4_packet_len - sizeof(struct nfstream_udphdr);
+  *l4_data_len = l4_packet_len - sizeof(struct nfstream_udphdr);
   nf_pkt->fin = nf_pkt->syn = nf_pkt->rst = nf_pkt->psh = nf_pkt->ack = nf_pkt->urg = nf_pkt->ece = nf_pkt->cwr = 0;
 }
 
@@ -431,10 +431,10 @@ void packet_get_udp_info(const uint8_t *l4, uint16_t l4_packet_len, struct nf_pa
  * packet_get_icmp_info: ICMP transport info processing.
  */
 void packet_get_icmp_info(const uint8_t *l4, uint16_t l4_packet_len, struct nf_packet *nf_pkt, uint16_t *sport,
-                          uint16_t *dport, uint32_t l4_data_len, uint8_t **payload, uint16_t *payload_len) {
+                          uint16_t *dport, uint32_t *l4_data_len, uint8_t **payload, uint16_t *payload_len) {
   *payload = (uint8_t*)&l4[sizeof(struct nfstream_icmphdr )];
   *payload_len = (l4_packet_len > sizeof(struct nfstream_icmphdr)) ? l4_packet_len-sizeof(struct nfstream_icmphdr) : 0;
-  l4_data_len = l4_packet_len - sizeof(struct nfstream_icmphdr);
+  *l4_data_len = l4_packet_len - sizeof(struct nfstream_icmphdr);
   *sport = *dport = 0;
   nf_pkt->fin = nf_pkt->syn = nf_pkt->rst = nf_pkt->psh = nf_pkt->ack = nf_pkt->urg = nf_pkt->ece = nf_pkt->cwr = 0;
 }
@@ -444,10 +444,10 @@ void packet_get_icmp_info(const uint8_t *l4, uint16_t l4_packet_len, struct nf_p
  * packet_get_icmp6_info: ICMPv6 transport infos processing.
  */
 void packet_get_icmp6_info(const uint8_t *l4, uint16_t l4_packet_len, struct nf_packet *nf_pkt, uint16_t *sport,
-                           uint16_t *dport, uint32_t l4_data_len, uint8_t **payload, uint16_t *payload_len) {
+                           uint16_t *dport, uint32_t *l4_data_len, uint8_t **payload, uint16_t *payload_len) {
   *payload = (uint8_t*)&l4[sizeof(struct nfstream_icmp6hdr)];
   *payload_len = (l4_packet_len > sizeof(struct nfstream_icmp6hdr)) ? l4_packet_len-sizeof(struct nfstream_icmp6hdr) : 0;
-  l4_data_len = l4_packet_len - sizeof(struct nfstream_icmp6hdr);
+  *l4_data_len = l4_packet_len - sizeof(struct nfstream_icmp6hdr);
   *sport = *dport = 0;
   nf_pkt->fin = nf_pkt->syn = nf_pkt->rst = nf_pkt->psh = nf_pkt->ack = nf_pkt->urg = nf_pkt->ece = nf_pkt->cwr = 0;
 }
@@ -457,9 +457,9 @@ void packet_get_icmp6_info(const uint8_t *l4, uint16_t l4_packet_len, struct nf_
  * packet_get_unknown_transport_info: Non TCP/UDP/ICMP/ICMPv6 infos processing.
  */
 void packet_get_unknown_transport_info(struct nf_packet *nf_pkt, uint16_t *sport, uint16_t *dport,
-                                       uint32_t l4_data_len) {
+                                       uint32_t *l4_data_len) {
   *sport = *dport = 0;
-  l4_data_len = 0;
+  *l4_data_len = 0;
   nf_pkt->fin = nf_pkt->syn = nf_pkt->rst = nf_pkt->psh = nf_pkt->ack = nf_pkt->urg = nf_pkt->ece = nf_pkt->cwr = 0;
 }
 
@@ -467,7 +467,7 @@ void packet_get_unknown_transport_info(struct nf_packet *nf_pkt, uint16_t *sport
 /**
  * packet_get_info: Fill required nf packet information.
  */
-void packet_get_info(struct nf_packet *nf_pkt, uint16_t *sport, uint16_t *dport, uint32_t l4_data_len,
+void packet_get_info(struct nf_packet *nf_pkt, uint16_t *sport, uint16_t *dport, uint32_t *l4_data_len,
                      uint16_t *payload_len, const struct nfstream_iphdr *iph, const struct nfstream_ipv6hdr *iph6,
                      uint16_t ipsize, const uint8_t version, uint16_t vlan_id) {
   nf_pkt->protocol = iph->protocol;
@@ -475,7 +475,7 @@ void packet_get_info(struct nf_packet *nf_pkt, uint16_t *sport, uint16_t *dport,
   nf_pkt->src_port = htons(*sport);
   nf_pkt->dst_port = htons(*dport);
   nf_pkt->ip_version = version;
-  nf_pkt->transport_size = l4_data_len;
+  nf_pkt->transport_size = *l4_data_len;
   nf_pkt->payload_size = *payload_len;
   nf_pkt->ip_content_len = ipsize;
   nf_pkt->delta_time = 0; // This will be filled by meter.
@@ -544,17 +544,17 @@ int packet_get_ip_info(const uint8_t version, uint16_t vlan_id, nfstream_packet_
   *proto = iph->protocol;
   l4 =& ((const uint8_t *) l3)[l4_offset];
   if (*proto == IPPROTO_TCP && l4_packet_len >= sizeof(struct nfstream_tcphdr)) { // TCP Processing
-    packet_get_tcp_info(l4, l4_packet_len, nf_pkt, tcph, sport, dport, l4_data_len, payload, payload_len);
+    packet_get_tcp_info(l4, l4_packet_len, nf_pkt, tcph, sport, dport, &l4_data_len, payload, payload_len);
   } else if (*proto == IPPROTO_UDP && l4_packet_len >= sizeof(struct nfstream_udphdr)) { // UDP Processing
-    packet_get_udp_info(l4, l4_packet_len, nf_pkt, udph, sport, dport, l4_data_len, payload, payload_len);
+    packet_get_udp_info(l4, l4_packet_len, nf_pkt, udph, sport, dport, &l4_data_len, payload, payload_len);
   } else if (*proto == IPPROTO_ICMP) { // ICMP Processing
-    packet_get_icmp_info(l4, l4_packet_len, nf_pkt, sport, dport, l4_data_len, payload, payload_len);
+    packet_get_icmp_info(l4, l4_packet_len, nf_pkt, sport, dport, &l4_data_len, payload, payload_len);
   } else if (*proto == IPPROTO_ICMPV6) { // ICMPV6 Processing
-    packet_get_icmp6_info(l4, l4_packet_len, nf_pkt, sport, dport, l4_data_len, payload, payload_len);
+    packet_get_icmp6_info(l4, l4_packet_len, nf_pkt, sport, dport, &l4_data_len, payload, payload_len);
   } else {
-    packet_get_unknown_transport_info(nf_pkt, sport, dport, l4_data_len);
+    packet_get_unknown_transport_info(nf_pkt, sport, dport, &l4_data_len);
   }
-  packet_get_info(nf_pkt, sport, dport, l4_data_len, payload_len, iph, iph6, ipsize, version, vlan_id);
+  packet_get_info(nf_pkt, sport, dport, &l4_data_len, payload_len, iph, iph6, ipsize, version, vlan_id);
   uint64_t hashval = 0; // Compute hashval as the sum of 6-tuple fields.
   hashval = nf_pkt->protocol + nf_pkt->vlan_id + iph->saddr + iph->daddr + nf_pkt->src_port + nf_pkt->dst_port +
             tunnel_id;
