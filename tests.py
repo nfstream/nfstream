@@ -347,8 +347,11 @@ class TestMethods(unittest.TestCase):
         print(".Test nDPI integration on {} applications:".format(len(files)))
         ok_files = []
         for test_file in files:
-            streamer_test = NFStreamer(source=test_file, n_dissections=20, n_meters=1,
-                                       idle_timeout=30000, active_timeout=31556952)
+            streamer_test = NFStreamer(source=test_file,
+                                       n_dissections=20,
+                                       n_meters=1,
+                                       idle_timeout=30000,
+                                       active_timeout=31556952)
             test_case_name = test_file.split('/')[-1]
             result = {}
             for flow in streamer_test:
@@ -363,6 +366,7 @@ class TestMethods(unittest.TestCase):
             if result == ndpi_result(test_file):
                 ok_files.append(test_case_name)
                 print("{}\t: \033[94mOK\033[0m".format(test_case_name.ljust(60, ' ')))
+            del streamer_test
         self.assertEqual(len(files), len(ok_files))
 
     def test_splt(self):
