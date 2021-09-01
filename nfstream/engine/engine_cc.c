@@ -902,7 +902,8 @@ int packet_process(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
   // IPv6 header
   struct nfstream_ipv6hdr *iph6;
   nfstream_packet_tunnel tunnel_id = nfstream_no_tunnel;
-  uint16_t eth_offset = 0, radio_len = 0, fc = 0, type = 0, ip_offset = 0, ip_len = 0, frag_off = 0, vlan_id = 0;
+  uint32_t eth_offset = 0;
+  uint16_t radio_len = 0, fc = 0, type = 0, ip_offset = 0, ip_len = 0, frag_off = 0, vlan_id = 0;
   int wifi_len = 0, pyld_eth_len = 0;
   uint8_t proto = 0, recheck_type = 0;
   // We set set time according to resolution: Expose resolution as a parameter for time related metrics?
