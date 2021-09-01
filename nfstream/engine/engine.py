@@ -163,7 +163,9 @@ typedef enum {
   NDPI_DESKTOP_OR_FILE_SHARING_SESSION,
   NDPI_TLS_UNCOMMON_ALPN,
   NDPI_TLS_CERT_VALIDITY_TOO_LONG,
-  NDPI_TLS_EXTENSION_SUSPICIOUS,
+  NDPI_TLS_SUSPICIOUS_EXTENSION,
+  NDPI_TLS_FATAL_ALERT,
+  NDPI_SUSPICIOUS_ENTROPY,
   /* Leave this as last member */
   NDPI_MAX_RISK /* must be <= 63 due to (**) */
 } ndpi_risk_enum;
@@ -432,7 +434,7 @@ struct ndpi_flow_tcp_struct {
     message_t message;
     void* srv_cert_fingerprint_ctx; /* SHA-1 */
     /* NDPI_PROTOCOL_TLS */
-    uint8_t hello_processed:1, certificate_processed:1, subprotocol_detected:1, fingerprint_set:1, _pad:4; 
+    uint8_t certificate_processed:1, fingerprint_set:1, _pad:6;
     uint8_t num_tls_blocks;
     int16_t tls_application_blocks_len[NDPI_MAX_NUM_TLS_APPL_BLOCKS];
   } tls;
@@ -516,7 +518,7 @@ struct ndpi_flow_udp_struct {
   uint32_t halflife2_stage:2;		  // 0 - 2
 
   /* NDPI_PROTOCOL_TFTP */
-  uint32_t tftp_stage:1;
+  uint32_t tftp_stage:2;
 
   /* NDPI_PROTOCOL_AIMINI */
   uint32_t aimini_stage:5;
@@ -712,7 +714,8 @@ typedef enum {
 typedef struct ndpi_proto_defaults {
   char *protoName;
   ndpi_protocol_category_t protoCategory;
-  uint16_t * subprotocols;
+  uint8_t isClearTextProto;
+  uint16_t *subprotocols;
   uint32_t subprotocol_count;
   uint16_t protoId, protoIdx;
   uint16_t tcp_default_ports[5], udp_default_ports[5];
@@ -799,7 +802,7 @@ struct ndpi_detection_module_struct {
     subprotocol_automa,                        /* Used for HTTP subprotocol_detection */
     risky_domain_automa, tls_cert_subject_automa,
     malicious_ja3_automa, malicious_sha1_automa,
-    host_risk_mask_automa;
+    host_risk_mask_automa, common_alpns_automa;
   /* IMPORTANT: please update ndpi_finalize_initialization() whenever you add a new automa */
   void *ip_risk_mask_ptree;
   struct {
@@ -871,9 +874,9 @@ typedef enum {
 
 #define MAX_NUM_TLS_SIGNATURE_ALGORITHMS 16
 
-struct tls_euristics {
+struct tls_heuristics {
   /*
-    TLS euristics for detecting browsers usage
+    TLS heuristics for detecting browsers usage
     NOTE: expect false positives
   */
   uint8_t is_safari_tls:1, is_firefox_tls:1, is_chrome_tls:1, notused:5;
@@ -904,7 +907,10 @@ struct ndpi_flow_struct {
     struct ndpi_flow_tcp_struct tcp;
     struct ndpi_flow_udp_struct udp;
   } l4;
-
+  
+  /* Some protocols calculate the entropy. */
+  float entropy;
+  
   /* Place textual flow info here */
   char flow_extra_info[16];
 
@@ -916,7 +922,8 @@ struct ndpi_flow_struct {
   /* HTTP host or DNS query */
   uint8_t host_server_name[240];
   uint8_t initial_binary_bytes[8], initial_binary_bytes_len;
-  uint8_t risk_checked;
+  uint8_t risk_checked:1, ip_risk_mask_evaluated:1, host_risk_mask_evaluated:1, _notused:5;
+  ndpi_risk risk_mask; /* Stores the flow risk mask for flow peers */
   ndpi_risk risk; /* Issues found with this flow [bitmask of ndpi_risk] */
 
   /*
@@ -971,7 +978,8 @@ struct ndpi_flow_struct {
       char ja3_client[33], ja3_server[33];
       uint16_t server_cipher;
       uint8_t sha1_certificate_fingerprint[20];
-      struct tls_euristics browser_euristics;
+      uint8_t hello_processed:1, subprotocol_detected:1, _pad:6;
+      struct tls_heuristics browser_heuristics;
       struct {
         uint16_t cipher_suite;
         char *esni;
