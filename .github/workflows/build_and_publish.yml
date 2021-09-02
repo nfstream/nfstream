@@ -52,8 +52,12 @@ jobs:
     - name: Installing macOS prerequisites
       if: startsWith(matrix.os, 'macOS')
       run: |
-        brew install autoconf automake libtool pkg-config gettext json-c openblas
+        brew install autoconf automake libtool pkg-config gettext json-c
+        brew install openblas
         export OPENBLAS="$(brew --prefix openblas)"
+        export LDFLAGS="-L/usr/local/opt/openblas/lib"
+        export CPPFLAGS="-I/usr/local/opt/openblas/include"
+        export PKG_CONFIG_PATH="/usr/local/opt/openblas/lib/pkgconfig"
     - name: Installing NFStream requirements
       if: steps.pip-cache.outputs.cache-hit != 'true'
       run: |
