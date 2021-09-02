@@ -1,6 +1,7 @@
 cffi>=1.14.6
 psutil>=5.8.0
-numpy>=1.19.5
+numpy>=1.19.5; sys_platform == 'linux'
+numpy<=1.18.5; sys_platform == 'darwin'
 pandas>=1.1.5
 dpkt>=1.9.7
 wheel>=0.37.0

@@ -64,13 +64,17 @@ class BuildNativeCommand(build_ext):
 
 needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
 pytest_runner = ['pytest-runner'] if needs_pytest else []
-python_requires = '>=3.6'
-# Change hash by this line.
 install_requires = ['cffi>=1.14.6',
                     'numpy>=1.19.5',
                     'pandas>=1.1.5',
                     'psutil>=5.8.0',
                     'dpkt>=1.9.7']
+if sys.platform == 'darwin':
+    install_requires = ['cffi>=1.14.6',
+                        'numpy<=1.18.5',
+                        'pandas>=1.1.5',
+                        'psutil>=5.8.0',
+                        'dpkt>=1.9.7']
 
 try:
     from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
