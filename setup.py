@@ -16,6 +16,7 @@ If not, see <http://www.gnu.org/licenses/>.
 import sys
 import os
 import subprocess
+import platform
 
 if (not sys.version_info[0] == 3) and (not sys.version_info[1] >= 6):
     sys.exit("Sorry, nfstream requires Python3.6+ versions.")
@@ -65,16 +66,19 @@ class BuildNativeCommand(build_ext):
 needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
 pytest_runner = ['pytest-runner'] if needs_pytest else []
 install_requires = ['cffi>=1.14.6',
-                    'numpy>=1.19.5',
-                    'pandas>=1.1.5',
                     'psutil>=5.8.0',
                     'dpkt>=1.9.7']
+
+# This is mandatory to fix both issues with numpy using Accelerate backend on macos and pandas issues with PyPy
 if sys.platform == 'darwin':
-    install_requires = ['cffi>=1.14.6',
-                        'numpy<=1.18.5',
-                        'pandas>=1.1.5',
-                        'psutil>=5.8.0',
-                        'dpkt>=1.9.7']
+    install_requires.append("numpy<=1.18.5")
+else:
+    install_requires.append("numpy>=1.19.5")
+
+if platform.python_implementation() == 'PyPy':
+    install_requires.append("pandas<=1.2.5")
+else:
+    install_requires.append("pandas>=1.1.5")
 
 try:
     from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
