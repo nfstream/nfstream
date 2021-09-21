@@ -366,6 +366,8 @@ class TestMethods(unittest.TestCase):
             if result == ndpi_result(test_file):
                 ok_files.append(test_case_name)
                 print("{}\t: \033[94mOK\033[0m".format(test_case_name.ljust(60, ' ')))
+            # else:
+            #     print("{}\t: \033[91mKO\033[0m".format(test_case_name.ljust(60, ' ')))
             del streamer_test
         self.assertEqual(len(files), len(ok_files))
 

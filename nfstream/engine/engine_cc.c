@@ -523,21 +523,18 @@ int packet_fanout(struct nf_packet *nf_pkt, int mode, uint64_t hashval, int n_ro
  */
 int packet_get_ip_info(const uint8_t version, uint16_t vlan_id, nfstream_packet_tunnel tunnel_id,
                        const struct nfstream_iphdr *iph, const struct nfstream_ipv6hdr *iph6, uint16_t ip_offset,
-                       uint16_t ipsize, uint16_t l4_packet_len, struct nfstream_tcphdr **tcph,
+                       uint16_t ipsize, uint16_t l4_packet_len, uint16_t l4_offset, struct nfstream_tcphdr **tcph,
                        struct nfstream_udphdr **udph, uint16_t *sport, uint16_t *dport, uint8_t *proto,
                        uint8_t **payload, uint16_t *payload_len, struct timeval when, struct nf_packet *nf_pkt,
                        int n_roots, int root_idx, int mode) {
-  uint32_t l4_offset;
   const uint8_t *l3, *l4;
   uint32_t l4_data_len = 0XFEEDFACE;
   if (version == IPVERSION) {
     if (ipsize < 20) return 0;
     if ((iph->ihl * 4) > ipsize) return 0;
-    l4_offset = iph->ihl * 4;
     l3 = (const uint8_t*)iph;
   } else {
-    l4_offset = sizeof(struct nfstream_ipv6hdr);
-    if (sizeof(struct nfstream_ipv6hdr) > ipsize) return 0;
+    if (l4_offset > ipsize) return 0;
     l3 = (const uint8_t*)iph6;
   }
   if (nfstream_max(ntohs(iph->tot_len) , ipsize)< l4_offset + l4_packet_len) return 0;
@@ -586,7 +583,7 @@ static int packet_get_ipv6_info(uint16_t vlan_id, nfstream_packet_tunnel tunnel_
   }
   iph.protocol = l4proto;
   iph.tot_len = iph6->ip6_hdr.ip6_un1_plen;
-  return(packet_get_ip_info(6, vlan_id, tunnel_id, &iph, iph6, ip_offset, ipsize, ntohs(iph6->ip6_hdr.ip6_un1_plen),
+  return(packet_get_ip_info(6, vlan_id, tunnel_id, &iph, iph6, ip_offset, ipsize, ip_len, l4ptr - (const uint8_t *)iph6,
 	     tcph, udph, sport, dport, proto, payload, payload_len, when, nf_pkt, n_roots, root_idx, mode));
 }
 
@@ -620,7 +617,8 @@ int packet_parse(const uint64_t time,
   // According to IPVERSION, we extract required information for metering layer.
   if (iph)
     return packet_get_ip_info(IPVERSION, vlan_id, tunnel_id, iph, NULL, ip_offset, ipsize,
-                              ntohs(iph->tot_len) - (iph->ihl * 4), &tcph, &udph, &sport, &dport, &proto, &payload,
+                              ntohs(iph->tot_len) - (iph->ihl * 4), iph->ihl * 4,
+                              &tcph, &udph, &sport, &dport, &proto, &payload,
                               &payload_len, when, nf_pkt, n_roots, root_idx, mode);
   else
     return packet_get_ipv6_info(vlan_id, tunnel_id, iph6, ip_offset, ipsize, &tcph, &udph, &sport, &dport, &proto,
