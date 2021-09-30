@@ -509,7 +509,6 @@ struct ndpi_packet_struct {
   const uint8_t *generic_l4_ptr;	/* is set only for non tcp-udp traffic */
   const uint8_t *payload;
   uint64_t current_time_ms;
-  uint16_t detected_protocol_stack[2];
   struct ndpi_int_one_line_struct line[64];
   /* HTTP headers */
   struct ndpi_int_one_line_struct host_line;
