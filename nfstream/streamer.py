@@ -13,7 +13,7 @@ If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 """
 
-import multiprocessing as mp
+from multiprocessing import get_context
 import threading
 import pandas as pd
 import time as tm
@@ -27,9 +27,6 @@ from .anonymizer import NFAnonymizer
 from.plugin import NFPlugin
 from .utils import csv_converter, open_file, RepeatedTimer, update_performances, set_affinity, validate_flows_per_file
 from .utils import create_csv_file_path
-
-# Set fork as method to avoid issues on macos with spawn default value
-mp.set_start_method("fork")
 
 
 class NFStreamer(object):
@@ -69,6 +66,7 @@ class NFStreamer(object):
         self.splt_analysis = splt_analysis
         self.n_meters = n_meters
         self.performance_report = performance_report
+        self._mp_context = get_context("fork")
 
     @property
     def source(self):
@@ -261,22 +259,22 @@ class NFStreamer(object):
     def __iter__(self):
         set_affinity(0)  # we pin streamer to core 0 as it's the less intensive task and several services runs
         #                  by default on this core.
-        lock = mp.Lock()
+        lock = self._mp_context.Lock()
         lock.acquire()
         meters = []
         performances = []
         n_terminated = 0
         child_error = None
         rt = None
-        channel = mp.Queue(maxsize=32767)  # Backpressure strategy.
+        channel = self._mp_context.Queue(maxsize=32767)  # Backpressure strategy.
         # We set it to (2^15-1) to cope with OSX maximum semaphore value.
         n_meters = self.n_meters
         group_id = os.getpid() + self._idx  # Used for fanout on Linux systems
         # print("group_id = {} = {} + {}".format(group_id, os.getpid(), self._idx))
         try:
             for i in range(n_meters):
-                performances.append([mp.Value('I', 0), mp.Value('I', 0), mp.Value('I', 0)])
-                meters.append(mp.Process(target=meter_workflow,
+                performances.append([self._mp_context.Value('I', 0), self._mp_context.Value('I', 0), self._mp_context.Value('I', 0)])
+                meters.append(self._mp_context.Process(target=meter_workflow,
                                          args=(self.source,
                                                self.snapshot_length,
                                                self.decode_tunnels,
@@ -298,7 +296,7 @@ class NFStreamer(object):
                                                group_id,)))
                 meters[i].daemon = True  # demonize meter
                 meters[i].start()
-            idx_generator = mp.Value('i', 0)
+            idx_generator = self._mp_context.Value('i', 0)
             if self._mode == 1 and self.performance_report > 0:
                 if platform.system() == "Linux":
                     rt = RepeatedTimer(self.performance_report, update_performances, performances, True, idx_generator)
