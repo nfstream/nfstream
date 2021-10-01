@@ -76,7 +76,7 @@ brew install autoconf automake libtool pkg-config gettext json-c
 [**libgpg-error**](https://github.com/gpg/libgpg-error)
 
 ```bash
-git clone --branch libgpg-error-1.39 https://github.com/gpg/libgpg-error
+git clone --branch libgpg-error-1.42 https://github.com/gpg/libgpg-error
 cd libgpg-error
 ./autogen.sh
 ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc --disable-nls
@@ -89,7 +89,7 @@ rm -rf libgpg-error
 [**libgcrypt**](https://github.com/gpg/libgcrypt)
 
 ```bash
-git clone --branch libgcrypt-1.8.6 https://github.com/gpg/libgcrypt
+git clone --branch libgcrypt-1.8.8 https://github.com/gpg/libgcrypt
 cd libgcrypt
 ./autogen.sh
 ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc
