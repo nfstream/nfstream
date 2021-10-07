@@ -89,7 +89,7 @@ across experiments.
 </tr>
 </table>
 
-# Table of Contents
+## Table of Contents
 
    * [**Main Features**](#main-features)
    * [**How to get it?**](#how-to-get-it)
