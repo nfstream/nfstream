@@ -30,9 +30,22 @@ from .utils import create_csv_file_path
 
 
 class NFStreamer(object):
+    """
+    Network Flow Streamer
+
+    Example
+    -------
+    >>> from nfstream import NFStreamer
+    >>> # Streamer object for reading traffic from a PCAP
+    >>> streamer = NFStreamer(source='path/to/file.pcap')
+    >>> # Converting data to pandas dataframe
+    >>> df = streamer.to_pandas()
+
+    """
+
     streamer_id = 0  # class id generator
     glock = threading.Lock()
-    """ Network Flow Streamer """
+
     def __init__(self,
                  source=None,
                  decode_tunnels=True,
