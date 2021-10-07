@@ -57,7 +57,7 @@ class TestMethods(unittest.TestCase):
 
     def test_source_parameter(self):
         print("\n----------------------------------------------------------------------")
-        source = ["inexisting.pcap", "lo0", "lo", 11]
+        source = ["inexisting.pcap", "lo", 11]
         for x in source:
             with self.assertRaises(ValueError):
                 NFStreamer(source=x).to_pandas()

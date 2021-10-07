@@ -790,6 +790,7 @@ struct ndpi_detection_module_struct {
   ndpi_proto_defaults_t proto_defaults[512];
   uint8_t direction_detect_disable:1, /* disable internal detection of packet direction */ _pad:7;
   void (*ndpi_notify_lru_add_handler_ptr)(ndpi_lru_cache_type cache_type, uint32_t proto, uint32_t app_proto);
+  struct ndpi_packet_struct packet;
 };
 
 #define NDPI_CIPHER_SAFE                        0
@@ -1019,13 +1020,15 @@ struct ndpi_flow_struct {
   /* NDPI_PROTOCOL_OPENVPN */
   uint8_t ovpn_session_id[8];
   uint8_t ovpn_counter;
+  
+  /* Flow key used to search a match into the mining cache */
+  uint32_t key_mining_cache;
 
   /* NDPI_PROTOCOL_TINC */
   uint8_t tinc_state;
   struct tinc_cache_entry tinc_cache_entry;
 
   /* internal structures to save functions calls */
-  struct ndpi_packet_struct packet;
   struct ndpi_id_struct *src;
   struct ndpi_id_struct *dst;
 };
