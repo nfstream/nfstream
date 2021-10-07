@@ -502,6 +502,17 @@ storage.
 
 [![sah]](https://www.softathome.com/) [![tuke]](https://www.tuke.sk/) [![ntop]](https://www.ntop.org/)
 
+## Publications that use NFStream
+
+* [**DAPT 2021 - A Semi-Synthetic Dataset for Advanced Persistent Threats**](https://openreview.net/pdf?id=iSGC3zTlaqz)
+* [**Network Flows-Based Malware Detection Using A Combined Approach of Crawling And Deep Learning**](https://ieeexplore.ieee.org/document/9500920)
+* [**Generative Transformer Framework For Network Traffic Generation And Classification**](https://cyberleninka.ru/article/n/generative-transformer-framework-for-network-traffic-generation-and-classification)
+* [**Multi-Class Network Traffic Generators and Classifiers Based on Neural Networks**](https://ieeexplore.ieee.org/document/9416067)
+* [**Using Embedded Feature Selection and CNN for Classification on CCD-INID-V1—A New IoT Dataset**](https://www.mdpi.com/1424-8220/21/14/4834)
+* [**An Approach Based on Knowledge-DefinedNetworking for Identifying Video Streaming Flows in 5G Networks**](https://latamt.ieeer9.org/index.php/transactions/article/view/5083/1116)
+* [**Knowledge Discovery: Can It Shed New Light on Threshold Definition for Heavy‑Hitter Detection?**](https://link.springer.com/content/pdf/10.1007/s10922-021-09593-w.pdf)
+* [**Collecting and analyzing Tor exit node traffic**](https://www.diva-portal.org/smash/get/diva2:1575255/FULLTEXT01.pdf)
+
 ## License
 
 This project is licensed under the LGPLv3 License - see the [**License**][license] file for details
