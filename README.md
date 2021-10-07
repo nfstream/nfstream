@@ -104,7 +104,7 @@ Table of Contents
       * [Machine Learning models training and deployment](#machine-learning-models-training-and-deployment)
          * [Training the model](#training-the-model)
          * [ML powered streamer on live traffic](#ml-powered-streamer-on-live-traffic)
-   * [Building from sources](#building-from-sources)
+   * [Building from sources](#building-from-sources--)
    * [Contributing](#contributing)
    * [Ethics](#ethics)
    * [Credits](#credits)
