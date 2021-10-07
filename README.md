@@ -89,6 +89,29 @@ across experiments.
 </tr>
 </table>
 
+Table of Contents
+=================
+
+   * [Main Features](#main-features)
+   * [How to get it?](#how-to-get-it)
+   * [How to use it?](#how-to-use-it)
+      * [Encrypted application identification and metadata extraction](#encrypted-application-identification-and-metadata-extraction)
+      * [Post-mortem statistical flow features extraction](#post-mortem-statistical-flow-features-extraction)
+      * [Early statistical flow features extraction](#early-statistical-flow-features-extraction)
+      * [Pandas export interface](#pandas-export-interface)
+      * [CSV export interface](#csv-export-interface)
+      * [Extending NFStream](#extending-nfstream)
+      * [Machine Learning models training and deployment](#machine-learning-models-training-and-deployment)
+         * [Training the model](#training-the-model)
+         * [ML powered streamer on live traffic](#ml-powered-streamer-on-live-traffic)
+   * [Building from sources](#building-from-sources)
+   * [Contributing](#contributing)
+   * [Ethics](#ethics)
+   * [Credits](#credits)
+      * [Authors](#authors)
+      * [Supporting organizations](#supporting-organizations)
+   * [License](#license)
+   
 ## Main Features
 
 * **Performance:** NFStream is designed to be fast: AF_PACKETV3/FANOUT on Linux, parallel processing, native C 
