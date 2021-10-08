@@ -20,7 +20,15 @@ from .utils import set_affinity, InternalError
 
 
 class NFCache(OrderedDict):
-    """ Least recently updated dictionary """
+    """ Least recently updated dictionary
+
+    A Cache provides fast and efficient way of retrieving data.
+    The NFCache object is used to cache flow records such that least
+    recently accessed flow entries are kept on the top(end) and and least
+    used will be at the bottom. This way, it will be faster and efficient
+    to update flow records.
+
+    """
     def __init__(self, *args, **kwds):
         super().__init__(*args, **kwds)
 
@@ -40,6 +48,10 @@ class NFCache(OrderedDict):
 
 def meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, n_dissections, statistics, splt, ffi, lib,
                dissector):
+    """Checks flow cache for expired flow.
+
+    Expired flows are identified, added to channel and then removed from the cache.
+    """
     remaining = True  # We suppose that there is something to expire
     scanned = 0
     while remaining and scanned < 1000:  # idle scan budget (each 10ms we scan 1000 as maximum)
@@ -59,7 +71,12 @@ def meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, n_dissectio
 
 
 def get_flow_key(packet, ffi):
-    """ Create flow key from packet information (6-tuple) """
+    """ Create flow key from packet information (7-tuple)
+
+    A flow key uniquely determines a flow using source ip,
+    destination ip, source port, destination port, TCP/UDP protocol, VLAN ID
+    and tunnel ID of the packets.
+    """
     src_ip = ffi.string(packet.src_ip_str).decode('utf-8', errors='ignore')
     dst_ip = ffi.string(packet.dst_ip_str).decode('utf-8', errors='ignore')
     return packet.protocol, packet.vlan_id, \
