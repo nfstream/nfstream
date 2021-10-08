@@ -110,7 +110,7 @@ cmdclass = {'build_native': BuildNativeCommand,
 
 setup(
     name="nfstream",
-    version='6.3.5',
+    version='6.4.0',
     url='https://www.nfstream.org/',
     license='LGPLv3',
     description="A Flexible Network Data Analysis Framework",
