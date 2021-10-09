@@ -1362,7 +1362,7 @@ void flow_update_splt(uint8_t splt, struct nf_flow *flow, struct nf_packet *pack
  */
 void flow_set_packet_direction(struct nf_flow *flow, struct nf_packet *packet) {
   // We first check ports to determine direction.
-  if ((flow->src_port != packet->src_port) || (flow->src_port != packet->src_port)) {
+  if ((flow->src_port != packet->src_port) || (flow->dst_port != packet->dst_port)) {
     packet->direction = 1;
   // Then IPs
   } else {
