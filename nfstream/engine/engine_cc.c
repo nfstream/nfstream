@@ -359,14 +359,16 @@ typedef struct nf_stat {
 /**
  * packet_handle_ipv6_extension_headers: Handle IPv6 extensions header.
  */
-int packet_handle_ipv6_extension_headers(const uint8_t **l4ptr, uint16_t *l4len, uint8_t *nxt_hdr) {
-  while ((*nxt_hdr == 0 || *nxt_hdr == 43 || *nxt_hdr == 44 || *nxt_hdr == 60 || *nxt_hdr == 135 || *nxt_hdr == 59)) {
+int packet_handle_ipv6_extension_headers(uint16_t l3len, const uint8_t **l4ptr, uint16_t *l4len, uint8_t *nxt_hdr) {
+  while (l3len > 1 && (*nxt_hdr == 0 || *nxt_hdr == 43 || *nxt_hdr == 44 || *nxt_hdr == 60 || *nxt_hdr == 135 || *nxt_hdr == 59)) {
     uint16_t ehdr_len;
     // no next header
     if (*nxt_hdr == 59) return 1;
     // fragment extension header has fixed size of 8 bytes and the first byte is the next header type
     if (*nxt_hdr == 44) {
       if (*l4len < 8) return 1;
+      if (l3len < 5) return 1;
+      l3len -= 5;
       *nxt_hdr = (*l4ptr)[0];
       *l4len -= 8;
       (*l4ptr) += 8;
@@ -378,6 +380,8 @@ int packet_handle_ipv6_extension_headers(const uint8_t **l4ptr, uint16_t *l4len,
     ehdr_len = (*l4ptr)[1];
     ehdr_len *= 8;
     ehdr_len += 8;
+    if (ehdr_len > l3len) return 1;
+    l3len -= ehdr_len;
     if (*l4len < ehdr_len) return 1;
     *nxt_hdr = (*l4ptr)[0];
     if (*l4len < ehdr_len) return 1;
@@ -578,7 +582,7 @@ static int packet_get_ipv6_info(uint16_t vlan_id, nfstream_packet_tunnel tunnel_
   uint8_t l4proto = iph6->ip6_hdr.ip6_un1_nxt;
   uint16_t ip_len = ntohs(iph6->ip6_hdr.ip6_un1_plen);
   const uint8_t *l4ptr = (((const uint8_t *) iph6) + sizeof(struct nfstream_ipv6hdr));
-  if (packet_handle_ipv6_extension_headers(&l4ptr, &ip_len, &l4proto) != 0) {
+  if (packet_handle_ipv6_extension_headers(ipsize - sizeof(struct nfstream_ipv6hdr), &l4ptr, &ip_len, &l4proto) != 0) {
     return 0;
   }
   iph.protocol = l4proto;
@@ -952,7 +956,8 @@ int packet_process(pcap_t * pcap_handle, const struct pcap_pkthdr *header, const
     if (header->caplen < (ip_offset + sizeof(struct nfstream_ipv6hdr) + ntohs(iph6->ip6_hdr.ip6_un1_plen))) return 0;
 
     const uint8_t *l4ptr = (((const uint8_t *) iph6) + sizeof(struct nfstream_ipv6hdr));
-    if (packet_handle_ipv6_extension_headers(&l4ptr, &ip_len, &proto) != 0) return 0;
+    uint16_t ipsize = header->caplen - ip_offset;
+    if (packet_handle_ipv6_extension_headers(ipsize - sizeof(struct nfstream_ipv6hdr), &l4ptr, &ip_len, &proto) != 0) return 0;
 
     if (proto == IPPROTO_IPV6 || proto == IPPROTO_IPIP) {
       if (l4ptr > packet) { // Better safe than sorry

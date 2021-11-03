@@ -169,6 +169,7 @@ typedef enum {
   NDPI_CLEAR_TEXT_CREDENTIALS,
   NDPI_DNS_LARGE_PACKET,
   NDPI_DNS_FRAGMENTED,
+  NDPI_INVALID_CHARACTERS,
   /* Leave this as last member */
   NDPI_MAX_RISK /* must be <= 63 due to (**) */
 } ndpi_risk_enum;
@@ -297,9 +298,6 @@ struct ndpi_id_struct {
   /* NDPI_PROTOCOL_DIRECTCONNECT */
   uint32_t directconnect_last_safe_access_time;
 
-  /* NDPI_PROTOCOL_SOULSEEK */
-  uint32_t soulseek_last_safe_access_time;
-
   /* NDPI_PROTOCOL_DIRECTCONNECT */
   uint16_t detected_directconnect_port;
   uint16_t detected_directconnect_udp_port;
@@ -313,9 +311,6 @@ struct ndpi_id_struct {
   /* NDPI_PROTOCOL_GNUTELLA */
   uint16_t detected_gnutella_udp_port1;
   uint16_t detected_gnutella_udp_port2;
-
-  /* NDPI_PROTOCOL_SOULSEEK */
-  uint16_t soulseek_listen_port;
 
   /* NDPI_PROTOCOL_IRC */
   uint8_t irc_number_of_port;
@@ -357,9 +352,6 @@ struct ndpi_flow_tcp_struct {
   uint32_t irc_stage2:5;
   uint32_t irc_direction:2;
   uint32_t irc_0x1000_full:1;
-
-  /* NDPI_PROTOCOL_SOULSEEK */
-  uint32_t soulseek_stage:2;
 
   /* NDPI_PROTOCOL_USENET */
   uint32_t usenet_stage:2;
@@ -494,6 +486,8 @@ struct ndpi_flow_udp_struct {
   /* NDPI_PROTOCOL_CSGO */
   uint8_t csgo_strid[18], csgo_state, csgo_s2;
   uint32_t csgo_id2;
+  /* NDPI_PROTOCOL_RDP */
+  uint8_t rdp_to_srv[3], rdp_from_srv[3], rdp_to_srv_pkts, rdp_from_srv_pkts; 
 };
 
 struct ndpi_int_one_line_struct {
@@ -734,7 +728,6 @@ struct ndpi_detection_module_struct {
   /* HTTP/DNS/HTTPS/QUIC host matching */
   ndpi_automa host_automa,                     /* Used for DNS/HTTPS */
     content_automa,                            /* Used for HTTP subprotocol_detection */
-    subprotocol_automa,                        /* Used for HTTP subprotocol_detection */
     risky_domain_automa, tls_cert_subject_automa,
     malicious_ja3_automa, malicious_sha1_automa,
     host_risk_mask_automa, common_alpns_automa;
@@ -755,8 +748,6 @@ struct ndpi_detection_module_struct {
   uint32_t gnutella_timeout;
   /* thunder parameters */
   uint32_t thunder_timeout;
-  /* SoulSeek parameters */
-  uint32_t soulseek_connection_ip_tick_timeout;
   /* rstp */
   uint32_t orb_rstp_ts_timeout;
   uint32_t zattoo_connection_timeout;
@@ -790,6 +781,9 @@ struct ndpi_detection_module_struct {
   ndpi_proto_defaults_t proto_defaults[512];
   uint8_t direction_detect_disable:1, /* disable internal detection of packet direction */ _pad:7;
   void (*ndpi_notify_lru_add_handler_ptr)(ndpi_lru_cache_type cache_type, uint32_t proto, uint32_t app_proto);
+  /* GeoIP */
+  void *mmdb_city, *mmdb_as;
+  uint8_t mmdb_city_loaded, mmdb_as_loaded;
   struct ndpi_packet_struct packet;
 };
 
@@ -818,17 +812,20 @@ struct ndpi_flow_struct {
   /* init parameter, internal used to set up timestamp,... */
   uint16_t guessed_protocol_id, guessed_host_protocol_id, guessed_category, guessed_header_category;
   uint8_t l4_proto, protocol_id_already_guessed:1, host_already_guessed:1, fail_with_unknown:1,
-    init_finished:1, setup_packet_direction:1, packet_direction:1, check_extra_packets:1;
+    init_finished:1, setup_packet_direction:1, packet_direction:1, check_extra_packets:1, is_ipv6:1;
   /*
     if ndpi_struct->direction_detect_disable == 1
     tcp sequence number connection tracking
   */
   uint32_t next_tcp_seq_nr[2];
+  uint32_t saddr;
+  uint32_t daddr;
   uint8_t max_extra_packets_to_check;
   uint8_t num_extra_packets_checked;
   uint16_t num_processed_pkts; /* <= WARNING it can wrap but we do expect people to giveup earlier */
 
   int (*extra_packets_func) (struct ndpi_detection_module_struct *, struct ndpi_flow_struct *flow);
+  uint64_t last_packet_time_ms;
   /*
     the tcp / udp / other l4 value union
     used to reduce the number of bytes for tcp or udp protocol states
@@ -1020,9 +1017,6 @@ struct ndpi_flow_struct {
   /* NDPI_PROTOCOL_OPENVPN */
   uint8_t ovpn_session_id[8];
   uint8_t ovpn_counter;
-  
-  /* Flow key used to search a match into the mining cache */
-  uint32_t key_mining_cache;
 
   /* NDPI_PROTOCOL_TINC */
   uint8_t tinc_state;
