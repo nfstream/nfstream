@@ -1,5 +1,0 @@
-# NFStream extension for browsers
-
-
-
-
