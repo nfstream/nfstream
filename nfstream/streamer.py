@@ -26,7 +26,8 @@ from .meter import meter_workflow
 from .anonymizer import NFAnonymizer
 from.plugin import NFPlugin
 from .utils import csv_converter, open_file, RepeatedTimer, update_performances, set_affinity, validate_flows_per_file
-from .utils import create_csv_file_path
+from .utils import create_csv_file_path, NFEvent, process_unify
+from .system import system_socket_worflow, match_flow_conn, system_browser_workflow, RequestCache, browser_processes
 
 
 class NFStreamer(object):
@@ -49,7 +50,7 @@ class NFStreamer(object):
                  bpf_filter=None,
                  promiscuous_mode=True,
                  snapshot_length=1536,
-                 idle_timeout=120, # https://www.kernel.org/doc/Documentation/networking/nf_conntrack-sysctl.txt
+                 idle_timeout=120,  # https://www.kernel.org/doc/Documentation/networking/nf_conntrack-sysctl.txt
                  active_timeout=1800,
                  accounting_mode=0,
                  udps=None,
@@ -57,7 +58,10 @@ class NFStreamer(object):
                  statistical_analysis=False,
                  splt_analysis=0,
                  n_meters=0,
-                 performance_report=0):
+                 performance_report=0,
+                 system_visibility_mode=0,
+                 system_visibility_poll_ms=0,
+                 system_visibility_extension_port=28314):
         with NFStreamer.glock:
             NFStreamer.streamer_id += 1
             self._idx = NFStreamer.streamer_id
@@ -76,6 +80,9 @@ class NFStreamer(object):
         self.splt_analysis = splt_analysis
         self.n_meters = n_meters
         self.performance_report = performance_report
+        self.system_visibility_mode = system_visibility_mode
+        self.system_visibility_poll_ms = system_visibility_poll_ms
+        self.system_visibility_extension_port = system_visibility_extension_port
         self._mp_context = get_context("fork")
 
     @property
@@ -263,8 +270,55 @@ class NFStreamer(object):
             pass
         else:
             raise ValueError("Please specify a valid performance_report parameter (>=1 for reporting interval (seconds)"
-                             " or 0 to disaable). [Available only for Live capture]")
+                             " or 0 to disable). [Available only for Live capture]")
         self._performance_report = value
+
+    @property
+    def system_visibility_mode(self):
+        return self._system_visibility_mode
+
+    @system_visibility_mode.setter
+    def system_visibility_mode(self, value):
+        if isinstance(value, int) and value in [0, 1, 2]:
+            if self._mode == 0 and value > 0:
+                print("WARNING: system_visibility_mode switched to 0 in offline capture "
+                      "(available only for live capture)")
+                value = 0
+            else:
+                pass
+        else:
+            raise ValueError("Please specify a valid system_visibility_mode parameter\n"
+                             "0: disable\n"
+                             "1: process information\n"
+                             "2: process information with browser extension\n"
+                             "[Available only for live capture on the system generating the traffic]")
+        self._system_visibility_mode = value
+
+    @property
+    def system_visibility_poll_ms(self):
+        return self._system_visibility_poll_ms
+
+    @system_visibility_poll_ms.setter
+    def system_visibility_poll_ms(self, value):
+        if isinstance(value, int) and value >= 0:
+            pass
+        else:
+            raise ValueError("Please specify a valid system_visibility_poll_ms parameter "
+                             "(positive integer in milliseconds)")
+        self._system_visibility_poll_ms = value
+
+    @property
+    def system_visibility_extension_port(self):
+        return self._system_visibility_extension_port
+
+    @system_visibility_extension_port.setter
+    def system_visibility_extension_port(self, value):
+        if isinstance(value, int) and value >= 0:
+            pass
+        else:
+            raise ValueError("Please specify a valid system_visibility_extension_port parameter "
+                             "(positive integer in [0:65525]")
+        self._system_visibility_extension_port = value
 
     def __iter__(self):
         set_affinity(0)  # we pin streamer to core 0 as it's the less intensive task and several services runs
@@ -276,34 +330,41 @@ class NFStreamer(object):
         n_terminated = 0
         child_error = None
         rt = None
+        socket_listener = None
+        browser_listener = None
+        conn_cache = {}
+        request_cache = {"chrome": RequestCache(timeout=(self.idle_timeout + self.active_timeout) * 1000),
+                         "firefox": RequestCache(timeout=(self.idle_timeout + self.active_timeout) * 1000)}
         channel = self._mp_context.Queue(maxsize=32767)  # Backpressure strategy.
-        # We set it to (2^15-1) to cope with OSX maximum semaphore value.
+        #                                                  We set it to (2^15-1) to cope with OSX max semaphore value.
         n_meters = self.n_meters
         group_id = os.getpid() + self._idx  # Used for fanout on Linux systems
-        # print("group_id = {} = {} + {}".format(group_id, os.getpid(), self._idx))
         try:
             for i in range(n_meters):
-                performances.append([self._mp_context.Value('I', 0), self._mp_context.Value('I', 0), self._mp_context.Value('I', 0)])
+                performances.append([self._mp_context.Value('I', 0),
+                                     self._mp_context.Value('I', 0),
+                                     self._mp_context.Value('I', 0)])
                 meters.append(self._mp_context.Process(target=meter_workflow,
-                                         args=(self.source,
-                                               self.snapshot_length,
-                                               self.decode_tunnels,
-                                               self.bpf_filter,
-                                               self.promiscuous_mode,
-                                               n_meters,
-                                               i,
-                                               self._mode,
-                                               self.idle_timeout*1000,
-                                               self.active_timeout*1000,
-                                               self.accounting_mode,
-                                               self.udps,
-                                               self.n_dissections,
-                                               self.statistical_analysis,
-                                               self.splt_analysis,
-                                               channel,
-                                               performances[i],
-                                               lock,
-                                               group_id,)))
+                                                       args=(self.source,
+                                                             self.snapshot_length,
+                                                             self.decode_tunnels,
+                                                             self.bpf_filter,
+                                                             self.promiscuous_mode,
+                                                             n_meters,
+                                                             i,
+                                                             self._mode,
+                                                             self.idle_timeout*1000,
+                                                             self.active_timeout*1000,
+                                                             self.accounting_mode,
+                                                             self.udps,
+                                                             self.n_dissections,
+                                                             self.statistical_analysis,
+                                                             self.splt_analysis,
+                                                             channel,
+                                                             performances[i],
+                                                             lock,
+                                                             group_id,
+                                                             self.system_visibility_mode,)))
                 meters[i].daemon = True  # demonize meter
                 meters[i].start()
             idx_generator = self._mp_context.Value('i', 0)
@@ -312,7 +373,23 @@ class NFStreamer(object):
                     rt = RepeatedTimer(self.performance_report, update_performances, performances, True, idx_generator)
                 else:
                     rt = RepeatedTimer(self.performance_report, update_performances, performances, False, idx_generator)
+            if self._mode == 1 and self.system_visibility_mode > 0:
+                socket_listener = self._mp_context.Process(target=system_socket_worflow,
+                                                            args=(channel,
+                                                                  self.idle_timeout*1000,
+                                                                  self.system_visibility_poll_ms/1000,))
+                socket_listener.daemon = True  # demonize socket_listener
+                socket_listener.start()
+                if self.system_visibility_mode == 2:
+                    browser_listener = self._mp_context.Process(target=system_browser_workflow,
+                                                                args=(channel,
+                                                                      self.system_visibility_extension_port,))
+                    browser_listener.daemon = True  # demonize browser_listener
+                    browser_listener.start()
             while True:
+                if self._mode == 1 and self.system_visibility_mode == 2:
+                    for browser in request_cache.keys():
+                        request_cache[browser].scan()
                 try:
                     recv = channel.get()
                     if recv is None:  # termination and stats
@@ -320,23 +397,43 @@ class NFStreamer(object):
                         if n_terminated == n_meters:
                             break  # We finish up when all metering jobs are terminated
                     else:
-                        if recv.id == -2:  # Error message
+                        if recv.id == NFEvent.ERROR:  # Error message
                             for i in range(n_meters):  # We break workflow loop
                                 meters[i].terminate()
                             child_error = recv.message
                             break
-                        else:
+                        elif recv.id == NFEvent.SOCKET_CREATE:
+                            conn_cache[recv.key] = [recv.process_name, recv.process_pid]
+                        elif recv.id == NFEvent.SOCKET_REMOVE:
+                            del conn_cache[recv.key]
+                        elif recv.id == NFEvent.BROWSER_REQUEST:
+                            try:
+                                requests = request_cache[recv.browser][recv.remote_ip]
+                                requests.append(recv)
+                                request_cache[recv.browser][recv.remote_ip] = requests
+                            except KeyError:
+                                request_cache[recv.browser][recv.remote_ip] = [recv]
+                        else:  # NFEvent.FLOW
                             recv.id = idx_generator.value  # Unify ID
                             idx_generator.value = idx_generator.value + 1
+                            if self._mode == 1 and self.system_visibility_mode > 0:
+                                recv = match_flow_conn(conn_cache, recv)
+                                if self.system_visibility_mode == 2:
+                                    if recv.system_process_name in browser_processes:
+                                        recv = request_cache[process_unify(recv.system_process_name)].match_flow(recv)
                             yield recv
                 except KeyboardInterrupt:
                     for i in range(n_meters):  # We break workflow loop
                         meters[i].terminate()
                     break
             for i in range(n_meters):
-                meters[i].join()  # Join metring jobs
+                meters[i].join()  # Join metering jobs
             if self._mode == 1 and self.performance_report > 0:
                 rt.stop()
+            if self._mode == 1 and self.system_visibility_mode > 0:
+                socket_listener.terminate()
+                if self.system_visibility_mode == 2:
+                    browser_listener.terminate()
             channel.close()  # We close the queue
             channel.join_thread()  # and we join its thread
             if child_error is not None:

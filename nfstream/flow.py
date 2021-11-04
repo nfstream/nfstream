@@ -15,6 +15,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from collections import namedtuple
 from math import sqrt
+from .utils import NFEvent
 
 # When NFStream is extended with plugins, packer C structure is pythonized using the following namedtuple.
 nf_packet = namedtuple('NFPacket', ['time',
@@ -182,11 +183,14 @@ class NFlow(object):
                  'user_agent',
                  'content_type',
                  '_C',
-                 'udps')
+                 'udps',
+                 'system_process_pid',
+                 'system_process_name',
+                 'system_browser_tab')
 
     def __init__(self, packet, ffi, lib, udps, sync, accounting_mode, n_dissections, statistics, splt, dissector,
-                 decode_tunnels):
-        self.id = -1  # id always at -1 and will be handled by NFStreamer side.
+                 decode_tunnels, system_visibility_mode):
+        self.id = NFEvent.FLOW  # id set to NFLOW for internal communications and handled (incremented) by NFStreamer.
         self.expiration_id = 0
         # Initialize C structure.
         self._C = lib.meter_initialize_flow(packet, accounting_mode, statistics, splt, n_dissections, dissector)
@@ -287,6 +291,11 @@ class NFlow(object):
             self.udps = UDPS()
             for udp in udps:  # on_init entrypoint
                 udp.on_init(pythonize_packet(packet, ffi), self)
+        if system_visibility_mode > 0:
+            self.system_process_pid = -1
+            self.system_process_name = ""
+            if system_visibility_mode == 2:
+                self.system_browser_tab = ""
 
     def update(self, packet, idle_timeout, active_timeout, ffi, lib, udps, sync, accounting_mode,
                n_dissections, statistics, splt, dissector):

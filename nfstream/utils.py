@@ -18,9 +18,28 @@ import platform
 import psutil
 from threading import Timer
 from collections import namedtuple
+from enum import Enum
+
+
+class NFEvent(Enum):
+    FLOW = -1
+    ERROR = -2
+    SOCKET_CREATE = -3
+    SOCKET_REMOVE = -4
+    BROWSER_REQUEST = -5
 
 
 InternalError = namedtuple('InternalError', ['id', 'message'])
+
+
+def process_unify(proc_name):
+    """ unify browser process names across platforms """
+    proc_name = proc_name.lower()
+    if proc_name == "chrome":
+        return "chrome"
+    else:
+        if proc_name == "geckomain":
+            return "firefox"
 
 
 def validate_flows_per_file(n):

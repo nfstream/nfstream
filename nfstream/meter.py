@@ -16,7 +16,7 @@ If not, see <http://www.gnu.org/licenses/>.
 from collections import OrderedDict
 from .engine import create_engine
 from .flow import NFlow
-from .utils import set_affinity, InternalError
+from .utils import set_affinity, InternalError, NFEvent
 
 
 class NFCache(OrderedDict):
@@ -85,7 +85,7 @@ def get_flow_key(packet, ffi):
 
 
 def consume(packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps, sync, accounting_mode, n_dissections,
-            statistics, splt, dissector, decode_tunnels):
+            statistics, splt, dissector, decode_tunnels, system_visibility_mode):
     """ consume a packet and produce flow """
     # We maintain state for active flows computation 1 for creation, 0 for update/cut, -1 for custom expire
     flow_key = get_flow_key(packet, ffi)
@@ -104,7 +104,7 @@ def consume(packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps
                 del flow
                 try:
                     cache[flow_key] = NFlow(packet, ffi, lib, udps, sync, accounting_mode, n_dissections,
-                                            statistics, splt, dissector, decode_tunnels)
+                                            statistics, splt, dissector, decode_tunnels, system_visibility_mode)
                 except OSError:
                     print("WARNING: Failed to allocate memory space for flow creation. Flow creation aborted.")
                 state = 0
@@ -114,7 +114,7 @@ def consume(packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps
         try:
             if sync:
                 flow = NFlow(packet, ffi, lib, udps, sync, accounting_mode, n_dissections, statistics, splt, dissector,
-                             decode_tunnels)
+                             decode_tunnels, system_visibility_mode)
                 if flow.expiration_id == -1:  # A user Plugin forced expiration on the first packet
                     channel.put(flow.expire(udps, sync, n_dissections, statistics, splt, ffi, lib, dissector))
                     del flow
@@ -124,7 +124,7 @@ def consume(packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps
                     state = 1
             else:
                 cache[flow_key] = NFlow(packet, ffi, lib, udps, sync, accounting_mode, n_dissections, statistics, splt,
-                                        dissector, decode_tunnels)
+                                        dissector, decode_tunnels, system_visibility_mode)
                 state = 1
         except OSError:
             print("WARNING: Failed to allocate memory space for flow creation. Flow creation aborted.")
@@ -208,7 +208,7 @@ def track(lib, capture, mode, interface_stats, tracker, processed, ignored):
 
 def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots, root_idx, mode,
                    idle_timeout, active_timeout, accounting_mode, udps, n_dissections, statistics, splt,
-                   channel, tracker, lock, group_id):
+                   channel, tracker, lock, group_id, system_visibility_mode):
     """ Metering workflow """
     set_affinity(root_idx+1)
     ffi, lib = create_engine()
@@ -217,7 +217,7 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
     if capture is None:
         ffi.dlclose(lib)
         if root_idx == 0:
-            channel.put(InternalError(-2, ffi.string(error_child).decode('utf-8', errors='ignore')))
+            channel.put(InternalError(NFEvent.ERROR, ffi.string(error_child).decode('utf-8', errors='ignore')))
         return
     meter_tick, meter_scan_tick, meter_track_tick = 0, 0, 0  # meter, idle scan and perf track timelines
     meter_scan_interval, meter_track_interval = 10, 1000  # we scan each 10 msecs and update perf each sec.
@@ -239,7 +239,7 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
     if not activate_capture(capture, lib, error_child, bpf_filter, mode):
         ffi.dlclose(lib)
         if root_idx == 0:
-            channel.put(InternalError(-2, ffi.string(error_child).decode('utf-8', errors='ignore')))
+            channel.put(InternalError(NFEvent.ERROR, ffi.string(error_child).decode('utf-8', errors='ignore')))
         return
     while remaining_packets:
         nf_packet = ffi.new("struct nf_packet *")
@@ -258,7 +258,8 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
                     meter_scan_tick = meter_tick
                 # Consume packet and return diff
                 diff = consume(nf_packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps, sync,
-                               accounting_mode, n_dissections, statistics, splt, dissector, decode_tunnels)
+                               accounting_mode, n_dissections, statistics, splt, dissector, decode_tunnels,
+                               system_visibility_mode)
                 active_flows += diff
                 if go_scan:
                     idles = meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, n_dissections,

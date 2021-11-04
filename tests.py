@@ -34,21 +34,24 @@ def get_files_list(path):
 
 
 def ndpi_result(path):
-    subprocess.check_call(["/usr/local/bin/ndpiReader", "-q", "-t", "-i", path, "-C", path + ".out", "-T", "20", "-U", "20"])
+    subprocess.check_call(["/usr/local/bin/ndpiReader", "-v", "2", "-q", "-t", "-i", path, "-C", path + ".out",
+                           "-T", "20", "-U", "20"], stdout=subprocess.DEVNULL)
     path = path + ".out"
     with open(path) as csvfile:
         reader = csv.DictReader(csvfile)
         app = {}
+
         for row in reader:
-            try:
-                app[row['ndpi_proto']]['bytes'] += int(row['s_to_c_bytes']) + int(row['c_to_s_bytes'])
-                app[row['ndpi_proto']]['flows'] += 1
-                app[row['ndpi_proto']]['pkts'] += int(row['s_to_c_pkts']) + int(row['c_to_s_pkts'])
-            except KeyError:
-                app[row['ndpi_proto']] = {"bytes": 0, "flows": 0, "pkts": 0}
-                app[row['ndpi_proto']]["bytes"] += int(row['s_to_c_bytes']) + int(row['c_to_s_bytes'])
-                app[row['ndpi_proto']]["flows"] += 1
-                app[row['ndpi_proto']]['pkts'] += int(row['s_to_c_pkts']) + int(row['c_to_s_pkts'])
+            if row['ndpi_proto'] != "Unknown":
+                try:
+                    app[row['ndpi_proto']]['bytes'] += int(row['s_to_c_bytes']) + int(row['c_to_s_bytes'])
+                    app[row['ndpi_proto']]['flows'] += 1
+                    app[row['ndpi_proto']]['pkts'] += int(row['s_to_c_pkts']) + int(row['c_to_s_pkts'])
+                except KeyError:
+                    app[row['ndpi_proto']] = {"bytes": 0, "flows": 0, "pkts": 0}
+                    app[row['ndpi_proto']]["bytes"] += int(row['s_to_c_bytes']) + int(row['c_to_s_bytes'])
+                    app[row['ndpi_proto']]["flows"] += 1
+                    app[row['ndpi_proto']]['pkts'] += int(row['s_to_c_pkts']) + int(row['c_to_s_pkts'])
     os.remove(path)
     return app
 
