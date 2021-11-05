@@ -17,7 +17,6 @@ import sys
 import os
 import subprocess
 import platform
-import magic
 
 if (not sys.version_info[0] == 3) and (not sys.version_info[1] >= 6):
     sys.exit("Sorry, nfstream requires Python3.6+ versions.")
@@ -68,7 +67,8 @@ needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
 pytest_runner = ['pytest-runner'] if needs_pytest else []
 install_requires = ['cffi>=1.14.6',
                     'psutil>=5.8.0',
-                    'dpkt>=1.9.7']
+                    'dpkt>=1.9.7',
+		    'python-magic>=0.4.24']
 
 # This is mandatory to fix both issues with numpy using Accelerate backend on macos and pandas issues with PyPy
 if sys.platform == 'darwin':
