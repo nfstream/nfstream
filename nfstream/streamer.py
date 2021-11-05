@@ -19,6 +19,7 @@ import pandas as pd
 import time as tm
 import os
 import platform
+import magic
 from collections.abc import Iterable
 from psutil import net_if_addrs, cpu_count
 from os.path import isfile
@@ -98,7 +99,7 @@ class NFStreamer(object):
         available_interfaces = net_if_addrs().keys()
         if value in available_interfaces:
             self._mode = 1
-        elif (".pcap" in value[-5:] or ".pcapng" in value[-7:]) and isfile(value):
+        elif isfile(value) and "pcap" in magic.from_file(value):
             self._mode = 0
         else:
             raise ValueError("Please specify a pcap file path or a valid network interface name as source.")

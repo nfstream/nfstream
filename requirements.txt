@@ -5,3 +5,4 @@ numpy<=1.18.5; sys_platform == 'darwin'
 pandas>=1.1.5; platform.python_implementation == 'CPython'
 pandas<=1.2.5; platform.python_implementation == 'PyPy'
 dpkt>=1.9.7
+python-magic>=0.4.24
