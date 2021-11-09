@@ -47,8 +47,8 @@ class RequestCache(OrderedDict):
 
     def __setitem__(self, key, value):
         value.sort(key=lambda x: x.timestamp)
-        for idx in range(len(value)):
-            if ((time.time() * 1000) - value[idx].timestamp) >= self.timeout:
+        for idx, val in enumerate(value):
+            if ((time.time() * 1000) - val.timestamp) >= self.timeout:
                 del value[idx]
             else:
                 break
@@ -86,20 +86,21 @@ class RequestCache(OrderedDict):
     @staticmethod
     def get_nearest_request_idx(requests, flow):
         """ return from a list of requests the nearest request to a flow based on timestamp and a grace time period """
-        grace_time = 1000
-        # grace time period: we are matching a flow to a request identified by remote ip and creation timestamp
-        # we do not map a flow to request if the time diff is greater than grace_time in milliseconds
-        min_time_diff_idx = 0
-        min_time_diff = 18446744073709551615000  # handle idx 0
-        for idx, request in enumerate(requests):
-            time_diff = abs(request.timestamp - flow.bidirectional_first_seen_ms)
-            if time_diff < min_time_diff:
-                min_time_diff = time_diff
-                min_time_diff_idx = idx
-        if min_time_diff <= grace_time:
-            return min_time_diff_idx
-        else:
-            return None
+        if requests is not None:
+            grace_time = 1000
+            # grace time period: we are matching a flow to a request identified by remote ip and creation timestamp
+            # we do not map a flow to request if the time diff is greater than grace_time in milliseconds
+            min_time_diff_idx = 0
+            min_time_diff = 18446744073709551615000  # handle idx 0
+            for idx, request in enumerate(requests):
+                time_diff = abs(request.timestamp - flow.bidirectional_first_seen_ms)
+                if time_diff < min_time_diff:
+                    min_time_diff = time_diff
+                    min_time_diff_idx = idx
+            if min_time_diff <= grace_time:
+                return min_time_diff_idx
+            else:
+                return None
 
     def match_flow(self, flow):
         requests = None
@@ -112,18 +113,15 @@ class RequestCache(OrderedDict):
                 src_ip = True
             except KeyError:
                 pass
-        if requests is None:
-            return flow
-        else:
-            idx_request = self.get_nearest_request_idx(requests, flow)
-            if idx_request is not None:
-                flow.system_browser_tab = requests[idx_request].tab_url
-                del requests[idx_request]
-                if len(requests) == 0:
-                    if src_ip:
-                        del self[flow.src_ip]
-                    else:
-                        del self[flow.dst_ip]
+        idx_request = self.get_nearest_request_idx(requests, flow)
+        if idx_request is not None:
+            flow.system_browser_tab = requests[idx_request].tab_url
+            del requests[idx_request]
+            if len(requests) == 0:
+                if src_ip:
+                    del self[flow.src_ip]
+                else:
+                    del self[flow.dst_ip]
         return flow
 
 
