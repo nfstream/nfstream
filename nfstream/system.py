@@ -52,7 +52,7 @@ class RequestCache(OrderedDict):
                 del value[idx]
             else:
                 break
-        if value is []:
+        if not value:  # value is []
             del self[key]
         else:
             super().__setitem__(key, value)
@@ -264,8 +264,7 @@ class NFRequestHandler(BaseHTTPRequestHandler):
             self._set_headers()
 
     def log_message(self, fmt, *args):
-        """ Avoid verbose logging of requests"""
-        pass
+        return
 
 
 class NFRequestServer(HTTPServer):
