@@ -13,9 +13,6 @@ If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 */
 
-var success_count = 0;
-var error_count = 0;
-
 function upload_to_nfstream(msg) {
     browser.storage.local.get({export_port: '28314'},
                                function (items) {
@@ -27,9 +24,8 @@ function upload_to_nfstream(msg) {
                                                    true);
                                           xhr.setRequestHeader("Content-type", "application/json");
                                           xhr.send(JSON.stringify(msg));
-                                          success_count++;
                                     } catch (e) {
-                                          error_count++;
+                                          // ignore
                                     }});
 }
 

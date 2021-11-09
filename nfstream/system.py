@@ -86,6 +86,7 @@ class RequestCache(OrderedDict):
     @staticmethod
     def get_nearest_request_idx(requests, flow):
         """ return from a list of requests the nearest request to a flow based on timestamp and a grace time period """
+        nearest = None
         if requests is not None:
             grace_time = 1000
             # grace time period: we are matching a flow to a request identified by remote ip and creation timestamp
@@ -98,9 +99,8 @@ class RequestCache(OrderedDict):
                     min_time_diff = time_diff
                     min_time_diff_idx = idx
             if min_time_diff <= grace_time:
-                return min_time_diff_idx
-            else:
-                return None
+                nearest = min_time_diff_idx
+        return nearest
 
     def match_flow(self, flow):
         requests = None
@@ -168,17 +168,15 @@ class ConnCache(OrderedDict):
 def get_conn_key_from_flow(f):
     """ compute a conn key from NFlow object attributes """
     if f.protocol == 6:
-        return 6, \
-               min(f.src_ip, f.dst_ip), max(f.src_ip, f.dst_ip), \
-               min(f.src_port, f.dst_port), max(f.src_port, f.dst_port)
+        k = 6, min(f.src_ip, f.dst_ip), max(f.src_ip, f.dst_ip), \
+            min(f.src_port, f.dst_port), max(f.src_port, f.dst_port)
     elif f.protocol == 17:
-        return 17, \
-               min(f.src_ip, f.dst_ip), max(f.src_ip, f.dst_ip), \
-               min(f.src_port, f.dst_port), max(f.src_port, f.dst_port)
+        k = 17, min(f.src_ip, f.dst_ip), max(f.src_ip, f.dst_ip), \
+            min(f.src_port, f.dst_port), max(f.src_port, f.dst_port)
     else:
-        return 0, \
-               min(f.src_ip, f.dst_ip), max(f.src_ip, f.dst_ip), \
-               min(f.src_port, f.dst_port), max(f.src_port, f.dst_port)
+        k = 0, min(f.src_ip, f.dst_ip), max(f.src_ip, f.dst_ip), \
+            min(f.src_port, f.dst_port), max(f.src_port, f.dst_port)
+    return k
 
 
 def match_flow_conn(conn_cache, flow):
@@ -196,18 +194,19 @@ def match_flow_conn(conn_cache, flow):
 
 def get_conn_key(c):
     """ Create a 5-tuple connection key tuple """
+    k = None
     if c.raddr != () and c.pid is not None:
         src_ip = c.laddr.ip
         dst_ip = c.raddr.ip
         src_port = c.laddr.port
         dst_port = c.raddr.port
         if c.type == SocketKind.SOCK_STREAM:  # TCP protocol
-            return 6, min(src_ip, dst_ip), max(src_ip, dst_ip), min(src_port, dst_port), max(src_port, dst_port)
+            k = 6, min(src_ip, dst_ip), max(src_ip, dst_ip), min(src_port, dst_port), max(src_port, dst_port)
         elif c.type == SocketKind.SOCK_DGRAM:  # UDP protocol
-            return 17, min(src_ip, dst_ip), max(src_ip, dst_ip), min(src_port, dst_port), max(src_port, dst_port)
+            k = 17, min(src_ip, dst_ip), max(src_ip, dst_ip), min(src_port, dst_port), max(src_port, dst_port)
         else:  # Non TCP/UDP mapped with 0 as protocol Id
-            return 0, min(src_ip, dst_ip), max(src_ip, dst_ip), min(src_port, dst_port), max(src_port, dst_port)
-    return None
+            k = 0, min(src_ip, dst_ip), max(src_ip, dst_ip), min(src_port, dst_port), max(src_port, dst_port)
+    return k
 
 
 def system_socket_worflow(channel, idle_timeout, poll_period):
