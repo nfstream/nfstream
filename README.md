@@ -504,7 +504,7 @@ storage.
 
 ## Publications that use NFStream
 
-* [**DAPT 2021 - A Semi-Synthetic Dataset for Advanced Persistent Threats**](https://openreview.net/pdf?id=iSGC3zTlaqz)
+* [**Ranking Network Devices for Alarm Prioritisation: Intrusion Detection Case Study**](https://ieeexplore.ieee.org/abstract/document/9559086)
 * [**Network Flows-Based Malware Detection Using A Combined Approach of Crawling And Deep Learning**](https://ieeexplore.ieee.org/document/9500920)
 * [**Generative Transformer Framework For Network Traffic Generation And Classification**](https://cyberleninka.ru/article/n/generative-transformer-framework-for-network-traffic-generation-and-classification)
 * [**Multi-Class Network Traffic Generators and Classifiers Based on Neural Networks**](https://ieeexplore.ieee.org/document/9416067)
