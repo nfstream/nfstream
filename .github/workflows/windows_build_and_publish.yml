@@ -14,6 +14,9 @@ jobs:
   test:
     name: ${{ matrix.python-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: msys2 {0}
     strategy:
       fail-fast: false
       matrix:
@@ -22,6 +25,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Set up MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        update: true
+        install: git mingw-w64-x86_64-toolchain automake1.16 automake-wrapper autoconf libtool libyaml-devel pcre2-devel jansson-devel make mingw-w64-x86_64-libyaml mingw-w64-x86_64-pcre2 mingw-w64-x86_64-rust mingw-w64-x86_64-jansson unzip p7zip python-setuptools mingw-w64-x86_64-python-yaml mingw-w64-x86_64-jq mingw-w64-x86_64-libxml2
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
@@ -29,15 +38,8 @@ jobs:
     - name: Print Python version
       run: |
         python -c "import sys; print(sys.version)"
-    - name: Set up MinGW
-      uses: egor-tensin/setup-mingw@v2
-      with:
-        platform: x64
     - name: Set up NPCAP
       run: |
          choco install wget --no-progress
          wget --user ${{ secrets.NPCAP_OEM_USERNAME }} --password ${{ secrets.NPCAP_OEM_PASSWORD }} https://nmap.org/npcap/oem/dist/npcap-1.55-oem.exe
-         Start-Process npcap-1.55-oem.exe -ArgumentList "/loopback_support=yes /winpcap_mode /S" -wait
-         sc.exe start npcap
-         sc.exe stop npcap
-         
+         Start-Process npcap-1.55-oem.exe -ArgumentList "/loopback_support=yes /winpcap_mode /S" -wait         
