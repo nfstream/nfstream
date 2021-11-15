@@ -45,5 +45,5 @@ jobs:
          msys2 -c 'git clone --branch dev https://github.com/ntop/nDPI.git'
          cd nDPI
          msys2 -c './autogen.sh'
-         msys2 -c './configure.sh'
+         msys2 -c 'make all'
          
