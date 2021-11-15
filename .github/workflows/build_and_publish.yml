@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest", "macOS-latest", "windows-latest"]
+        os: ["ubuntu-latest", "macOS-latest"]
         python-version: [pypy-3.7, pypy3, 3.9, 3.8, 3.7, 3.6]
 
     steps:
@@ -31,14 +31,13 @@ jobs:
     # sed replacement is performed to rectify PyPy path which ends with /bin
     # cache key takes into account the Python version of the runner to avoid version mismatch on updates.
     - name: Get pip cache path
-      if: !startsWith(matrix.os, 'windows')
       id: get-pip-path
       run: |
         python -c "import sys; print(sys.version)"
         id=$(echo ${{ env.pythonLocation }} | sed 's/\/bin//g')
         echo "::set-output name=id::$id"
+
     - name: Pip cache
-      if: !startsWith(matrix.os, 'windows')
       uses: actions/cache@v2
       id: pip-cache
       with:
@@ -55,11 +54,10 @@ jobs:
       run: |
         brew install autoconf automake libtool pkg-config gettext json-c
     - name: Installing NFStream requirements
-      if: steps.pip-cache.outputs.cache-hit != 'true' && !startsWith(matrix.os, 'windows')
+      if: steps.pip-cache.outputs.cache-hit != 'true'
       run: |
         pip install -r dev_requirements.txt
     - name: Build Engine dependencies
-      if: !startsWith(matrix.os, 'windows')
       run: |
         git clone --branch libgpg-error-1.42 https://github.com/gpg/libgpg-error
         cd libgpg-error
@@ -97,19 +95,16 @@ jobs:
         rm -rf nDPI
         MACOSX_DEPLOYMENT_TARGET=10.14 python setup.py bdist_wheel
     - name: Generated wheel
-      if: !startsWith(matrix.os, 'windows')
       run: |
         ls dist/
     - name: Testing and coverage report generation
-      if: !startsWith(matrix.os, 'windows')
       run: |
         python -m coverage run tests.py
         python -m coverage combine
     - name: Upload coverage to Codecov
-      if: !startsWith(matrix.os, 'windows')
       uses: codecov/codecov-action@v1
     - name: Publish on Pypi
-      if: startsWith(github.ref, 'refs/tags/') && !startsWith(matrix.os, 'windows')
+      if: startsWith(github.ref, 'refs/tags/')
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
