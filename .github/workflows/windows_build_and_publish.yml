@@ -33,3 +33,7 @@ jobs:
       uses: egor-tensin/setup-mingw@v2
       with:
         platform: x64
+    - name: Set up NPCAP
+      run: |
+         wget --user ${{ secrets.NPCAP_OEM_USERNAME }} --password ${{ secrets.NPCAP_OEM_PASSWORD }} https://nmap.org/npcap/oem/dist/npcap-1.55-oem.exe
+         npcap-1.55-oem.exe /S
