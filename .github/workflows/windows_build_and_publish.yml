@@ -37,6 +37,4 @@ jobs:
       run: |
          choco install wget --no-progress
          wget --user ${{ secrets.NPCAP_OEM_USERNAME }} --password ${{ secrets.NPCAP_OEM_PASSWORD }} https://nmap.org/npcap/oem/dist/npcap-1.55-oem.exe
-         .\npcap-1.55-oem.exe /S
-         ls c:\windows\system32\
-
+         .\npcap-1.55-oem.exe
