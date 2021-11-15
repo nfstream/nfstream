@@ -1,4 +1,4 @@
-name: build
+name: windows_build
 on:
   push:
     branches:
@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["windows-latest"]
-        python-version: [pypy-3.7, pypy3, 3.9, 3.8, 3.7, 3.6]
+        python-version: [3.9, 3.8, 3.7, 3.6]
 
     steps:
     - uses: actions/checkout@v2
@@ -29,3 +29,7 @@ jobs:
     - name: Print Python version
       run: |
         python -c "import sys; print(sys.version)"
+    - name: Set up MinGW
+      uses: egor-tensin/setup-mingw@v2
+      with:
+        platform: x64
