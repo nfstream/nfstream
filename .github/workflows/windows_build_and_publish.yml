@@ -34,10 +34,10 @@ jobs:
          choco install wget --no-progress
          wget --user ${{ secrets.NPCAP_OEM_USERNAME }} --password ${{ secrets.NPCAP_OEM_PASSWORD }} https://nmap.org/npcap/oem/dist/npcap-1.55-oem.exe
          Start-Process npcap-1.55-oem.exe -ArgumentList "/loopback_support=yes /winpcap_mode /S" -wait 
-         ls C:\Program Files\Npcap\
+         Get-ChildItem 'C:\Program Files\Npcap\' | Sort-Object -Property LastWriteTime
          wget https://nmap.org/npcap/dist/npcap-sdk-1.11.zip
          Expand-Archive -Path npcap-sdk-1.11.zip -DestinationPath npcap-sdk-1.11
-         ls
+         Get-ChildItem | Sort-Object -Property LastWriteTime
     - name: Set up MSYS2
       uses: msys2/setup-msys2@v2
       with:
