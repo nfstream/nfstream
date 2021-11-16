@@ -209,36 +209,6 @@ typedef struct atomic {
 
 typedef long int time_t;
 
-struct hash_ip4p_node {
-  struct hash_ip4p_node *next, *prev;
-  time_t                  lchg;
-  uint16_t               port,count:12,flag:4;
-  uint32_t               ip;
-};
-
-struct hash_ip4p {
-  struct hash_ip4p_node   *top;
-  spinlock_t              lock;
-  size_t                  len;
-};
-
-struct hash_ip4p_table {
-  size_t                  size;
-  int			  ipv6;
-  spinlock_t              lock;
-  atomic_t                count;
-  struct hash_ip4p        tbl;
-};
-
-struct bt_announce {              // 192 bytes
-  uint32_t		hash[5];
-  uint32_t		ip[4];
-  uint32_t		time;
-  uint16_t		port;
-  uint8_t		name_len,
-    name[149];     // 149 bytes
-};
-
 typedef enum {
   NDPI_HTTP_METHOD_UNKNOWN = 0,
   NDPI_HTTP_METHOD_OPTIONS,
@@ -756,12 +726,7 @@ struct ndpi_detection_module_struct {
   uint32_t jabber_stun_timeout;
   uint32_t jabber_file_transfer_timeout;
   uint8_t ip_version_limit;
-  /* NDPI_PROTOCOL_BITTORRENT */
-  struct hash_ip4p_table *bt_ht, *bt6_ht;
-  /* BT_ANNOUNCE */
-  struct bt_announce *bt_ann;
-  int    bt_ann_len;
-
+  
   /* NDPI_PROTOCOL_OOKLA */
   struct ndpi_lru_cache *ookla_cache;
 
@@ -891,6 +856,10 @@ struct ndpi_flow_struct {
     uint8_t username[32], password[16];
   } ftp_imap_pop_smtp;
   
+  struct {
+    uint8_t bt_check_performed;
+  } bittorrent;
+  
   union {
     /* the only fields useful for nDPI and ntopng */
     struct {
@@ -912,7 +881,7 @@ struct ndpi_flow_struct {
       char ssl_version_str[12];
       uint16_t ssl_version, server_names_len;
       char client_requested_server_name[256], *server_names,
-      *alpn, *tls_supported_versions, *issuerDN, *subjectDN;
+      char *alpn, *tls_supported_versions, *issuerDN, *subjectDN;
       uint32_t notBefore, notAfter;
       char ja3_client[33], ja3_server[33];
       uint16_t server_cipher;
@@ -932,9 +901,7 @@ struct ndpi_flow_struct {
     } ssh;
 
     struct {
-      uint8_t username_detected:1, username_found:1,
-      password_detected:1, password_found:1,
-      pad:4;
+      uint8_t username_detected:1, username_found:1, password_detected:1, password_found:1, pad:4;
       uint8_t character_id;
       char username[32], password[32];
     } telnet;
