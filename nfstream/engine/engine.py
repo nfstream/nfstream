@@ -880,7 +880,7 @@ struct ndpi_flow_struct {
     struct {
       char ssl_version_str[12];
       uint16_t ssl_version, server_names_len;
-      char client_requested_server_name[256], *server_names,
+      char client_requested_server_name[256], *server_names;
       char *alpn, *tls_supported_versions, *issuerDN, *subjectDN;
       uint32_t notBefore, notAfter;
       char ja3_client[33], ja3_server[33];
