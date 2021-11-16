@@ -50,6 +50,12 @@ jobs:
          cd nDPI
          msys2 -c './autogen.sh'
          msys2 -c 'make all'
-         msys2 -c 'cp libndpi-4.1.0.dll ../nfstream/engine/libndpi.dll'
+         msys2 -c 'cp src/lib/libndpi-4.1.0.dll ../nfstream/engine/libndpi.dll'
          msys2 -c 'ls ../nfstream/engine/'
          msys2 -c 'cd ..'
+
+    - name: Test nDPI
+      run: |
+        cd nfstream
+        cd engine
+        python test_dll.py

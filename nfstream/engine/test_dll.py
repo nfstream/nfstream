@@ -17,4 +17,4 @@ from os.path import abspath, dirname
 import cffi
 
 ffi = cffi.FFI()
-lib = ffi.dlopen(dirname(abspath(__file__)) + '/ndpi.dll')
+lib = ffi.dlopen(dirname(abspath(__file__)) + '/libndpi.dll')
