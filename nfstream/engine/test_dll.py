@@ -18,3 +18,4 @@ import cffi
 
 ffi = cffi.FFI()
 lib = ffi.dlopen(dirname(abspath(__file__)) + '/libndpi.dll')
+print("Success")
