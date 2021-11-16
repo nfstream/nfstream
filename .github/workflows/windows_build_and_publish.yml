@@ -50,4 +50,4 @@ jobs:
          cd nDPI
          msys2 -c './autogen.sh'
          msys2 -c 'make all'
-         
+         msys2 -c 'ls src/lib/'
