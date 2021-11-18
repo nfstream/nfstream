@@ -48,9 +48,12 @@ jobs:
       run: |
          msys2 -c 'git clone --branch dev https://github.com/ntop/nDPI.git'
          cd nDPI
-         msys2 -c './autogen.sh'
+         msys2 -c './autogen.sh --disable-gcrypt'
          msys2 -c 'make all'
-         msys2 -c 'cp src/lib/libndpi-4.1.0.dll ../nfstream/engine/libndpi.dll'
+         msys2 -c 'mkdir ../nfstream/engine/include/ndpi'
+         msys2 -c 'cp -a src/include/. ../nfstream/engine/include/ndpi/'
+         msys2 -c 'ls src/lib/'
+         msys2 -c 'cp src/lib/libndpi.a ../nfstream/engine/libndpi.a'
          msys2 -c 'cd ..'
          msys2 -c 'rm -rf nDPI/'
 
@@ -59,4 +62,9 @@ jobs:
         python -m pip install cffi
         cd nfstream
         cd engine
+        msys2 -c 'gcc -Iinclude/ndpi -shared -o test_dll.dll -g -O2 -Wall test_dll.c libndpi.a'
+        msys2 -c 'rm -rf include/'
+        msys2 -c 'rm -rf libndpi.a'
         python test_dll.py
+
+

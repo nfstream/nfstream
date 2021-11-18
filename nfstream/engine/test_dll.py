@@ -16,12 +16,11 @@ If not, see <http://www.gnu.org/licenses/>.
 from os.path import abspath, dirname
 import cffi
 
-cc_ndpi_apis = """
-uint16_t ndpi_get_api_version(void);
+cc_dll_apis = """
+uint16_t get_ndpi_api_version(void);
 """
 
-
 ffi = cffi.FFI()
-lib = ffi.dlopen(dirname(abspath(__file__)) + '/libndpi.dll')
-ffi.cdef(cc_ndpi_apis)
-print(lib.ndpi_get_api_version())
+lib = ffi.dlopen(dirname(abspath(__file__)) + '/test_dll.dll')
+ffi.cdef(cc_dll_apis)
+print(lib.get_ndpi_api_version())
