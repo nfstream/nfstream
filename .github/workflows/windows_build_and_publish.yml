@@ -29,7 +29,7 @@ jobs:
     - name: Print Python version
       run: |
         python -c "import sys; print(sys.version)"
-    - name: Set up NPCAP
+    - name: Set up NPCAP OEM and SDK
       run: |
          choco install wget --no-progress
          wget --user ${{ secrets.NPCAP_OEM_USERNAME }} --password ${{ secrets.NPCAP_OEM_PASSWORD }} https://nmap.org/npcap/oem/dist/npcap-1.55-oem.exe
@@ -51,8 +51,8 @@ jobs:
          msys2 -c './autogen.sh'
          msys2 -c 'make all'
          msys2 -c 'cp src/lib/libndpi-4.1.0.dll ../nfstream/engine/libndpi.dll'
-         msys2 -c 'ls ../nfstream/engine/'
          msys2 -c 'cd ..'
+         msys2 -c 'rm -rf nDPI/'
 
     - name: Test nDPI
       run: |
