@@ -63,7 +63,7 @@ jobs:
         cd nfstream
         cd engine
         Get-ChildItem | Sort-Object -Property LastWriteTime
-        msys2 -c 'gcc -Indpi_includes -shared -o test_dll.dll -g -O2 -Wall test_dll.c libndpi.a'
+        msys2 -c 'gcc -Indpi_includes -ID:/a/_temp/msys64/mingw64/include -shared -o test_dll.dll -g -O2 -Wall test_dll.c libndpi.a'
         python test_dll.py
 
 
