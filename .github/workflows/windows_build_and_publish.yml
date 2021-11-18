@@ -62,9 +62,8 @@ jobs:
         python -m pip install cffi
         cd nfstream
         cd engine
+        Get-ChildItem | Sort-Object -Property LastWriteTime
         msys2 -c 'gcc -Iinclude/ndpi -shared -o test_dll.dll -g -O2 -Wall test_dll.c libndpi.a'
-        msys2 -c 'rm -rf include/'
-        msys2 -c 'rm -rf libndpi.a'
         python test_dll.py
 
 
