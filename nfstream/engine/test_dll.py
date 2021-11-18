@@ -23,4 +23,5 @@ uint16_t ndpi_get_api_version(void);
 
 ffi = cffi.FFI()
 lib = ffi.dlopen(dirname(abspath(__file__)) + '/libndpi.dll')
+ffi.cdef(cc_ndpi_apis)
 print(lib.ndpi_get_api_version())
