@@ -50,8 +50,8 @@ jobs:
          cd nDPI
          msys2 -c './autogen.sh --disable-gcrypt'
          msys2 -c 'make all'
-         msys2 -c 'mkdir ../nfstream/engine/include/ndpi'
-         msys2 -c 'cp -a src/include/. ../nfstream/engine/include/ndpi/'
+         New-Item -Path "..\nfstream\engine\" -Name "ndpi_includes" -ItemType "directory"
+         msys2 -c 'cp -a src/include/. ../nfstream/engine/ndpi_includes/'
          msys2 -c 'ls src/lib/'
          msys2 -c 'cp src/lib/libndpi.a ../nfstream/engine/libndpi.a'
          msys2 -c 'cd ..'
@@ -63,7 +63,7 @@ jobs:
         cd nfstream
         cd engine
         Get-ChildItem | Sort-Object -Property LastWriteTime
-        msys2 -c 'gcc -Iinclude/ndpi -shared -o test_dll.dll -g -O2 -Wall test_dll.c libndpi.a'
+        msys2 -c 'gcc -Indpi_includes -shared -o test_dll.dll -g -O2 -Wall test_dll.c libndpi.a'
         python test_dll.py
 
 
