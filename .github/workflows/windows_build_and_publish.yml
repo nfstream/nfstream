@@ -26,10 +26,23 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+
+    - name: Set up MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        update: true
+        install: git mingw-w64-x86_64-toolchain automake1.16 automake-wrapper autoconf libtool make mingw-w64-x86_64-json-c
+
     - name: Print Python version
       run: |
         python -c "import sys; print(sys.version)"
-    - name: Set up NPCAP OEM and SDK
+
+    - name: Install NFStream requirements
+      run: |
+         python -m pip install -r dev_requirements.txt
+
+    - name: Build Engine dependencies
       run: |
          choco install wget --no-progress
          wget --user ${{ secrets.NPCAP_OEM_USERNAME }} --password ${{ secrets.NPCAP_OEM_PASSWORD }} https://nmap.org/npcap/oem/dist/npcap-1.55-oem.exe
@@ -37,15 +50,6 @@ jobs:
          Get-ChildItem 'C:\Program Files\Npcap\' | Sort-Object -Property LastWriteTime
          wget https://nmap.org/npcap/dist/npcap-sdk-1.11.zip
          Expand-Archive -Path npcap-sdk-1.11.zip -DestinationPath npcap-sdk-1.11
-         Get-ChildItem | Sort-Object -Property LastWriteTime
-    - name: Set up MSYS2
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: MINGW64
-        update: true
-        install: git mingw-w64-x86_64-toolchain automake1.16 automake-wrapper autoconf libtool make mingw-w64-x86_64-json-c
-    - name: Build nDPI
-      run: |
          msys2 -c 'git clone --branch dev https://github.com/ntop/nDPI.git'
          cd nDPI
          msys2 -c './autogen.sh --disable-gcrypt'
@@ -57,13 +61,16 @@ jobs:
          msys2 -c 'cd ..'
          msys2 -c 'rm -rf nDPI/'
 
+    - name: Build Engine
+      run: |
+         cd nfstream
+         cd engine
+         msys2 -c 'gcc -Indpi_includes -shared -o test_dll.dll -g -O2 -Wall test_dll.c libndpi.a D:/a/_temp/msys64/mingw64/x86_64-w64-mingw32/lib/libws2_32.a'
+         cd ..
+         cd ..
+
     - name: Test nDPI
       run: |
-        python -m pip install cffi
-        cd nfstream
-        cd engine
         Get-ChildItem | Sort-Object -Property LastWriteTime
-        msys2 -c 'gcc -Indpi_includes -shared -o test_dll.dll -g -O2 -Wall test_dll.c libndpi.a D:/a/_temp/msys64/mingw64/x86_64-w64-mingw32/lib/libws2_32.a'
-        python test_dll.py
 
 
