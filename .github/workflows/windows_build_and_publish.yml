@@ -69,8 +69,8 @@ jobs:
          cd ..
          cd ..
 
-    - name: Test nDPI
+    - name: Test Engine
       run: |
-        Get-ChildItem | Sort-Object -Property LastWriteTime
+        python .\nfstream\engine\test_dll.py
 
 
