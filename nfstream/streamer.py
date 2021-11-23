@@ -33,6 +33,7 @@ from .system import system_socket_worflow, match_flow_conn, system_browser_workf
 class NFStreamer(object):
     streamer_id = 0  # class id generator
     glock = threading.Lock()
+    is_windows = "windows" in platform.system().lower()
     """ Network Flow Streamer
 
     Examples:
@@ -83,7 +84,11 @@ class NFStreamer(object):
         self.system_visibility_mode = system_visibility_mode
         self.system_visibility_poll_ms = system_visibility_poll_ms
         self.system_visibility_extension_port = system_visibility_extension_port
-        self._mp_context = get_context("fork")
+        if NFStreamer.is_windows:
+            self._mp_context = get_context("spawn")
+        else:
+            self._mp_context = get_context("fork")
+
 
     @property
     def source(self):
@@ -245,7 +250,7 @@ class NFStreamer(object):
                 self._n_meters = c_cpus - 1
             else:
                 if c_cpus >= c_cores:
-                    if c_cpus == 2 * c_cores or c_cpus == c_cores: # multi-thread or single threaded
+                    if c_cpus == 2 * c_cores or c_cpus == c_cores:  # multi-thread or single threaded
                         self._n_meters = c_cores - 1
                     else:
                         self._n_meters = int(divmod(c_cpus/2, 1)[0]) - 1

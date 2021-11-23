@@ -16,11 +16,18 @@ If not, see <http://www.gnu.org/licenses/>.
 from os.path import abspath, dirname
 import cffi
 
+# gcc -Indpi_includes -shared -o test_dll.dll -g -O2 -Wall test_dll.c libndpi.a libws2_32.a
+
 cc_dll_apis = """
 uint16_t get_ndpi_api_version(void);
+const char *pcap_lib_version(void);
 """
 
 ffi = cffi.FFI()
-lib = ffi.dlopen(dirname(abspath(__file__)) + '/test_dll.dll')
+engine_lib = ffi.dlopen(dirname(abspath(__file__)) + '/test_dll.dll')
 ffi.cdef(cc_dll_apis)
-print(lib.get_ndpi_api_version())
+print("TEST ENGINE DLL LOAD:get_ndpi_api_version")
+print(engine_lib.get_ndpi_api_version())
+print("TEST NPCAP DLL LOAD:pcap_lib_version")
+pcap_lib = ffi.dlopen("C:\\Windows\\System32\\Npcap\\wpcap.dll")
+print(ffi.string(pcap_lib.pcap_lib_version()).decode('utf-8', errors='ignore'))
