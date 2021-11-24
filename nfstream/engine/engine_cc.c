@@ -1172,7 +1172,7 @@ typedef struct nf_flow {
   uint8_t splt_closed;
   char application_name[40];
   char category_name[40];
-  char requested_server_name[256];
+  char requested_server_name[80];
   char c_hash[48];
   char s_hash[48];
   char content_type[64];
@@ -1241,7 +1241,7 @@ void flow_bidirectional_dissection_collect_info(struct ndpi_detection_module_str
            (flow->ndpi_flow->protos.tls_quic.ja3_client[0] != '\0') ||
            flow_is_ndpi_proto(flow, NDPI_PROTOCOL_QUIC)) {
     snprintf(flow->requested_server_name, sizeof(flow->requested_server_name), "%s",
-             flow->ndpi_flow->protos.tls_quic.client_requested_server_name);
+             flow->ndpi_flow->host_server_name);
     snprintf(flow->user_agent, sizeof(flow->user_agent), "%s",
              flow->ndpi_flow->http.user_agent ? flow->ndpi_flow->http.user_agent : "");
     snprintf(flow->c_hash, sizeof(flow->c_hash), "%s",
