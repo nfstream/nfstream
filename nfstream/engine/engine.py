@@ -1299,33 +1299,29 @@ def activate_capture(is_windows, npcap, ffi, capture, lib, error_child, bpf_filt
     return activate_capture_unix(capture, lib, error_child, bpf_filter, mode)
 
 
+def packet_process(npcap, lib, pcap_handle, hdr, data, decode_tunnels, nf_pkt, n_roots, root_idx, mode):
+    time = int(hdr.tv_sec * 1000 + hdr.tv_usec / (1000000 / 1000))
+    rv_processor = lib.packet_process(npcap.pcap_datalink(pcap_handle), hdr.caplen, hdr.len, data,
+                                      decode_tunnels, nf_pkt, n_roots, root_idx, mode, time)
+    if (rv_processor == 0) or (rv_processor == 1):
+        return rv_processor
+    return 2
+
+
 def capture_next(ffi, npcap, lib, pcap_handle, nf_pkt, decode_tunnels, n_roots, root_idx, mode):
-    phdr = ffi.new("struct pcap_pkthdr **")
-    pdata = ffi.new("uint8_t **")
+    phdr = ffi.new("struct pcap_pkthdr **", ffi.NULL)
+    pdata = ffi.new("uint8_t **", ffi.NULL)
     rv_handle = npcap.pcap_next_ex(pcap_handle, phdr, ffi.cast("unsigned char **", pdata))
+    hdr = phdr[0]
+    data = pdata[0]
     if rv_handle == 1:
-        hdr = phdr[0]
-        data = pdata[0]
-        time = int(hdr.tv_sec * 1000 + hdr.tv_usec / (1000000 / 1000))
-        rv_processor = lib.packet_process(npcap.pcap_datalink(pcap_handle), hdr.caplen, hdr.len, data,
-                                          decode_tunnels, nf_pkt, n_roots, root_idx, mode, time)
-        if (rv_processor == 0) or (rv_processor == 1):
-            return rv_processor
-        return 2
-    else:
-        if rv_handle == 0:
-            hdr = phdr[0]
-            data = pdata[0]
-            if hdr == ffi.NULL or data == ffi.NULL:
-                return -1
-            time = int(hdr.tv_sec * 1000 + hdr.tv_usec / (1000000 / 1000))
-            rv_processor = lib.packet_process(npcap.pcap_datalink(pcap_handle), hdr.caplen, hdr.len, data,
-                                              decode_tunnels, nf_pkt, n_roots, root_idx, mode, time)
-            if (rv_processor == 0) or (rv_processor == 1):
-                return rv_processor
-            return 2
-        if rv_handle == -2:
-            return -2
+        return packet_process(npcap, lib, pcap_handle, hdr, data, decode_tunnels, nf_pkt, n_roots, root_idx, mode)
+    if rv_handle == 0:
+        if hdr == ffi.NULL or data == ffi.NULL:
+            return -1
+        return packet_process(npcap, lib, pcap_handle, hdr, data, decode_tunnels, nf_pkt, n_roots, root_idx, mode)
+    if rv_handle == -2:
+        return -2
     return -1
 
 
