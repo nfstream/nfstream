@@ -17,21 +17,22 @@ from nfstream import NFStreamer
 import sys
 
 
-path = sys.argv[1]
-flow_streamer = NFStreamer(source=path,
-                           statistical_analysis=False,
-                           idle_timeout=1)
-result = {}
-try:
-    for flow in flow_streamer:
-        print(flow)
-        try:
-            result[flow.application_name] += flow.bidirectional_packets
-        except KeyError:
-            result[flow.application_name] = flow.bidirectional_packets
-    print("\nSummary (Application Name: Packets):")
-    print(result)
-except KeyboardInterrupt:
-    print("\nSummary (Application Name: Packets):")
-    print(result)
-    print("Terminated.")
+if __name__ == '__main__': # Mandatory if you are running on Windows Platform
+    path = sys.argv[1]
+    flow_streamer = NFStreamer(source=path,
+                               statistical_analysis=False,
+                               idle_timeout=1)
+    result = {}
+    try:
+        for flow in flow_streamer:
+            print(flow)
+            try:
+                result[flow.application_name] += flow.bidirectional_packets
+            except KeyError:
+                result[flow.application_name] = flow.bidirectional_packets
+        print("\nSummary (Application Name: Packets):")
+        print(result)
+    except KeyboardInterrupt:
+        print("\nSummary (Application Name: Packets):")
+        print(result)
+        print("Terminated.")

@@ -25,6 +25,17 @@ import cffi
 cc_capture_headers = """
 struct pcap;
 typedef struct pcap pcap_t;
+struct bpf_insn;
+struct bpf_program {
+  unsigned int bf_len;
+  struct bpf_insn *bf_insns;
+};
+struct pcap_pkthdr {
+  long tv_sec;
+  long tv_usec;
+  unsigned int caplen;
+  unsigned int len;
+};
 typedef struct nf_packet {
   uint8_t direction;
   uint64_t time;
@@ -1105,6 +1116,21 @@ int capture_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tunn
 void capture_stats(pcap_t * pcap_handle, struct nf_stat *nf_statistics, unsigned mode);
 void capture_close(pcap_t * pcap_handle);
 int capture_activate(pcap_t * pcap_handle, int mode, char * child_error);
+int pcap_set_promisc(pcap_t *, int);
+int pcap_set_snaplen(pcap_t *, int);
+int pcap_set_timeout(pcap_t *, int);
+int pcap_activate(pcap_t *);
+pcap_t *pcap_create(const char *, char *); 
+pcap_t *pcap_open_offline(const char *fname, char *errbuf);
+int pcap_setfilter(pcap_t *, struct bpf_program *);
+int pcap_compile(pcap_t *, struct bpf_program *, const char *, int, unsigned int);
+int pcap_next_ex(pcap_t *, struct pcap_pkthdr **, const unsigned char **);
+int pcap_datalink(pcap_t *);
+int packet_process(int datalink_type, uint32_t caplen, uint32_t len, const uint8_t *packet, int decode_tunnels, 
+                   struct nf_packet *nf_pkt, int n_roots, uint64_t root_idx, int mode, uint64_t time);
+void pcap_breakloop(pcap_t *);
+void pcap_close(pcap_t *);
+char *pcap_geterr(pcap_t *);
 """
 
 cc_dissector_apis = """
@@ -1125,15 +1151,242 @@ void meter_free_flow(struct nf_flow *flow, uint8_t n_dissections, uint8_t splt, 
 """
 
 
-def create_engine():
+def capture_open(ffi, npcap, pcap_file, mode, error_child):
+    pcap_handle = ffi.NULL
+    if mode == 0:
+        pcap_handle = npcap.pcap_open_offline(pcap_file, error_child)
+    if mode == 1:
+        pcap_handle = npcap.pcap_create(pcap_file, error_child)
+    return pcap_handle
+
+
+def capture_set_timeout(npcap, pcap_handle, mode):
+    set_timeout = 0
+    if mode != 0:
+        set_timeout = npcap.pcap_set_timeout(pcap_handle, 1000)
+        if set_timeout != 0:
+            npcap.pcap_close(pcap_handle)
+    return set_timeout
+
+
+def capture_set_promisc(npcap, pcap_handle, mode, promisc):
+    set_promisc = 0
+    if mode != 0:
+        set_promisc = npcap.pcap_set_promisc(pcap_handle, promisc)
+        if set_promisc != 0:
+            npcap.pcap_close(pcap_handle)
+    return set_promisc
+
+
+def capture_set_snaplen(npcap, pcap_handle, mode, snaplen):
+    set_snaplen = 0
+    if mode != 0:
+        set_snaplen = npcap.pcap_set_snaplen(pcap_handle, snaplen)
+        if set_snaplen != 0:
+            npcap.pcap_close(pcap_handle)
+    return set_snaplen
+
+
+def setup_capture_unix(ffi, lib, source, snaplen, promisc, mode, error_child, group_id):
+    capture = lib.capture_open(bytes(source, 'utf-8'), mode, error_child)
+    if capture == ffi.NULL:
+        return
+    fanout_set_failed = lib.capture_set_fanout(capture, mode, error_child, group_id)
+    if fanout_set_failed:
+        return
+    timeout_set_failed = lib.capture_set_timeout(capture, mode, error_child)
+    if timeout_set_failed:
+        return
+    promisc_set_failed = lib.capture_set_promisc(capture, mode, error_child, int(promisc))
+    if promisc_set_failed:
+        return
+    snaplen_set_failed = lib.capture_set_snaplen(capture, mode, error_child, snaplen)
+    if snaplen_set_failed:
+        return
+    return capture
+
+
+def setup_capture_windows(ffi, npcap, source, snaplen, promisc, mode, error_child):
+    capture = capture_open(ffi, npcap, bytes(source, 'utf-8'), mode, error_child)
+    if capture == ffi.NULL:
+        return
+    timeout_set_failed = capture_set_timeout(npcap, capture, mode)
+    if timeout_set_failed:
+        ffi.memmove(error_child, b'Unable to set buffer timeout.', 256)
+        return
+    promisc_set_failed = capture_set_promisc(npcap, capture, mode, int(promisc))
+    if promisc_set_failed:
+        ffi.memmove(error_child, b'Unable to set promisc mode.', 256)
+        return
+    snaplen_set_failed = capture_set_snaplen(npcap, capture, mode, snaplen)
+    if snaplen_set_failed:
+        ffi.memmove(error_child, b'Unable to set snaplen.', 256)
+        return
+    return capture
+
+
+def setup_capture(is_windows, ffi, lib, npcap, source, snaplen, promisc, mode, error_child, group_id):
+    """ Setup capture options """
+    if is_windows:
+        return setup_capture_windows(ffi, npcap, source, snaplen, promisc, mode, error_child)
+    else:
+        return setup_capture_unix(ffi, lib, source, snaplen, promisc, mode, error_child, group_id)
+
+
+def capture_set_filter(npcap, ffi, pcap_handle, bpf_filter, child_error):
+    set_filter = 0
+    if bpf_filter != ffi.NULL:
+        fcode = ffi.new("struct bpf_program *")
+        if npcap.pcap_compile(pcap_handle, fcode, bpf_filter, 1, 0xFFFFFF00) < 0:
+            ffi.memmove(child_error, b'Unable to compile BPF filter.', 256)
+            npcap.pcap_close(pcap_handle)
+            set_filter = 1
+        else:
+            if npcap.pcap_setfilter(pcap_handle, fcode) < 0:
+                ffi.memmove(child_error, b'Unable to compile BPF filter.', 256)
+                npcap.pcap_close(pcap_handle)
+                set_filter = 1
+    return set_filter
+
+
+def setup_filter_windows(npcap, ffi, capture, error_child, bpf_filter):
+    """ Compile and setup BPF filter on Windows """
+    if bpf_filter is not None:
+        filter_set_failed = capture_set_filter(npcap, ffi, capture, bytes(bpf_filter, 'utf-8'), error_child)
+        if filter_set_failed:
+            return False
+    return True
+
+
+def setup_filter_unix(capture, lib, error_child, bpf_filter):
+    """ Compile and setup BPF filter on Unix """
+    if bpf_filter is not None:
+        filter_set_failed = lib.capture_set_filter(capture, bytes(bpf_filter, 'utf-8'), error_child)
+        if filter_set_failed:
+            return False
+    return True
+
+
+def capture_activate(ffi, npcap, pcap_handle, mode, error_child):
+    set_activate = 0
+    if mode != 0:
+        set_activate = npcap.pcap_activate(pcap_handle)
+        if set_activate != 0:
+            npcap.pcap_close(pcap_handle)
+            ffi.memmove(error_child, b'Unable to activate source.', 256)
+    return set_activate
+
+
+def activate_capture_windows(npcap, ffi, capture, error_child, bpf_filter, mode):
+    """ Capture activation function for Windows """
+    activation_failed = capture_activate(ffi, npcap, capture, mode, error_child)
+    if activation_failed:
+        return False
+    return setup_filter_windows(npcap, ffi, capture, error_child, bpf_filter)
+
+
+def activate_capture_unix(capture, lib, error_child, bpf_filter, mode):
+    """ Capture activation function for UNIX"""
+    activation_failed = lib.capture_activate(capture, mode, error_child)
+    if activation_failed:
+        return False
+    return setup_filter_unix(capture, lib, error_child, bpf_filter)
+
+
+def activate_capture(is_windows, npcap, ffi, capture, lib, error_child, bpf_filter, mode):
+    """ Capture activation function """
+    if is_windows:
+        return activate_capture_windows(npcap, ffi, capture, error_child, bpf_filter, mode)
+    else:
+        return activate_capture_unix(capture, lib, error_child, bpf_filter, mode)
+
+
+def capture_next(ffi, npcap, lib, pcap_handle, nf_pkt, decode_tunnels, n_roots, root_idx, mode):
+    phdr = ffi.new("struct pcap_pkthdr **")
+    pdata = ffi.new("uint8_t **")
+    rv_handle = npcap.pcap_next_ex(pcap_handle, phdr, ffi.cast("unsigned char **", pdata))
+    if rv_handle == 1:
+        hdr = phdr[0]
+        data = pdata[0]
+        time = int(hdr.tv_sec * 1000 + hdr.tv_usec / (1000000 / 1000))
+        rv_processor = lib.packet_process(int(npcap.pcap_datalink(pcap_handle)),
+                                          hdr.caplen,
+                                          hdr.len,
+                                          data,
+                                          decode_tunnels,
+                                          nf_pkt,
+                                          n_roots,
+                                          root_idx,
+                                          mode,
+                                          time)
+        if rv_processor == 0:
+            return 0
+        elif rv_processor == 1:
+            return 1
+        else:
+            return 2
+    else:
+        if rv_handle == 0:
+            hdr = phdr[0]
+            data = pdata[0]
+            if hdr == ffi.NULL or data == ffi.NULL:
+                return -1
+            else:
+                time = (hdr.tv_sec) * 1000 + hdr.tv_usec / (1000000 / 1000)
+                rv_processor = lib.packet_process(npcap.pcap_datalink(pcap_handle), hdr.caplen, hdr.len, data,
+                                                  decode_tunnels,
+                                                  nf_pkt, n_roots, root_idx, mode, time)
+                if rv_processor == 0:
+                    return 0
+                elif rv_processor == 1:
+                    return 1
+                else:
+                    return 2
+        if rv_handle == -2:
+            return -2
+    return -1
+
+
+def capture_close(is_windows, npcap, lib, pcap_handle):
+    if is_windows:
+        npcap.pcap_breakloop(pcap_handle)
+        npcap.pcap_close(pcap_handle)
+    else:
+        lib.capture_close(pcap_handle)
+
+
+def setup_dissector(ffi, lib, n_dissections):
+    """ Setup dissector according to dissections value """
+    if n_dissections:  # Dissection activated
+        # Check that headers and loaded library match and initiate dissector.
+        checker = ffi.new("struct dissector_checker *")
+        checker.flow_size = ffi.sizeof("struct ndpi_flow_struct")
+        checker.id_size = ffi.sizeof("struct ndpi_id_struct")
+        checker.flow_tcp_size = ffi.sizeof("struct ndpi_flow_tcp_struct")
+        checker.flow_udp_size = ffi.sizeof("struct ndpi_flow_udp_struct")
+        dissector = lib.dissector_init(checker)
+        if dissector == ffi.NULL:
+            raise ValueError("Error while initializing dissector.")
+        # Configure it (activate bitmask to all protocols)
+        lib.dissector_configure(dissector)
+    else:  # No dissection configured
+        dissector = ffi.NULL
+    return dissector
+
+
+def create_engine(is_windows):
     """ engine creation function, return the loaded native nfstream engine and it's ffi interface"""
     ffi = cffi.FFI()
+    npcap = None
     lib = ffi.dlopen(dirname(abspath(__file__)) + '/engine_cc.so')
     ffi.cdef(cc_capture_headers)
     ffi.cdef(cc_dissector_headers_packed, packed=True, override=True)
     ffi.cdef(cc_dissector_headers, override=True)
     ffi.cdef(cc_meter_headers, override=True)
     ffi.cdef(cc_capture_apis, override=True)
+    if is_windows:
+        npcap = ffi.dlopen("C:\\Windows\\System32\\Npcap\\wpcap.dll")
     ffi.cdef(cc_dissector_apis, override=True)
     ffi.cdef(cc_meter_apis, override=True)
-    return ffi, lib
+    return ffi, lib, npcap
+

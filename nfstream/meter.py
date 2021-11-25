@@ -13,10 +13,11 @@ If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 """
 
-from collections import OrderedDict
-from .engine import create_engine
-from .flow import NFlow
+from .engine import create_engine, setup_capture, setup_dissector, activate_capture, capture_next, capture_close
 from .utils import set_affinity, InternalError, NFEvent
+from collections import OrderedDict
+from .flow import NFlow
+import platform
 
 
 class NFCache(OrderedDict):
@@ -142,63 +143,7 @@ def meter_cleanup(cache, channel, udps, sync, n_dissections, statistics, splt, f
         del flow
 
 
-def setup_dissector(ffi, lib, n_dissections):
-    """ Setup dissector according to dissections value """
-    if n_dissections:  # Dissection activated
-        # Check that headers and loaded library match and initiate dissector.
-        checker = ffi.new("struct dissector_checker *")
-        checker.flow_size = ffi.sizeof("struct ndpi_flow_struct")
-        checker.id_size = ffi.sizeof("struct ndpi_id_struct")
-        checker.flow_tcp_size = ffi.sizeof("struct ndpi_flow_tcp_struct")
-        checker.flow_udp_size = ffi.sizeof("struct ndpi_flow_udp_struct")
-        dissector = lib.dissector_init(checker)
-        if dissector == ffi.NULL:
-            raise ValueError("Error while initializing dissector.")
-        # Configure it (activate bitmask to all protocols)
-        lib.dissector_configure(dissector)
-    else:  # No dissection configured
-        dissector = ffi.NULL
-    return dissector
-
-
-def setup_capture(ffi, lib, source, snaplen, promisc, mode, error_child, group_id):
-    """ Setup capture options """
-    capture = lib.capture_open(bytes(source, 'utf-8'), mode, error_child)
-    if capture == ffi.NULL:
-        return
-    fanout_set_failed = lib.capture_set_fanout(capture, mode, error_child, group_id)
-    if fanout_set_failed:
-        return
-    timeout_set_failed = lib.capture_set_timeout(capture, mode, error_child)
-    if timeout_set_failed:
-        return
-    promisc_set_failed = lib.capture_set_promisc(capture, mode, error_child, int(promisc))
-    if promisc_set_failed:
-        return
-    snaplen_set_failed = lib.capture_set_snaplen(capture, mode, error_child, snaplen)
-    if snaplen_set_failed:
-        return
-    return capture
-
-
-def setup_filter(capture, lib, error_child, bpf_filter):
-    """ Compile and setup BPF filter """
-    if bpf_filter is not None:
-        filter_set_failed = lib.capture_set_filter(capture, bytes(bpf_filter, 'utf-8'), error_child)
-        if filter_set_failed:
-            return False
-    return True
-
-
-def activate_capture(capture, lib, error_child, bpf_filter, mode):
-    """ Capture activation function """
-    activation_failed = lib.capture_activate(capture, mode, error_child)
-    if activation_failed:
-        return False
-    return setup_filter(capture, lib, error_child, bpf_filter)
-
-
-def track(lib, capture, mode, interface_stats, tracker, processed, ignored):
+def capture_track(lib, capture, mode, interface_stats, tracker, processed, ignored):
     """ Update shared performance values """
     lib.capture_stats(capture, interface_stats, mode)
     tracker[0].value = interface_stats.dropped
@@ -210,12 +155,16 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
                    idle_timeout, active_timeout, accounting_mode, udps, n_dissections, statistics, splt,
                    channel, tracker, lock, group_id, system_visibility_mode):
     """ Metering workflow """
+    is_windows = "windows" in platform.system().lower()
     set_affinity(root_idx+1)
-    ffi, lib = create_engine()
+    ffi, lib, npcap = create_engine(is_windows)
+    # npcap is None in case of non Windows platform
     error_child = ffi.new("char[256]")
-    capture = setup_capture(ffi, lib, source, snaplen, promisc, mode, error_child, group_id)
+    capture = setup_capture(is_windows, ffi, lib, npcap, source, snaplen, promisc, mode, error_child, group_id)
     if capture is None:
         ffi.dlclose(lib)
+        if npcap:
+            ffi.dlclose(npcap)
         if root_idx == 0:
             channel.put(InternalError(NFEvent.ERROR, ffi.string(error_child).decode('utf-8', errors='ignore')))
         return
@@ -236,14 +185,17 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
         lock.acquire()
         lock.release()
     # Here the last operation, BPF filtering setup and activation.
-    if not activate_capture(capture, lib, error_child, bpf_filter, mode):
+    if not activate_capture(is_windows, npcap, ffi, capture, lib, error_child, bpf_filter, mode):
         ffi.dlclose(lib)
         if root_idx == 0:
             channel.put(InternalError(NFEvent.ERROR, ffi.string(error_child).decode('utf-8', errors='ignore')))
         return
     while remaining_packets:
         nf_packet = ffi.new("struct nf_packet *")
-        ret = lib.capture_next(capture, nf_packet, decode_tunnels, n_roots, root_idx, mode)
+        if is_windows:
+            ret = capture_next(ffi, npcap, lib, capture, nf_packet, decode_tunnels, n_roots, root_idx, mode)
+        else:
+            ret = lib.capture_next(capture, nf_packet, decode_tunnels, n_roots, root_idx, mode)
         if ret > 0:  # Valid must be processed by meter
             packet_time = nf_packet.time
             if packet_time > meter_tick:
@@ -278,12 +230,12 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
         else:  # End of file
             remaining_packets = False  # end of loop
         if meter_tick - meter_track_tick >= meter_track_interval:  # Performance tracking
-            track(lib, capture, mode, interface_stats, tracker, processed_packets, ignored_packets)
+            #capture_track(lib, capture, mode, interface_stats, tracker, processed_packets, ignored_packets)
             meter_track_tick = meter_tick
     # Expire all remaining flows in the cache.
     meter_cleanup(cache, channel, udps, sync, n_dissections, statistics, splt, ffi, lib, dissector)
     # Close capture
-    lib.capture_close(capture)
+    capture_close(is_windows, npcap, lib, capture)
     # Clean dissector
     lib.dissector_cleanup(dissector)
     # Release engine library

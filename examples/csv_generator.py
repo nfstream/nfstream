@@ -16,9 +16,11 @@ If not, see <http://www.gnu.org/licenses/>.
 from nfstream import NFStreamer
 import sys
 
-path = sys.argv[1]
-print("nfstream processing started. Use Ctrl+C to interrupt and save.")
-total_flows = NFStreamer(source=path,
-                         statistical_analysis=True,
-                         splt_analysis=10,
-                         performance_report=1).to_csv()
+
+if __name__ == '__main__':  # Mandatory if you are running on Windows Platform
+    path = sys.argv[1]
+    print("nfstream processing started. Use Ctrl+C to interrupt and save.")
+    total_flows = NFStreamer(source=path,
+                             statistical_analysis=True,
+                             splt_analysis=10,
+                             performance_report=1).to_csv()

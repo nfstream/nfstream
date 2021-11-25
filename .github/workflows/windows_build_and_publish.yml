@@ -65,12 +65,10 @@ jobs:
       run: |
          cd nfstream
          cd engine
-         msys2 -c 'gcc -Indpi_includes -shared -o test_dll.dll -g -O2 -Wall test_dll.c libndpi.a D:/a/_temp/msys64/mingw64/x86_64-w64-mingw32/lib/libws2_32.a'
+         msys2 -c 'gcc -Indpi_includes -shared -o engine_cc.so -g -O2 -Wall engine_cc.c libndpi.a D:/a/_temp/msys64/mingw64/x86_64-w64-mingw32/lib/libws2_32.a'
+         msys2 -c 'rm -rf ndpi_includes/'
          cd ..
          cd ..
-
-    - name: Test Engine
-      run: |
-        python .\nfstream\engine\test_dll.py
+         python setup.py bdist_wheel
 
 
