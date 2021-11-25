@@ -1229,8 +1229,7 @@ def setup_capture(is_windows, ffi, lib, npcap, source, snaplen, promisc, mode, e
     """ Setup capture options """
     if is_windows:
         return setup_capture_windows(ffi, npcap, source, snaplen, promisc, mode, error_child)
-    else:
-        return setup_capture_unix(ffi, lib, source, snaplen, promisc, mode, error_child, group_id)
+    return setup_capture_unix(ffi, lib, source, snaplen, promisc, mode, error_child, group_id)
 
 
 def capture_set_filter(npcap, ffi, pcap_handle, bpf_filter, child_error):
@@ -1297,8 +1296,7 @@ def activate_capture(is_windows, npcap, ffi, capture, lib, error_child, bpf_filt
     """ Capture activation function """
     if is_windows:
         return activate_capture_windows(npcap, ffi, capture, error_child, bpf_filter, mode)
-    else:
-        return activate_capture_unix(capture, lib, error_child, bpf_filter, mode)
+    return activate_capture_unix(capture, lib, error_child, bpf_filter, mode)
 
 
 def capture_next(ffi, npcap, lib, pcap_handle, nf_pkt, decode_tunnels, n_roots, root_idx, mode):
@@ -1309,39 +1307,23 @@ def capture_next(ffi, npcap, lib, pcap_handle, nf_pkt, decode_tunnels, n_roots, 
         hdr = phdr[0]
         data = pdata[0]
         time = int(hdr.tv_sec * 1000 + hdr.tv_usec / (1000000 / 1000))
-        rv_processor = lib.packet_process(int(npcap.pcap_datalink(pcap_handle)),
-                                          hdr.caplen,
-                                          hdr.len,
-                                          data,
-                                          decode_tunnels,
-                                          nf_pkt,
-                                          n_roots,
-                                          root_idx,
-                                          mode,
-                                          time)
-        if rv_processor == 0:
-            return 0
-        elif rv_processor == 1:
-            return 1
-        else:
-            return 2
+        rv_processor = lib.packet_process(npcap.pcap_datalink(pcap_handle), hdr.caplen, hdr.len, data,
+                                          decode_tunnels, nf_pkt, n_roots, root_idx, mode, time)
+        if (rv_processor == 0) or (rv_processor == 1):
+            return rv_processor
+        return 2
     else:
         if rv_handle == 0:
             hdr = phdr[0]
             data = pdata[0]
             if hdr == ffi.NULL or data == ffi.NULL:
                 return -1
-            else:
-                time = (hdr.tv_sec) * 1000 + hdr.tv_usec / (1000000 / 1000)
-                rv_processor = lib.packet_process(npcap.pcap_datalink(pcap_handle), hdr.caplen, hdr.len, data,
-                                                  decode_tunnels,
-                                                  nf_pkt, n_roots, root_idx, mode, time)
-                if rv_processor == 0:
-                    return 0
-                elif rv_processor == 1:
-                    return 1
-                else:
-                    return 2
+            time = int(hdr.tv_sec * 1000 + hdr.tv_usec / (1000000 / 1000))
+            rv_processor = lib.packet_process(npcap.pcap_datalink(pcap_handle), hdr.caplen, hdr.len, data,
+                                              decode_tunnels, nf_pkt, n_roots, root_idx, mode, time)
+            if (rv_processor == 0) or (rv_processor == 1):
+                return rv_processor
+            return 2
         if rv_handle == -2:
             return -2
     return -1
@@ -1389,4 +1371,3 @@ def create_engine(is_windows):
     ffi.cdef(cc_dissector_apis, override=True)
     ffi.cdef(cc_meter_apis, override=True)
     return ffi, lib, npcap
-
