@@ -934,7 +934,7 @@ def setup_capture_windows(ffi, npcap, source, snaplen, promisc, mode, error_chil
 
 def setup_capture(is_windows, ffi, lib, npcap, source, snaplen, promisc, mode, error_child, group_id):
     """ Setup capture """
-    if is_windows: # We move to pure Python API
+    if is_windows:  # We move to pure Python API
         return setup_capture_windows(ffi, npcap, source, snaplen, promisc, mode, error_child)
     # We use APIs defined within the engine.
     return setup_capture_unix(ffi, lib, source, snaplen, promisc, mode, error_child, group_id)
@@ -1017,6 +1017,7 @@ def packet_process(npcap, lib, pcap_handle, hdr, data, decode_tunnels, nf_pkt, n
 
 
 def capture_next(ffi, npcap, lib, pcap_handle, nf_pkt, decode_tunnels, n_roots, root_idx, mode):
+    """ Get next packet information from pcap handle """
     phdr = ffi.new("struct pcap_pkthdr **", ffi.NULL)
     pdata = ffi.new("uint8_t **", ffi.NULL)
     rv_handle = npcap.pcap_next_ex(pcap_handle, phdr, ffi.cast("unsigned char **", pdata))
@@ -1034,6 +1035,7 @@ def capture_next(ffi, npcap, lib, pcap_handle, nf_pkt, decode_tunnels, n_roots, 
 
 
 def capture_close(is_windows, npcap, lib, pcap_handle):
+    """ Capture close function """
     if is_windows:
         npcap.pcap_breakloop(pcap_handle)
         npcap.pcap_close(pcap_handle)
@@ -1052,12 +1054,11 @@ def setup_dissector(ffi, lib, n_dissections):
         checker.flow_udp_size = ffi.sizeof("struct ndpi_flow_udp_struct")
         dissector = lib.dissector_init(checker)
         if dissector == ffi.NULL:
-            raise ValueError("Error while initializing dissector.")
+            return ffi.NULL
         # Configure it (activate bitmask to all protocols)
         lib.dissector_configure(dissector)
-    else:  # No dissection configured
-        dissector = ffi.NULL
-    return dissector
+        return dissector
+    return ffi.NULL
 
 
 def create_engine(is_windows):

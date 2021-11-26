@@ -26,6 +26,8 @@ https://www.nfstream.org/docs/#building-nfstream-from-sourcesfor more informatio
 
 NPCAP_LOAD_ERR = "Error finding npcap library. Please make sure you npcap is installed on your system."
 
+NDPI_LOAD_ERR = "Error while loading Dissector. This means that you are building nfstream with an out of sync nDPI."
+
 
 class NFCache(OrderedDict):
     """ Least recently updated dictionary
@@ -189,6 +191,9 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
     meter_scan_interval, meter_track_interval = 10, 1000  # we scan each 10 msecs and update perf each sec.
     cache = NFCache()
     dissector = setup_dissector(ffi, lib, n_dissections)
+    if dissector == ffi.NULL and n_dissections:
+        send_error(root_idx, channel, NDPI_LOAD_ERR)
+        return
     active_flows, ignored_packets, processed_packets = 0, 0, 0
     sync = False
     if len(udps) > 0:  # streamer started with udps: sync internal structures on update.
