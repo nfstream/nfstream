@@ -1,4 +1,4 @@
-name: windows_build
+name: build_test_publish_windows
 on:
   push:
     branches:
@@ -11,7 +11,7 @@ on:
   schedule:
     - cron:  '0 12 * * *'
 jobs:
-  test:
+  build_test_publish_windows:
     name: ${{ matrix.python-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -27,7 +27,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Set up MSYS2
+    - name: Install Prerequisites
       uses: msys2/setup-msys2@v2
       with:
         msystem: MINGW64
@@ -47,9 +47,6 @@ jobs:
          choco install wget --no-progress
          wget --user ${{ secrets.NPCAP_OEM_USERNAME }} --password ${{ secrets.NPCAP_OEM_PASSWORD }} https://nmap.org/npcap/oem/dist/npcap-1.55-oem.exe
          Start-Process npcap-1.55-oem.exe -ArgumentList "/loopback_support=yes /winpcap_mode=yes /dot11_support=yes /S" -wait
-         Get-ChildItem 'C:\Program Files\Npcap\' | Sort-Object -Property LastWriteTime
-         wget https://nmap.org/npcap/dist/npcap-sdk-1.11.zip
-         Expand-Archive -Path npcap-sdk-1.11.zip -DestinationPath npcap-sdk-1.11
          msys2 -c 'git clone --branch dev https://github.com/ntop/nDPI.git'
          cd nDPI
          msys2 -c './autogen.sh --disable-gcrypt'
@@ -60,9 +57,6 @@ jobs:
          msys2 -c 'cp src/lib/libndpi.a ../nfstream/engine/libndpi.a'
          msys2 -c 'cd ..'
          msys2 -c 'rm -rf nDPI/'
-
-    - name: Build Engine
-      run: |
          cd nfstream
          cd engine
          msys2 -c 'gcc -Indpi_includes -shared -o engine_cc.so -g -O2 -Wall engine_cc.c libndpi.a D:/a/_temp/msys64/mingw64/x86_64-w64-mingw32/lib/libws2_32.a'
@@ -70,5 +64,9 @@ jobs:
          cd ..
          cd ..
          python setup.py bdist_wheel
+
+    - name: Build Engine
+      run: |
+
 
 

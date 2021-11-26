@@ -1064,14 +1064,22 @@ def create_engine(is_windows):
     """ engine creation function, return the loaded native nfstream engine and it's ffi interface"""
     ffi = cffi.FFI()
     npcap = None
-    lib = ffi.dlopen(ENGINE_PATH)
+    lib = None
+    try:
+        lib = ffi.dlopen(ENGINE_PATH)
+    except OSError:
+        pass
     ffi.cdef(cc_capture_headers)
     ffi.cdef(cc_dissector_headers_packed, packed=True, override=True)
     ffi.cdef(cc_dissector_headers, override=True)
     ffi.cdef(cc_meter_headers, override=True)
     ffi.cdef(cc_capture_apis, override=True)
     if is_windows:
-        npcap = ffi.dlopen(NPCAP_PATH)
+        try:
+            npcap = ffi.dlopen(NPCAP_PATH)
+        except OSError:
+            ffi.dlclose(lib)
+            pass
     ffi.cdef(cc_dissector_apis, override=True)
     ffi.cdef(cc_meter_apis, override=True)
     return ffi, lib, npcap

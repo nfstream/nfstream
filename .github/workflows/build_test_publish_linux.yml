@@ -1,0 +1,107 @@
+name: build_test_publish_linux
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+  release:
+    types: [created]
+  schedule:
+    - cron:  '0 12 * * *'
+jobs:
+  build_test_publish_linux:
+    name: ${{ matrix.python-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest"]
+        python-version: [pypy-3.7, pypy3, 3.9, 3.8, 3.7, 3.6]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    # Caching improves build time, we use pythonLocation to cache everything including wheels to avoid building
+    # wheels at each build (pandas/Pypy is extremely time consuming)
+    # sed replacement is performed to rectify PyPy path which ends with /bin
+    # cache key takes into account the Python version of the runner to avoid version mismatch on updates.
+    - name: Get pip cache path
+      id: get-pip-path
+      run: |
+        python -c "import sys; print(sys.version)"
+        id=$(echo ${{ env.pythonLocation }} | sed 's/\/bin//g')
+        echo "::set-output name=id::$id"
+    - name: Pip cache
+      uses: actions/cache@v2
+      id: pip-cache
+      with:
+        path: ${{ steps.get-pip-path.outputs.id }}
+        key: ${{ steps.get-pip-path.outputs.id }}-${{ hashFiles('setup.py') }}-${{ hashFiles('dev-requirements.txt') }}
+    - name: Install Prerequisites
+      if: startsWith(matrix.os, 'ubuntu')
+      run: |
+        sudo apt-get update
+        sudo apt-get install autoconf automake libtool pkg-config gettext libjson-c-dev libpcap-dev
+        sudo apt-get install libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison
+    - name: Installing NFStream requirements
+      if: steps.pip-cache.outputs.cache-hit != 'true'
+      run: |
+        pip install -r dev_requirements.txt
+    - name: Build Engine dependencies
+      run: |
+        git clone --branch libgpg-error-1.42 https://github.com/gpg/libgpg-error
+        cd libgpg-error
+        ./autogen.sh
+        ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc --disable-nls
+        make
+        sudo make install
+        cd ..
+        rm -rf libgpg-error
+        git clone --branch libgcrypt-1.8.8 https://github.com/gpg/libgcrypt
+        cd libgcrypt
+        ./autogen.sh
+        ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc
+        make
+        sudo make install
+        cd ..
+        rm -rf libgcrypt
+        git clone --branch fanout https://github.com/tsnoam/libpcap
+        cd libpcap
+        ./configure --enable-ipv6 --disable-universal --enable-dbus=no --without-libnl
+        make
+        sudo make install
+        cd ..
+        rm -rf libpcap
+        git clone --branch dev https://github.com/ntop/nDPI.git
+        cd nDPI
+        ./autogen.sh
+        ./configure
+        make
+        sudo mkdir /usr/local/include/ndpi
+        sudo cp -a src/include/. /usr/local/include/ndpi/
+        sudo cp example/ndpiReader /usr/local/bin/ndpiReader
+        sudo cp src/lib/libndpi.a /usr/local/lib/libndpi.a
+        cd ..
+        rm -rf nDPI
+        python setup.py bdist_wheel
+    - name: Generated wheel
+      run: |
+        ls dist/
+    - name: Testing and coverage report generation
+      run: |
+        python -m coverage run tests.py
+        python -m coverage combine
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
+    - name: Publish on Pypi
+      if: startsWith(github.ref, 'refs/tags/')
+      env:
+        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      run: |
+        twine upload --skip-existing dist/*.whl

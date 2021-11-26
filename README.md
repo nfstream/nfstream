@@ -63,8 +63,14 @@ across experiments.
 <tr>
   <td><b>Build Status</b></td>
   <td>
-    <a href="https://github.com/nfstream/nfstream/actions?query=workflow%3Abuild">
-    <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build/master?logo=github&style=for-the-badge" alt="Github WorkFlows" />
+    <a href="https://github.com/nfstream/nfstream/actions?query=workflow%3Abuild_test_publish_linux">
+    <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_publish_linux/master?logo=linux&style=for-the-badge" alt="Linux WorkFlows" />
+    </a>
+    <a href="https://github.com/nfstream/nfstream/actions?query=workflow%3Abuild_test_publish_macos">
+    <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_publish_macos/master?logo=apple&style=for-the-badge" alt="MacOS WorkFlows" />
+    </a>
+    <a href="https://github.com/nfstream/nfstream/actions?query=workflow%3Abuild_test_publish_windows">
+    <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_publish_windows/master?logo=windows&style=for-the-badge" alt="Windows WorkFlows" />
     </a>
   </td>
 </tr>

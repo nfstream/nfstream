@@ -1,4 +1,4 @@
-name: build
+name: build_test_publish_macos
 on:
   push:
     branches:
@@ -11,13 +11,13 @@ on:
   schedule:
     - cron:  '0 12 * * *'
 jobs:
-  test:
+  build_test_publish_macos:
     name: ${{ matrix.python-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest", "macOS-latest"]
+        os: ["macOS-latest"]
         python-version: [pypy-3.7, pypy3, 3.9, 3.8, 3.7, 3.6]
 
     steps:
@@ -43,13 +43,7 @@ jobs:
       with:
         path: ${{ steps.get-pip-path.outputs.id }}
         key: ${{ steps.get-pip-path.outputs.id }}-${{ hashFiles('setup.py') }}-${{ hashFiles('dev-requirements.txt') }}
-    - name: Install ubuntu Prerequisites
-      if: startsWith(matrix.os, 'ubuntu')
-      run: |
-        sudo apt-get update
-        sudo apt-get install autoconf automake libtool pkg-config gettext libjson-c-dev libpcap-dev
-        sudo apt-get install libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison
-    - name: Installing macOS prerequisites
+    - name: Installing prerequisites
       if: startsWith(matrix.os, 'macOS')
       run: |
         brew install autoconf automake libtool pkg-config gettext json-c

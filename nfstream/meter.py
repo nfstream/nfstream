@@ -20,6 +20,13 @@ from .flow import NFlow
 import platform
 
 
+ENGINE_LOAD_ERR = "Error when loading engine library. This means that you are probably building nfstream from source \
+and something went wrong during the engine compilation step. Please see: \
+https://www.nfstream.org/docs/#building-nfstream-from-sourcesfor more information"
+
+NPCAP_LOAD_ERR = "Error finding npcap library. Please make sure you npcap is installed on your system."
+
+
 class NFCache(OrderedDict):
     """ Least recently updated dictionary
 
@@ -151,6 +158,11 @@ def capture_track(lib, capture, mode, interface_stats, tracker, processed, ignor
     tracker[2].value = ignored
 
 
+def send_error(root_idx, channel, msg):
+    if root_idx == 0:
+        channel.put(InternalError(NFEvent.ERROR, msg))
+
+
 def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots, root_idx, mode,
                    idle_timeout, active_timeout, accounting_mode, udps, n_dissections, statistics, splt,
                    channel, tracker, lock, group_id, system_visibility_mode):
@@ -158,6 +170,12 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
     is_windows = "windows" in platform.system().lower()
     set_affinity(root_idx+1)
     ffi, lib, npcap = create_engine(is_windows)
+    if lib is None:
+        send_error(root_idx, channel, ENGINE_LOAD_ERR)
+        return
+    if is_windows and npcap is None:
+        send_error(root_idx, channel, NPCAP_LOAD_ERR)
+        return
     # npcap is None in case of non Windows platform
     error_child = ffi.new("char[256]")
     capture = setup_capture(is_windows, ffi, lib, npcap, source, snaplen, promisc, mode, error_child, group_id)
@@ -165,8 +183,7 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
         ffi.dlclose(lib)
         if npcap:
             ffi.dlclose(npcap)
-        if root_idx == 0:
-            channel.put(InternalError(NFEvent.ERROR, ffi.string(error_child).decode('utf-8', errors='ignore')))
+        send_error(root_idx, channel, ffi.string(error_child).decode('utf-8', errors='ignore'))
         return
     meter_tick, meter_scan_tick, meter_track_tick = 0, 0, 0  # meter, idle scan and perf track timelines
     meter_scan_interval, meter_track_interval = 10, 1000  # we scan each 10 msecs and update perf each sec.
@@ -187,8 +204,7 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
     # Here the last operation, BPF filtering setup and activation.
     if not activate_capture(is_windows, npcap, ffi, capture, lib, error_child, bpf_filter, mode):
         ffi.dlclose(lib)
-        if root_idx == 0:
-            channel.put(InternalError(NFEvent.ERROR, ffi.string(error_child).decode('utf-8', errors='ignore')))
+        send_error(root_idx, channel, ffi.string(error_child).decode('utf-8', errors='ignore'))
         return
     while remaining_packets:
         nf_packet = ffi.new("struct nf_packet *")
