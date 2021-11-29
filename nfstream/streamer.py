@@ -480,7 +480,7 @@ class NFStreamer(object):
 
     def to_pandas(self, columns_to_anonymize=()):
         """ streamer to pandas function """
-        temp_file_path = "nfstream-{pid}-{iid}-{ts}?csv".format(pid=os.getpid(),
+        temp_file_path = "nfstream-{pid}-{iid}-{ts}.csv".format(pid=os.getpid(),
                                                                 iid=NFStreamer.streamer_id,
                                                                 ts=tm.time())
         total_flows = self.to_csv(path=temp_file_path, columns_to_anonymize=columns_to_anonymize, flows_per_file=0)
