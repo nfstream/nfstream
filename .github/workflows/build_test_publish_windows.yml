@@ -84,3 +84,8 @@ jobs:
          cd ..
          cd ..
          python setup.py bdist_wheel
+
+    - name: Testing and coverage report generation
+      run: |
+        python -m coverage run tests.py
+        python -m coverage combine
