@@ -1080,7 +1080,6 @@ def create_engine(is_windows):
             npcap = ffi.dlopen(NPCAP_PATH)
         except OSError:
             ffi.dlclose(lib)
-            pass
     ffi.cdef(cc_dissector_apis, override=True)
     ffi.cdef(cc_meter_apis, override=True)
     return ffi, lib, npcap

@@ -64,7 +64,7 @@ class TestMethods(unittest.TestCase):
         for x in source:
             with self.assertRaises(ValueError):
                 NFStreamer(source=x).to_pandas()
-        print("{}\t: \033[94mOK\033[0m".format(".Test source parameter".ljust(60, ' ')))
+        print("{}\t: OK".format(".Test source parameter".ljust(60, ' ')))
 
     def test_decode_tunnels_parameter(self):
         print("\n----------------------------------------------------------------------")
@@ -72,7 +72,7 @@ class TestMethods(unittest.TestCase):
         for x in decode_tunnels:
             with self.assertRaises(ValueError):
                 NFStreamer(source='tests/google_ssl.pcap', decode_tunnels=x)
-        print("{}\t: \033[94mOK\033[0m".format(".Test decode_tunnels parameter".ljust(60, ' ')))
+        print("{}\t: OK".format(".Test decode_tunnels parameter".ljust(60, ' ')))
 
     def test_bpf_filter_parameter(self):
         print("\n----------------------------------------------------------------------")
@@ -80,7 +80,7 @@ class TestMethods(unittest.TestCase):
         for x in bpf_filter:
             with self.assertRaises(ValueError):
                 NFStreamer(source='tests/google_ssl.pcap', bpf_filter=x).to_pandas()
-        print("{}\t: \033[94mOK\033[0m".format(".Test bpf_filter parameter".ljust(60, ' ')))
+        print("{}\t: OK".format(".Test bpf_filter parameter".ljust(60, ' ')))
 
     def test_promiscuous_mode_parameter(self):
         print("\n----------------------------------------------------------------------")
@@ -88,7 +88,7 @@ class TestMethods(unittest.TestCase):
         for x in promiscuous_mode:
             with self.assertRaises(ValueError):
                 NFStreamer(source='tests/google_ssl.pcap', promiscuous_mode=x)
-        print("{}\t: \033[94mOK\033[0m".format(".Test promiscuous_mode parameter".ljust(60, ' ')))
+        print("{}\t: OK".format(".Test promiscuous_mode parameter".ljust(60, ' ')))
 
     def test_snapshot_length_parameter(self):
         print("\n----------------------------------------------------------------------")
@@ -96,7 +96,7 @@ class TestMethods(unittest.TestCase):
         for x in snapshot_length:
             with self.assertRaises(ValueError):
                 NFStreamer(source='tests/google_ssl.pcap', snapshot_length=x)
-        print("{}\t: \033[94mOK\033[0m".format(".Test snapshot_length parameter".ljust(60, ' ')))
+        print("{}\t: OK".format(".Test snapshot_length parameter".ljust(60, ' ')))
 
     def test_idle_timeout_parameter(self):
         print("\n----------------------------------------------------------------------")
@@ -104,7 +104,7 @@ class TestMethods(unittest.TestCase):
         for x in idle_timeout:
             with self.assertRaises(ValueError):
                 NFStreamer(source='tests/google_ssl.pcap', idle_timeout=x)
-        print("{}\t: \033[94mOK\033[0m".format(".Test idle_timeout parameter".ljust(60, ' ')))
+        print("{}\t: OK".format(".Test idle_timeout parameter".ljust(60, ' ')))
 
     def test_active_timeout_parameter(self):
         print("\n----------------------------------------------------------------------")
@@ -112,7 +112,7 @@ class TestMethods(unittest.TestCase):
         for x in active_timeout:
             with self.assertRaises(ValueError):
                 NFStreamer(source='tests/google_ssl.pcap', active_timeout=x)
-        print("{}\t: \033[94mOK\033[0m".format(".Test active_timeout parameter".ljust(60, ' ')))
+        print("{}\t: OK".format(".Test active_timeout parameter".ljust(60, ' ')))
 
     def test_accounting_mode_parameter(self):
         print("\n----------------------------------------------------------------------")
@@ -120,7 +120,7 @@ class TestMethods(unittest.TestCase):
         for x in accounting_mode:
             with self.assertRaises(ValueError):
                 NFStreamer(source='tests/google_ssl.pcap', accounting_mode=x)
-        print("{}\t: \033[94mOK\033[0m".format(".Test accounting_mode parameter".ljust(60, ' ')))
+        print("{}\t: OK".format(".Test accounting_mode parameter".ljust(60, ' ')))
 
     def test_udps_parameter(self):
         print("\n----------------------------------------------------------------------")
@@ -128,7 +128,7 @@ class TestMethods(unittest.TestCase):
         for x in udps:
             with self.assertRaises(ValueError):
                 NFStreamer(source='tests/google_ssl.pcap', udps=x)
-        print("{}\t: \033[94mOK\033[0m".format(".Test udps parameter".ljust(60, ' ')))
+        print("{}\t: OK".format(".Test udps parameter".ljust(60, ' ')))
 
     def test_n_dissections_parameter(self):
         print("\n----------------------------------------------------------------------")
@@ -136,7 +136,7 @@ class TestMethods(unittest.TestCase):
         for x in n_dissections:
             with self.assertRaises(ValueError):
                 NFStreamer(source='tests/google_ssl.pcap', n_dissections=x)
-        print("{}\t: \033[94mOK\033[0m".format(".Test n_dissections parameter".ljust(60, ' ')))
+        print("{}\t: OK".format(".Test n_dissections parameter".ljust(60, ' ')))
 
     def test_statistical_analysis_parameter(self):
         print("\n----------------------------------------------------------------------")
@@ -144,7 +144,7 @@ class TestMethods(unittest.TestCase):
         for x in statistical_analysis:
             with self.assertRaises(ValueError):
                 NFStreamer(source='tests/google_ssl.pcap', statistical_analysis=x)
-        print("{}\t: \033[94mOK\033[0m".format(".Test statistical_analysis parameter".ljust(60, ' ')))
+        print("{}\t: OK".format(".Test statistical_analysis parameter".ljust(60, ' ')))
 
     def test_splt_analysis_parameter(self):
         print("\n----------------------------------------------------------------------")
@@ -152,7 +152,7 @@ class TestMethods(unittest.TestCase):
         for x in splt_analysis:
             with self.assertRaises(ValueError):
                 NFStreamer(source='tests/google_ssl.pcap', splt_analysis=x)
-        print("{}\t: \033[94mOK\033[0m".format(".Test splt_analysis parameter".ljust(60, ' ')))
+        print("{}\t: OK".format(".Test splt_analysis parameter".ljust(60, ' ')))
 
     def test_n_meters_parameter(self):
         print("\n----------------------------------------------------------------------")
@@ -160,7 +160,7 @@ class TestMethods(unittest.TestCase):
         for x in n_meters:
             with self.assertRaises(ValueError):
                 NFStreamer(source='tests/google_ssl.pcap', n_meters=x)
-        print("{}\t: \033[94mOK\033[0m".format(".Test n_meters parameter".ljust(60, ' ')))
+        print("{}\t: OK".format(".Test n_meters parameter".ljust(60, ' ')))
 
     def test_performance_report_parameter(self):
         print("\n----------------------------------------------------------------------")
@@ -168,7 +168,7 @@ class TestMethods(unittest.TestCase):
         for x in performance_report:
             with self.assertRaises(ValueError):
                 NFStreamer(source='tests/google_ssl.pcap', performance_report=x)
-        print("{}\t: \033[94mOK\033[0m".format(".Test performance_report parameter".ljust(60, ' ')))
+        print("{}\t: OK".format(".Test performance_report parameter".ljust(60, ' ')))
 
     def test_expiration_management(self):
         print("\n----------------------------------------------------------------------")
@@ -198,7 +198,7 @@ class TestMethods(unittest.TestCase):
             last_id = flow.id
         self.assertEqual(last_id, 6)
 
-        print("{}\t: \033[94mOK\033[0m".format(".Test expiration management".ljust(60, ' ')))
+        print("{}\t: OK".format(".Test expiration management".ljust(60, ' ')))
 
     def test_tunnel_decoding(self):
         print("\n----------------------------------------------------------------------")
@@ -209,7 +209,7 @@ class TestMethods(unittest.TestCase):
         for flow in decode_streamer:
             self.assertRaises(AttributeError, getattr, flow, "tunnel_id")
         del decode_streamer
-        print("{}\t: \033[94mOK\033[0m".format(".Test tunnels decoding".ljust(60, ' ')))
+        print("{}\t: OK".format(".Test tunnels decoding".ljust(60, ' ')))
 
     def test_statistical(self):
         print("\n----------------------------------------------------------------------")
@@ -293,7 +293,7 @@ class TestMethods(unittest.TestCase):
             self.assertEqual(flow.dst2src_rst_packets, 0)
             self.assertEqual(flow.dst2src_fin_packets, 1)
         del statistical_streamer
-        print("{}\t: \033[94mOK\033[0m".format(".Test statistical extraction".ljust(60, ' ')))
+        print("{}\t: OK".format(".Test statistical extraction".ljust(60, ' ')))
 
     def test_fingerprint_extraction(self):
         print("\n----------------------------------------------------------------------")
@@ -308,7 +308,7 @@ class TestMethods(unittest.TestCase):
             self.assertTrue(flow.server_fingerprint in ['2d1eb5817ece335c24904f516ad5da12',
                                                         '96681175a9547081bf3d417f1a572091'])
         del fingerprint_streamer
-        print("{}\t: \033[94mOK\033[0m".format(".Test fingerprint extraction".ljust(60, ' ')))
+        print("{}\t: OK".format(".Test fingerprint extraction".ljust(60, ' ')))
 
     def test_export(self):
         print("\n----------------------------------------------------------------------")
@@ -331,7 +331,7 @@ class TestMethods(unittest.TestCase):
         self.assertEqual(total_flows_anon, df_anon_from_csv.shape[0])
         self.assertEqual(total_flows, df.shape[0])
         self.assertEqual(total_flows_anon, df_anon.shape[0])
-        print("{}\t: \033[94mOK\033[0m".format(".Test export interfaces".ljust(60, ' ')))
+        print("{}\t: OK".format(".Test export interfaces".ljust(60, ' ')))
 
     def test_bpf(self):
         print("\n----------------------------------------------------------------------")
@@ -342,7 +342,7 @@ class TestMethods(unittest.TestCase):
             self.assertEqual(flow.src_port, 52066)
         self.assertEqual(last_id, 0)
         del streamer_test
-        print("{}\t: \033[94mOK\033[0m".format(".Test BPF".ljust(60, ' ')))
+        print("{}\t: OK".format(".Test BPF".ljust(60, ' ')))
 
     def test_ndpi_integration(self):
         files = get_files_list("tests/")
@@ -368,9 +368,7 @@ class TestMethods(unittest.TestCase):
                                                          'flows': 1, 'pkts': flow.bidirectional_packets}
             if result == ndpi_result(test_file):
                 ok_files.append(test_case_name)
-                print("{}\t: \033[94mOK\033[0m".format(test_case_name.ljust(60, ' ')))
-            # else:
-            #     print("{}\t: \033[91mKO\033[0m".format(test_case_name.ljust(60, ' ')))
+                print("{}\t: OK".format(test_case_name.ljust(60, ' ')))
             del streamer_test
         self.assertEqual(len(files), len(ok_files))
 
@@ -390,7 +388,7 @@ class TestMethods(unittest.TestCase):
         self.assertEqual(direction, ndirection)
         self.assertEqual(ps, nps)
         self.assertEqual(piat, npiat)
-        print("{}\t: \033[94mOK\033[0m".format(".Test SPLT analysis".ljust(60, ' ')))
+        print("{}\t: OK".format(".Test SPLT analysis".ljust(60, ' ')))
 
     def test_dhcp(self):
         print("\n----------------------------------------------------------------------")
@@ -405,7 +403,7 @@ class TestMethods(unittest.TestCase):
         self.assertEqual(dhcp_df["udps.dhcp_msg_type"][1], "MsgType.REQUEST")
         self.assertEqual(dhcp_df["udps.dhcp_oui"][1], "00:0b:82")
         self.assertEqual(dhcp_df.shape[0], 3)
-        print("{}\t: \033[94mOK\033[0m".format(".Test DHCP plugin".ljust(60, ' ')))
+        print("{}\t: OK".format(".Test DHCP plugin".ljust(60, ' ')))
 
     def test_mdns(self):
         print("\n----------------------------------------------------------------------")
@@ -418,7 +416,7 @@ class TestMethods(unittest.TestCase):
                                                       "'recombinator_mpd._mpd._tcp.local', '_mpd._tcp.local', "
                                                       "'skynet._udisks-ssh._tcp.local', '_udisks-ssh._tcp.local', "
                                                       "'_workstation._tcp.local']")
-        print("{}\t: \033[94mOK\033[0m".format(".Test MDNS plugin".ljust(60, ' ')))
+        print("{}\t: OK".format(".Test MDNS plugin".ljust(60, ' ')))
 
 
 if __name__ == '__main__':
