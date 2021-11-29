@@ -66,7 +66,7 @@ jobs:
          msys2 -c 'rm -rf libgcrypt/'
          msys2 -c 'git clone --branch dev https://github.com/ntop/nDPI.git'
          cd nDPI
-         msys2 -c './autogen.sh --disable-gcrypt'
+         msys2 -c './autogen.sh'
          msys2 -c 'make all'
          New-Item -Path "..\nfstream\engine\" -Name "ndpi_includes" -ItemType "directory"
          msys2 -c 'cp -a src/include/. ../nfstream/engine/ndpi_includes/'
@@ -74,13 +74,12 @@ jobs:
          msys2 -c 'cp src/lib/libndpi.a ../nfstream/engine/libndpi.a'
          msys2 -c 'cd ..'
          msys2 -c 'rm -rf nDPI/'
-         msys2 -c 'ls D:/a/_temp/msys64/mingw64/'
 
     - name: Build Engine
       run: |
          cd nfstream
          cd engine
-         msys2 -c 'gcc -Indpi_includes -shared -o engine_cc.so -g -O2 -Wall engine_cc.c libndpi.a D:/a/_temp/msys64/mingw64/x86_64-w64-mingw32/lib/libws2_32.a'
+         msys2 -c 'gcc -Indpi_includes -shared -o engine_cc.so -g -O2 -Wall engine_cc.c libndpi.a D:/a/_temp/msys64/mingw64/x86_64-w64-mingw32/lib/libws2_32.a /mingw64/lib/libgcrypt.a /mingw64/lib/libgpg-error.a'
          msys2 -c 'rm -rf ndpi_includes/'
          cd ..
          cd ..
