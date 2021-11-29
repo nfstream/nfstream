@@ -1,2 +1,2 @@
-id,expiration_id,src_ip,src_mac,src_oui,src_port,dst_ip,dst_mac,dst_oui,dst_port,protocol,ip_version,vlan_id,tunnel_id,bidirectional_first_seen_ms,bidirectional_last_seen_ms,bidirectional_duration_ms,bidirectional_packets,bidirectional_bytes,src2dst_first_seen_ms,src2dst_last_seen_ms,src2dst_duration_ms,src2dst_packets,src2dst_bytes,dst2src_first_seen_ms,dst2src_last_seen_ms,dst2src_duration_ms,dst2src_packets,dst2src_bytes,application_name,application_category_name,application_is_guessed,requested_server_name,client_fingerprint,server_fingerprint,user_agent,content_type
-0,0,"192.168.2.134","ac:1f:6b:ad:6a:2c","ac:1f:6b",48629,"192.168.2.222","00:25:90:d4:cc:f9","00:25:90",2057,17,4,0,0,1568213026961,1568213026962,1,10,13888,1568213026961,1568213026962,1,10,13888,0,0,0,0,0,"NetFlow","Network",0,"","","","",""
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
+0,10,13888,NetFlow,Network,0

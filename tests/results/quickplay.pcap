@@ -1,22 +1,22 @@
-id,expiration_id,src_ip,src_mac,src_oui,src_port,dst_ip,dst_mac,dst_oui,dst_port,protocol,ip_version,vlan_id,tunnel_id,bidirectional_first_seen_ms,bidirectional_last_seen_ms,bidirectional_duration_ms,bidirectional_packets,bidirectional_bytes,src2dst_first_seen_ms,src2dst_last_seen_ms,src2dst_duration_ms,src2dst_packets,src2dst_bytes,dst2src_first_seen_ms,dst2src_last_seen_ms,dst2src_duration_ms,dst2src_packets,dst2src_bytes,application_name,application_category_name,application_is_guessed,requested_server_name,client_fingerprint,server_fingerprint,user_agent,content_type
-0,0,"10.54.169.250","","",50668,"120.28.35.41","","",80,6,4,0,0,1429000030398,1429000039635,9237,4,3360,1429000030398,1429000039509,9111,2,733,1429000030498,1429000039635,9137,2,2627,"HTTP","Streaming",0,"api-singtelhawk.quickplay.com","","","Dalvik/1.6.0 (Linux; U; Android 4.4.4; MI 3W MIUI/V6.4.2.0.KXDMICB)",""
-1,0,"10.54.169.250","","",50669,"120.28.35.41","","",80,6,4,0,0,1429000030766,1429000040059,9293,4,3680,1429000030766,1429000039809,9043,2,844,1429000030832,1429000040059,9227,2,2836,"HTTP","Streaming",0,"api-singtelhawk.quickplay.com","","","Dalvik/1.6.0 (Linux; U; Android 4.4.4; MI 3W MIUI/V6.4.2.0.KXDMICB)",""
-2,0,"10.54.169.250","","",33064,"120.28.5.18","","",80,6,4,0,0,1429000031075,1429000031382,307,2,467,1429000031075,1429000031075,0,1,358,1429000031382,1429000031382,0,1,109,"HTTP","Streaming",0,"api-singtelhawk.quickplay.com","","","Dalvik/1.6.0 (Linux; U; Android 4.4.4; MI 3W MIUI/V6.4.2.0.KXDMICB)",""
-3,0,"10.54.169.250","","",52285,"173.252.74.22","","",80,6,4,0,0,1429000031698,1429000032158,460,2,582,1429000031698,1429000031698,0,1,243,1429000032158,1429000032158,0,1,339,"HTTP.Facebook","SocialNetwork",0,"www.facebook.com","","","Dalvik/1.6.0 (Linux; U; Android 4.4.4; MI 3W MIUI/V6.4.2.0.KXDMICB)",""
-4,0,"10.54.169.250","","",52288,"173.252.74.22","","",80,6,4,0,0,1429000037314,1429000037771,457,2,582,1429000037314,1429000037314,0,1,243,1429000037771,1429000037771,0,1,339,"HTTP.Facebook","SocialNetwork",0,"www.facebook.com","","","Dalvik/1.6.0 (Linux; U; Android 4.4.4; MI 3W MIUI/V6.4.2.0.KXDMICB)",""
-5,0,"10.54.169.250","","",33277,"120.28.26.231","","",80,6,4,0,0,1429000037600,1429000037659,59,2,378,1429000037600,1429000037600,0,1,241,1429000037659,1429000037659,0,1,137,"HTTP.Google","Web",0,"clients3.google.com","","","Dalvik/1.6.0 (Linux; U; Android 4.4.4; MI 3W MIUI/V6.4.2.0.KXDMICB)",""
-6,0,"10.54.169.250","","",44793,"31.13.68.49","","",80,6,4,0,0,1429000041481,1429000041819,338,2,576,1429000041481,1429000041481,0,1,237,1429000041819,1429000041819,0,1,339,"HTTP.Facebook","SocialNetwork",0,"www.facebook.com","","","Dalvik/1.6.0 (Linux; U; Android 4.4.2; GT-I9505 Build/KOT49H)",""
-7,0,"10.54.169.250","","",44256,"120.28.5.41","","",80,6,4,0,0,1429000048159,1429000048795,636,3,2311,1429000048159,1429000048647,488,2,1086,1429000048795,1429000048795,0,1,1225,"HTTP","Streaming",0,"play-singtelhawk.quickplay.com","","","Mozilla/5.0 (Linux; Android 4.4.4; MI 3W Build/KTU84P) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/33.0.0.0 Mobil",""
-8,0,"10.54.169.250","","",52007,"120.28.35.40","","",80,6,4,0,0,1429000049060,1429000051518,2458,4,2735,1429000049060,1429000051518,2458,3,1583,1429000051331,1429000051331,0,1,1152,"HTTP","Streaming",0,"vod-singtelhawk.quickplay.com","","","Mozilla/5.0 (Linux; Android 4.4.4; MI 3W Build/KTU84P) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/33.0.0.0 Mobil",""
-9,0,"10.54.169.250","","",54883,"203.205.151.160","","",80,6,4,0,0,1429000050062,1429000052145,2083,3,1337,1429000050062,1429000051366,1304,2,1192,1429000052145,1429000052145,0,1,145,"HTTP.QQ","Chat",0,"hkextshort.weixin.qq.com","","","MicroMessenger Client",""
-10,0,"10.54.169.250","","",52009,"120.28.35.40","","",80,6,4,0,0,1429000052217,1429000153720,101503,65,45902,1429000052217,1429000153720,101503,35,17902,1429000054555,1429000132692,78137,30,28000,"HTTP","Streaming",0,"vod-singtelhawk.quickplay.com","","","Mozilla/5.0 (Linux; Android 4.4.4; MI 3W Build/KTU84P) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/33.0.0.0 Mobil",""
-11,0,"10.54.169.250","","",42761,"203.205.129.101","","",80,6,4,0,0,1429000052348,1429000052688,340,2,641,1429000052348,1429000052348,0,1,380,1429000052688,1429000052688,0,1,261,"HTTP.QQ","Chat",0,"hkextshort.weixin.qq.com","","","MicroMessenger Client",""
-12,0,"10.54.169.250","","",54885,"203.205.151.160","","",80,6,4,0,0,1429000052350,1429000055158,2808,3,983,1429000052350,1429000052350,0,1,461,1429000053611,1429000055158,1547,2,522,"HTTP.QQ","Chat",0,"hkextshort.weixin.qq.com","","","MicroMessenger Client",""
-13,0,"10.54.169.250","","",42762,"203.205.129.101","","",80,6,4,0,0,1429000054595,1429000054967,372,2,877,1429000054595,1429000054595,0,1,616,1429000054967,1429000054967,0,1,261,"HTTP.QQ","Chat",0,"hkextshort.weixin.qq.com","","","MicroMessenger Client",""
-14,0,"10.54.169.250","","",35670,"203.205.147.215","","",80,6,4,0,0,1429000110390,1429000110528,138,2,943,1429000110390,1429000110390,0,1,681,1429000110528,1429000110528,0,1,262,"HTTP.QQ","Chat",0,"hkminorshort.weixin.qq.com","","","MicroMessenger Client",""
-15,0,"10.54.169.250","","",56381,"54.179.140.65","","",80,6,4,0,0,1429000117728,1429000118045,317,2,1469,1429000117728,1429000117728,0,1,638,1429000118045,1429000118045,0,1,831,"HTTP.AmazonAWS","Cloud",0,"api.account.xiaomi.com","","","Dalvik/1.6.0 (Linux; U; Android 4.4.4; MI 3W MIUI/V6.4.2.0.KXDMICB)",""
-16,0,"10.54.169.250","","",52017,"120.28.35.40","","",80,6,4,0,0,1429000153937,1429000207676,53739,8,6032,1429000153937,1429000207676,53739,5,2510,1429000156273,1429000184062,27789,3,3522,"HTTP","Streaming",0,"vod-singtelhawk.quickplay.com","","","Mozilla/5.0 (Linux; Android 4.4.4; MI 3W Build/KTU84P) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/33.0.0.0 Mobil",""
-17,0,"10.54.169.250","","",52018,"120.28.35.40","","",80,6,4,0,0,1429000207973,1429000236577,28604,7,5048,1429000207973,1429000236577,28604,4,2008,1429000210014,1429000216645,6631,3,3040,"HTTP","Streaming",0,"vod-singtelhawk.quickplay.com","","","Mozilla/5.0 (Linux; Android 4.4.4; MI 3W Build/KTU84P) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/33.0.0.0 Mobil",""
-18,0,"10.54.169.250","","",52019,"120.28.35.40","","",80,6,4,0,0,1429000237766,1429000347404,109638,25,19606,1429000237766,1429000347404,109638,14,7028,1429000239838,1429000326059,86221,11,12578,"HTTP","Streaming",0,"vod-singtelhawk.quickplay.com","","","Mozilla/5.0 (Linux; Android 4.4.4; MI 3W Build/KTU84P) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/33.0.0.0 Mobil",""
-19,0,"10.54.169.250","","",52021,"120.28.35.40","","",80,6,4,0,0,1429000347103,1429000374116,27013,4,2754,1429000347103,1429000374116,27013,3,1506,1429000350324,1429000350324,0,1,1248,"HTTP","Streaming",0,"vod-singtelhawk.quickplay.com","","","Mozilla/5.0 (Linux; Android 4.4.4; MI 3W Build/KTU84P) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/33.0.0.0 Mobil",""
-20,0,"10.54.169.250","","",52022,"120.28.35.40","","",80,6,4,0,0,1429000375190,1429000385363,10173,7,4284,1429000375190,1429000385363,10173,4,2008,1429000378528,1429000385174,6646,3,2276,"HTTP","Streaming",0,"vod-singtelhawk.quickplay.com","","","Mozilla/5.0 (Linux; Android 4.4.4; MI 3W Build/KTU84P) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/33.0.0.0 Mobil",""
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
+0,4,3360,HTTP,Streaming,0
+1,4,3680,HTTP,Streaming,0
+2,2,467,HTTP,Streaming,0
+3,2,582,HTTP.Facebook,SocialNetwork,0
+4,2,582,HTTP.Facebook,SocialNetwork,0
+5,2,378,HTTP.Google,Web,0
+6,2,576,HTTP.Facebook,SocialNetwork,0
+7,3,2311,HTTP,Streaming,0
+8,4,2735,HTTP,Streaming,0
+9,3,1337,HTTP.QQ,Chat,0
+10,65,45902,HTTP,Streaming,0
+11,2,641,HTTP.QQ,Chat,0
+12,3,983,HTTP.QQ,Chat,0
+13,2,877,HTTP.QQ,Chat,0
+14,2,943,HTTP.QQ,Chat,0
+15,2,1469,HTTP.AmazonAWS,Cloud,0
+16,8,6032,HTTP,Streaming,0
+17,7,5048,HTTP,Streaming,0
+18,25,19606,HTTP,Streaming,0
+19,4,2754,HTTP,Streaming,0
+20,7,4284,HTTP,Streaming,0

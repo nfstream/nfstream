@@ -1,4 +1,4 @@
-id,expiration_id,src_ip,src_mac,src_oui,src_port,dst_ip,dst_mac,dst_oui,dst_port,protocol,ip_version,vlan_id,tunnel_id,bidirectional_first_seen_ms,bidirectional_last_seen_ms,bidirectional_duration_ms,bidirectional_packets,bidirectional_bytes,src2dst_first_seen_ms,src2dst_last_seen_ms,src2dst_duration_ms,src2dst_packets,src2dst_bytes,dst2src_first_seen_ms,dst2src_last_seen_ms,dst2src_duration_ms,dst2src_packets,dst2src_bytes,application_name,application_category_name,application_is_guessed,requested_server_name,client_fingerprint,server_fingerprint,user_agent,content_type
-0,0,"192.168.1.77","00:0e:8e:19:71:0c","00:0e:8e",60140,"46.101.231.218","84:26:15:2e:3b:52","84:26:15",443,6,4,0,0,1467904946700,1467905010834,64134,95,15380,1467904946700,1467905010834,64134,44,7514,1467904946755,1467905010834,64079,51,7866,"OpenVPN","VPN",0,"","","","",""
-1,0,"192.168.43.12","00:08:ca:42:85:ea","00:08:ca",41507,"139.59.151.137","98:0c:82:d3:3c:7c","98:0c:82",13680,17,4,0,0,1470218591746,1470218600860,9114,83,13559,1470218591746,1470218600860,9114,49,7860,1470218591941,1470218600859,8918,34,5699,"OpenVPN","VPN",0,"","","","",""
-2,0,"192.168.43.18","30:52:cb:6c:9c:1b","30:52:cb",13680,"139.59.151.137","98:0c:82:d3:3c:7c","98:0c:82",13680,17,4,0,0,1472334890224,1472334909465,19241,120,28172,1472334890224,1472334909464,19240,62,11508,1472334892467,1472334909465,16998,58,16664,"OpenVPN","VPN",0,"","","","",""
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
+0,95,15380,OpenVPN,VPN,0
+1,83,13559,OpenVPN,VPN,0
+2,120,28172,OpenVPN,VPN,0

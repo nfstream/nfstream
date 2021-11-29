@@ -74,6 +74,7 @@ jobs:
          msys2 -c 'cp src/lib/libndpi.a ../nfstream/engine/libndpi.a'
          msys2 -c 'cd ..'
          msys2 -c 'rm -rf nDPI/'
+         msys2 -c 'ls D:/a/_temp/msys64/mingw64/'
 
     - name: Build Engine
       run: |

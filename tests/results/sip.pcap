@@ -1,7 +1,7 @@
-id,expiration_id,src_ip,src_mac,src_oui,src_port,dst_ip,dst_mac,dst_oui,dst_port,protocol,ip_version,vlan_id,tunnel_id,bidirectional_first_seen_ms,bidirectional_last_seen_ms,bidirectional_duration_ms,bidirectional_packets,bidirectional_bytes,src2dst_first_seen_ms,src2dst_last_seen_ms,src2dst_duration_ms,src2dst_packets,src2dst_bytes,dst2src_first_seen_ms,dst2src_last_seen_ms,dst2src_duration_ms,dst2src_packets,dst2src_bytes,application_name,application_category_name,application_is_guessed,requested_server_name,client_fingerprint,server_fingerprint,user_agent,content_type
-0,0,"192.168.1.2","00:e0:ed:01:6e:bd","00:e0:ed",5060,"212.242.33.35","00:30:54:00:34:56","00:30:54",5060,17,4,0,0,1120469572844,1120469697621,124777,9,4787,1120469572844,1120469697469,124625,4,2462,1120469572981,1120469697621,124640,5,2325,"SIP","VoIP",0,"","","","",""
-1,0,"192.168.1.2","00:e0:ed:01:6e:bd","00:e0:ed",5060,"212.242.33.35","00:30:54:00:34:56","00:30:54",5060,17,4,0,0,1120469847669,1120470509599,661930,41,15805,1120469847669,1120470509450,661781,30,10116,1120469847809,1120470509599,661790,11,5689,"SIP","VoIP",0,"","","","",""
-2,0,"192.168.1.2","00:e0:ed:01:6e:bd","00:e0:ed",5060,"200.68.120.81","00:30:54:00:34:56","00:30:54",5060,17,4,0,0,1120470049188,1120470116279,67091,18,9512,1120470049188,1120470114910,65722,15,7568,1120470051405,1120470116279,64874,3,1944,"SIP","VoIP",0,"","","","",""
-3,0,"192.168.1.2","00:e0:ed:01:6e:bd","00:e0:ed",5060,"212.242.33.35","00:30:54:00:34:56","00:30:54",5060,17,4,0,0,1120470796804,1120471094413,297609,34,16983,1120470796804,1120471094413,297609,19,9362,1120470796941,1120471018881,221940,15,7621,"SIP","VoIP",0,"","","","",""
-4,0,"192.168.1.2","00:e0:ed:01:6e:bd","00:e0:ed",30000,"212.242.33.36","00:30:54:00:34:56","00:30:54",40392,17,4,0,0,1120470985348,1120470985511,163,9,1926,1120470985348,1120470985511,163,9,1926,0,0,0,0,0,"RTP","Media",0,"","","","",""
-5,0,"192.168.1.2","00:e0:ed:01:6e:bd","00:e0:ed",30001,"212.242.33.36","00:30:54:00:34:56","00:30:54",40393,17,4,0,0,1120470986363,1120470986363,0,1,146,1120470986363,1120470986363,0,1,146,0,0,0,0,0,"RTCP","VoIP",0,"","","","",""
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
+0,9,4787,SIP,VoIP,0
+1,41,15805,SIP,VoIP,0
+2,18,9512,SIP,VoIP,0
+3,34,16983,SIP,VoIP,0
+4,9,1926,RTP,Media,0
+5,1,146,RTCP,VoIP,0

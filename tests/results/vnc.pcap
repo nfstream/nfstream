@@ -1,3 +1,3 @@
-id,expiration_id,src_ip,src_mac,src_oui,src_port,dst_ip,dst_mac,dst_oui,dst_port,protocol,ip_version,vlan_id,tunnel_id,bidirectional_first_seen_ms,bidirectional_last_seen_ms,bidirectional_duration_ms,bidirectional_packets,bidirectional_bytes,src2dst_first_seen_ms,src2dst_last_seen_ms,src2dst_duration_ms,src2dst_packets,src2dst_bytes,dst2src_first_seen_ms,dst2src_last_seen_ms,dst2src_duration_ms,dst2src_packets,dst2src_bytes,application_name,application_category_name,application_is_guessed,requested_server_name,client_fingerprint,server_fingerprint,user_agent,content_type
-0,0,"95.237.48.208","c4:ea:1d:c5:01:86","c4:ea:1d",59791,"192.168.2.110","10:fe:ed:02:49:ed","10:fe:ed",6900,6,4,0,0,1476111264364,1476111280884,16520,3543,256545,1476111264364,1476111280884,16520,2485,199101,1476111264364,1476111280846,16482,1058,57444,"VNC","RemoteAccess",0,"","","","",""
-1,0,"95.237.48.208","c4:ea:1d:c5:01:86","c4:ea:1d",51559,"192.168.2.110","10:fe:ed:02:49:ed","10:fe:ed",6900,6,4,0,0,1476111286462,1476111290613,4151,1008,72613,1476111286462,1476111290613,4151,684,54893,1476111286462,1476111290394,3932,324,17720,"VNC","RemoteAccess",0,"","","","",""
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
+0,3543,256545,VNC,RemoteAccess,0
+1,1008,72613,VNC,RemoteAccess,0

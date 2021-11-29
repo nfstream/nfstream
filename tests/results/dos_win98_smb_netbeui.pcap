@@ -1,5 +1,5 @@
-id,expiration_id,src_ip,src_mac,src_oui,src_port,dst_ip,dst_mac,dst_oui,dst_port,protocol,ip_version,vlan_id,tunnel_id,bidirectional_first_seen_ms,bidirectional_last_seen_ms,bidirectional_duration_ms,bidirectional_packets,bidirectional_bytes,src2dst_first_seen_ms,src2dst_last_seen_ms,src2dst_duration_ms,src2dst_packets,src2dst_bytes,dst2src_first_seen_ms,dst2src_last_seen_ms,dst2src_duration_ms,dst2src_packets,dst2src_bytes,application_name,application_category_name,application_is_guessed,requested_server_name,client_fingerprint,server_fingerprint,user_agent,content_type
-0,0,"192.168.239.129","00:50:56:33:78:9e","00:50:56",137,"192.168.239.2","00:50:56:e9:89:56","00:50:56",137,17,4,0,0,1576409797553,1576409928060,130507,14,1540,1576409797553,1576409928060,130507,14,1540,0,0,0,0,0,"NetBIOS","System",0,"mdjr98","","","",""
-1,0,"192.168.239.129","00:50:56:33:78:9e","00:50:56",0,"224.0.0.2","01:00:5e:00:00:02","01:00:5e",0,1,4,0,0,1576409798047,1576409798047,0,1,60,1576409798047,1576409798047,0,1,60,0,0,0,0,0,"ICMP","Network",0,"","","","",""
-2,0,"192.168.239.129","00:50:56:33:78:9e","00:50:56",137,"192.168.239.255","ff:ff:ff:ff:ff:ff","ff:ff:ff",137,17,4,0,0,1576409800543,1576409931837,131294,32,3520,1576409800543,1576409931837,131294,32,3520,0,0,0,0,0,"NetBIOS","System",0,"mdjr98","","","",""
-3,0,"192.168.239.129","00:50:56:33:78:9e","00:50:56",138,"192.168.239.255","ff:ff:ff:ff:ff:ff","ff:ff:ff",138,17,4,0,0,1576409807597,1576409923353,115756,15,3447,1576409807597,1576409923353,115756,15,3447,0,0,0,0,0,"NetBIOS.SMBv1","System",0,"mdjr98","","","",""
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
+0,14,1540,NetBIOS,System,0
+1,1,60,ICMP,Network,0
+2,32,3520,NetBIOS,System,0
+3,15,3447,NetBIOS.SMBv1,System,0

@@ -1,3 +1,3 @@
-id,expiration_id,src_ip,src_mac,src_oui,src_port,dst_ip,dst_mac,dst_oui,dst_port,protocol,ip_version,vlan_id,tunnel_id,bidirectional_first_seen_ms,bidirectional_last_seen_ms,bidirectional_duration_ms,bidirectional_packets,bidirectional_bytes,src2dst_first_seen_ms,src2dst_last_seen_ms,src2dst_duration_ms,src2dst_packets,src2dst_bytes,dst2src_first_seen_ms,dst2src_last_seen_ms,dst2src_duration_ms,dst2src_packets,dst2src_bytes,application_name,application_category_name,application_is_guessed,requested_server_name,client_fingerprint,server_fingerprint,user_agent,content_type
-0,0,"192.168.0.102","00:16:44:1f:59:66","00:16:44",6771,"239.192.152.143","01:00:5e:40:98:8f","01:00:5e",6771,17,4,0,0,1430752225251,1430752225251,0,1,161,1430752225251,1430752225251,0,1,161,0,0,0,0,0,"BitTorrent","Download",0,"","","","",""
-1,0,"192.168.0.102","00:16:44:1f:59:66","00:16:44",6771,"239.192.152.143","01:00:5e:40:98:8f","01:00:5e",6771,17,4,0,0,1430752525284,1430752525284,0,1,161,1430752525284,1430752525284,0,1,161,0,0,0,0,0,"BitTorrent","Download",0,"","","","",""
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
+0,1,161,BitTorrent,Download,0
+1,1,161,BitTorrent,Download,0

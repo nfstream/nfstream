@@ -1,4 +1,4 @@
-id,expiration_id,src_ip,src_mac,src_oui,src_port,dst_ip,dst_mac,dst_oui,dst_port,protocol,ip_version,vlan_id,tunnel_id,bidirectional_first_seen_ms,bidirectional_last_seen_ms,bidirectional_duration_ms,bidirectional_packets,bidirectional_bytes,src2dst_first_seen_ms,src2dst_last_seen_ms,src2dst_duration_ms,src2dst_packets,src2dst_bytes,dst2src_first_seen_ms,dst2src_last_seen_ms,dst2src_duration_ms,dst2src_packets,dst2src_bytes,application_name,application_category_name,application_is_guessed,requested_server_name,client_fingerprint,server_fingerprint,user_agent,content_type
-0,0,"192.168.2.100","60:38:e0:c5:35:a0","60:38:e0",46858,"212.47.228.136","78:94:b4:24:04:a0","78:94:b4",443,17,4,0,0,1625015363846,1625015363881,35,2,836,1625015363846,1625015363846,0,1,554,1625015363881,1625015363881,0,1,282,"Unknown","Unspecified",1,"","","","",""
-1,0,"192.168.2.100","60:38:e0:c5:35:a0","60:38:e0",46858,"212.47.228.136","78:94:b4:24:04:a0","78:94:b4",443,17,4,0,0,1625020200938,1625020200970,32,2,708,1625020200938,1625020200938,0,1,554,1625020200970,1625020200970,0,1,154,"Unknown","Unspecified",1,"","","","",""
-2,0,"192.168.2.100","60:38:e0:c5:35:a0","60:38:e0",46858,"212.47.228.136","78:94:b4:24:04:a0","78:94:b4",443,17,4,0,0,1625020500944,1625020500975,31,2,836,1625020500944,1625020500944,0,1,554,1625020500975,1625020500975,0,1,282,"Unknown","Unspecified",1,"","","","",""
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
+0,2,836,Unknown,Unspecified,1
+1,2,708,Unknown,Unspecified,1
+2,2,836,Unknown,Unspecified,1

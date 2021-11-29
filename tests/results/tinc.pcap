@@ -1,5 +1,5 @@
-id,expiration_id,src_ip,src_mac,src_oui,src_port,dst_ip,dst_mac,dst_oui,dst_port,protocol,ip_version,vlan_id,tunnel_id,bidirectional_first_seen_ms,bidirectional_last_seen_ms,bidirectional_duration_ms,bidirectional_packets,bidirectional_bytes,src2dst_first_seen_ms,src2dst_last_seen_ms,src2dst_duration_ms,src2dst_packets,src2dst_bytes,dst2src_first_seen_ms,dst2src_last_seen_ms,dst2src_duration_ms,dst2src_packets,dst2src_bytes,application_name,application_category_name,application_is_guessed,requested_server_name,client_fingerprint,server_fingerprint,user_agent,content_type
-0,0,"131.114.168.27","00:26:c6:0a:fa:52","00:26:c6",59244,"185.83.218.112","00:17:08:2c:bd:e7","00:17:08",55655,6,4,0,0,1495983427717,1495983475073,47356,26,6101,1495983427717,1495983475073,47356,15,3169,1495983427768,1495983475073,47305,11,2932,"TINC","VPN",0,"","","","",""
-1,0,"131.114.168.27","00:26:c6:0a:fa:52","00:26:c6",49290,"185.83.218.112","00:17:08:2c:bd:e7","00:17:08",55656,6,4,0,0,1495983427744,1495983475109,47365,27,6910,1495983427744,1495983475109,47365,14,3812,1495983427794,1495983475109,47315,13,3098,"TINC","VPN",0,"","","","",""
-2,0,"131.114.168.27","00:26:c6:0a:fa:52","00:26:c6",55655,"185.83.218.112","00:17:08:2c:bd:e7","00:17:08",55655,17,4,0,0,1495983428000,1495983470973,42973,130,169516,1495983428000,1495983470930,42930,101,136966,1495983428027,1495983470973,42946,29,32550,"TINC","VPN",0,"","","","",""
-3,0,"185.83.218.112","00:17:08:2c:bd:e7","00:17:08",55656,"131.114.168.27","00:26:c6:0a:fa:52","00:26:c6",55656,17,4,0,0,1495983428043,1495983463866,35823,134,169764,1495983428043,1495983463866,35823,29,30038,1495983428043,1495983463817,35774,105,139726,"TINC","VPN",0,"","","","",""
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
+0,26,6101,TINC,VPN,0
+1,27,6910,TINC,VPN,0
+2,130,169516,TINC,VPN,0
+3,134,169764,TINC,VPN,0

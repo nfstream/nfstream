@@ -334,7 +334,13 @@ class TestMethods(unittest.TestCase):
             test_case_name = test_file.split('/')[-1]
             test_pd = NFStreamer(source=test_file,
                                  n_dissections=20,
-                                 n_meters=1).to_pandas()
+                                 n_meters=1).to_pandas()[["id",
+                                                          "bidirectional_packets",
+                                                          "bidirectional_bytes",
+                                                          "application_name",
+                                                          "application_category_name",
+                                                          "application_is_guessed"]]
+
             true_pd = pd.read_csv(result_files[file_idx])
             assert_frame_equal(test_pd, true_pd)
             print("{}\t: OK".format(test_case_name.ljust(60, ' ')))

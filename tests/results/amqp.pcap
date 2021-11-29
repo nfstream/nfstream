@@ -1,4 +1,4 @@
-id,expiration_id,src_ip,src_mac,src_oui,src_port,dst_ip,dst_mac,dst_oui,dst_port,protocol,ip_version,vlan_id,tunnel_id,bidirectional_first_seen_ms,bidirectional_last_seen_ms,bidirectional_duration_ms,bidirectional_packets,bidirectional_bytes,src2dst_first_seen_ms,src2dst_last_seen_ms,src2dst_duration_ms,src2dst_packets,src2dst_bytes,dst2src_first_seen_ms,dst2src_last_seen_ms,dst2src_duration_ms,dst2src_packets,dst2src_bytes,application_name,application_category_name,application_is_guessed,requested_server_name,client_fingerprint,server_fingerprint,user_agent,content_type
-0,0,"127.0.0.1","00:00:00:00:00:00","00:00:00",44205,"127.0.1.1","00:00:00:00:00:00","00:00:00",5672,6,4,0,0,1490904166118,1490904170243,4125,108,14423,1490904166118,1490904170243,4125,54,10859,1490904166118,1490904170243,4125,54,3564,"AMQP","RPC",0,"","","","",""
-1,0,"127.0.1.1","00:00:00:00:00:00","00:00:00",5672,"127.0.0.1","00:00:00:00:00:00","00:00:00",44204,6,4,0,0,1490904166119,1490904170242,4123,22,5026,1490904166119,1490904170242,4123,13,4327,1490904166119,1490904170206,4087,9,699,"AMQP","RPC",0,"","","","",""
-2,0,"127.0.0.1","00:00:00:00:00:00","00:00:00",44206,"127.0.1.1","00:00:00:00:00:00","00:00:00",5672,6,4,0,0,1490904169152,1490904170195,1043,30,4065,1490904169152,1490904170195,1043,15,3075,1490904169152,1490904170195,1043,15,990,"AMQP","RPC",0,"","","","",""
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
+0,108,14423,AMQP,RPC,0
+1,22,5026,AMQP,RPC,0
+2,30,4065,AMQP,RPC,0
