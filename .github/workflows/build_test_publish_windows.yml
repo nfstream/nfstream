@@ -42,11 +42,14 @@ jobs:
       run: |
          python -m pip install -r dev_requirements.txt
 
-    - name: Build Engine dependencies
+    - name: Install NPCAP
       run: |
          choco install wget --no-progress
          wget --user ${{ secrets.NPCAP_OEM_USERNAME }} --password ${{ secrets.NPCAP_OEM_PASSWORD }} https://nmap.org/npcap/oem/dist/npcap-1.55-oem.exe
          Start-Process npcap-1.55-oem.exe -ArgumentList "/loopback_support=yes /winpcap_mode=yes /dot11_support=yes /S" -wait
+
+    - name: Build and install libgpg-error
+      run: |
          msys2 -c 'git clone --branch libgpg-error-1.42 https://github.com/gpg/libgpg-error'
          cd libgpg-error
          msys2 -c './autogen.sh'
@@ -55,6 +58,9 @@ jobs:
          msys2 -c 'make install'
          msys2 -c 'cd ..'
          msys2 -c 'rm -rf libgpg-error/'
+
+    - name: Build and install libgcrypt
+      run: |
          msys2 -c 'git clone --branch libgcrypt-1.8.8 https://github.com/gpg/libgcrypt'
          cd libgcrypt
          msys2 -c './autogen.sh'
@@ -63,6 +69,9 @@ jobs:
          msys2 -c 'make install'
          msys2 -c 'cd ..'
          msys2 -c 'rm -rf libgcrypt/'
+
+    - name: Build and install nDPI
+      run: |
          msys2 -c 'git clone --branch dev https://github.com/ntop/nDPI.git'
          cd nDPI
          msys2 -c './autogen.sh'
@@ -78,7 +87,7 @@ jobs:
       run: |
          cd nfstream
          cd engine
-         msys2 -c 'gcc -Indpi_includes -shared -o engine_cc.so -g -O2 -Wall engine_cc.c libndpi.a /mingw64/lib/libgcrypt.a /mingw64/lib/libgpg-error.a D:/a/_temp/msys64/mingw64/x86_64-w64-mingw32/lib/libws2_32.a'
+         msys2 -c 'gcc -Indpi_includes -shared -o engine_cc.so -g -O2 -Wall engine_cc.c libndpi.a D:/a/_temp/msys64/mingw64/lib/libgcrypt.a D:/a/_temp/msys64/mingw64/lib/libgpg-error.a D:/a/_temp/msys64/mingw64/x86_64-w64-mingw32/lib/libws2_32.a'
          msys2 -c 'rm -rf ndpi_includes/'
          cd ..
          cd ..
