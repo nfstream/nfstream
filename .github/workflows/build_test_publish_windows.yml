@@ -48,7 +48,7 @@ jobs:
          wget --user ${{ secrets.NPCAP_OEM_USERNAME }} --password ${{ secrets.NPCAP_OEM_PASSWORD }} https://nmap.org/npcap/oem/dist/npcap-1.55-oem.exe
          Start-Process npcap-1.55-oem.exe -ArgumentList "/loopback_support=yes /winpcap_mode=yes /dot11_support=yes /S" -wait
          msys2 -c 'git clone --branch libgpg-error-1.42 https://github.com/gpg/libgpg-error'
-         cd libgpg-error
+         msys2 -c 'cd libgpg-error'
          msys2 -c './autogen.sh'
          msys2 -c './configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc --disable-nls'
          msys2 -c 'make'
@@ -57,7 +57,7 @@ jobs:
          msys2 -c 'cd ..'
          msys2 -c 'rm -rf libgpg-error/'
          msys2 -c 'git clone --branch libgcrypt-1.8.8 https://github.com/gpg/libgcrypt'
-         cd libgcrypt
+         msys2 -c 'cd libgcrypt'
          msys2 -c './autogen.sh'
          msys2 -c './configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc'
          msys2 -c 'make'
@@ -65,7 +65,7 @@ jobs:
          msys2 -c 'cd ..'
          msys2 -c 'rm -rf libgcrypt/'
          msys2 -c 'git clone --branch dev https://github.com/ntop/nDPI.git'
-         cd nDPI
+         msys2 -c 'cd nDPI'
          msys2 -c './autogen.sh'
          msys2 -c 'make all'
          New-Item -Path "..\nfstream\engine\" -Name "ndpi_includes" -ItemType "directory"
@@ -77,12 +77,12 @@ jobs:
 
     - name: Build Engine
       run: |
-         cd nfstream
-         cd engine
+         msys2 -c 'cd nfstream'
+         msys2 -c 'cd engine'
          msys2 -c 'gcc -Indpi_includes -shared -o engine_cc.so -g -O2 -Wall engine_cc.c libndpi.a D:/a/_temp/msys64/mingw64/x86_64-w64-mingw32/lib/libws2_32.a /mingw64/lib/libgcrypt.a /mingw64/lib/libgpg-error.a'
          msys2 -c 'rm -rf ndpi_includes/'
-         cd ..
-         cd ..
+         msys2 -c 'cd ..'
+         msys2 -c 'cd ..'
          python setup.py bdist_wheel
 
     - name: Testing and coverage report generation
