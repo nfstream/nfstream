@@ -53,7 +53,6 @@ jobs:
          msys2 -c './configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc --disable-nls'
          msys2 -c 'make'
          msys2 -c 'make install'
-         msys2 -c 'cp src/lib/libndpi.a ../nfstream/engine/libndpi.a'
          msys2 -c 'cd ..'
          msys2 -c 'rm -rf libgpg-error/'
          msys2 -c 'git clone --branch libgcrypt-1.8.8 https://github.com/gpg/libgcrypt'
