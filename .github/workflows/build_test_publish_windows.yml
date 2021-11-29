@@ -83,7 +83,7 @@ jobs:
          msys2 -c 'cd ..'
          msys2 -c 'rm -rf nDPI/'
 
-    - name: Build Engine
+    - name: Build NFStream
       run: |
          cd nfstream
          cd engine
@@ -92,5 +92,11 @@ jobs:
          cd ..
          cd ..
          python setup.py bdist_wheel
+
+    - name: Test NFStream and generate coverage report
+      run: |
          python -m coverage run tests.py
          python -m coverage combine
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
