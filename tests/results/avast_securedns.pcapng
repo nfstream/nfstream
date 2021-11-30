@@ -1,40 +1,40 @@
 id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
-0,2,299,AVAST SecureDNS,Network,0
-1,2,299,AVAST SecureDNS,Network,0
-2,2,299,AVAST SecureDNS,Network,0
-3,2,299,AVAST SecureDNS,Network,0
-4,2,299,AVAST SecureDNS,Network,0
-5,2,299,AVAST SecureDNS,Network,0
-6,2,299,AVAST SecureDNS,Network,0
-7,2,299,AVAST SecureDNS,Network,0
-8,2,299,AVAST SecureDNS,Network,0
-9,2,299,AVAST SecureDNS,Network,0
-10,2,299,AVAST SecureDNS,Network,0
-11,2,299,AVAST SecureDNS,Network,0
-12,2,299,AVAST SecureDNS,Network,0
-13,2,299,AVAST SecureDNS,Network,0
-14,2,299,AVAST SecureDNS,Network,0
-15,2,299,AVAST SecureDNS,Network,0
-16,2,299,AVAST SecureDNS,Network,0
-17,2,299,AVAST SecureDNS,Network,0
-18,2,299,AVAST SecureDNS,Network,0
-19,2,299,AVAST SecureDNS,Network,0
-20,2,299,AVAST SecureDNS,Network,0
-21,2,299,AVAST SecureDNS,Network,0
-22,2,299,AVAST SecureDNS,Network,0
-23,2,299,AVAST SecureDNS,Network,0
-24,2,299,AVAST SecureDNS,Network,0
-25,2,299,AVAST SecureDNS,Network,0
-26,2,299,AVAST SecureDNS,Network,0
-27,2,299,AVAST SecureDNS,Network,0
-28,2,299,AVAST SecureDNS,Network,0
-29,2,299,AVAST SecureDNS,Network,0
-30,2,299,AVAST SecureDNS,Network,0
-31,2,299,AVAST SecureDNS,Network,0
-32,2,299,AVAST SecureDNS,Network,0
-33,1,81,AVAST SecureDNS,Network,0
-34,2,299,AVAST SecureDNS,Network,0
-35,2,299,AVAST SecureDNS,Network,0
-36,2,299,AVAST SecureDNS,Network,0
-37,2,299,AVAST SecureDNS,Network,0
-38,2,299,AVAST SecureDNS,Network,0
+0,2,299,AVASTSecureDNS,Network,0
+1,2,299,AVASTSecureDNS,Network,0
+2,2,299,AVASTSecureDNS,Network,0
+3,2,299,AVASTSecureDNS,Network,0
+4,2,299,AVASTSecureDNS,Network,0
+5,2,299,AVASTSecureDNS,Network,0
+6,2,299,AVASTSecureDNS,Network,0
+7,2,299,AVASTSecureDNS,Network,0
+8,2,299,AVASTSecureDNS,Network,0
+9,2,299,AVASTSecureDNS,Network,0
+10,2,299,AVASTSecureDNS,Network,0
+11,2,299,AVASTSecureDNS,Network,0
+12,2,299,AVASTSecureDNS,Network,0
+13,2,299,AVASTSecureDNS,Network,0
+14,2,299,AVASTSecureDNS,Network,0
+15,2,299,AVASTSecureDNS,Network,0
+16,2,299,AVASTSecureDNS,Network,0
+17,2,299,AVASTSecureDNS,Network,0
+18,2,299,AVASTSecureDNS,Network,0
+19,2,299,AVASTSecureDNS,Network,0
+20,2,299,AVASTSecureDNS,Network,0
+21,2,299,AVASTSecureDNS,Network,0
+22,2,299,AVASTSecureDNS,Network,0
+23,2,299,AVASTSecureDNS,Network,0
+24,2,299,AVASTSecureDNS,Network,0
+25,2,299,AVASTSecureDNS,Network,0
+26,2,299,AVASTSecureDNS,Network,0
+27,2,299,AVASTSecureDNS,Network,0
+28,2,299,AVASTSecureDNS,Network,0
+29,2,299,AVASTSecureDNS,Network,0
+30,2,299,AVASTSecureDNS,Network,0
+31,2,299,AVASTSecureDNS,Network,0
+32,2,299,AVASTSecureDNS,Network,0
+33,1,81,AVASTSecureDNS,Network,0
+34,2,299,AVASTSecureDNS,Network,0
+35,2,299,AVASTSecureDNS,Network,0
+36,2,299,AVASTSecureDNS,Network,0
+37,2,299,AVASTSecureDNS,Network,0
+38,2,299,AVASTSecureDNS,Network,0
