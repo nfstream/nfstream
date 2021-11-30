@@ -51,7 +51,7 @@ jobs:
         sudo apt-get install libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison
 
     - name: Installing NFStream requirements
-      if: steps.pip-cache.outputs.cache-hit != 'true'
+      # if: steps.pip-cache.outputs.cache-hit != 'true'
       run: |
         pip install -r dev_requirements.txt
 
