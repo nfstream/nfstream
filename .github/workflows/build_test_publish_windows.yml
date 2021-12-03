@@ -97,10 +97,11 @@ jobs:
          cd ..
          python setup.py bdist_wheel
 
-    - name: Test NFStream and generate coverage report
-      run: |
-         python -m coverage run tests.py
-         python -m coverage combine
+    - name: Test NFStream
+      run: python -m coverage run tests.py
+
+    - name: Generate coverage report
+      run: python -m coverage combine
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
