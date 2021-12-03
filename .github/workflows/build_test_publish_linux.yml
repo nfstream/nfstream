@@ -42,7 +42,7 @@ jobs:
       id: pip-cache
       with:
         path: ${{ steps.get-pip-path.outputs.id }}
-        key: ${{ steps.get-pip-path.outputs.id }}-${{ hashFiles('setup.py') }}-${{ hashFiles('dev-requirements.txt') }}
+        key: ${{ steps.get-pip-path.outputs.id }}-${{ hashFiles('setup.py') }}-${{ hashFiles('dev_requirements.txt') }}
 
     - name: Install Prerequisites
       run: |
