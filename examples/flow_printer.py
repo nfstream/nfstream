@@ -17,7 +17,7 @@ from nfstream import NFStreamer
 import sys
 
 
-if __name__ == '__main__': # Mandatory if you are running on Windows Platform
+if __name__ == '__main__':  # Mandatory if you are running on Windows Platform
     path = sys.argv[1]
     flow_streamer = NFStreamer(source=path,
                                statistical_analysis=False,
