@@ -538,7 +538,7 @@ This project is licensed under the LGPLv3 License - see the [**License**][licens
 [sah]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/sah_logo.png?raw=true
 [tuke]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/tuke_logo.png?raw=true
 [ntop]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/ntop_logo.png?raw=true
-[ntop]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/insecure_logo.png?raw=true
+[insecure]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/insecure_logo.png?raw=true
 [l]:https://github.com/ryanoasis/nerd-fonts/wiki/screenshots/v1.0.x/linux-pass-sm.png
 [m]:https://github.com/ryanoasis/nerd-fonts/wiki/screenshots/v1.0.x/mac-pass-sm.png
 [w]:https://github.com/ryanoasis/nerd-fonts/wiki/screenshots/v1.0.x/windows-pass-sm.png
