@@ -343,28 +343,26 @@ class TestMethods(unittest.TestCase):
         print("{}\t: {}".format(".Test BPF".ljust(60, ' '), colored('OK', 'green')))
 
     def test_ndpi_integration(self):
+        # For Windows platform, the following files from nDPI repository needs further investigations:
+        # ocs.pcap, quic-mvfst-22_decryption_error.pcap and http-crash-content-disposition.pcap
         pcap_files = get_files_list(os.path.join("tests", "pcaps"))
         result_files = get_files_list(os.path.join("tests", "results"))
         print("\n----------------------------------------------------------------------")
         print(".Test nDPI integration on {} applications:".format(len(pcap_files)))
         for file_idx, test_file in enumerate(pcap_files):
             test_case_name = os.path.basename(test_file)
-            try:
-                test = NFStreamer(source=test_file,
-                                  n_dissections=20,
-                                  n_meters=1).to_pandas()[["id",
-                                                           "bidirectional_packets",
-                                                           "bidirectional_bytes",
-                                                           "application_name",
-                                                           "application_category_name",
-                                                           "application_is_guessed"]].to_dict()
+            test = NFStreamer(source=test_file,
+                              n_dissections=20,
+                              n_meters=1).to_pandas()[["id",
+                                                       "bidirectional_packets",
+                                                       "bidirectional_bytes",
+                                                       "application_name",
+                                                       "application_category_name",
+                                                       "application_is_guessed"]].to_dict()
 
-                true = pd.read_csv(result_files[file_idx]).to_dict()
-                self.assertEqual(test, true)
-                print("{}\t: {}".format(test_case_name.ljust(60, ' '), colored('OK', 'green')))
-            except TypeError:
-                print("{}\t: {}".format(test_case_name.ljust(60, ' '), colored('KO', 'red')))
-
+            true = pd.read_csv(result_files[file_idx]).to_dict()
+            self.assertEqual(test, true)
+            print("{}\t: {}".format(test_case_name.ljust(60, ' '), colored('OK', 'green')))
 
     def test_splt(self):
         print("\n----------------------------------------------------------------------")
