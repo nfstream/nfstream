@@ -18,7 +18,13 @@ jobs:
       fail-fast: false
       matrix:
         os: ["macOS-latest"]
-        python-version: [pypy-3.7, pypy3, 3.9, 3.8, 3.7, 3.6]
+        python-version: ["pypy-3.7",
+                         "pypy-3.6",
+                         "3.10",
+                         "3.9",
+                         "3.8",
+                         "3.7",
+                         "3.6"]
 
     steps:
     - uses: actions/checkout@v2
