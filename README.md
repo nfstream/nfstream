@@ -471,7 +471,7 @@ for flow in ml_streamer:
 More NFPlugin examples and details are provided on the official [**documentation**][documentation]. You can also test 
 NFStream without installation using our [**live demo notebook**][demo].
 
-## Building from sources ![l] ![m] 
+## Building from sources ![l] ![m] ![w] 
 
 If you want to build **NFStream** from sources. Please read the [**installation guide**][install].
 
@@ -539,4 +539,5 @@ This project is licensed under the LGPLv3 License - see the [**License**][licens
 [ntop]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/ntop_logo.png?raw=true
 [l]:https://github.com/ryanoasis/nerd-fonts/wiki/screenshots/v1.0.x/linux-pass-sm.png
 [m]:https://github.com/ryanoasis/nerd-fonts/wiki/screenshots/v1.0.x/mac-pass-sm.png
+[w]:https://github.com/ryanoasis/nerd-fonts/wiki/screenshots/v1.0.x/windows-pass-sm.png
 [install]: https://www.nfstream.org/docs/#building-nfstream-from-sources
