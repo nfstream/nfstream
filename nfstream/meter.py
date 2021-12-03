@@ -28,6 +28,8 @@ NPCAP_LOAD_ERR = "Error finding npcap library. Please make sure you npcap is ins
 
 NDPI_LOAD_ERR = "Error while loading Dissector. This means that you are building nfstream with an out of sync nDPI."
 
+FLOW_KEY = "{}:{}:{}:{}:{}:{}:{}"
+
 
 class NFCache(OrderedDict):
     """ Least recently updated dictionary
@@ -80,25 +82,40 @@ def meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, n_dissectio
     return scanned
 
 
-def get_flow_key(packet, ffi):
+def get_flow_key(src_ip, src_port, dst_ip, dst_port, protocol, vlan_id, tunnel_id):
+    """ Create a consistent direction agnostic flow key """
+    if src_ip < dst_ip:
+        return FLOW_KEY.format(src_ip, src_port, dst_ip, dst_port, protocol, vlan_id, tunnel_id)
+    if src_ip == dst_ip:
+        if src_port <= dst_port:
+            return FLOW_KEY.format(src_ip, src_port, dst_ip, dst_port, protocol, vlan_id, tunnel_id)
+        if src_port > dst_port:
+            return FLOW_KEY.format(dst_ip, dst_port, src_ip, src_port, protocol, vlan_id, tunnel_id)
+    if src_ip > dst_ip:
+        return FLOW_KEY.format(dst_ip, dst_port, src_ip, src_port, protocol, vlan_id, tunnel_id)
+
+
+def get_flow_key_from_pkt(packet, ffi):
     """ Create flow key from packet information (7-tuple)
 
     A flow key uniquely determines a flow using source ip,
     destination ip, source port, destination port, TCP/UDP protocol, VLAN ID
     and tunnel ID of the packets.
     """
-    src_ip = ffi.string(packet.src_ip_str).decode('utf-8', errors='ignore')
-    dst_ip = ffi.string(packet.dst_ip_str).decode('utf-8', errors='ignore')
-    return packet.protocol, packet.vlan_id, \
-           min(src_ip, dst_ip), max(src_ip, dst_ip),\
-           min(packet.src_port, packet.dst_port), max(packet.src_port, packet.dst_port), packet.tunnel_id
+    return get_flow_key(ffi.string(packet.src_ip_str).decode('utf-8', errors='ignore'),
+                        packet.src_port,
+                        ffi.string(packet.dst_ip_str).decode('utf-8', errors='ignore'),
+                        packet.dst_port,
+                        packet.protocol,
+                        packet.vlan_id,
+                        packet.tunnel_id)
 
 
 def consume(packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps, sync, accounting_mode, n_dissections,
             statistics, splt, dissector, decode_tunnels, system_visibility_mode):
     """ consume a packet and produce flow """
     # We maintain state for active flows computation 1 for creation, 0 for update/cut, -1 for custom expire
-    flow_key = get_flow_key(packet, ffi)
+    flow_key = get_flow_key_from_pkt(packet, ffi)
     try:  # update flow
         flow = cache[flow_key].update(packet, idle_timeout, active_timeout, ffi, lib, udps, sync, accounting_mode,
                                       n_dissections, statistics, splt, dissector)

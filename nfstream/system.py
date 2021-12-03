@@ -18,6 +18,7 @@ from collections import OrderedDict, namedtuple
 from psutil import Process, net_connections
 from socket import SocketKind
 from .utils import NFEvent
+from .meter import get_flow_key
 import time
 import json
 
@@ -165,18 +166,22 @@ class ConnCache(OrderedDict):
             self.last_scan_time = current_time
 
 
+def simplify_protocol(protocol):
+    if protocol == 6:
+        return protocol
+    if protocol == 17:
+        return protocol
+    return 0
+
+
 def get_conn_key_from_flow(f):
     """ compute a conn key from NFlow object attributes """
-    if f.protocol == 6:
-        k = 6, min(f.src_ip, f.dst_ip), max(f.src_ip, f.dst_ip), \
-            min(f.src_port, f.dst_port), max(f.src_port, f.dst_port)
-    elif f.protocol == 17:
-        k = 17, min(f.src_ip, f.dst_ip), max(f.src_ip, f.dst_ip), \
-            min(f.src_port, f.dst_port), max(f.src_port, f.dst_port)
-    else:
-        k = 0, min(f.src_ip, f.dst_ip), max(f.src_ip, f.dst_ip), \
-            min(f.src_port, f.dst_port), max(f.src_port, f.dst_port)
-    return k
+    return get_flow_key(f.src_ip,
+                        f.src_port,
+                        f.dst_ip,
+                        f.dst_port,
+                        simplify_protocol(f.protocol),
+                        0, 0)
 
 
 def match_flow_conn(conn_cache, flow):
@@ -194,19 +199,13 @@ def match_flow_conn(conn_cache, flow):
 
 def get_conn_key(c):
     """ Create a 5-tuple connection key tuple """
-    k = None
     if c.raddr != () and c.pid is not None:
-        src_ip = c.laddr.ip
-        dst_ip = c.raddr.ip
-        src_port = c.laddr.port
-        dst_port = c.raddr.port
         if c.type == SocketKind.SOCK_STREAM:  # TCP protocol
-            k = 6, min(src_ip, dst_ip), max(src_ip, dst_ip), min(src_port, dst_port), max(src_port, dst_port)
-        elif c.type == SocketKind.SOCK_DGRAM:  # UDP protocol
-            k = 17, min(src_ip, dst_ip), max(src_ip, dst_ip), min(src_port, dst_port), max(src_port, dst_port)
-        else:  # Non TCP/UDP mapped with 0 as protocol Id
-            k = 0, min(src_ip, dst_ip), max(src_ip, dst_ip), min(src_port, dst_port), max(src_port, dst_port)
-    return k
+            return get_flow_key(c.laddr.ip, c.laddr.port, c.raddr.ip, c.raddr.port, 6, 0, 0)
+        if c.type == SocketKind.SOCK_DGRAM:  # UDP protocol
+            get_flow_key(c.laddr.ip, c.laddr.port, c.raddr.ip, c.raddr.port, 17, 0, 0)
+        return get_flow_key(c.laddr.ip, c.laddr.port, c.raddr.ip, c.raddr.port, 0, 0, 0)
+    return None
 
 
 def system_socket_worflow(channel, idle_timeout, poll_period):
