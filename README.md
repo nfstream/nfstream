@@ -146,8 +146,7 @@ pip install nfstream
 
 > **Windows Notes**: By default, NFStream does not install capture drivers on Windows. It is recommended to install 
 > [Npcap drivers](https://nmap.org/npcap/dist/npcap-1.55.exe) before installing NFStream.
-> If Wireshark is already installed on Windows, then [Npcap drivers](https://nmap.org/npcap/dist/npcap-1.55.exe) drivers
-> are already installed.
+> If Wireshark is already installed on Windows, then Npcap drivers are already installed.
 
 
 
