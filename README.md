@@ -144,6 +144,13 @@ Binary installers for the latest released version are available on Pypi.
 pip install nfstream
 ```
 
+> **Windows Notes**: By default, NFStream does not install capture drivers on Windows. It is recommended to install 
+> [Npcap drivers](https://nmap.org/npcap/dist/npcap-1.55.exe) before installing NFStream.
+> If Wireshark is already installed on Windows, then [Npcap drivers](https://nmap.org/npcap/dist/npcap-1.55.exe) drivers
+> are already installed.
+
+
+
 ## How to use it?
 
 ### Encrypted application identification and metadata extraction
@@ -505,7 +512,7 @@ The following organizations are supporting NFStream:
 * [**Technical University of Košice**](https://www.tuke.sk/): Hardware and infrastructure for datasets generation and 
 storage.
 * [**ntop**](https://www.ntop.org/): Technical support of nDPI integration.
-* [**Insecure.Org**](https://insecure.org/): Technical support of npcap integration (Windows CI).
+* [**Insecure.Org**](https://insecure.org/): Technical support of Npcap integration (Windows CI).
 
 [![sah]](https://www.softathome.com/) [![tuke]](https://www.tuke.sk/) [![ntop]](https://www.ntop.org/) [![insecure]](https://insecure.org/)
 

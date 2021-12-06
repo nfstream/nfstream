@@ -1133,6 +1133,7 @@ def discover_iterfaces():
     ffi.dlclose(npcap)
     return interfaces
 
+
 def is_interface(val, is_windows):
     """ Check if val is a valid interface name and return it if true else None """
     # On windows if the user give a description instead of network device name, we comply with it.
