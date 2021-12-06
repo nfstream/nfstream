@@ -144,11 +144,9 @@ Binary installers for the latest released version are available on Pypi.
 pip install nfstream
 ```
 
-> **Windows Notes**: By default, NFStream does not install capture drivers on Windows. It is recommended to install 
+> **Windows Notes**: NFStream does not include capture drivers on Windows. It is required to install 
 > [Npcap drivers](https://nmap.org/npcap/dist/npcap-1.55.exe) before installing NFStream.
 > If Wireshark is already installed on Windows, then Npcap drivers are already installed.
-
-
 
 ## How to use it?
 
