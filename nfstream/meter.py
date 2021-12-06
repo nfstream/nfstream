@@ -14,6 +14,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from .engine import create_engine, setup_capture, setup_dissector, activate_capture, capture_next, capture_close
+from .engine import capture_stats
 from .utils import set_affinity, InternalError, NFEvent
 from collections import OrderedDict
 from .flow import NFlow
@@ -169,9 +170,12 @@ def meter_cleanup(cache, channel, udps, sync, n_dissections, statistics, splt, f
         del flow
 
 
-def capture_track(lib, capture, mode, interface_stats, tracker, processed, ignored):
+def capture_track(lib, ffi, npcap, capture, mode, interface_stats, tracker, processed, ignored, is_windows):
     """ Update shared performance values """
-    lib.capture_stats(capture, interface_stats, mode)
+    if is_windows:
+        capture_stats(ffi, npcap, capture, interface_stats, mode)
+    else:
+        lib.capture_stats(capture, interface_stats, mode)
     tracker[0].value = interface_stats.dropped
     tracker[1].value = processed
     tracker[2].value = ignored
@@ -268,7 +272,8 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
         else:  # End of file
             remaining_packets = False  # end of loop
         if meter_tick - meter_track_tick >= meter_track_interval:  # Performance tracking
-            #capture_track(lib, capture, mode, interface_stats, tracker, processed_packets, ignored_packets)
+            capture_track(lib, ffi, npcap, capture, mode, interface_stats, tracker, processed_packets,
+                          ignored_packets, is_windows)
             meter_track_tick = meter_tick
     # Expire all remaining flows in the cache.
     meter_cleanup(cache, channel, udps, sync, n_dissections, statistics, splt, ffi, lib, dissector)

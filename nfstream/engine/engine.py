@@ -64,6 +64,12 @@ struct pcap_if {
   int flags;
 };
 
+struct pcap_stat {
+  unsigned int recv;
+  unsigned int drop;
+  unsigned int ifdrop;
+};
+
 typedef struct pcap_if pcap_if_t;
 
 struct pcap_pkthdr {
@@ -861,6 +867,7 @@ int packet_process(int datalink_type, uint32_t caplen, uint32_t len, const uint8
 void pcap_breakloop(pcap_t *);
 void pcap_close(pcap_t *);
 char *pcap_geterr(pcap_t *);
+int pcap_stats(pcap_t *, struct pcap_stat *);
 """
 
 cc_dissector_apis = """
@@ -934,47 +941,6 @@ def setup_capture_unix(ffi, lib, source, snaplen, promisc, mode, error_child, gr
     if snaplen_set_failed:
         return
     return capture
-
-
-def discover_iterfaces():
-    """ Interfaces discovery utility for windows """
-    interfaces = {}
-    ffi = cffi.FFI()
-    try:
-        npcap = ffi.dlopen(NPCAP_PATH)
-    except OSError:
-        return interfaces
-    ffi.cdef(cc_capture_headers)
-    ffi.cdef(cc_capture_apis)
-    ppintf = ffi.new("pcap_if_t * *")
-    errbuf = ffi.new("char []", 128)
-    rv = npcap.pcap_findalldevs(ppintf, errbuf)
-    if rv:
-        return interfaces
-    pintf = ppintf[0]
-    tmp = pintf
-    while tmp != ffi.NULL:
-        name = ffi.string(tmp.name).decode('ascii', 'ignore')
-        if tmp.description != ffi.NULL:
-            interfaces[name] = ffi.string(tmp.description).decode('ascii', 'ignore')
-        else:
-            interfaces[name] = ""
-        tmp = tmp.next
-    npcap.pcap_freealldevs(pintf)
-    ffi.dlclose(npcap)
-    return interfaces
-
-def is_interface(val, is_windows):
-    """ Check if val is a valid interface name and return it if true else None """
-    # On windows if the user give a description instead of network device name, we comply with it.
-    if is_windows:
-        interfaces_map = discover_iterfaces()
-    else:
-        interfaces_map = dict.fromkeys(net_if_addrs().keys(), "")
-    for k, v in interfaces_map.items():
-        if val == k or val == v:
-            return k
-    return None
 
 
 def setup_capture_windows(ffi, npcap, source, snaplen, promisc, mode, error_child):
@@ -1123,6 +1089,61 @@ def setup_dissector(ffi, lib, n_dissections):
         lib.dissector_configure(dissector)
         return dissector
     return ffi.NULL
+
+
+def capture_stats(ffi, npcap, pcap_handle, nf_statistics, mode):
+    if mode == 0:
+        return
+    statistics = ffi.new("struct pcap_stat *")
+    ret = npcap.pcap_stats(pcap_handle, statistics)
+    if ret == 0:
+        nf_statistics.received = statistics[0].recv
+        nf_statistics.dropped = statistics[0].drop
+        nf_statistics.dropped_by_interface = statistics[0].ifdrop
+    else:
+        print("Warning: Error while reading interface performance statistics.")
+    return
+
+
+def discover_iterfaces():
+    """ Interfaces discovery utility for windows """
+    interfaces = {}
+    ffi = cffi.FFI()
+    try:
+        npcap = ffi.dlopen(NPCAP_PATH)
+    except OSError:
+        return interfaces
+    ffi.cdef(cc_capture_headers)
+    ffi.cdef(cc_capture_apis)
+    ppintf = ffi.new("pcap_if_t * *")
+    errbuf = ffi.new("char []", 128)
+    rv = npcap.pcap_findalldevs(ppintf, errbuf)
+    if rv:
+        return interfaces
+    pintf = ppintf[0]
+    tmp = pintf
+    while tmp != ffi.NULL:
+        name = ffi.string(tmp.name).decode('ascii', 'ignore')
+        if tmp.description != ffi.NULL:
+            interfaces[name] = ffi.string(tmp.description).decode('ascii', 'ignore')
+        else:
+            interfaces[name] = ""
+        tmp = tmp.next
+    npcap.pcap_freealldevs(pintf)
+    ffi.dlclose(npcap)
+    return interfaces
+
+def is_interface(val, is_windows):
+    """ Check if val is a valid interface name and return it if true else None """
+    # On windows if the user give a description instead of network device name, we comply with it.
+    if is_windows:
+        interfaces_map = discover_iterfaces()
+    else:
+        interfaces_map = dict.fromkeys(net_if_addrs().keys(), "")
+    for k, v in interfaces_map.items():
+        if val == k or val == v:
+            return k
+    return None
 
 
 def create_engine(is_windows):
