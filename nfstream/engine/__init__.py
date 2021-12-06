@@ -14,3 +14,4 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from .engine import create_engine, setup_capture, setup_dissector, activate_capture, capture_next, capture_close
+from .engine import is_interface

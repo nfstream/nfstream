@@ -20,10 +20,11 @@ import time as tm
 import os
 import platform
 from collections.abc import Iterable
-from psutil import net_if_addrs, cpu_count
+from psutil import cpu_count
 from os.path import isfile
 from .meter import meter_workflow
 from .anonymizer import NFAnonymizer
+from .engine import is_interface
 from.plugin import NFPlugin
 from .utils import csv_converter, open_file, RepeatedTimer, update_performances, set_affinity, validate_flows_per_file
 from .utils import create_csv_file_path, NFEvent, process_unify
@@ -100,13 +101,15 @@ class NFStreamer(object):
             value = str(os.fspath(value))
         except TypeError:
             raise ValueError("Please specify a pcap file path or a valid network interface name as source.")
-        available_interfaces = net_if_addrs().keys()
-        if value in available_interfaces:
-            self._mode = 1
-        elif (".pcap" in value[-5:] or ".pcapng" in value[-7:]) and isfile(value):
+        if (".pcap" in value[-5:] or ".pcapng" in value[-7:]) and isfile(value):
             self._mode = 0
         else:
-            raise ValueError("Please specify a pcap file path or a valid network interface name as source.")
+            interface = is_interface(value, NFStreamer.is_windows)
+            if interface is not None:
+                self._mode = 1
+                value = interface
+            else:
+                raise ValueError("Please specify a pcap file path or a valid network interface name as source.")
         self._source = value
 
     @property

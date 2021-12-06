@@ -14,6 +14,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from os.path import abspath, dirname
+from psutil import net_if_addrs
 import cffi
 
 ENGINE_PATH = dirname(abspath(__file__)) + '/engine_cc.so'
@@ -44,6 +45,26 @@ struct bpf_program {
   unsigned int bf_len;
   struct bpf_insn *bf_insns;
 };
+
+struct pcap_addr {
+  struct pcap_addr *next;
+  struct sockaddr *addr;
+  struct sockaddr *netmask;
+  struct sockaddr *broadaddr;
+  struct sockaddr *dstaddr;
+};
+
+typedef struct pcap_addr pcap_addr_t;
+
+struct pcap_if {
+  struct pcap_if *next;
+  char *name;
+  char *description;
+  pcap_addr_t *addresses;
+  int flags;
+};
+
+typedef struct pcap_if pcap_if_t;
 
 struct pcap_pkthdr {
   long tv_sec;
@@ -812,6 +833,8 @@ typedef struct nf_flow {
 """
 
 cc_capture_apis = """
+int pcap_findalldevs(pcap_if_t **, char *);
+void pcap_freealldevs(pcap_if_t *);
 pcap_t * capture_open(const uint8_t * pcap_file, int mode, char * child_error);
 int capture_set_fanout(pcap_t * pcap_handle, int mode, char * child_error, int group_id);
 int capture_set_timeout(pcap_t * pcap_handle, int mode, char * child_error);
@@ -911,6 +934,47 @@ def setup_capture_unix(ffi, lib, source, snaplen, promisc, mode, error_child, gr
     if snaplen_set_failed:
         return
     return capture
+
+
+def discover_iterfaces():
+    """ Interfaces discovery utility for windows """
+    interfaces = {}
+    ffi = cffi.FFI()
+    try:
+        npcap = ffi.dlopen(NPCAP_PATH)
+    except OSError:
+        return interfaces
+    ffi.cdef(cc_capture_headers)
+    ffi.cdef(cc_capture_apis)
+    ppintf = ffi.new("pcap_if_t * *")
+    errbuf = ffi.new("char []", 128)
+    rv = npcap.pcap_findalldevs(ppintf, errbuf)
+    if rv:
+        return interfaces
+    pintf = ppintf[0]
+    tmp = pintf
+    while tmp != ffi.NULL:
+        name = ffi.string(tmp.name).decode('ascii', 'ignore')
+        if tmp.description != ffi.NULL:
+            interfaces[name] = ffi.string(tmp.description).decode('ascii', 'ignore')
+        else:
+            interfaces[name] = ""
+        tmp = tmp.next
+    npcap.pcap_freealldevs(pintf)
+    ffi.dlclose(npcap)
+    return interfaces
+
+def is_interface(val, is_windows):
+    """ Check if val is a valid interface name and return it if true else None """
+    # On windows if the user give a description instead of network device name, we comply with it.
+    if is_windows:
+        interfaces_map = discover_iterfaces()
+    else:
+        interfaces_map = dict.fromkeys(net_if_addrs().keys(), "")
+    for k, v in interfaces_map.items():
+        if val == k or val == v:
+            return k
+    return None
 
 
 def setup_capture_windows(ffi, npcap, source, snaplen, promisc, mode, error_child):
