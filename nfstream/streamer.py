@@ -62,7 +62,7 @@ class NFStreamer(object):
                  n_meters=0,
                  performance_report=0,
                  system_visibility_mode=0,
-                 system_visibility_poll_ms=0,
+                 system_visibility_poll_ms=100,
                  system_visibility_extension_port=28314):
         with NFStreamer.glock:
             NFStreamer.streamer_id += 1
