@@ -86,14 +86,16 @@ def meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, n_dissectio
 def get_flow_key(src_ip, src_port, dst_ip, dst_port, protocol, vlan_id, tunnel_id):
     """ Create a consistent direction agnostic flow key """
     if src_ip < dst_ip:
-        return FLOW_KEY.format(src_ip, src_port, dst_ip, dst_port, protocol, vlan_id, tunnel_id)
-    if src_ip == dst_ip:
-        if src_port <= dst_port:
-            return FLOW_KEY.format(src_ip, src_port, dst_ip, dst_port, protocol, vlan_id, tunnel_id)
-        if src_port > dst_port:
-            return FLOW_KEY.format(dst_ip, dst_port, src_ip, src_port, protocol, vlan_id, tunnel_id)
-    if src_ip > dst_ip:
-        return FLOW_KEY.format(dst_ip, dst_port, src_ip, src_port, protocol, vlan_id, tunnel_id)
+        key = FLOW_KEY.format(src_ip, src_port, dst_ip, dst_port, protocol, vlan_id, tunnel_id)
+    else:
+        if src_ip == dst_ip:
+            if src_port <= dst_port:
+                key = FLOW_KEY.format(src_ip, src_port, dst_ip, dst_port, protocol, vlan_id, tunnel_id)
+            else:
+                key = FLOW_KEY.format(dst_ip, dst_port, src_ip, src_port, protocol, vlan_id, tunnel_id)
+        else:
+            key = FLOW_KEY.format(dst_ip, dst_port, src_ip, src_port, protocol, vlan_id, tunnel_id)
+    return key
 
 
 def get_flow_key_from_pkt(packet, ffi):
