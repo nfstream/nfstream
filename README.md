@@ -145,7 +145,7 @@ pip install nfstream
 ```
 
 > **Windows Notes**: NFStream does not include capture drivers on Windows. It is required to install 
-> [Npcap drivers](https://nmap.org/npcap/dist/npcap-1.55.exe) before installing NFStream.
+> [Npcap drivers](https://npcap.org) before installing NFStream.
 > If Wireshark is already installed on Windows, then Npcap drivers are already installed.
 
 ## How to use it?
@@ -509,9 +509,9 @@ The following organizations are supporting NFStream:
 * [**Technical University of Košice**](https://www.tuke.sk/): Hardware and infrastructure for datasets generation and 
 storage.
 * [**ntop**](https://www.ntop.org/): Technical support of nDPI integration.
-* [**Insecure.Org**](https://insecure.org/): Technical support of Npcap integration (Windows CI).
+* [**The Nmap Project**](https://nmap.org): Technical support of [**Npcap**](https://npcap.org) integration (Windows CI).
 
-[![sah]](https://www.softathome.com/) [![tuke]](https://www.tuke.sk/) [![ntop]](https://www.ntop.org/) [![insecure]](https://insecure.org/)
+[![sah]](https://www.softathome.com/) [![tuke]](https://www.tuke.sk/) [![ntop]](https://www.ntop.org/) [![nmap]](https://nmap.org/)
 
 ## Publications that use NFStream
 
@@ -542,7 +542,7 @@ This project is licensed under the LGPLv3 License - see the [**License**][licens
 [sah]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/sah_logo.png?raw=true
 [tuke]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/tuke_logo.png?raw=true
 [ntop]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/ntop_logo.png?raw=true
-[insecure]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/insecure_logo.png?raw=true
+[nmap]:https://raw.githubusercontent.com/nfstream/nfstream/master/assets/nmap_logo.png?raw=true
 [l]:https://github.com/ryanoasis/nerd-fonts/wiki/screenshots/v1.0.x/linux-pass-sm.png
 [m]:https://github.com/ryanoasis/nerd-fonts/wiki/screenshots/v1.0.x/mac-pass-sm.png
 [w]:https://github.com/ryanoasis/nerd-fonts/wiki/screenshots/v1.0.x/windows-pass-sm.png
