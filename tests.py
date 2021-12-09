@@ -123,6 +123,33 @@ class TestMethods(unittest.TestCase):
                            n_dissections=x)
         print("{}\t: {}".format(".Test n_dissections parameter".ljust(60, ' '), colored('OK', 'green')))
 
+    def test_system_visibility_mode_parameter(self):
+        print("\n----------------------------------------------------------------------")
+        system_visibility_mode = ["yes", -1, 3]
+        for x in system_visibility_mode:
+            with self.assertRaises(ValueError):
+                NFStreamer(source=os.path.join("tests", "pcaps", "google_ssl.pcap"),
+                           system_visibility_mode=x)
+        print("{}\t: {}".format(".Test system_visibility_mode parameter".ljust(60, ' '), colored('OK', 'green')))
+
+    def test_system_visibility_extension_port(self):
+        print("\n----------------------------------------------------------------------")
+        system_visibility_mode = ["yes", -1, 88888]
+        for x in system_visibility_mode:
+            with self.assertRaises(ValueError):
+                NFStreamer(source=os.path.join("tests", "pcaps", "google_ssl.pcap"),
+                           system_visibility_extension_port=x)
+        print("{}\t: {}".format(".Test system_visibility_extension_port parameter".ljust(60, ' '), colored('OK', 'green')))
+
+    def test_system_visibility_poll_ms(self):
+        print("\n----------------------------------------------------------------------")
+        system_visibility_mode = ["yes", -1]
+        for x in system_visibility_mode:
+            with self.assertRaises(ValueError):
+                NFStreamer(source=os.path.join("tests", "pcaps", "google_ssl.pcap"),
+                           system_visibility_poll_ms=x)
+        print("{}\t: {}".format(".Test system_visibility_poll_ms parameter".ljust(60, ' '), colored('OK', 'green')))
+
     def test_statistical_analysis_parameter(self):
         print("\n----------------------------------------------------------------------")
         statistical_analysis = ["yes", 89]

@@ -321,7 +321,7 @@ class NFStreamer(object):
 
     @system_visibility_extension_port.setter
     def system_visibility_extension_port(self, value):
-        if isinstance(value, int) and value >= 0:
+        if isinstance(value, int) and (0 <= value <= 65525):
             pass
         else:
             raise ValueError("Please specify a valid system_visibility_extension_port parameter "

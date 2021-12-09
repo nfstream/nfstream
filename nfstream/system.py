@@ -203,7 +203,7 @@ def get_conn_key(c):
         if c.type == SocketKind.SOCK_STREAM:  # TCP protocol
             return get_flow_key(c.laddr.ip, c.laddr.port, c.raddr.ip, c.raddr.port, 6, 0, 0)
         if c.type == SocketKind.SOCK_DGRAM:  # UDP protocol
-            get_flow_key(c.laddr.ip, c.laddr.port, c.raddr.ip, c.raddr.port, 17, 0, 0)
+            return get_flow_key(c.laddr.ip, c.laddr.port, c.raddr.ip, c.raddr.port, 17, 0, 0)
         return get_flow_key(c.laddr.ip, c.laddr.port, c.raddr.ip, c.raddr.port, 0, 0, 0)
     return None
 

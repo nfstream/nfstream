@@ -615,8 +615,8 @@ struct ndpi_flow_struct {
   uint8_t l4_proto, protocol_id_already_guessed:1, host_already_guessed:1, fail_with_unknown:1,
   init_finished:1, setup_packet_direction:1, packet_direction:1, check_extra_packets:1, is_ipv6:1;
   uint32_t next_tcp_seq_nr[2];
-  uint32_t saddr;
-  uint32_t daddr;
+  uint32_t saddr, daddr;
+  uint16_t sport, dport;
   uint8_t max_extra_packets_to_check;
   uint8_t num_extra_packets_checked;
   uint16_t num_processed_pkts; /* <= WARNING it can wrap but we do expect people to giveup earlier */
