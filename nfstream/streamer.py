@@ -248,7 +248,7 @@ class NFStreamer(object):
         else:
             raise ValueError("Please specify a valid n_meters parameter (>=1 or 0 for auto scaling).")
         c_cpus, c_cores = cpu_count(logical=True), cpu_count(logical=False)
-        if not c_cores:  # Patch for platforms returning None (https://github.com/giampaolo/psutil/issues/1078)
+        if c_cores is None:  # Patch for platforms returning None (https://github.com/giampaolo/psutil/issues/1078)
             c_cores = 1
         if value == 0:
             if platform.system() == "Linux" and self._mode == 1:
