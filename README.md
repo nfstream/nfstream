@@ -126,7 +126,7 @@ across experiments.
 It allows NFStream to perform [**reliable**][reliable] encrypted applications identification and metadata 
 fingerprinting (e.g. TLS, SSH, DHCP, HTTP).
 * **System visibility:** NFStream provides system visibility that enables mapping a monitored network flow to its  
-generating process (pid and name).
+generating process information.
 * **Statistical features extraction:** NFStream provides state of the art of flow-based statistical feature extraction. 
 It includes both post-mortem statistical features (e.g. min, mean, stddev and max of packet size and inter arrival time) 
 and early flow features (e.g. sequence of first n packets sizes, inter arrival times and
@@ -276,7 +276,7 @@ NFlow(id=0,
       dst2src_duration_ms=1654,
       dst2src_packets=76,
       dst2src_bytes=421986,
-      # The Process (PID and Name) that generated this flow. 
+      # The process that generated this reported flow. 
       system_process_pid=14596,
       system_process_name='FortniteClient-Win64-Shipping.exe')
  ```
