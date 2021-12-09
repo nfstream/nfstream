@@ -1,7 +1,7 @@
 ![NFStream Logo](https://raw.githubusercontent.com/nfstream/nfstream/master/assets/nfstream_header_logo.png?raw=true)
 
 --------------------------------------------------------------------------------
-[**NFStream**][repo] is a Python framework providing fast, flexible, and expressive data structures designed to make 
+[**NFStream**][repo] is a multiplatform Python framework providing fast, flexible, and expressive data structures designed to make 
 working with **online** or **offline** network data both easy and intuitive. It aims to be the fundamental high-level 
 building block for doing practical, **real world** network data analysis in Python. Additionally, it has the broader 
 goal of becoming **a common network data analytics framework for researchers** providing data reproducibility 
@@ -125,6 +125,8 @@ across experiments.
 * **Encrypted layer-7 visibility:** NFStream deep packet inspection is based on [**nDPI**][ndpi]. 
 It allows NFStream to perform [**reliable**][reliable] encrypted applications identification and metadata 
 fingerprinting (e.g. TLS, SSH, DHCP, HTTP).
+* * **System visibility:** NFStream provides system visibility that enables mapping a monitored network flow to its  
+generating process (pid and name).
 * **Statistical features extraction:** NFStream provides state of the art of flow-based statistical feature extraction. 
 It includes both post-mortem statistical features (e.g. min, mean, stddev and max of packet size and inter arrival time) 
 and early flow features (e.g. sequence of first n packets sizes, inter arrival times and
@@ -145,7 +147,7 @@ pip install nfstream
 ```
 
 > **Windows Notes**: NFStream does not include capture drivers on Windows. It is required to install 
-> [Npcap drivers](https://npcap.org) before installing NFStream.
+> [Npcap drivers][npcap] before installing NFStream.
 > If Wireshark is already installed on Windows, then Npcap drivers are already installed.
 
 ## How to use it?
@@ -173,7 +175,10 @@ my_streamer = NFStreamer(source="facebook.pcap", # or network interface
                          statistical_analysis=False,
                          splt_analysis=0,
                          n_meters=0,
-                         performance_report=0)
+                         performance_report=0,
+                         system_visibility_mode=0,
+                         system_visibility_poll_ms=100,
+                         system_visibility_extension_port=28314)
                          
 for flow in my_streamer:
     print(flow)  # print it.
@@ -219,6 +224,61 @@ NFlow(id=0,
       server_fingerprint='2d1eb5817ece335c24904f516ad5da12',
       user_agent='',
       content_type='')
+ ```
+
+### System Visibility
+
+NFstream enables system visibility mapping each monitored network flow with the process that opened the network socket 
+carrying the flow's packets. System visibility can be enabled only on live capture mode. 
+
+
+```python
+from nfstream import NFStreamer
+my_streamer = NFStreamer(source="Intel(R) Wi-Fi 6 AX200 160MHz",
+                         # Disable L7 dissection for readability purpose.
+                         n_dissections=0,
+                         system_visibility_poll_ms=100,
+                         system_visibility_mode=1)
+                         
+for flow in my_streamer:
+    print(flow)  # print it.
+```
+
+```python
+# See documentation for each feature detailed description.
+# https://www.nfstream.org/docs/api#nflow
+NFlow(id=0,
+      expiration_id=0,
+      src_ip='192.168.43.18',
+      src_mac='30:52:cb:6c:9c:1b',
+      src_oui='30:52:cb',
+      src_port=59339,
+      dst_ip='184.73.244.37',
+      dst_mac='98:0c:82:d3:3c:7c',
+      dst_oui='98:0c:82',
+      dst_port=443,
+      protocol=6,
+      ip_version=4,
+      vlan_id=0,
+      tunnel_id=0,
+      bidirectional_first_seen_ms=1638966705265,
+      bidirectional_last_seen_ms=1638966706999,
+      bidirectional_duration_ms=1734,
+      bidirectional_packets=98,
+      bidirectional_bytes=424464,
+      src2dst_first_seen_ms=1638966705265,
+      src2dst_last_seen_ms=1638966706999,
+      src2dst_duration_ms=1734,
+      src2dst_packets=22,
+      src2dst_bytes=2478,
+      dst2src_first_seen_ms=1638966705345,
+      dst2src_last_seen_ms=1638966706999,
+      dst2src_duration_ms=1654,
+      dst2src_packets=76,
+      dst2src_bytes=421986,
+      # The Process (PID and Name) that generated this flow. 
+      system_process_pid=14596,
+      system_process_name='FortniteClient-Win64-Shipping.exe')
  ```
 
 ### Post-mortem statistical flow features extraction
@@ -325,10 +385,8 @@ literature). It is summarized as a sequence a these packets directions, sizes an
 ```python
 from nfstream import NFStreamer
 my_streamer = NFStreamer(source="facebook.pcap",
-                         # We disable both l7 dissection and statistical analysis
-                         # for readability purpose.
+                         # We disable l7 dissection for readability purpose.
                          n_dissections=0,
-                         statistical_analysis=False,
                          splt_analysis=10)
 for flow in my_streamer:
     print(flow)
@@ -508,8 +566,8 @@ The following organizations are supporting NFStream:
 * [**SoftAtHome**](https://www.softathome.com/): Main supporter of NFStream development.
 * [**Technical University of Košice**](https://www.tuke.sk/): Hardware and infrastructure for datasets generation and 
 storage.
-* [**ntop**](https://www.ntop.org/): Technical support of nDPI integration.
-* [**The Nmap Project**](https://nmap.org): Technical support of [**Npcap**](https://npcap.org) integration (Windows CI).
+* [**ntop**](https://www.ntop.org/): Technical support of [**nDPI**][ndpi] integration.
+* [**The Nmap Project**](https://nmap.org): Technical support of [**Npcap**][npcap] integration (Windows CI).
 
 [![sah]](https://www.softathome.com/) [![tuke]](https://www.tuke.sk/) [![ntop]](https://www.ntop.org/) [![nmap]](https://nmap.org/)
 
@@ -533,6 +591,7 @@ This project is licensed under the LGPLv3 License - see the [**License**][licens
 [contributors]: https://github.com/nfstream/nfstream/graphs/contributors
 [documentation]: https://nfstream.org/
 [ndpi]: https://github.com/ntop/nDPI
+[npcap]: https://npcap.org
 [nfplugin]: https://nfstream.org/docs/api#nfplugin
 [reliable]: http://people.ac.upc.edu/pbarlet/papers/ground-truth.pam2014.pdf
 [repo]: https://nfstream.org/
