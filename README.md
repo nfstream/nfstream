@@ -125,7 +125,7 @@ across experiments.
 * **Encrypted layer-7 visibility:** NFStream deep packet inspection is based on [**nDPI**][ndpi]. 
 It allows NFStream to perform [**reliable**][reliable] encrypted applications identification and metadata 
 fingerprinting (e.g. TLS, SSH, DHCP, HTTP).
-* * **System visibility:** NFStream provides system visibility that enables mapping a monitored network flow to its  
+* **System visibility:** NFStream provides system visibility that enables mapping a monitored network flow to its  
 generating process (pid and name).
 * **Statistical features extraction:** NFStream provides state of the art of flow-based statistical feature extraction. 
 It includes both post-mortem statistical features (e.g. min, mean, stddev and max of packet size and inter arrival time) 
