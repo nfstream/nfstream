@@ -56,7 +56,7 @@ class BuildPyCommand(build_py):
 
 class BuildNativeCommand(build_ext):
     def run(self):
-        if os.name != 'posix':  # Windows case
+        if os.name != 'posix':  # Windows case, handle it manually.
             pass
         else:
             setup_engine_cc()
@@ -124,7 +124,7 @@ setup(
     setup_requires=pytest_runner,
     tests_require=['pytest>=5.0.1'],
     include_package_data=True,
-    platforms=["Linux", "Mac OS-X", "Unix"],
+    platforms=["Linux", "Mac OS-X", "Windows", "Unix"],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)',
@@ -134,6 +134,7 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Topic :: Scientific/Engineering :: Artificial Intelligence'
     ],
     project_urls={
