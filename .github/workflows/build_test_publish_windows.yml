@@ -35,7 +35,8 @@ jobs:
       uses: msys2/setup-msys2@v2
       with:
         msystem: MINGW64
-        update: true
+        release: false
+        update: false
         install: git mingw-w64-x86_64-toolchain automake1.16 automake-wrapper autoconf libtool make mingw-w64-x86_64-json-c
 
     - name: Print Python version
