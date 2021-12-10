@@ -44,10 +44,10 @@ across experiments.
 <tr>
   <td><b>Supported Versions</b></td>
   <td>
-    <a href="https://github.com/nfstream/nfstream/actions?query=workflow%3Abuild">
+    <a href="https://pypi.org/project/nfstream/">
     <img src="https://img.shields.io/pypi/pyversions/nfstream?logo=python&style=for-the-badge" alt="python3" />
     </a>
-    <a href="https://github.com/nfstream/nfstream/actions?query=workflow%3Abuild">
+    <a href="https://pypi.org/project/nfstream/">
     <img src="https://img.shields.io/badge/pypy-3.6%20%7C%203.7-blue?logo=pypy&style=for-the-badge" alt="pypy3" />
     </a>
   </td>
@@ -101,6 +101,7 @@ across experiments.
    * [**How to get it?**](#how-to-get-it)
    * [**How to use it?**](#how-to-use-it)
       * [**Encrypted application identification and metadata extraction**](#encrypted-application-identification-and-metadata-extraction)
+      * [**System visibility**](#system-visibility)
       * [**Post-mortem statistical flow features extraction**](#post-mortem-statistical-flow-features-extraction)
       * [**Early statistical flow features extraction**](#early-statistical-flow-features-extraction)
       * [**Pandas export interface**](#pandas-export-interface)
@@ -226,7 +227,7 @@ NFlow(id=0,
       content_type='')
  ```
 
-### System Visibility
+### System visibility
 
 NFstream enables system visibility mapping each monitored network flow with the process that opened the network socket 
 carrying the flow's packets. System visibility can be enabled only on live capture mode. 
