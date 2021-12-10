@@ -126,8 +126,8 @@ across experiments.
 * **Encrypted layer-7 visibility:** NFStream deep packet inspection is based on [**nDPI**][ndpi]. 
 It allows NFStream to perform [**reliable**][reliable] encrypted applications identification and metadata 
 fingerprinting (e.g. TLS, SSH, DHCP, HTTP).
-* **System visibility:** NFStream provides system visibility that enables mapping a monitored network flow to its  
-generating process information.
+* **System visibility:** NFStream probes the monitored system's kernel to obtain information on open Internet sockets 
+and collects guaranteed ground-truth (process name, PID, etc.) at the application level.
 * **Statistical features extraction:** NFStream provides state of the art of flow-based statistical feature extraction. 
 It includes both post-mortem statistical features (e.g. min, mean, stddev and max of packet size and inter arrival time) 
 and early flow features (e.g. sequence of first n packets sizes, inter arrival times and
@@ -229,14 +229,13 @@ NFlow(id=0,
 
 ### System visibility
 
-NFstream enables system visibility mapping each monitored network flow with the process that opened the network socket 
-carrying the flow's packets. System visibility can be enabled only on live capture mode. 
-
+NFStream probes the monitored system's kernel to obtain information on open Internet sockets and collects guaranteed 
+ground-truth (process name, PID, etc.) at the application level.
 
 ```python
 from nfstream import NFStreamer
-my_streamer = NFStreamer(source="Intel(R) Wi-Fi 6 AX200 160MHz",
-                         # Disable L7 dissection for readability purpose.
+my_streamer = NFStreamer(source="eth0", # System visibility available only for live capture mode. 
+                         # Disable L7 dissection for readability purpose only.
                          n_dissections=0,
                          system_visibility_poll_ms=100,
                          system_visibility_mode=1)
