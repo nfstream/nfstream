@@ -234,7 +234,7 @@ ground-truth (process name, PID, etc.) at the application level.
 
 ```python
 from nfstream import NFStreamer
-my_streamer = NFStreamer(source="eth0", # System visibility available only for live capture mode. 
+my_streamer = NFStreamer(source="Intel(R) Wi-Fi 6 AX200 160MHz", # Live capture mode. 
                          # Disable L7 dissection for readability purpose only.
                          n_dissections=0,
                          system_visibility_poll_ms=100,
