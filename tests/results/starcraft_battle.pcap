@@ -11,7 +11,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 9,13,902,Starcraft,Game,1
 10,2,121,Google,Web,1
 11,11,4984,SSDP,System,0
-12,9,1299,HTTP.Google,Web,0
+12,9,1299,HTTP.Google,Advertisement,0
 13,4,442,DNS,Network,0
 14,179,134204,HTTP,Download,0
 15,9,880,HTTP.WorldOfWarcraft,Game,0

@@ -34,5 +34,5 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 32,2,172,TLS,Web,1
 33,2,172,TLS,Web,1
 34,52,31466,TLS.Pinterest,SocialNetwork,0
-35,61,30111,TLS.Google,Web,0
+35,61,30111,TLS.Google,Advertisement,0
 36,48,23075,TLS,Media,0

@@ -29,7 +29,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 27,16,5913,TLS.Google,ConnCheck,0
 28,2,174,DNS,Network,0
 29,2,168,DNS.GoogleServices,Web,0
-30,20,6730,TLS.Google,Web,0
+30,20,6730,TLS.Google,Advertisement,0
 31,2,148,Google,Web,1
 32,2,188,DNS.PlayStore,SoftwareUpdate,0
 33,21,8026,TLS.PlayStore,SoftwareUpdate,0

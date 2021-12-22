@@ -20,8 +20,8 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 18,2,264,DNS.Sina(Weibo),SocialNetwork,0
 19,2,240,DNS.Sina(Weibo),SocialNetwork,0
 20,2,234,DNS,Network,0
-21,2,243,DNS,Network,0
-22,2,186,DNS,Network,0
+21,2,243,DNS.Alibaba,Web,0
+22,2,186,DNS.Alibaba,Web,0
 23,2,242,DNS,Network,0
 24,13,4701,HTTP.Sina(Weibo),SocialNetwork,0
 25,53,36468,HTTP.Sina(Weibo),SocialNetwork,0
@@ -32,7 +32,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 30,1,70,DNS.Sina(Weibo),SocialNetwork,0
 31,5,744,HTTP.Sina(Weibo),SocialNetwork,0
 32,1,74,DNS.Sina(Weibo),SocialNetwork,0
-33,4,448,TLS,Web,0
+33,4,448,TLS.Alibaba,Web,0
 34,1,74,TLS,Web,1
 35,1,74,TLS,Web,1
 36,1,74,HTTP,Web,1

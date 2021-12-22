@@ -1,7 +1,7 @@
 id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
 0,58,9345,Viber,VoIP,1
 1,2,281,DNS.Facebook,SocialNetwork,0
-2,2,377,DNS,Network,0
+2,2,377,DNS,Advertisement,0
 3,2,451,DNS,Network,0
 4,22,7849,TLS.AmazonAWS,Cloud,0
 5,22,7625,TLS.AmazonAWS,Cloud,0

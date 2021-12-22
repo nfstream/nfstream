@@ -4,7 +4,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 2,34,11142,TLS.Tor,VPN,0
 3,1576,1388792,TLS.Tor,VPN,0
 4,1,252,NetBIOS.SMBv1,System,0
-5,1,60,TLS,Web,1
+5,1,60,TLS.Azure,Cloud,1
 6,34,12292,TLS.Tor,VPN,0
 7,6,1116,Dropbox,Cloud,0
 8,32,10431,TLS,Web,0

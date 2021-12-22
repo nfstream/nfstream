@@ -23,7 +23,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 21,18,7207,TLS.Webex,VoIP,0
 22,17,8401,TLS.Webex,VoIP,0
 23,22,15356,SIP,VoIP,0
-24,17,6375,TLS.Google,Web,0
+24,17,6375,TLS.Google,Advertisement,0
 25,11,697,TLS.Webex,VoIP,0
 26,11,697,TLS.Webex,VoIP,0
 27,11,697,TLS.Webex,VoIP,0

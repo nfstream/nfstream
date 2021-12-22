@@ -10,7 +10,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 8,326,213841,TLS,Web,1
 9,50,24026,TLS,Web,0
 10,12,1628,TLS,Web,0
-11,35,12189,TLS,Web,0
+11,35,12189,TLS,Advertisement,0
 12,31,9933,TLS.Yahoo,Web,0
 13,21017,21867264,TLS,Web,1
 14,28,3779,TLS,Web,1
@@ -43,6 +43,6 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 41,13,1525,TLS,Web,1
 42,107,85437,TLS.Google,Web,0
 43,63,44980,TLS.GoogleServices,Web,0
-44,19,4933,TLS,Web,0
+44,19,4933,TLS,Advertisement,0
 45,2,172,TLS,Web,1
 46,2,172,TLS,Web,1

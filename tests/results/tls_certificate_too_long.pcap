@@ -1,5 +1,5 @@
 id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
-0,2,108,TLS,Web,1
+0,2,108,TLS.Azure,Cloud,1
 1,13,5582,Unknown,Unspecified,1
 2,16,1852,DNS.Google,Web,0
 3,2,280,MDNS,Network,0
