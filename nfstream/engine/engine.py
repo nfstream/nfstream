@@ -228,6 +228,7 @@ typedef enum {
   NDPI_DNS_LARGE_PACKET,
   NDPI_DNS_FRAGMENTED,
   NDPI_INVALID_CHARACTERS,
+  NDPI_POSSIBLE_EXPLOIT,
   NDPI_MAX_RISK
 } ndpi_risk_enum;
 
@@ -296,8 +297,6 @@ struct ndpi_id_struct {
   uint32_t last_time_port_used[NDPI_PROTOCOL_IRC_MAXPORT];
   uint32_t irc_ts;
   uint32_t gnutella_ts;
-  uint32_t thunder_ts;
-  uint32_t zattoo_ts;
   uint32_t jabber_stun_or_ft_ts;
   uint32_t directconnect_last_safe_access_time;
   uint16_t detected_directconnect_port;
@@ -313,16 +312,19 @@ struct ndpi_id_struct {
 
 typedef struct message {
   uint8_t *buffer;
-  unsigned buffer_len, buffer_used, max_expected;
+  unsigned buffer_len, buffer_used;
   uint32_t next_seq[2];
 } message_t;
     
 struct ndpi_flow_tcp_struct {
+  struct {
+    uint8_t auth_found:1, auth_failed:1, auth_tls:1, auth_done:1, _pad:4;
+    char username[32], password[16];
+  } ftp_imap_pop_smtp;
   uint16_t smtp_command_bitmask;
   uint16_t pop_command_bitmask;
   uint8_t wa_matched_so_far;
   uint8_t irc_stage;
-  uint8_t irc_port;
   uint8_t h323_valid_packets;
   uint8_t gnutella_msg_id[3];
   uint32_t irc_3a_counter:3;
@@ -578,9 +580,6 @@ struct ndpi_detection_module_struct {
   void *protocols_ptree;
   uint32_t irc_timeout;
   uint32_t gnutella_timeout;
-  uint32_t thunder_timeout;
-  uint32_t orb_rstp_ts_timeout;
-  uint32_t zattoo_connection_timeout;
   uint32_t jabber_stun_timeout;
   uint32_t jabber_file_transfer_timeout;
   uint8_t ip_version_limit;
@@ -635,12 +634,11 @@ struct ndpi_flow_struct {
   ndpi_risk risk; /* Issues found with this flow [bitmask of ndpi_risk] */
   struct {
     ndpi_http_method method;
-    char *url, *content_type /* response */, *request_content_type /* e.g. for POST */, *user_agent;
-    uint8_t num_request_headers, num_response_headers;
-    uint8_t request_version; /* 0=1.0 and 1=1.1. Create an enum for this? */
-    uint16_t response_status_code; /* 200, 404, etc. */
-    uint8_t detected_os[32]; /* Via HTTP/QUIC User-Agent */
-    uint8_t nat_ip[24]; /* Via HTTP X-Forwarded-For */
+    uint8_t request_version;
+    uint16_t response_status_code;
+    char *url, *content_type, *request_content_type, *user_agent;
+    char *detected_os;
+    char *nat_ip;
   } http;
   struct {    
     char *pktbuf;
@@ -650,13 +648,6 @@ struct ndpi_flow_struct {
     uint8_t num_udp_pkts, num_binding_requests;
     uint16_t num_processed_pkts;
   } stun;
-  struct {
-    uint8_t auth_found:1, auth_failed:1, auth_tls:1, auth_done:1, _pad:4;
-    uint8_t username[32], password[16];
-  } ftp_imap_pop_smtp;
-  struct {
-    uint8_t bt_check_performed;
-  } bittorrent;
   union {
     struct {
       uint8_t num_queries, num_answers, reply_code, is_query;
@@ -671,8 +662,6 @@ struct ndpi_flow_struct {
       char hostname[48], domain[48], username[48];
     } kerberos;
     struct {
-      char ssl_version_str[12];
-      uint16_t ssl_version, server_names_len;
       char *server_names, *alpn, *tls_supported_versions, *issuerDN, *subjectDN;
       uint32_t notBefore, notAfter;
       char ja3_client[33], ja3_server[33];
@@ -680,6 +669,7 @@ struct ndpi_flow_struct {
       uint8_t sha1_certificate_fingerprint[20];
       uint8_t hello_processed:1, subprotocol_detected:1, _pad:6;
       struct tls_heuristics browser_heuristics;
+      uint16_t ssl_version, server_names_len;
       struct {
         uint16_t cipher_suite;
         char *esni;
@@ -716,6 +706,7 @@ struct ndpi_flow_struct {
   uint16_t packet_direction_counter[2];
   uint16_t byte_counter[2];
   uint8_t bittorrent_stage;
+  uint8_t bt_check_performed:1;
   uint8_t directconnect_stage:2;
   uint8_t http_detected:1;
   uint8_t rtsprdt_stage:2;
