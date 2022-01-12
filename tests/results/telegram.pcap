@@ -23,7 +23,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 21,21,2338,Telegram,Chat,0
 22,20,2200,Telegram,Chat,0
 23,20,2200,Telegram,Chat,0
-24,301,72194,Unknown,Unspecified,1
+24,301,72194,Unknown,Unspecified,0
 25,2,212,OpenVPN,VPN,0
 26,2,186,DNS.GoogleServices,Web,0
 27,1,397,DHCP,Network,0
@@ -42,7 +42,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 40,24,2656,Telegram,Chat,0
 41,25,2794,Telegram,Chat,0
 42,4,864,SSDP,System,0
-43,3,302,Unknown,Unspecified,1
+43,3,302,Unknown,Unspecified,0
 44,2,336,SSDP,System,0
 45,4,672,SSDP,System,0
 46,2,204,DNS.Dropbox,Cloud,0

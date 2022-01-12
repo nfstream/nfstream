@@ -6,4 +6,4 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 4,4,358,MongoDB,Database,0
 5,4,569,MongoDB,Database,0
 6,4,373,MongoDB,Database,0
-7,3,230,Unknown,Unspecified,1
+7,3,230,Unknown,Unspecified,0

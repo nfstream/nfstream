@@ -5,7 +5,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 3,3,2067,MDNS,Network,0
 4,4,2123,MDNS,Network,0
 5,2,172,Spotify,Music,0
-6,2,120,Unknown,Unspecified,1
+6,2,120,Unknown,Unspecified,0
 7,1,168,SSDP,System,0
 8,1,168,SSDP,System,0
 9,2,684,DHCP,Network,0

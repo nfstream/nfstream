@@ -9,7 +9,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 7,2,625,Kerberos,Network,0
 8,2,539,Kerberos,Network,0
 9,2,387,Kerberos,Network,1
-10,6,2006,Unknown,Unspecified,1
+10,6,2006,Unknown,Unspecified,0
 11,2,560,LDAP,System,1
 12,2,289,Kerberos,Network,1
 13,2,2992,Kerberos,Network,0
@@ -24,7 +24,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 22,2,539,Kerberos,Network,0
 23,2,228,Kerberos,Network,1
 24,2,360,Kerberos,Network,1
-25,3,1025,Unknown,Unspecified,1
+25,3,1025,Unknown,Unspecified,0
 26,2,583,Kerberos,Network,0
 27,2,585,Kerberos,Network,0
 28,2,215,Kerberos,Network,1

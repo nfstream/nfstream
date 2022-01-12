@@ -252,14 +252,6 @@ typedef struct ndpi_protocol_bitmask_struct {
   ndpi_ndpi_mask fds_bits[16];
 } NDPI_PROTOCOL_BITMASK;
 
-typedef struct spinlock {
-  volatile int    val;
-} spinlock_t;
-
-typedef struct atomic {
-  volatile int counter;
-} atomic_t;
-
 typedef long int time_t;
 
 typedef enum {
@@ -426,14 +418,10 @@ struct ndpi_packet_struct {
   struct ndpi_int_one_line_struct http_response;
   uint8_t http_num_headers;
   uint16_t l3_packet_len;
-  uint16_t l4_packet_len;
   uint16_t payload_packet_len;
-  uint16_t actual_payload_len;
-  uint16_t num_retried_bytes;
   uint16_t parsed_lines;
   uint16_t empty_line_position;
   uint8_t tcp_retransmission;
-  uint8_t l4_protocol;
   uint8_t packet_lines_parsed_complete:1,
   packet_direction:1, empty_line_position_set:1, http_check_content:1, pad:4;
 };
@@ -608,11 +596,22 @@ struct tls_heuristics {
   uint8_t is_safari_tls:1, is_firefox_tls:1, is_chrome_tls:1, notused:5;
 };
 
+typedef enum {
+  NDPI_CONFIDENCE_UNKNOWN = 0,
+  NDPI_CONFIDENCE_MATCH_BY_PORT,
+  NDPI_CONFIDENCE_MATCH_BY_IP,
+  NDPI_CONFIDENCE_DPI_SRC_DST_ID,
+  NDPI_CONFIDENCE_DPI_CACHE,
+  NDPI_CONFIDENCE_DPI,
+  NDPI_CONFIDENCE_MAX,
+} ndpi_confidence_t;
+
 struct ndpi_flow_struct {
   uint16_t detected_protocol_stack[2];
   uint16_t guessed_protocol_id, guessed_host_protocol_id, guessed_category, guessed_header_category;
   uint8_t l4_proto, protocol_id_already_guessed:1, host_already_guessed:1, fail_with_unknown:1,
   init_finished:1, setup_packet_direction:1, packet_direction:1, check_extra_packets:1, is_ipv6:1;
+  uint8_t confidence;
   uint32_t next_tcp_seq_nr[2];
   uint32_t saddr, daddr;
   uint16_t sport, dport;
@@ -819,7 +818,7 @@ typedef struct nf_flow {
   char c_hash[48];
   char s_hash[48];
   char content_type[64];
-  char user_agent[128];
+  char user_agent[256];
   struct ndpi_flow_struct *ndpi_flow;
   struct ndpi_id_struct *ndpi_src;
   struct ndpi_id_struct *ndpi_dst;

@@ -1176,7 +1176,7 @@ typedef struct nf_flow {
   char c_hash[48];
   char s_hash[48];
   char content_type[64];
-  char user_agent[128];
+  char user_agent[256];
   struct ndpi_flow_struct *ndpi_flow;
   struct ndpi_id_struct *ndpi_src;
   struct ndpi_id_struct *ndpi_dst;
