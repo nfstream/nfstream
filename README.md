@@ -135,12 +135,6 @@ publication, we would appreciate citations to the following paper:
 }
 ```
 
-or: 
-
-``` latex
-Aouini, Zied, and Adrian Pekar. "NFStream: A flexible network data analysis framework." Computer Networks (2022): 108719.
-```
-
 ## Main Features
 
 * **Performance:** NFStream is designed to be fast: AF_PACKETV3/FANOUT on Linux, parallel processing, native C 
