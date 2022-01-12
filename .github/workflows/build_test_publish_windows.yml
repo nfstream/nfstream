@@ -49,7 +49,7 @@ jobs:
     - name: Install NPCAP
       run: |
          choco install wget --no-progress
-         wget --user ${{ secrets.NPCAP_OEM_USERNAME }} --password ${{ secrets.NPCAP_OEM_PASSWORD }} https://nmap.org/npcap/oem/dist/npcap-1.60-oem.exe
+         wget --user ${{ secrets.NPCAP_OEM_USERNAME }} --password ${{ secrets.NPCAP_OEM_PASSWORD }} https://npcap.org/oem/dist/npcap-1.60-oem.exe
          Start-Process npcap-1.60-oem.exe -ArgumentList "/loopback_support=yes /winpcap_mode=yes /dot11_support=yes /S" -wait
 
     - name: Build and install libgpg-error
