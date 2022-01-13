@@ -38,7 +38,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 36,12,1158,TLS,Web,1
 37,92,27776,TLS,Web,0
 38,3,198,CiscoVPN,VPN,1
-39,9,594,Unknown,Unspecified,1
+39,9,594,Unknown,Unspecified,0
 40,2,158,DNS,Network,0
 41,2,326,DNS,ConnCheck,0
 42,6,544,TLS.AmazonAWS,Cloud,1
@@ -58,7 +58,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 56,4,864,SSDP,System,0
 57,2441,892497,CiscoVPN,VPN,0
 58,1,556,SSDP,System,0
-59,10,460,Unknown,Unspecified,1
+59,10,460,Unknown,Unspecified,0
 60,4,1412,SSDP,System,0
 61,7,1928,CiscoVPN.HTTP,Web,0
 62,11,2318,HTTP,Web,0

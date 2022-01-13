@@ -1,5 +1,5 @@
 id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
-0,10,786,Unknown,Unspecified,1
+0,10,786,Unknown,Unspecified,0
 1,2,180,NTP,System,0
 2,37,63205,HTTP,Download,0
 3,17,4015,HTTP.Waze,Web,0

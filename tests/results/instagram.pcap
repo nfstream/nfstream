@@ -9,7 +9,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 7,1,324,HTTP.Instagram,SocialNetwork,0
 8,4,580,Dropbox,Cloud,0
 9,1,145,Dropbox,Cloud,0
-10,1,66,Unknown,Unspecified,1
+10,1,66,Unknown,Unspecified,0
 11,12,6044,TLS.Facebook,SocialNetwork,1
 12,10,5299,TLS.Facebook,SocialNetwork,1
 13,5,510,ICMP,Network,0

@@ -23,7 +23,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 21,5,1710,DHCP,Network,0
 22,164,31934,STUN.WhatsAppCall,VoIP,0
 23,16,1376,STUN.WhatsAppCall,VoIP,0
-24,2,120,Unknown,Unspecified,1
+24,2,120,Unknown,Unspecified,0
 25,1,179,SSDP,System,0
 26,1,179,SSDP,System,0
 27,4,280,ICMP,Network,0

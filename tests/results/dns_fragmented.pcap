@@ -1,9 +1,9 @@
 id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
 0,2,1596,DNS.Google,Web,0
 1,2,1630,DNS,Network,0
-2,1,123,Unknown,Unspecified,1
+2,1,123,Unknown,Unspecified,0
 3,2,1631,DNS,Network,0
-4,1,112,Unknown,Unspecified,1
+4,1,112,Unknown,Unspecified,0
 5,2,1615,DNS.Google,Web,0
 6,2,1007,DNS,Network,0
 7,2,1596,DNS.Google,Web,0
@@ -17,7 +17,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 15,2,230,DNS,Network,0
 16,2,268,DNS,Network,0
 17,3,1722,DNS,Network,0
-18,1,368,Unknown,Unspecified,1
+18,1,368,Unknown,Unspecified,0
 19,2,1608,DNS,Network,0
 20,2,240,DNS,Network,0
 21,10,2662,DNS,Network,0

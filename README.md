@@ -118,7 +118,23 @@ across experiments.
       * [**Supporting organizations**](#supporting-organizations)
    * [**Publications that use NFStream**](#publications-that-use-nfstream)
    * [**License**](#license)
-   
+
+## Citation
+
+[**NFStream paper**][doi] is published in [**Computer Networks (COMNET)**][comnet]. If you use NFStream in a scientific 
+publication, we would appreciate citations to the following paper:
+
+``` latex
+@article{aouini2022nfstream,
+  title={NFStream: A flexible network data analysis framework},
+  author={Aouini, Zied and Pekar, Adrian},
+  journal={Computer Networks},
+  pages={108719},
+  year={2022},
+  publisher={Elsevier}
+}
+```
+
 ## Main Features
 
 * **Performance:** NFStream is designed to be fast: AF_PACKETV3/FANOUT on Linux, parallel processing, native C 
@@ -606,3 +622,5 @@ This project is licensed under the LGPLv3 License - see the [**License**][licens
 [m]:https://github.com/ryanoasis/nerd-fonts/wiki/screenshots/v1.0.x/mac-pass-sm.png
 [w]:https://github.com/ryanoasis/nerd-fonts/wiki/screenshots/v1.0.x/windows-pass-sm.png
 [install]: https://www.nfstream.org/docs/#building-nfstream-from-sources
+[doi]: https://doi.org/10.1016/j.comnet.2021.108719
+[comnet]: https://www.sciencedirect.com/journal/computer-networks/vol/204/suppl/C
