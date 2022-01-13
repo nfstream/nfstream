@@ -9,7 +9,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 7,1,46,IGMP,Network,0
 8,2,328,DNS.Microsoft,Cloud,0
 9,2,281,DNS.Microsoft,Cloud,0
-10,2,306,DNS.Microsoft,Cloud,0
+10,2,306,DNS.Azure,Cloud,0
 11,11,5008,TLS.Microsoft,Cloud,0
 12,12,5062,TLS.Microsoft,Cloud,0
 13,2,366,DNS.Microsoft,Cloud,0

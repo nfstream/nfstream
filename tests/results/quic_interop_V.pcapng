@@ -54,13 +54,13 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 52,2,1403,QUIC,Web,0
 53,1,1294,QUIC,Web,0
 54,4,2782,QUIC,Web,0
-55,4,2758,QUIC.Microsoft,Cloud,0
-56,8,10352,QUIC.Microsoft,Cloud,0
+55,4,2758,QUIC.Azure,Cloud,0
+56,8,10352,QUIC.Azure,Cloud,0
 57,8,10352,QUIC,Web,0
 58,1,1294,QUIC,Web,0
 59,1,1294,QUIC,Web,0
 60,1,1294,QUIC,Web,0
-61,8,10352,QUIC.Microsoft,Cloud,0
+61,8,10352,QUIC.Azure,Cloud,0
 62,1,1294,QUIC,Web,0
 63,8,10352,QUIC,Web,0
 64,2,1383,QUIC,Web,0
