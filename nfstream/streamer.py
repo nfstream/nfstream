@@ -101,7 +101,7 @@ class NFStreamer(object):
             value = str(os.fspath(value))
         except TypeError:
             raise ValueError("Please specify a pcap file path or a valid network interface name as source.")
-        if (".pcap" in value[-5:] or ".pcapng" in value[-7:]) and isfile(value):
+        if isfile(value):
             self._mode = 0
         else:
             interface = is_interface(value, NFStreamer.is_windows)
