@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Auini"
+  given-names: "Zied"
+  orcid: "https://orcid.org/0000-0002-0478-7790"
+- family-names: "Pekar"
+  given-names: "Adrian"
+  orcid: "https://orcid.org/0000-0003-4511-8267"
+title: "NFStream: A Flexible Network Data Analysis Framework"
+version: 6.4.0
+doi: 
+date-released: 2021-12-10
+url: "https://www.nfstream.org"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Aouini"
+    given-names: "Zied"
+    orcid: "https://orcid.org/0000-0002-0478-7790"
+  - family-names: "Pekar"
+    given-names: "Adrian"
+    orcid: "https://orcid.org/0000-0003-4511-8267"
+  doi: "10.1016/j.comnet.2021.108719"
+  journal: "Computer Networks"
+  month: 
+  start:  # First page number
+  end:  # Last page number
+  title: "NFStream: A flexible network data analysis framework"
+  issue:
+  volume: 204
+  year: 2022
