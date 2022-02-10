@@ -42,7 +42,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 40,2,158,DNS,Network,0
 41,2,326,DNS,ConnCheck,0
 42,6,544,TLS.AmazonAWS,Cloud,1
-43,5,359,ApplePush.Apple,Cloud,0
+43,5,359,ApplePush,Cloud,0
 44,2,297,DNS.Apple,Web,0
 45,2,274,DNS.ApplePush,Cloud,0
 46,2,415,DNS.ApplePush,Cloud,0

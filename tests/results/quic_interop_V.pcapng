@@ -3,7 +3,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 1,8,10352,QUIC,Web,0
 2,2,1383,QUIC,Web,0
 3,1,1294,QUIC,Web,0
-4,1,1294,QUIC,Web,0
+4,1,1294,QUIC.AmazonAWS,Cloud,0
 5,2,1391,QUIC,Web,0
 6,2,1379,QUIC,Web,0
 7,4,2726,QUIC.Azure,Cloud,0
@@ -11,11 +11,11 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 9,2,2588,QUIC,Web,0
 10,1,590,ICMP,Network,0
 11,8,10352,QUIC,Web,0
-12,8,10352,QUIC,Web,0
+12,8,10352,QUIC.AmazonAWS,Cloud,0
 13,2,1379,QUIC,Web,0
 14,8,10352,QUIC,Web,0
 15,1,1294,QUIC,Web,0
-16,2,1367,QUIC,Web,0
+16,2,1367,QUIC.AmazonAWS,Cloud,0
 17,2,2588,QUIC,Web,0
 18,2,1383,QUIC,Web,0
 19,1,1294,QUIC,Web,0
@@ -38,7 +38,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 36,1,1294,ICMPV6,Network,0
 37,2,2588,QUIC,Web,0
 38,2,1379,QUIC,Web,0
-39,2,1371,QUIC,Web,0
+39,2,1371,QUIC.AmazonAWS,Cloud,0
 40,2,1383,QUIC,Web,0
 41,4,2710,QUIC,Web,0
 42,2,1383,QUIC,Web,0
@@ -52,7 +52,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 50,2,2588,ICMPV6,Network,0
 51,4,2726,QUIC,Web,0
 52,2,1403,QUIC,Web,0
-53,1,1294,QUIC,Web,0
+53,1,1294,QUIC.AmazonAWS,Cloud,0
 54,4,2782,QUIC,Web,0
 55,4,2758,QUIC.Azure,Cloud,0
 56,8,10352,QUIC.Azure,Cloud,0
@@ -62,7 +62,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 60,1,1294,QUIC,Web,0
 61,8,10352,QUIC.Azure,Cloud,0
 62,1,1294,QUIC,Web,0
-63,8,10352,QUIC,Web,0
+63,8,10352,QUIC.AmazonAWS,Cloud,0
 64,2,1383,QUIC,Web,0
 65,4,2710,QUIC,Web,0
 66,4,2878,ICMPV6,Network,0
@@ -72,7 +72,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 70,4,1374,ICMP,Network,0
 71,1,590,ICMP,Network,0
 72,1,1294,ICMPV6,Network,0
-73,2,194,ICMP.Azure,Network,0
+73,2,194,ICMP,Network,0
 74,4,1358,ICMP,Network,0
 75,3,267,ICMP,Network,0
-76,1,113,ICMP.Azure,Network,0
+76,1,113,ICMP,Network,0

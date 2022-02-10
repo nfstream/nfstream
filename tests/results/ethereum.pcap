@@ -25,7 +25,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 23,42,3895,Mining,Mining,0
 24,38,3527,Mining,Mining,0
 25,3,1777,Mining,Mining,0
-26,35,3422,Mining.Azure,Mining,0
+26,35,3422,Mining,Mining,0
 27,41,3882,Mining,Mining,0
 28,3,1777,Mining,Mining,0
 29,32,3234,Mining,Mining,0
@@ -35,7 +35,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 33,37,3548,Mining,Mining,0
 34,2,156,Mining,Mining,1
 35,62,6121,Mining,Mining,0
-36,3,1779,Mining.AmazonAWS,Mining,0
+36,3,1779,Mining,Mining,0
 37,39,3843,Mining,Mining,0
 38,31,3336,Mining,Mining,0
 39,29,3146,Mining,Mining,0
@@ -53,7 +53,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 51,33,3434,Mining,Mining,0
 52,64,5924,Mining,Mining,0
 53,65,5964,Mining,Mining,0
-54,53,5086,Mining.AmazonAWS,Mining,0
+54,53,5086,Mining,Mining,0
 55,30,2849,Mining,Mining,0
 56,22,2649,Mining,Mining,0
 57,4,722,Mining,Mining,0
@@ -65,7 +65,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 63,37,4316,Mining,Mining,0
 64,50,5063,Mining,Mining,0
 65,30,3342,Mining,Mining,0
-66,4,688,Mining.AmazonAWS,Mining,0
+66,4,688,Mining,Mining,0
 67,30,3220,Mining,Mining,0
 68,4,731,Mining,Mining,0
 69,30,3284,Mining,Mining,0

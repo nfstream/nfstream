@@ -9,13 +9,13 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 7,18,8313,TLS.Zoom,Video,0
 8,2,205,DNS,Network,0
 9,1,70,ICMP,Network,0
-10,2,114,TLS,Web,1
+10,2,114,TLS.AmazonAWS,Cloud,1
 11,6,480,STUN.Zoom,Video,0
 12,6,480,STUN.Zoom,Video,0
 13,6,480,STUN.Zoom,Video,0
 14,6,952,HTTP.Google,Web,1
 15,16,6839,TLS.Google,Web,1
-16,2,140,ICMP.Zoom,Network,0
+16,2,140,ICMP,Network,0
 17,1,321,DHCP,Network,0
 18,30,18953,TLS.Zoom,Video,0
 19,2,160,DNS.Zoom,Video,0

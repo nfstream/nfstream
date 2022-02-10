@@ -117,7 +117,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 115,1,98,DHCPV6,Network,0
 116,17,3518,TLS,Web,0
 117,3,276,NetBIOS,System,0
-118,1,90,NTP.Apple,System,0
+118,1,90,NTP,System,0
 119,2,176,LLMNR,Network,0
 120,1,68,LLMNR,Network,0
 121,2,136,LLMNR,Network,0

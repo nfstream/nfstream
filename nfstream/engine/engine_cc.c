@@ -1178,8 +1178,6 @@ typedef struct nf_flow {
   char content_type[64];
   char user_agent[256];
   struct ndpi_flow_struct *ndpi_flow;
-  struct ndpi_id_struct *ndpi_src;
-  struct ndpi_id_struct *ndpi_dst;
   ndpi_protocol detected_protocol;
   uint8_t guessed;
   uint8_t detection_completed;
@@ -1257,8 +1255,6 @@ void flow_bidirectional_dissection_collect_info(struct ndpi_detection_module_str
  */
 void flow_free_ndpi_data(struct nf_flow *flow) {
   if (flow->ndpi_flow) { ndpi_flow_free(flow->ndpi_flow); flow->ndpi_flow = NULL; }
-  if (flow->ndpi_src) { ndpi_free(flow->ndpi_src); flow->ndpi_src = NULL; }
-  if (flow->ndpi_dst) { ndpi_free(flow->ndpi_dst); flow->ndpi_dst = NULL; }
 }
 
 
@@ -1403,20 +1399,9 @@ uint8_t flow_init_bidirectional_dissection(struct ndpi_detection_module_struct *
   } else {
     memset(flow->ndpi_flow, 0, SIZEOF_FLOW_STRUCT);
   }
-  flow->ndpi_src = (struct ndpi_id_struct *)ndpi_calloc(1, SIZEOF_ID_STRUCT);
-  if (flow->ndpi_src == NULL)  {
-    ndpi_free(flow);
-    return 0;
-  }
-  flow->ndpi_dst = (struct ndpi_id_struct *)ndpi_calloc(1, SIZEOF_ID_STRUCT);
-  if (flow->ndpi_dst == NULL) {
-    ndpi_free(flow);
-    return 0;
-  }
   // First packet are dissected.
   flow->detected_protocol = ndpi_detection_process_packet(dissector, flow->ndpi_flow, packet->ip_content,
-                                                          packet->ip_content_len, packet->time, flow->ndpi_src,
-                                                          flow->ndpi_dst);
+                                                          packet->ip_content_len, packet->time);
   flow_bidirectional_dissection_collect_info(dissector, flow); // Then we collect possible infos.
   if ((flow->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) && (n_dissections == 1)) {
     // Not identified and we are limited to 1, we try to guess.
@@ -1442,12 +1427,10 @@ void flow_update_bidirectional_dissection(struct ndpi_detection_module_struct *d
     if (still_dissect) { // Go for it.
       if (packet->direction == 0) { // Check direction in order to give the dissector the right direction references.
         flow->detected_protocol = ndpi_detection_process_packet(dissector, flow->ndpi_flow, packet->ip_content,
-                                                                packet->ip_content_len, packet->time, flow->ndpi_src,
-                                                                flow->ndpi_dst);
+                                                                packet->ip_content_len, packet->time);
       } else {
         flow->detected_protocol = ndpi_detection_process_packet(dissector, flow->ndpi_flow, packet->ip_content,
-                                                                packet->ip_content_len, packet->time, flow->ndpi_dst,
-                                                                flow->ndpi_src);
+                                                                packet->ip_content_len, packet->time);
       }
       flow_bidirectional_dissection_collect_info(dissector, flow); // Collect information to flow structure.
     } else { // We are done -> Known and no extra dissection possible.
@@ -1968,7 +1951,6 @@ struct ndpi_detection_module_struct *dissector_init(struct dissector_checker *ch
   // Check if headers match the ffi declarations and initialize dissector.
   ndpi_init_prefs init_prefs = ndpi_no_prefs;
   if (checker->flow_size != ndpi_detection_get_sizeof_ndpi_flow_struct()) return NULL;
-  if (checker->id_size != ndpi_detection_get_sizeof_ndpi_id_struct()) return NULL;
   if (checker->flow_tcp_size != ndpi_detection_get_sizeof_ndpi_flow_tcp_struct()) return NULL;
   if (checker->flow_udp_size != ndpi_detection_get_sizeof_ndpi_flow_udp_struct()) return NULL;
   return ndpi_init_detection_module(init_prefs);

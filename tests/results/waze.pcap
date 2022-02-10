@@ -30,5 +30,5 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 28,4,216,TLS,Web,1
 29,4,216,TLS,Web,1
 30,24,6585,TLS.Waze,Web,0
-31,15,1341,TLS.WhatsApp,Chat,1
+31,15,1341,WhatsApp,Chat,0
 32,23,5742,TLS.Waze,Web,0

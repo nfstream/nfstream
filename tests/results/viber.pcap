@@ -16,11 +16,11 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 14,2,140,ICMPV6,Network,0
 15,2,265,DNS,Network,0
 16,19,7773,TLS,Web,0
-17,6,412,TLS,Web,1
+17,6,412,TLS.AmazonAWS,Cloud,1
 18,46,7337,Viber,VoIP,0
 19,2,138,Viber,VoIP,0
 20,27,9375,TLS.AmazonAWS,Cloud,0
-21,6,412,TLS,Web,1
+21,6,412,TLS.AmazonAWS,Cloud,1
 22,43,6216,Viber,VoIP,0
 23,2,138,Viber,VoIP,0
 24,2,164,DNS.Google,Web,0

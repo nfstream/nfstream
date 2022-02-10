@@ -1,5 +1,5 @@
 id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
-0,46,4990,TLS,Web,1
+0,46,4990,WhatsApp,Chat,0
 1,5,676,STUN.WhatsAppCall,VoIP,0
 2,5,676,STUN.WhatsAppCall,VoIP,0
 3,5,676,STUN.WhatsAppCall,VoIP,0
@@ -8,7 +8,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 6,5,676,STUN.WhatsAppCall,VoIP,0
 7,5,676,STUN.WhatsAppCall,VoIP,0
 8,9,1184,STUN.WhatsAppCall,VoIP,0
-9,30,4709,WhatsApp,Chat,1
-10,62,5609,WhatsApp,Chat,1
-11,52,4611,WhatsApp,Chat,1
-12,27,2220,TLS.WhatsApp,Chat,1
+9,30,4709,WhatsApp,Chat,0
+10,62,5609,WhatsApp,Chat,0
+11,52,4611,WhatsApp,Chat,0
+12,27,2220,WhatsApp,Chat,0

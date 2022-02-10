@@ -229,6 +229,9 @@ typedef enum {
   NDPI_DNS_FRAGMENTED,
   NDPI_INVALID_CHARACTERS,
   NDPI_POSSIBLE_EXPLOIT,
+  NDPI_TLS_CERTIFICATE_ABOUT_TO_EXPIRE,
+  NDPI_PUNYCODE_IDN,
+  NDPI_ERROR_CODE_DETECTED,
   NDPI_MAX_RISK
 } ndpi_risk_enum;
 
@@ -264,7 +267,9 @@ typedef enum {
   NDPI_HTTP_METHOD_PUT,
   NDPI_HTTP_METHOD_DELETE,
   NDPI_HTTP_METHOD_TRACE,
-  NDPI_HTTP_METHOD_CONNECT
+  NDPI_HTTP_METHOD_CONNECT,
+  NDPI_HTTP_METHOD_RPC_IN_DATA,
+  NDPI_HTTP_METHOD_RPC_OUT_DATA,
 } ndpi_http_method;
 
 struct ndpi_lru_cache_entry {
@@ -282,25 +287,6 @@ typedef union
   uint32_t ipv4;
   struct ndpi_in6_addr ipv6;
 } ndpi_ip_addr_t;
-
-struct ndpi_id_struct {
-  NDPI_PROTOCOL_BITMASK detected_protocol_bitmask;
-  uint16_t irc_port[NDPI_PROTOCOL_IRC_MAXPORT];
-  uint32_t last_time_port_used[NDPI_PROTOCOL_IRC_MAXPORT];
-  uint32_t irc_ts;
-  uint32_t gnutella_ts;
-  uint32_t jabber_stun_or_ft_ts;
-  uint32_t directconnect_last_safe_access_time;
-  uint16_t detected_directconnect_port;
-  uint16_t detected_directconnect_udp_port;
-  uint16_t detected_directconnect_ssl_port;
-  uint16_t jabber_voice_stun_port[JABBER_MAX_STUN_PORTS];
-  uint16_t jabber_file_transfer_port[2];
-  uint16_t detected_gnutella_udp_port1;
-  uint16_t detected_gnutella_udp_port2;
-  uint8_t irc_number_of_port;
-  uint8_t jabber_voice_stun_used_ports;
-};
 
 typedef struct message {
   uint8_t *buffer;
@@ -574,6 +560,7 @@ struct ndpi_detection_module_struct {
   struct ndpi_lru_cache *ookla_cache;
   struct cache *tinc_cache;
   struct ndpi_lru_cache *bittorrent_cache;
+  struct ndpi_lru_cache *zoom_cache;
   struct ndpi_lru_cache *stun_cache;  
   struct ndpi_lru_cache *tls_cert_cache;
   struct ndpi_lru_cache *mining_cache;
@@ -600,7 +587,6 @@ typedef enum {
   NDPI_CONFIDENCE_UNKNOWN = 0,
   NDPI_CONFIDENCE_MATCH_BY_PORT,
   NDPI_CONFIDENCE_MATCH_BY_IP,
-  NDPI_CONFIDENCE_DPI_SRC_DST_ID,
   NDPI_CONFIDENCE_DPI_CACHE,
   NDPI_CONFIDENCE_DPI,
   NDPI_CONFIDENCE_MAX,
@@ -611,7 +597,7 @@ struct ndpi_flow_struct {
   uint16_t guessed_protocol_id, guessed_host_protocol_id, guessed_category, guessed_header_category;
   uint8_t l4_proto, protocol_id_already_guessed:1, host_already_guessed:1, fail_with_unknown:1,
   init_finished:1, setup_packet_direction:1, packet_direction:1, check_extra_packets:1, is_ipv6:1;
-  uint8_t confidence;
+  ndpi_confidence_t confidence;
   uint32_t next_tcp_seq_nr[2];
   uint32_t saddr, daddr;
   uint16_t sport, dport;
@@ -723,8 +709,6 @@ struct ndpi_flow_struct {
   uint8_t ovpn_counter;
   uint8_t tinc_state;
   struct tinc_cache_entry tinc_cache_entry;
-  struct ndpi_id_struct *src;
-  struct ndpi_id_struct *dst;
 };
 
 typedef struct dissector_checker {
@@ -820,8 +804,6 @@ typedef struct nf_flow {
   char content_type[64];
   char user_agent[256];
   struct ndpi_flow_struct *ndpi_flow;
-  struct ndpi_id_struct *ndpi_src;
-  struct ndpi_id_struct *ndpi_dst;
   ndpi_protocol detected_protocol;
   uint8_t guessed;
   uint8_t detection_completed;
@@ -1069,7 +1051,6 @@ def setup_dissector(ffi, lib, n_dissections):
         # Check that headers and loaded library match and initiate dissector.
         checker = ffi.new("struct dissector_checker *")
         checker.flow_size = ffi.sizeof("struct ndpi_flow_struct")
-        checker.id_size = ffi.sizeof("struct ndpi_id_struct")
         checker.flow_tcp_size = ffi.sizeof("struct ndpi_flow_tcp_struct")
         checker.flow_udp_size = ffi.sizeof("struct ndpi_flow_udp_struct")
         dissector = lib.dissector_init(checker)

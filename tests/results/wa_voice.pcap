@@ -1,7 +1,7 @@
 id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
 0,2,164,DNS.Google,Web,0
 1,2,187,DNS.WhatsApp,Chat,0
-2,24,8007,ApplePush.Apple,Cloud,0
+2,24,8007,ApplePush,Cloud,0
 3,2,172,Spotify,Music,0
 4,263,38555,WhatsApp,Chat,1
 5,2,194,DNS.WhatsAppFiles,Download,0

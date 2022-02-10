@@ -3,7 +3,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 1,21,5245,TLS.DoH_DoT,Network,0
 2,21,5245,TLS.DoH_DoT,Network,0
 3,104,28095,TLS.DoH_DoT,Network,0
-4,4,392,ICMP.Google,Network,0
+4,4,392,ICMP,Network,0
 5,2,120,DoH_DoT.Google,Web,1
 6,133,28622,TLS.DoH_DoT,Network,0
 7,241,64791,TLS.DoH_DoT,Network,0

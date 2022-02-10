@@ -52,7 +52,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 50,2,616,HTTP,Streaming,0
 51,2,821,HTTP,Streaming,0
 52,2,1146,HTTP,Streaming,0
-53,23,25892,HTTP,Web,0
+53,23,25892,HTTP.Cybersec,Cybersecurity,0
 54,6,1050,SSDP,System,0
 55,1,683,HTTP,Streaming,0
 56,3,2346,HTTP,Streaming,0

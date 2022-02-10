@@ -3,7 +3,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 1,15,1962,Nintendo,Game,0
 2,16,2048,Nintendo,Game,0
 3,54,8487,TLS.AmazonAWS,Cloud,1
-4,3,354,Nintendo.AmazonAWS,Game,0
+4,3,354,Nintendo,Game,0
 5,1,730,AmazonAWS,Cloud,1
 6,2,391,DNS.Nintendo,Game,0
 7,21,7763,TLS.Nintendo,Game,0

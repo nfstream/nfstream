@@ -37,7 +37,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 35,1,58,SMBv23,System,1
 36,1,58,Unknown,Unspecified,0
 37,1,58,RTSP,Media,1
-38,1,58,DCE_RPC,RPC,1
+38,1,58,RPC,RPC,1
 39,5,298,SSH,RemoteAccess,1
 40,1,58,Unknown,Unspecified,0
 41,1,58,AFP,DataTransfer,1
@@ -59,7 +59,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 57,1,58,Unknown,Unspecified,0
 58,1,58,AFP,DataTransfer,1
 59,1,58,Unknown,Unspecified,0
-60,1,58,DCE_RPC,RPC,1
+60,1,58,RPC,RPC,1
 61,1,58,RTSP,Media,1
 62,1,58,Unknown,Unspecified,0
 63,1,58,SMBv23,System,1

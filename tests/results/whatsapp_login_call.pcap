@@ -12,9 +12,9 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 10,2,330,DNS.Apple,Web,0
 11,2,280,DNS.WhatsApp,Chat,0
 12,38,17220,TLS.Apple,Web,0
-13,180,24874,Unknown,Unspecified,0
+13,180,24874,WhatsApp,Chat,0
 14,3,198,TLS.Apple,Web,1
-15,22,5926,ApplePush.Apple,Cloud,0
+15,22,5926,ApplePush,Cloud,0
 16,53,18382,TLS.AppleStore,SoftwareUpdate,0
 17,5,330,HTTP,Web,1
 18,3,162,TLS.Apple,Web,1
