@@ -599,6 +599,7 @@ static int packet_get_ipv6_info(uint16_t vlan_id, nfstream_packet_tunnel tunnel_
                                 uint64_t root_idx, int mode) {
   // We move field to iph to treat it by the same function for IPV4
   struct nfstream_iphdr iph;
+  if (ipsize < 40) return 0;
   memset(&iph, 0, sizeof(iph));
   iph.version = IPVERSION;
   iph.saddr = iph6->ip6_src.u6_addr.u6_addr32[2] + iph6->ip6_src.u6_addr.u6_addr32[3];
@@ -666,7 +667,7 @@ void packet_dlt_null(const uint8_t *packet, uint16_t eth_offset, uint16_t *type,
 void packet_dlt_ppp_serial(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, uint16_t *ip_offset) {
   const struct nfstream_chdlc *chdlc;
   chdlc = (struct nfstream_chdlc *) &packet[eth_offset];
-  (*ip_offset) = sizeof(struct nfstream_chdlc); // CHDLC_OFF = 4
+  (*ip_offset) = eth_offset + sizeof(struct nfstream_chdlc); // CHDLC_OFF = 4
   (*type) = ntohs(chdlc->proto_code);
 }
 
@@ -678,10 +679,10 @@ void packet_dlt_ppp(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, 
   const struct nfstream_chdlc *chdlc;
   if(packet[0] == 0x0f || packet[0] == 0x8f) {
     chdlc = (struct nfstream_chdlc *) &packet[eth_offset];
-    (*ip_offset) = sizeof(struct nfstream_chdlc); /* CHDLC_OFF = 4 */
+    (*ip_offset) = eth_offset + sizeof(struct nfstream_chdlc); /* CHDLC_OFF = 4 */
     (*type) = ntohs(chdlc->proto_code);
   } else {
-    (*ip_offset) = 2;
+    (*ip_offset) = eth_offset + 2;
     (*type) = ntohs(*((u_int16_t*)&packet[eth_offset]));
   }
 }
@@ -870,7 +871,7 @@ int packet_datalink_checker(uint32_t caplen, const uint8_t *packet, uint16_t eth
 /**
  * packet_ether_type_checker: Check ether type.
  */
-void packet_ether_type_checker(uint32_t caplen, const uint8_t *packet, uint16_t *type,
+int packet_ether_type_checker(uint32_t caplen, const uint8_t *packet, uint16_t *type,
                                uint16_t *vlan_id, uint16_t *ip_offset, uint8_t *recheck_type) {
   // MPLS header
   union mpls {
@@ -879,12 +880,12 @@ void packet_ether_type_checker(uint32_t caplen, const uint8_t *packet, uint16_t 
   } mpls;
   switch((*type)) {
   case VLAN:
+    if (*ip_offset + 4 >= (int) caplen) return 0;
     (*vlan_id) = ((packet[(*ip_offset)] << 8) + packet[(*ip_offset)+1]) & 0xFFF;
     (*type) = (packet[(*ip_offset)+2] << 8) + packet[(*ip_offset)+3];
     (*ip_offset) += 4;
-
     // double tagging for 802.1Q
-    while(((*type) == 0x8100) && (((uint32_t)(*ip_offset)) < caplen)) {
+    while(((*type) == 0x8100) && (((uint32_t)(*ip_offset + 4)) < caplen)) {
       (*vlan_id) = ((packet[(*ip_offset)] << 8) + packet[(*ip_offset)+1]) & 0xFFF;
       (*type) = (packet[(*ip_offset)+2] << 8) + packet[(*ip_offset)+3];
       (*ip_offset) += 4;
@@ -911,6 +912,7 @@ void packet_ether_type_checker(uint32_t caplen, const uint8_t *packet, uint16_t 
   default:
     break;
   }
+  return 1;
 }
 
 
@@ -935,7 +937,7 @@ int packet_process(int datalink_type, uint32_t caplen, uint32_t len, const uint8
 
  ether_type_check:
   recheck_type = 0;
-  packet_ether_type_checker(caplen, packet, &type, &vlan_id, &ip_offset, &recheck_type);
+  if (!packet_ether_type_checker(caplen, packet, &type, &vlan_id, &ip_offset, &recheck_type)) return 0;
   if (recheck_type)
     goto ether_type_check;
 
@@ -1024,8 +1026,11 @@ int packet_process(int datalink_type, uint32_t caplen, uint32_t len, const uint8
 	        if (iph->version == 6) {
 	          iph6 = (struct nfstream_ipv6hdr *)&packet[ip_offset];
 	          iph = NULL;
+	          if (caplen < ip_offset + sizeof(struct nfstream_ipv6hdr)) return 0;
 	        } else if (iph->version != IPVERSION) {
-	          return 0;
+	            return 0;
+	        } else {
+	            if (caplen < ip_offset + sizeof(struct nfstream_iphdr)) return 0;
 	        }
 	      }
 	    }
