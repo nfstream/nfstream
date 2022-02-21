@@ -14,7 +14,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 12,6,480,STUN.Zoom,Video,0
 13,6,480,STUN.Zoom,Video,0
 14,6,952,HTTP.Google,Web,1
-15,16,6839,TLS.Google,Web,1
+15,16,6839,TLS.GoogleCloud,Cloud,1
 16,2,140,ICMP,Network,0
 17,1,321,DHCP,Network,0
 18,30,18953,TLS.Zoom,Video,0

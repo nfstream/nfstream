@@ -33,4 +33,4 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 31,11,5008,TLS.Microsoft,Cloud,0
 32,11,5008,TLS.Microsoft,Cloud,0
 33,2,180,NTP,System,0
-34,4,330,TLS.Google,Web,1
+34,4,330,TLS.GoogleCloud,Cloud,1

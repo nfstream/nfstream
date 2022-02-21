@@ -147,8 +147,8 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 145,1,64,Skype_Teams.SkypeCall,VoIP,0
 146,1,69,Skype_Teams.SkypeCall,VoIP,0
 147,3,168,TLS.Apple,Web,1
-148,7,651,DNS.Skype_Teams,VoIP,0
-149,7,651,DNS.Skype_Teams,VoIP,0
+148,7,651,DNS.Microsoft,Web,0
+149,7,651,DNS.Microsoft,Web,0
 150,1,79,Skype_Teams.SkypeCall,VoIP,0
 151,1,75,Skype_Teams.SkypeCall,VoIP,0
 152,13,1287,TLS,Web,1
