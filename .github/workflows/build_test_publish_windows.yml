@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["windows-latest"]
+        os: ["windows-2019"]
         python-version: ["3.10",
                          "3.9",
                          "3.8",
@@ -41,7 +41,6 @@ jobs:
     - name: Print Python version
       run: |
         python -c "import sys; print(sys.version)"
-        ls D:/a/_temp/msys64/mingw64/lib/
 
     - name: Install NFStream requirements
       run: |
@@ -92,7 +91,7 @@ jobs:
       run: |
          cd nfstream
          cd engine
-         msys2 -c 'gcc -Indpi_includes -shared -o engine_cc.so -g -O2 -Wall engine_cc.c libndpi.a D:/a/_temp/msys64/mingw64/lib/libgcrypt.a D:/a/_temp/msys64/mingw64/lib/libgpg-error.a'
+         msys2 -c 'gcc -Indpi_includes -shared -o engine_cc.so -g -O2 -Wall engine_cc.c libndpi.a D:/a/_temp/msys64/mingw64/lib/libgcrypt.a D:/a/_temp/msys64/mingw64/lib/libgpg-error.a D:/a/_temp/msys64/mingw64/x86_64-w64-mingw32/lib/libws2_32.a'
          msys2 -c 'rm -rf ndpi_includes/'
          cd ..
          cd ..
