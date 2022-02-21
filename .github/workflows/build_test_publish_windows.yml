@@ -41,6 +41,7 @@ jobs:
     - name: Print Python version
       run: |
         python -c "import sys; print(sys.version)"
+        ls D:/a/_temp/msys64/mingw64/
 
     - name: Install NFStream requirements
       run: |
