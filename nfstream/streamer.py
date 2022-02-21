@@ -27,7 +27,7 @@ from .anonymizer import NFAnonymizer
 from .engine import is_interface
 from.plugin import NFPlugin
 from .utils import csv_converter, open_file, RepeatedTimer, update_performances, set_affinity, validate_flows_per_file
-from .utils import create_csv_file_path, NFEvent, process_unify
+from .utils import create_csv_file_path, NFEvent, process_unify, validate_rotate_files
 from .system import system_socket_worflow, match_flow_conn, system_browser_workflow, RequestCache, browser_processes
 
 
@@ -451,7 +451,7 @@ class NFStreamer(object):
         except ValueError as observer_error:  # job initiation failed due to some bad observer parameters.
             raise ValueError(observer_error)
 
-    def to_csv(self, path=None, columns_to_anonymize=(), flows_per_file=0):
+    def to_csv(self, path=None, columns_to_anonymize=(), flows_per_file=0, rotate_files=0):
         validate_flows_per_file(flows_per_file)
         chunked, chunk_idx = True, -1
         if flows_per_file == 0:
@@ -467,7 +467,7 @@ class NFStreamer(object):
                         f.close()
                     chunk_flows = 1
                     chunk_idx += 1
-                    f = open_file(output_path, chunked, chunk_idx)
+                    f = open_file(output_path, chunked, chunk_idx, rotate_files)
                     header = ','.join([str(i) for i in flow.keys()]) + "\n"
                     f.write(header.encode('utf-8'))
                 values = anon.process(flow)

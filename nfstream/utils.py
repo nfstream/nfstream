@@ -49,6 +49,12 @@ def validate_flows_per_file(n):
         raise ValueError("Please specify a valid flows_per_file parameter (>= 0).")
 
 
+def validate_rotate_files(n):
+    """ simple parameter validator """
+    if not isinstance(n, int) or isinstance(n, int) and n < 0:
+        raise ValueError("Please specify a valid rotate_files parameter (>= 0).")
+
+
 def create_csv_file_path(path, source):
     """ file path creator """
     if path is None:
@@ -68,11 +74,14 @@ def csv_converter(values):
                 values[idx] = "\"" + values[idx] + "\""
 
 
-def open_file(path, chunked, chunk_idx):
+def open_file(path, chunked, chunk_idx, rotate_files):
     """ File opener taking ckunk mode into consideration"""
     if not chunked:
         return open(path, 'wb')
-    return open(path.replace("csv", "{}.csv".format(chunk_idx)), 'wb')
+    else:
+        if rotate_files:
+            return open(path.replace("csv", "{}.csv".format(chunk_idx % rotate_files)), 'wb')
+        return open(path.replace("csv", "{}.csv".format(chunk_idx)), 'wb')
 
 
 def update_performances(performances, is_linux, flows_count):
