@@ -560,13 +560,17 @@ As with any packet monitoring tool, **NFStream** could potentially be misused.
 publication, we would appreciate citations to the following paper:
 
 ``` latex
-@article{aouini2022nfstream,
-  title={NFStream: A flexible network data analysis framework},
-  author={Aouini, Zied and Pekar, Adrian},
-  journal={Computer Networks},
-  pages={108719},
-  year={2022},
-  publisher={Elsevier}
+@article{AOUINI2022108719,
+  title = {NFStream: A flexible network data analysis framework},
+  author = {Aouini, Zied and Pekar, Adrian},
+  doi = {10.1016/j.comnet.2021.108719},
+  issn = {1389-1286},
+  journal = {Computer Networks},
+  pages = {108719},
+  year = {2022},
+  publisher = {Elsevier},
+  volume = {204},
+  url = {https://www.sciencedirect.com/science/article/pii/S1389128621005739}
 }
 ```
 
