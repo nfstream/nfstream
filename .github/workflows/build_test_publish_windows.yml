@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["windows-2019"]
+        os: ["windows-latest"]
         python-version: ["3.10",
                          "3.9",
                          "3.8",
@@ -36,7 +36,7 @@ jobs:
       with:
         msystem: MINGW64
         update: true
-        install: git mingw-w64-x86_64-toolchain automake1.16 automake-wrapper autoconf libtool make mingw-w64-x86_64-json-c
+        install: git mingw-w64-x86_64-toolchain automake1.16 automake-wrapper autoconf libtool make mingw-w64-x86_64-json-c mingw-w64-x86_64-crt-git
 
     - name: Print Python version
       run: |
@@ -91,7 +91,7 @@ jobs:
       run: |
          cd nfstream
          cd engine
-         msys2 -c 'gcc -Indpi_includes -shared -o engine_cc.so -g -O2 -Wall engine_cc.c libndpi.a D:/a/_temp/msys64/mingw64/lib/libgcrypt.a D:/a/_temp/msys64/mingw64/lib/libgpg-error.a D:/a/_temp/msys64/mingw64/x86_64-w64-mingw32/lib/libws2_32.a'
+         msys2 -c 'gcc -Indpi_includes -shared -o engine_cc.so -g -O2 -Wall engine_cc.c libndpi.a D:/a/_temp/msys64/mingw64/lib/libgcrypt.a D:/a/_temp/msys64/mingw64/lib/libgpg-error.a D:/a/_temp/msys64/mingw64/lib/libws2_32.a'
          msys2 -c 'rm -rf ndpi_includes/'
          cd ..
          cd ..
