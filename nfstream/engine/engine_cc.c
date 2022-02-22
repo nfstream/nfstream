@@ -607,6 +607,7 @@ static int packet_get_ipv6_info(uint16_t vlan_id, nfstream_packet_tunnel tunnel_
   uint8_t l4proto = iph6->ip6_hdr.ip6_un1_nxt;
   uint16_t ip_len = ntohs(iph6->ip6_hdr.ip6_un1_plen);
   const uint8_t *l4ptr = (((const uint8_t *) iph6) + sizeof(struct nfstream_ipv6hdr));
+  if (ipsize < sizeof(struct nfstream_ipv6hdr) + ip_len) return 0;
   if (packet_handle_ipv6_extension_headers(ipsize - sizeof(struct nfstream_ipv6hdr), &l4ptr, &ip_len, &l4proto) != 0) {
     return 0;
   }
@@ -787,7 +788,7 @@ int packet_dlt_radiotap(const uint8_t *packet, uint32_t caplen, uint16_t eth_off
   if (FCF_TYPE((*fc)) == WIFI_DATA) {
     if ((FCF_TO_DS((*fc)) && FCF_FROM_DS((*fc)) == 0x0)
         || (FCF_TO_DS((*fc)) == 0x0 && FCF_FROM_DS((*fc)))) (*wifi_len) = 26; // +4 byte fcs
-  } else return 1;
+  } else return 0;
   packet_fill_mac_wifi_strings(nf_pkt, wifi);
   // Check ether_type from LLC
   if (caplen < (eth_offset + (*wifi_len) + (*radio_len) + sizeof(struct nfstream_llc_header_snap))) return 0;
@@ -810,18 +811,18 @@ void packet_dlt_linux_ssl(const uint8_t *packet, uint16_t eth_offset, uint16_t *
 /**
  * packet_dlt_ipv4: Raw IPv4
  */
-void packet_dlt_ipv4(uint16_t *type, uint16_t *ip_offset) {
+void packet_dlt_ipv4(uint16_t *type, uint16_t eth_offset, uint16_t *ip_offset) {
   (*type) = ETH_P_IP;
-  (*ip_offset) = 0;
+  (*ip_offset) = eth_offset;
 }
 
 
 /**
  * packet_dlt_ipv6: Raw IPv6
  */
-void packet_dlt_ipv6(uint16_t *type, uint16_t *ip_offset) {
+void packet_dlt_ipv6(uint16_t *type, uint16_t eth_offset, uint16_t *ip_offset) {
   (*type) = ETH_P_IPV6;
-  (*ip_offset) = 0;
+  (*ip_offset) = eth_offset;
 }
 
 
@@ -844,10 +845,10 @@ int packet_datalink_checker(uint32_t caplen, const uint8_t *packet, uint16_t eth
     packet_dlt_ppp(packet, eth_offset, type, ip_offset);
     break;
   case DLT_IPV4:
-    packet_dlt_ipv4(type, ip_offset);
+    packet_dlt_ipv4(type, eth_offset, ip_offset);
     break;
   case DLT_IPV6:
-    packet_dlt_ipv6(type, ip_offset);
+    packet_dlt_ipv6(type, eth_offset, ip_offset);
     break;
   case DLT_EN10MB: // IEEE 802.3 Ethernet: 1
     if (!packet_dlt_en10mb(packet, eth_offset, type, ip_offset, pyld_eth_len, nf_pkt)) return 0;
@@ -859,7 +860,7 @@ int packet_datalink_checker(uint32_t caplen, const uint8_t *packet, uint16_t eth
     if (!packet_dlt_radiotap(packet, caplen, eth_offset, type, ip_offset, radio_len, fc, wifi_len, nf_pkt)) return 0;
     break;
   case DLT_RAW:
-    (*ip_offset) = eth_offset = 0;
+    (*ip_offset) = eth_offset;
     break;
   default:
     return 0;
