@@ -453,6 +453,7 @@ class NFStreamer(object):
 
     def to_csv(self, path=None, columns_to_anonymize=(), flows_per_file=0, rotate_files=0):
         validate_flows_per_file(flows_per_file)
+        validate_rotate_files(rotate_files)
         chunked, chunk_idx = True, -1
         if flows_per_file == 0:
             chunked = False
