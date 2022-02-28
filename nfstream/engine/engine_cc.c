@@ -1061,7 +1061,7 @@ int packet_process(int datalink_type, uint32_t caplen, uint32_t len, const uint8
               break;
             }
             offset += tag_len;
-            if (offset >= caplen) return 0;
+            if (offset + 1 >= caplen) return 0;
             else {
               eth_offset = offset;
               goto datalink_check;
@@ -1187,6 +1187,7 @@ typedef struct nf_flow {
   ndpi_protocol detected_protocol;
   uint8_t guessed;
   uint8_t detection_completed;
+  ndpi_confidence_t confidence;
 } nf_flow_t;
 
 
@@ -1216,6 +1217,7 @@ uint8_t flow_is_ndpi_proto(struct nf_flow *flow, uint16_t id) {
 void flow_bidirectional_dissection_collect_info(struct ndpi_detection_module_struct *dissector, struct nf_flow *flow) {
   // We copy useful information to fileds in our flow structure in order to release dissector references at early stage.
   if (!flow->ndpi_flow) return;
+  flow->confidence = flow->ndpi_flow->confidence;
   // Application name (STUN.WhatsApp, TLS.Netflix, etc.).
   ndpi_protocol2name(dissector, flow->detected_protocol, flow->application_name, sizeof(flow->application_name));
   // Application category name (Streaming, SocialNetwork, etc.).

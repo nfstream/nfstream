@@ -177,6 +177,7 @@ class NFlow(object):
                  'application_name',
                  'application_category_name',
                  'application_is_guessed',
+                 'application_confidence',
                  'requested_server_name',
                  'client_fingerprint',
                  'server_fingerprint',
@@ -278,6 +279,7 @@ class NFlow(object):
             self.application_name = ffi.string(self._C.application_name).decode('utf-8', errors='ignore')
             self.application_category_name = ffi.string(self._C.category_name).decode('utf-8', errors='ignore')
             self.application_is_guessed = self._C.guessed
+            self.application_confidence = self._C.confidence
             self.requested_server_name = ffi.string(self._C.requested_server_name).decode('utf-8', errors='ignore')
             self.client_fingerprint = ffi.string(self._C.c_hash).decode('utf-8', errors='ignore')
             self.server_fingerprint = ffi.string(self._C.s_hash).decode('utf-8', errors='ignore')
@@ -416,6 +418,7 @@ class NFlow(object):
                 self.user_agent = ffi.string(self._C.user_agent).decode('utf-8', errors='ignore')
                 self.content_type = ffi.string(self._C.content_type).decode('utf-8', errors='ignore')
                 self.application_is_guessed = self._C.guessed
+                self.application_confidence = self._C.confidence
         if splt:
             if sync_mode: # Same for splt, once we reach splt limit, there is no need to sync it anymore.
                 if self._C.bidirectional_packets <= splt:
