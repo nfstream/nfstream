@@ -232,6 +232,8 @@ typedef enum {
   NDPI_TLS_CERTIFICATE_ABOUT_TO_EXPIRE,
   NDPI_PUNYCODE_IDN,
   NDPI_ERROR_CODE_DETECTED,
+  NDPI_HTTP_CRAWLER_BOT,
+  NDPI_ANONYMOUS_SUBSCRIBER,
   NDPI_MAX_RISK
 } ndpi_risk_enum;
 
@@ -517,9 +519,7 @@ typedef enum {
 
 struct ndpi_detection_module_struct {
   NDPI_PROTOCOL_BITMASK detection_bitmask;
-  NDPI_PROTOCOL_BITMASK generic_http_packet_bitmask;
   uint32_t current_ts;
-  uint32_t ticks_per_second;
   uint16_t num_tls_blocks_to_follow;
   uint8_t skip_tls_blocks_until_change_cipher:1, enable_ja3_plus:1, _notused:6;
   char custom_category_labels[NUM_CUSTOM_CATEGORIES][CUSTOM_CATEGORY_LABEL_LEN];
@@ -536,7 +536,6 @@ struct ndpi_detection_module_struct {
   ndpi_default_ports_tree_node_t *tcpRoot, *udpRoot;
   ndpi_log_level_t ndpi_log_level;
   uint32_t tcp_max_retransmission_window_size;
-  uint32_t directconnect_connection_ip_tick_timeout;
   struct ndpi_subprotocol_conf_struct subprotocol_conf[250];
   unsigned ndpi_num_supported_protocols;
   unsigned ndpi_num_custom_protocols;
@@ -546,16 +545,13 @@ struct ndpi_detection_module_struct {
   malicious_ja3_automa, malicious_sha1_automa,
   host_risk_mask_automa, common_alpns_automa;
   void *ip_risk_mask_ptree;
+  void *ip_risk_ptree;
   struct {
     ndpi_automa hostnames, hostnames_shadow;
     void *ipAddresses, *ipAddresses_shadow;
     uint8_t categories_loaded;
   } custom_categories;
   void *protocols_ptree;
-  uint32_t irc_timeout;
-  uint32_t gnutella_timeout;
-  uint32_t jabber_stun_timeout;
-  uint32_t jabber_file_transfer_timeout;
   uint8_t ip_version_limit;
   struct ndpi_lru_cache *ookla_cache;
   struct cache *tinc_cache;
@@ -614,7 +610,7 @@ struct ndpi_flow_struct {
   char flow_extra_info[16];
   uint8_t host_server_name[80];
   uint8_t initial_binary_bytes[8], initial_binary_bytes_len;
-  uint8_t risk_checked:1, ip_risk_mask_evaluated:1, host_risk_mask_evaluated:1, _notused:5;
+  uint8_t risk_checked:1, ip_risk_mask_evaluated:1, host_risk_mask_evaluated:1, tree_risk_checked:1, _notused:4;
   ndpi_risk risk_mask; /* Stores the flow risk mask for flow peers */
   ndpi_risk risk; /* Issues found with this flow [bitmask of ndpi_risk] */
   struct {
