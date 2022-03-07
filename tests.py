@@ -323,6 +323,7 @@ class TestMethods(unittest.TestCase):
             self.assertEqual(flow.application_name, 'TLS.Facebook')
             self.assertEqual(flow.application_category_name, 'SocialNetwork')
             self.assertEqual(flow.application_is_guessed, 0)
+            self.assertEqual(flow.application_confidence, 4)
             self.assertTrue(flow.requested_server_name in ['facebook.com', 'www.facebook.com'])
             self.assertTrue(flow.client_fingerprint in ['bfcc1a3891601edb4f137ab7ab25b840',
                                                         '5c60e71f1b8cd40e4d40ed5b6d666e3f'])
