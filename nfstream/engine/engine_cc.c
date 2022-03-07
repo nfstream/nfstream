@@ -895,6 +895,7 @@ int packet_ether_type_checker(uint32_t caplen, const uint8_t *packet, uint16_t *
     break;
   case MPLS_UNI:
   case MPLS_MULTI:
+    if (*ip_offset + 4 >= (int) caplen) return 0;
     mpls.u32 = *((uint32_t *) &packet[(*ip_offset)]);
     mpls.u32 = ntohl(mpls.u32);
     (*type) = ETH_P_IP, (*ip_offset) += 4;
@@ -1057,11 +1058,12 @@ int packet_process(int datalink_type, uint32_t caplen, uint32_t len, const uint8
               tag_len = 1, stop = 1;
               break;
             default:
+              if (offset + 1 >= caplen) return 0;
               tag_len = packet[offset+1];
               break;
             }
             offset += tag_len;
-            if (offset + 1 >= caplen) return 0;
+            if (offset >= caplen) return 0;
             else {
               eth_offset = offset;
               goto datalink_check;

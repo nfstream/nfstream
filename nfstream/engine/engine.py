@@ -520,6 +520,7 @@ typedef enum {
 struct ndpi_detection_module_struct {
   NDPI_PROTOCOL_BITMASK detection_bitmask;
   uint32_t current_ts;
+  uint16_t max_packets_to_process;
   uint16_t num_tls_blocks_to_follow;
   uint8_t skip_tls_blocks_until_change_cipher:1, enable_ja3_plus:1, _notused:6;
   char custom_category_labels[NUM_CUSTOM_CATEGORIES][CUSTOM_CATEGORY_LABEL_LEN];
