@@ -375,25 +375,30 @@ class TestMethods(unittest.TestCase):
         # ocs.pcap
         # quic-mvfst-22_decryption_error.pcap
         # http-crash-content-disposition.pcap
-        # doq.pcap
         pcap_files = get_files_list(os.path.join("tests", "pcaps"))
         result_files = get_files_list(os.path.join("tests", "results"))
+        failures = 0
         print("\n----------------------------------------------------------------------")
         print(".Test nDPI integration on {} applications:".format(len(pcap_files)))
         for file_idx, test_file in enumerate(pcap_files):
             test_case_name = os.path.basename(test_file)
-            test = NFStreamer(source=test_file,
-                              n_dissections=20,
-                              n_meters=1).to_pandas()[["id",
-                                                       "bidirectional_packets",
-                                                       "bidirectional_bytes",
-                                                       "application_name",
-                                                       "application_category_name",
-                                                       "application_is_guessed"]].to_dict()
+            try:
+                test = NFStreamer(source=test_file,
+                                  n_dissections=20,
+                                  n_meters=1).to_pandas()[["id",
+                                                           "bidirectional_packets",
+                                                           "bidirectional_bytes",
+                                                           "application_name",
+                                                           "application_category_name",
+                                                           "application_is_guessed"]].to_dict()
 
-            true = pd.read_csv(result_files[file_idx]).to_dict()
-            self.assertEqual(test, true)
-            print("{}\t: {}".format(test_case_name.ljust(60, ' '), colored('OK', 'green')))
+                true = pd.read_csv(result_files[file_idx]).to_dict()
+                self.assertEqual(test, true)
+                print("{}\t: {}".format(test_case_name.ljust(60, ' '), colored('OK', 'green')))
+            except AssertionError:
+                failures += 1
+                print("{}\t: {}".format(test_case_name.ljust(60, ' '), colored('KO', 'red')))
+        self.assertEqual(failures, 0)
 
     def test_splt(self):
         print("\n----------------------------------------------------------------------")
