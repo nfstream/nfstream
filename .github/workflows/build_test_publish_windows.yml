@@ -78,7 +78,7 @@ jobs:
       run: |
          msys2 -c 'git clone --branch dev https://github.com/ntop/nDPI.git'
          cd nDPI
-         msys2 -c './autogen.sh'
+         msys2 -c './autogen.sh --with-local-libgcrypt'
          msys2 -c 'make all'
          New-Item -Path "..\nfstream\engine\" -Name "ndpi_includes" -ItemType "directory"
          msys2 -c 'cp -a src/include/. ../nfstream/engine/ndpi_includes/'
