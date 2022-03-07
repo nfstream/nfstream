@@ -375,6 +375,8 @@ class TestMethods(unittest.TestCase):
         # ocs.pcap
         # quic-mvfst-22_decryption_error.pcap
         # http-crash-content-disposition.pcap
+        # doq.pcap
+        # doq_adguard.pcapng
         pcap_files = get_files_list(os.path.join("tests", "pcaps"))
         result_files = get_files_list(os.path.join("tests", "results"))
         failures = 0
