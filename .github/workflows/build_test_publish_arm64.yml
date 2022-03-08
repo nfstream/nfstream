@@ -43,9 +43,9 @@ jobs:
     - name: Check cached dependencies
       id: checkCached
       run: |
-        exit $(ls /usr/local/lib/ | grep libgpg-error.a | wc -l)
-        exit $(ls /usr/local/lib/ | grep libgcrypt.a | wc -l)
-        exit $(ls /usr/local/lib/ | grep libpcap.a | wc -l)
+        exit `expr 1 - $(ls /usr/local/lib/ | grep libgpg-error.a | wc -l)`
+        exit `expr 1 - $(ls /usr/local/lib/ | grep libgcrypt.a | wc -l)`
+        exit `expr 1 - $(ls /usr/local/lib/ | grep libpcap.a | wc -l)`
 
     - name: Build Engine dependencies (non changing)
       if: failure() && steps.checkCached.outcome == 'failure'
