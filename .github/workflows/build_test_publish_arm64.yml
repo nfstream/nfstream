@@ -1,4 +1,4 @@
-name: build_test_publish_arm64
+name: build_test_publish_aarch64
 on:
   push:
     branches:
@@ -12,12 +12,16 @@ on:
     - cron:  '0 12 * * *'
 jobs:
   build_test_publish_linux:
-    name: ${{ matrix.python-version }} on ubuntu-server-arm64
+    name: ${{ matrix.python-version }} on linux-aarch64
     runs-on: self-hosted
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["python3.8"]
+        python-version: ["python3.10",
+                         "python3.9",
+                         "python3.8",
+                         "python3.7",
+                         "python3.6"]
 
     steps:
     - uses: actions/checkout@v2
