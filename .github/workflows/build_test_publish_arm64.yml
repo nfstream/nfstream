@@ -25,8 +25,8 @@ jobs:
     - name: Install Prerequisites
       run: |
         sudo apt-get update
-        sudo apt-get install autoconf automake libtool pkg-config gettext libjson-c-dev libpcap-dev
-        sudo apt-get install libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison
+        sudo apt-get -y install autoconf automake libtool pkg-config gettext libjson-c-dev libpcap-dev
+        sudo apt-get -y install libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison
 
     - name: Installing NFStream requirements
       run: |
