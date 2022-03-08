@@ -86,7 +86,7 @@ jobs:
         sudo cp src/lib/libndpi.a /usr/local/lib/libndpi.a
         cd ..
         rm -rf nDPI
-        python setup.py bdist_wheel
+        ${{ matrix.python-version }} setup.py bdist_wheel
 
     - name: Generated wheel
       run: |
