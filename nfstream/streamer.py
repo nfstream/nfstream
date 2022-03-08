@@ -249,7 +249,7 @@ class NFStreamer(object):
             raise ValueError("Please specify a valid n_meters parameter (>=1 or 0 for auto scaling).")
         c_cpus, c_cores = cpu_count(logical=True), cpu_count(logical=False)
         if c_cores is None:  # Patch for platforms returning None (https://github.com/giampaolo/psutil/issues/1078)
-            c_cores = 1
+            c_cores = c_cpus
         if value == 0:
             if platform.system() == "Linux" and self._mode == 1:
                 self._n_meters = c_cpus - 1
@@ -259,7 +259,7 @@ class NFStreamer(object):
                         self._n_meters = c_cores - 1
                     else:
                         self._n_meters = int(divmod(c_cpus/2, 1)[0]) - 1
-                else: # weird case, fallback on cpu count.
+                else:  # weird case, fallback on cpu count.
                     self._n_meters = c_cpus - 1
         else:
             if (value + 1) <= c_cpus:
@@ -490,7 +490,7 @@ class NFStreamer(object):
                                                                 iid=NFStreamer.streamer_id,
                                                                 ts=tm.time())
         total_flows = self.to_csv(path=temp_file_path, columns_to_anonymize=columns_to_anonymize, flows_per_file=0)
-        if total_flows > 0: # If there is flows, return Dataframe else return None.
+        if total_flows > 0:  # If there is flows, return Dataframe else return None.
             df = pd.read_csv(temp_file_path)
             if total_flows != df.shape[0]:
                 print("WARNING: {} flows ignored by pandas type conversion. Consider using to_csv() "

@@ -398,6 +398,10 @@ class TestMethods(unittest.TestCase):
             except AssertionError:
                 failures += 1
                 print("{}\t: {}".format(test_case_name.ljust(60, ' '), colored('KO', 'red')))
+                print(" \nExpected:")
+                print(true)
+                print(" \nObtained:")
+                print(test)
         self.assertEqual(failures, 0)
 
     def test_splt(self):
