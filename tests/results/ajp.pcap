@@ -1,5 +1,5 @@
-id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_confidence
-0,13,2223,AJP,Web,4
-1,8,714,Unknown,Unspecified,0
-2,4,2012,Unknown,Unspecified,0
-3,13,2223,AJP,Web,4
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
+0,13,2223,AJP,Web,0,4
+1,8,714,Unknown,Unspecified,0,0
+2,4,2012,Unknown,Unspecified,0,0
+3,13,2223,AJP,Web,0,4

@@ -1,7 +1,7 @@
-id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_confidence
-0,19,23444,Mining,Mining,1
-1,139,191310,Mining,Mining,1
-2,172,163493,Mining,Mining,1
-3,161,115610,Mining,Mining,1
-4,119,82751,Mining,Mining,1
-5,27,4466,Mining,Mining,1
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
+0,19,23444,Mining,Mining,0,4
+1,139,191310,Mining,Mining,0,4
+2,172,163493,Mining,Mining,0,4
+3,161,115610,Mining,Mining,0,4
+4,119,82751,Mining,Mining,0,4
+5,27,4466,Mining,Mining,0,4

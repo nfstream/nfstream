@@ -1,4 +1,4 @@
-id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_confidence
-0,95,15380,OpenVPN,VPN,4
-1,83,13559,OpenVPN,VPN,4
-2,120,28172,OpenVPN,VPN,4
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
+0,95,15380,OpenVPN,VPN,0,4
+1,83,13559,OpenVPN,VPN,0,4
+2,120,28172,OpenVPN,VPN,0,4

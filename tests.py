@@ -322,6 +322,7 @@ class TestMethods(unittest.TestCase):
         for flow in fingerprint_streamer:
             self.assertEqual(flow.application_name, 'TLS.Facebook')
             self.assertEqual(flow.application_category_name, 'SocialNetwork')
+            self.assertEqual(flow.application_is_guessed, 0)
             self.assertEqual(flow.application_confidence, 4)
             self.assertTrue(flow.requested_server_name in ['facebook.com', 'www.facebook.com'])
             self.assertTrue(flow.client_fingerprint in ['bfcc1a3891601edb4f137ab7ab25b840',
@@ -389,6 +390,7 @@ class TestMethods(unittest.TestCase):
                                                            "bidirectional_bytes",
                                                            "application_name",
                                                            "application_category_name",
+                                                           "application_is_guessed",
                                                            "application_confidence"]].to_dict()
 
                 true = pd.read_csv(result_files[file_idx]).to_dict()
@@ -397,10 +399,6 @@ class TestMethods(unittest.TestCase):
             except AssertionError:
                 failures += 1
                 print("{}\t: {}".format(test_case_name.ljust(60, ' '), colored('KO', 'red')))
-                print(" \nExpected:")
-                print(true)
-                print(" \nObtained:")
-                print(test)
         self.assertEqual(failures, 0)
 
     def test_splt(self):

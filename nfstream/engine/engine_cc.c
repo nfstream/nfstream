@@ -1186,6 +1186,7 @@ typedef struct nf_flow {
   char content_type[64];
   char user_agent[256];
   struct ndpi_flow_struct *ndpi_flow;
+  uint8_t guessed;
   ndpi_protocol detected_protocol;
   uint8_t detection_completed;
   ndpi_confidence_t confidence;
@@ -1414,8 +1415,7 @@ uint8_t flow_init_bidirectional_dissection(struct ndpi_detection_module_struct *
   flow_bidirectional_dissection_collect_info(dissector, flow); // Then we collect possible infos.
   if ((flow->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) && (n_dissections == 1)) {
     // Not identified and we are limited to 1, we try to guess.
-    uint8_t is_guessed = 0;
-    flow->detected_protocol = ndpi_detection_giveup(dissector, flow->ndpi_flow, 1, &is_guessed);
+    flow->detected_protocol = ndpi_detection_giveup(dissector, flow->ndpi_flow, 1, &flow->guessed);
     flow_bidirectional_dissection_collect_info(dissector, flow); // Collect potentially guessed infos.
     flow->detection_completed = 1; // Close it.
     flow_free_ndpi_data(flow); // Release dissector references.
@@ -1452,8 +1452,7 @@ void flow_update_bidirectional_dissection(struct ndpi_detection_module_struct *d
 
     if (n_dissections == flow->bidirectional_packets) { // if we reach user defined limit and application is unknown
       if (flow->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) {
-        uint8_t is_guessed = 0;
-        flow->detected_protocol = ndpi_detection_giveup(dissector, flow->ndpi_flow, 1, &is_guessed);
+        flow->detected_protocol = ndpi_detection_giveup(dissector, flow->ndpi_flow, 1, &flow->guessed);
         flow_bidirectional_dissection_collect_info(dissector, flow); // copy guessed infos if present.
       } // We reach it and detection is done, release references.
       flow_free_ndpi_data(flow);
@@ -2036,8 +2035,7 @@ uint8_t meter_update_flow(struct nf_flow *flow, struct nf_packet *packet, uint64
 void meter_expire_flow(struct nf_flow *flow, uint8_t n_dissections, struct ndpi_detection_module_struct *dissector) {
   if (n_dissections) {
     if ((flow->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) && (flow->detection_completed == 0)) {
-      uint8_t is_guessed = 0;
-      flow->detected_protocol = ndpi_detection_giveup(dissector, flow->ndpi_flow, 1, &is_guessed);
+      flow->detected_protocol = ndpi_detection_giveup(dissector, flow->ndpi_flow, 1, &flow->guessed);
       flow_bidirectional_dissection_collect_info(dissector, flow);
     }
     if (!flow->detection_completed) {

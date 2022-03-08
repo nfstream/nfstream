@@ -1,5 +1,5 @@
-id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_confidence
-0,14,1540,NetBIOS,System,4
-1,1,60,ICMP,Network,4
-2,32,3520,NetBIOS,System,4
-3,15,3447,NetBIOS.SMBv1,System,4
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
+0,14,1540,NetBIOS,System,0,4
+1,1,60,ICMP,Network,0,4
+2,32,3520,NetBIOS,System,0,4
+3,15,3447,NetBIOS.SMBv1,System,0,4

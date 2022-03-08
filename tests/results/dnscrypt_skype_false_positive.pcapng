@@ -1,4 +1,4 @@
-id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_confidence
-0,2,836,Unknown,Unspecified,0
-1,2,708,Unknown,Unspecified,0
-2,2,836,Unknown,Unspecified,0
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
+0,2,836,Unknown,Unspecified,0,0
+1,2,708,Unknown,Unspecified,0,0
+2,2,836,Unknown,Unspecified,0,0
