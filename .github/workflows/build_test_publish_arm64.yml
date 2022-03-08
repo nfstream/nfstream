@@ -28,9 +28,13 @@ jobs:
 
     - name: Install Prerequisites
       run: |
+      # sudo add-apt-repository ppa:deadsnakes/ppa
         sudo apt-get update
         sudo apt-get -y install python3-pip autoconf automake libtool pkg-config gettext libjson-c-dev libpcap-dev
         sudo apt-get -y install libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison
+      # sudo apt-get install python3.10 python3.9 python3.7 python3.6
+      # sudo apt-get install libpython3.6-dev libpython3.7-dev libpython3.8-dev libpython3.9-dev libpython3.10-dev
+      # sudo apt-get install python3.10-distutils python3.9-distutils python3.8-distutils python3.7-distutils
 
     - name: Installing NFStream requirements
       run: |
