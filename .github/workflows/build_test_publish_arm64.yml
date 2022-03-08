@@ -105,4 +105,4 @@ jobs:
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      run: twine upload --skip-existing dist/*.whl
+      run: ${{ matrix.python-version }} -m twine upload --skip-existing dist/*.whl
