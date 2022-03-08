@@ -1,3 +1,3 @@
-id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_confidence
 0,15,4997,Z39.50,Network,1
-1,16,1311,Z39.50,Network,0
+1,16,1311,Z39.50,Network,4

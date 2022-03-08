@@ -1,4 +1,4 @@
-id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
-0,1,770,TLS.Cloudflare,Web,0
-1,1,770,TLS.Cloudflare,Web,0
-2,1,770,TLS.Cloudflare,Web,0
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_confidence
+0,1,770,TLS.Cloudflare,Web,4
+1,1,770,TLS.Cloudflare,Web,4
+2,1,770,TLS.Cloudflare,Web,4

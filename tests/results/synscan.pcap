@@ -1,4 +1,4 @@
-id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_confidence
 0,1,58,TLS,Web,1
 1,1,58,IMAP,Email,1
 2,1,58,MySQL,Database,1
@@ -743,7 +743,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 741,1,58,Unknown,Unspecified,0
 742,1,58,Unknown,Unspecified,0
 743,1,58,Unknown,Unspecified,0
-744,1,58,TargusDataspeed,Network,0
+744,1,58,TargusDataspeed,Network,4
 745,1,58,Unknown,Unspecified,0
 746,1,58,Unknown,Unspecified,0
 747,1,58,Unknown,Unspecified,0
@@ -808,7 +808,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 806,1,58,Unknown,Unspecified,0
 807,1,58,Unknown,Unspecified,0
 808,1,58,Unknown,Unspecified,0
-809,1,58,TargusDataspeed,Network,0
+809,1,58,TargusDataspeed,Network,4
 810,1,58,Unknown,Unspecified,0
 811,1,58,Unknown,Unspecified,0
 812,1,58,Unknown,Unspecified,0

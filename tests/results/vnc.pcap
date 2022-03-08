@@ -1,3 +1,3 @@
-id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
-0,3543,256545,VNC,RemoteAccess,0
-1,1008,72613,VNC,RemoteAccess,0
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_confidence
+0,3543,256545,VNC,RemoteAccess,4
+1,1008,72613,VNC,RemoteAccess,4

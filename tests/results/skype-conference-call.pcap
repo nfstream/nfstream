@@ -1,2 +1,2 @@
-id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
-0,200,39687,STUN.SkypeCall,VoIP,0
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_confidence
+0,200,39687,STUN.SkypeCall,VoIP,4

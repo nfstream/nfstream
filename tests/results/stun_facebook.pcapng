@@ -1,2 +1,2 @@
-id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
-0,75,10554,STUN.FacebookVoip,VoIP,0
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_confidence
+0,75,10554,STUN.FacebookVoip,VoIP,4

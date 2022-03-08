@@ -1,4 +1,4 @@
-id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
-0,68,5571,FTP_CONTROL,Download,0
-1,9,1819,FTP_DATA,Download,0
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_confidence
+0,68,5571,FTP_CONTROL,Download,4
+1,9,1819,FTP_DATA,Download,4
 2,1115,1122198,Unknown,Unspecified,0

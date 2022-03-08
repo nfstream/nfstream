@@ -1,3 +1,3 @@
-id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
-0,133,17888,SSH,RemoteAccess,0
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_confidence
+0,133,17888,SSH,RemoteAccess,4
 1,125,17658,SSH,RemoteAccess,1

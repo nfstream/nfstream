@@ -1,5 +1,5 @@
-id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
-0,1,62,TFTP,DataTransfer,0
-1,98,29793,TFTP,DataTransfer,0
-2,1,60,TFTP,DataTransfer,0
-3,4,1208,TFTP,DataTransfer,0
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_confidence
+0,1,62,TFTP,DataTransfer,4
+1,98,29793,TFTP,DataTransfer,4
+2,1,60,TFTP,DataTransfer,4
+3,4,1208,TFTP,DataTransfer,4

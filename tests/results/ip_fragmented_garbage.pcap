@@ -1,2 +1,2 @@
-id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_confidence
 0,29,1566,Unknown,Unspecified,0

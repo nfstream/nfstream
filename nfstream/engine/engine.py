@@ -802,7 +802,6 @@ typedef struct nf_flow {
   char user_agent[256];
   struct ndpi_flow_struct *ndpi_flow;
   ndpi_protocol detected_protocol;
-  uint8_t guessed;
   uint8_t detection_completed;
   ndpi_confidence_t confidence;
 } nf_flow_t;

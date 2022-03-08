@@ -1,3 +1,3 @@
-id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
-0,2,628,DHCP,Network,0
-1,2,684,DHCP,Network,0
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_confidence
+0,2,628,DHCP,Network,4
+1,2,684,DHCP,Network,4

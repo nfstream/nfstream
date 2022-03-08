@@ -1,15 +1,15 @@
-id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
-0,30,17744,HTTP,Web,0
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_confidence
+0,30,17744,HTTP,Web,4
 1,6,412,HTTP,Web,1
 2,6,412,HTTP,Web,1
 3,6,412,HTTP,Web,1
-4,33,18819,HTTP,Web,0
+4,33,18819,HTTP,Web,4
 5,6,412,HTTP,Web,1
 6,6,412,HTTP,Web,1
 7,6,412,HTTP,Web,1
-8,315,252366,HTTP,Web,0
-9,13,7726,HTTP,Web,0
-10,10,2741,HTTP,Web,0
+8,315,252366,HTTP,Web,4
+9,13,7726,HTTP,Web,4
+10,10,2741,HTTP,Web,4
 11,6,412,HTTP,Web,1
 12,6,412,HTTP,Web,1
 13,6,412,HTTP,Web,1
@@ -39,7 +39,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 37,6,412,HTTP,Web,1
 38,6,412,HTTP,Web,1
 39,6,412,HTTP,Web,1
-40,310,253153,HTTP,Web,0
+40,310,253153,HTTP,Web,4
 41,6,412,HTTP,Web,1
 42,6,412,HTTP,Web,1
 43,6,412,HTTP,Web,1
@@ -76,7 +76,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 74,6,412,HTTP,Web,1
 75,6,412,HTTP,Web,1
 76,6,412,HTTP,Web,1
-77,312,252983,HTTP,Web,0
+77,312,252983,HTTP,Web,4
 78,6,412,HTTP,Web,1
 79,6,412,HTTP,Web,1
 80,6,412,HTTP,Web,1
@@ -112,7 +112,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 110,6,412,HTTP,Web,1
 111,6,412,HTTP,Web,1
 112,6,412,HTTP,Web,1
-113,310,253134,HTTP,Web,0
+113,310,253134,HTTP,Web,4
 114,6,412,HTTP,Web,1
 115,6,412,HTTP,Web,1
 116,6,412,HTTP,Web,1
@@ -150,7 +150,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 148,6,412,HTTP,Web,1
 149,6,412,HTTP,Web,1
 150,6,412,HTTP,Web,1
-151,310,252846,HTTP,Web,0
+151,310,252846,HTTP,Web,4
 152,6,412,HTTP,Web,1
 153,6,412,HTTP,Web,1
 154,6,412,HTTP,Web,1
@@ -188,7 +188,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 186,6,412,HTTP,Web,1
 187,6,412,HTTP,Web,1
 188,6,412,HTTP,Web,1
-189,310,253150,HTTP,Web,0
+189,310,253150,HTTP,Web,4
 190,6,412,HTTP,Web,1
 191,6,412,HTTP,Web,1
 192,6,412,HTTP,Web,1
@@ -225,7 +225,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 223,6,412,HTTP,Web,1
 224,6,412,HTTP,Web,1
 225,6,412,HTTP,Web,1
-226,320,253525,HTTP,Web,0
+226,320,253525,HTTP,Web,4
 227,6,412,HTTP,Web,1
 228,6,412,HTTP,Web,1
 229,6,412,HTTP,Web,1
@@ -263,7 +263,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 261,6,412,HTTP,Web,1
 262,6,412,HTTP,Web,1
 263,6,412,HTTP,Web,1
-264,310,253157,HTTP,Web,0
+264,310,253157,HTTP,Web,4
 265,6,412,HTTP,Web,1
 266,6,412,HTTP,Web,1
 267,6,412,HTTP,Web,1
@@ -302,7 +302,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 300,6,412,HTTP,Web,1
 301,6,412,HTTP,Web,1
 302,6,412,HTTP,Web,1
-303,311,252911,HTTP,Web,0
+303,311,252911,HTTP,Web,4
 304,6,412,HTTP,Web,1
 305,6,412,HTTP,Web,1
 306,6,412,HTTP,Web,1
@@ -340,7 +340,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 338,6,412,HTTP,Web,1
 339,6,412,HTTP,Web,1
 340,6,412,HTTP,Web,1
-341,315,253488,HTTP,Web,0
+341,315,253488,HTTP,Web,4
 342,6,412,HTTP,Web,1
 343,6,412,HTTP,Web,1
 344,6,412,HTTP,Web,1
@@ -378,7 +378,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 376,6,412,HTTP,Web,1
 377,6,412,HTTP,Web,1
 378,6,412,HTTP,Web,1
-379,321,253569,HTTP,Web,0
+379,321,253569,HTTP,Web,4
 380,6,412,HTTP,Web,1
 381,6,412,HTTP,Web,1
 382,6,412,HTTP,Web,1
@@ -417,7 +417,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 415,6,412,HTTP,Web,1
 416,6,412,HTTP,Web,1
 417,6,412,HTTP,Web,1
-418,312,252794,HTTP,Web,0
+418,312,252794,HTTP,Web,4
 419,6,412,HTTP,Web,1
 420,6,412,HTTP,Web,1
 421,6,412,HTTP,Web,1
@@ -456,7 +456,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 454,6,412,HTTP,Web,1
 455,6,412,HTTP,Web,1
 456,6,412,HTTP,Web,1
-457,311,252917,HTTP,Web,0
+457,311,252917,HTTP,Web,4
 458,6,412,HTTP,Web,1
 459,6,412,HTTP,Web,1
 460,6,412,HTTP,Web,1
@@ -493,7 +493,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 491,6,412,HTTP,Web,1
 492,6,412,HTTP,Web,1
 493,6,412,HTTP,Web,1
-494,310,253161,HTTP,Web,0
+494,310,253161,HTTP,Web,4
 495,6,412,HTTP,Web,1
 496,6,412,HTTP,Web,1
 497,6,412,HTTP,Web,1
@@ -530,7 +530,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 528,6,412,HTTP,Web,1
 529,6,412,HTTP,Web,1
 530,6,412,HTTP,Web,1
-531,316,253241,HTTP,Web,0
+531,316,253241,HTTP,Web,4
 532,6,412,HTTP,Web,1
 533,6,412,HTTP,Web,1
 534,6,412,HTTP,Web,1
@@ -567,7 +567,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 565,6,412,HTTP,Web,1
 566,6,412,HTTP,Web,1
 567,6,412,HTTP,Web,1
-568,311,253214,HTTP,Web,0
+568,311,253214,HTTP,Web,4
 569,6,412,HTTP,Web,1
 570,6,412,HTTP,Web,1
 571,6,412,HTTP,Web,1
@@ -604,7 +604,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 602,6,412,HTTP,Web,1
 603,6,412,HTTP,Web,1
 604,6,412,HTTP,Web,1
-605,311,252897,HTTP,Web,0
+605,311,252897,HTTP,Web,4
 606,6,412,HTTP,Web,1
 607,6,412,HTTP,Web,1
 608,6,412,HTTP,Web,1
@@ -641,7 +641,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 639,6,412,HTTP,Web,1
 640,6,412,HTTP,Web,1
 641,6,412,HTTP,Web,1
-642,133,107948,HTTP,Web,0
+642,133,107948,HTTP,Web,4
 643,6,412,HTTP,Web,1
 644,6,412,HTTP,Web,1
 645,6,412,HTTP,Web,1

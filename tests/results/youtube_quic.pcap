@@ -1,4 +1,4 @@
-id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed
-0,13,4479,QUIC.Google,Advertisement,0
-1,258,178495,QUIC.YouTube,Media,0
-2,18,8665,QUIC.Google,Advertisement,0
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_confidence
+0,13,4479,QUIC.Google,Advertisement,4
+1,258,178495,QUIC.YouTube,Media,4
+2,18,8665,QUIC.Google,Advertisement,4
