@@ -72,6 +72,12 @@ across experiments.
     <a href="https://github.com/nfstream/nfstream/actions?query=workflow%3Abuild_test_publish_windows">
     <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_publish_windows/master?logo=windows&style=for-the-badge&label=windows" alt="Windows WorkFlows" />
     </a>
+    <a href="https://github.com/nfstream/nfstream/actions?query=workflow%3Abuild_test_publish_aarch64">
+    <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_publish_aarch64/master?logo=arm&style=for-the-badge&label=arm64" alt="ARM64 WorkFlows" />
+    </a>
+    <a href="https://github.com/nfstream/nfstream/actions?query=workflow%3Abuild_test_publish_armhf">
+    <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_publish_armhf/master?logo=arm&style=for-the-badge&label=arm32" alt="ARM32 WorkFlows" />
+    </a>
   </td>
 </tr>
 <tr>
@@ -221,6 +227,7 @@ NFlow(id=0,
       application_name='TLS.Facebook',
       application_category_name='SocialNetwork',
       application_is_guessed=0,
+      application_confidence=4,
       requested_server_name='facebook.com',
       client_fingerprint='bfcc1a3891601edb4f137ab7ab25b840',
       server_fingerprint='2d1eb5817ece335c24904f516ad5da12',
