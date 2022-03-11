@@ -338,7 +338,6 @@ struct ndpi_flow_tcp_struct {
   uint32_t mail_imap_stage:3, mail_imap_starttls:2;
   uint32_t soap_stage:1;
   uint8_t skype_packet_id;
-  uint8_t citrix_packet_id;
   uint8_t lotus_notes_packet_id;
   uint8_t teamviewer_stage;
   uint8_t prev_zmq_pkt_len;
