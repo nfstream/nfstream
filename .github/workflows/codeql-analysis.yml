@@ -58,7 +58,7 @@ jobs:
         rm -rf libpcap
         git clone --branch dev https://github.com/ntop/nDPI.git
         cd nDPI
-        ./autogen.sh --with-local-libgcrypt --enable-tls-sigs
+        ./autogen.sh --with-local-libgcrypt
         ./configure
         make
         sudo mkdir /usr/local/include/ndpi
