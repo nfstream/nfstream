@@ -27,16 +27,16 @@ def get_files_list(path):
     files.sort()
     return files
 
-
-pcap_files = get_files_list(os.path.join("tests", "pcaps"))
-for pcap_file in tqdm(pcap_files):
-    df = NFStreamer(source=pcap_file, n_dissections=20, n_meters=1).to_pandas()[["id",
-                                                                                 "bidirectional_packets",
-                                                                                 "bidirectional_bytes",
-                                                                                 "application_name",
-                                                                                 "application_category_name",
-                                                                                 "application_is_guessed",
-                                                                                 "application_confidence"]]
-    df.to_csv(pcap_file.replace("pcaps",
-                                "results"),
-              index=False)
+if __name__ == '__main__':  # Mandatory if you are running on Windows Platform
+    pcap_files = get_files_list(os.path.join("tests", "pcaps"))
+    for pcap_file in tqdm(pcap_files):
+        df = NFStreamer(source=pcap_file, n_dissections=20, n_meters=1).to_pandas()[["id",
+                                                                                     "bidirectional_packets",
+                                                                                     "bidirectional_bytes",
+                                                                                     "application_name",
+                                                                                     "application_category_name",
+                                                                                     "application_is_guessed",
+                                                                                     "application_confidence"]]
+        df.to_csv(pcap_file.replace("pcaps",
+                                    "results"),
+                  index=False)

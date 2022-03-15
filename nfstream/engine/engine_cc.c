@@ -115,7 +115,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define DLT_IPV6  229
 #define DLT_EN10MB  1
 #define DLT_IEEE802_11_RADIO  127
-#define DLT_RAW  101
+#define DLT_RAW  12
 #endif
 
 
