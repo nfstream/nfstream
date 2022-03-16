@@ -91,6 +91,8 @@ try:
                 pypi_compliant_tag[2] = pypi_compliant_tag[2].replace("linux", "manylinux1")
             if pypi_compliant_tag[2] == "manylinux1_aarch64":
                 pypi_compliant_tag[2] = "manylinux2014_aarch64"
+            if pypi_compliant_tag[2] == "manylinux1_armv7l":
+                pypi_compliant_tag[2] = "manylinux2014_armv7l"
             pypi_compliant_tag = tuple(pypi_compliant_tag)
             return pypi_compliant_tag
 
