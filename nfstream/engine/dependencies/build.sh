@@ -61,10 +61,11 @@ build_libndpi() {
   echo "Compiling libndpi"
   echo "---------------------------------------------------------------------------------------------------------------"
   cd nDPI
-  ./autogen.sh
-  ./configure CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib" --with-local-libgcrypt --with-only-libndpi
+  ./autogen.sh --with-local-libgcrypt
+  ./configure CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib"
+  cd src/lib
   make
-  cd ..
+  cd ../..
   echo "---------------------------------------------------------------------------------------------------------------"
   echo ""
   }
@@ -77,6 +78,9 @@ fi
 build_libgpgerror
 build_libgcrypt
 build_libndpi
+
+# Remove temporary build directory
+rm -rf /tmp/nfstream_build
 
 
 
