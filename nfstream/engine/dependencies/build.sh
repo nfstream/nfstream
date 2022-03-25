@@ -33,7 +33,8 @@ build_libgpgerror() {
   cd libgpg-error
   ./autogen.sh
   ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc --disable-nls
-  make DESTDIR=$PWD install
+  make
+  make DESTDIR=/tmp/nfstream_build install
   cd ..
   echo "---------------------------------------------------------------------------------------------------------------"
   echo ""
@@ -46,7 +47,7 @@ build_libgcrypt() {
   echo "---------------------------------------------------------------------------------------------------------------"
   cd libgcrypt
   ./autogen.sh
-  ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc --with-libgpg-error-prefix="../libgpg-error"
+  ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib" --with-libgpg-error-prefix="/tmp/nfstream_build/usr/local"
   make
   cd ..
   echo "---------------------------------------------------------------------------------------------------------------"
