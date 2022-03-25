@@ -45,7 +45,7 @@ build_libgcrypt() {
   echo "Compiling libgcrypt"
   echo "---------------------------------------------------------------------------------------------------------------"
   cd libgcrypt
-  ./autogen.sh
+  env CFLAGS='-L../libgpg-error/src/.libs' ./autogen.sh
   ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc
   make
   cd ..
