@@ -17,6 +17,7 @@ import sys
 import os
 import platform
 import pathlib
+import shutil
 import subprocess
 from setuptools import setup
 from setuptools.command.build_ext import build_ext
@@ -72,7 +73,10 @@ class BuildNativeCommand(build_ext):
     def run(self):
         # Build Dependencies
         if os.name != 'posix':  # Windows case, no libpcap
-            build_script_command = """'{}'""".format(str(BUILD_SCRIPT_PATH) + ' --skip-libpcap')
+            build_script_command = r"""'{}'""".format(str(BUILD_SCRIPT_PATH) + ' --skip-libpcap')
+            msys2 = shutil.which('msys2')
+            print("-----")
+            print(msys2)
             print(build_script_command)
             subprocess.check_call(["msys2", "-c", build_script_command], shell=False)
         else:
