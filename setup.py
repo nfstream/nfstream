@@ -47,6 +47,7 @@ def setup_engine_cc():
     print("\nSetting up engine_cc. Platform: {plat}, Byteorder: {bo}".format(plat=sys.platform, bo=sys.byteorder))
     subprocess.check_call([platform_compiler,
                            '-I' + str(DEPENDENCIES_DIR.joinpath("nDPI").joinpath("src").joinpath("include")),
+                           '-I' + str(DEPENDENCIES_DIR.joinpath("libpcap")),
                            '-shared',
                            '-o', str(ENGINE_DIR.joinpath("engine_cc.so")),
                            '-g', '-fPIC', '-DPIC', '-O2', '-Wall',

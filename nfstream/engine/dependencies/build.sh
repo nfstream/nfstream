@@ -69,9 +69,8 @@ build_libndpi() {
   echo ""
   }
 
-lpcap = 1
 cd nfstream/engine/dependencies
-if [ $# -eq 0 ]
+if [ $# -eq 0 ] # If there is any argument, then we skip libpcap build
   then
     build_libpcap
 fi
