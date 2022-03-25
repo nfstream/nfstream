@@ -25,6 +25,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        submodules: recursive
 
     - name: Install Prerequisites
       run: |
@@ -40,15 +42,7 @@ jobs:
       run: |
         ${{ matrix.python-version }} -m pip install -r dev_requirements.txt
 
-    - name: Check cached dependencies
-      id: checkCached
-      run: |
-        exit `expr 1 - $(ls /usr/local/lib/ | grep libgpg-error.a | wc -l)`
-        exit `expr 1 - $(ls /usr/local/lib/ | grep libgcrypt.a | wc -l)`
-        exit `expr 1 - $(ls /usr/local/lib/ | grep libpcap.a | wc -l)`
-
     - name: Build Engine dependencies (non changing)
-      if: failure() && steps.checkCached.outcome == 'failure'
       run: |
         git clone --branch libgpg-error-1.42 https://github.com/gpg/libgpg-error
         cd libgpg-error

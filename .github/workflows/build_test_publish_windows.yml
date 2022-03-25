@@ -26,6 +26,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        submodules: recursive
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
@@ -53,15 +55,16 @@ jobs:
          Start-Process npcap-1.60-oem.exe -ArgumentList "/loopback_support=yes /winpcap_mode=yes /dot11_support=yes /S" -wait
 
     - name: Build and install libgpg-error
+      shell: msys2 {0}
       run: |
-         msys2 -c 'git clone --branch libgpg-error-1.42 https://github.com/gpg/libgpg-error'
+         git clone --branch libgpg-error-1.42 https://github.com/gpg/libgpg-error
          cd libgpg-error
-         msys2 -c './autogen.sh'
-         msys2 -c './configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc --disable-nls'
-         msys2 -c 'make'
-         msys2 -c 'make install'
-         msys2 -c 'cd ..'
-         msys2 -c 'rm -rf libgpg-error/'
+         ./autogen.sh
+         ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc --disable-nls
+         make
+         make install
+         cd ..
+         rm -rf libgpg-error
 
     - name: Build and install libgcrypt
       run: |
