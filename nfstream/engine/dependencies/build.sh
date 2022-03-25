@@ -49,6 +49,7 @@ build_libgcrypt() {
   ./autogen.sh
   ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib" --with-libgpg-error-prefix="/tmp/nfstream_build/usr/local"
   make
+  make DESTDIR=/tmp/nfstream_build install
   cd ..
   echo "---------------------------------------------------------------------------------------------------------------"
   echo ""
@@ -60,8 +61,7 @@ build_libndpi() {
   echo "Compiling libndpi"
   echo "---------------------------------------------------------------------------------------------------------------"
   cd nDPI
-  ./autogen.sh --with-local-libgcrypt
-  ./configure
+  ./configure CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib" --with-local-libgcrypt
   make
   cd ..
   echo "---------------------------------------------------------------------------------------------------------------"
