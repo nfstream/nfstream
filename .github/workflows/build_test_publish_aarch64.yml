@@ -42,44 +42,8 @@ jobs:
       run: |
         ${{ matrix.python-version }} -m pip install -r dev_requirements.txt
 
-    - name: Build Engine dependencies (non changing)
+    - name: Build
       run: |
-        git clone --branch libgpg-error-1.42 https://github.com/gpg/libgpg-error
-        cd libgpg-error
-        ./autogen.sh
-        ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc --disable-nls
-        make
-        sudo make install
-        cd ..
-        rm -rf libgpg-error
-        git clone --branch libgcrypt-1.8.8 https://github.com/gpg/libgcrypt
-        cd libgcrypt
-        ./autogen.sh
-        ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc
-        make
-        sudo make install
-        cd ..
-        rm -rf libgcrypt
-        git clone --branch fanout https://github.com/tsnoam/libpcap
-        cd libpcap
-        ./configure --enable-ipv6 --disable-universal --enable-dbus=no --without-libnl
-        make
-        sudo make install
-        cd ..
-        rm -rf libpcap
-
-    - name: Build Engine dependencies (changing)
-      run: |
-        git clone --branch dev https://github.com/ntop/nDPI.git
-        cd nDPI
-        ./autogen.sh --with-local-libgcrypt
-        ./configure
-        make
-        sudo cp -a src/include/. /usr/local/include/ndpi/
-        sudo cp example/ndpiReader /usr/local/bin/ndpiReader
-        sudo cp src/lib/libndpi.a /usr/local/lib/libndpi.a
-        cd ..
-        rm -rf nDPI
         ${{ matrix.python-version }} setup.py bdist_wheel
 
     - name: Generated wheel

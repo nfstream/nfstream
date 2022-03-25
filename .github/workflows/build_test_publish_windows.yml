@@ -67,6 +67,7 @@ jobs:
          rm -rf libgpg-error
 
     - name: Build and install libgcrypt
+      shell: msys2 {0}
       run: |
          msys2 -c 'git clone --branch libgcrypt-1.8.8 https://github.com/gpg/libgcrypt'
          cd libgcrypt
@@ -91,13 +92,8 @@ jobs:
          msys2 -c 'rm -rf nDPI/'
 
     - name: Build NFStream
+      shell: msys2 {0}
       run: |
-         cd nfstream
-         cd engine
-         msys2 -c 'gcc -Indpi_includes -shared -o engine_cc.so -g -O2 -Wall engine_cc.c libndpi.a D:/a/_temp/msys64/mingw64/lib/libgcrypt.a D:/a/_temp/msys64/mingw64/lib/libgpg-error.a D:/a/_temp/msys64/mingw64/lib/libws2_32.a'
-         msys2 -c 'rm -rf ndpi_includes/'
-         cd ..
-         cd ..
          python setup.py bdist_wheel
 
     - name: Test NFStream

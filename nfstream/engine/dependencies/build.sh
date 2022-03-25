@@ -33,6 +33,7 @@ build_libgpgerror() {
   cd libgpg-error
   ./autogen.sh
   ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc --disable-nls
+  make
   cd ..
   echo "---------------------------------------------------------------------------------------------------------------"
   echo ""
@@ -66,11 +67,15 @@ build_libndpi() {
   echo ""
   }
 
-
+lpcap = 1
 cd nfstream/engine/dependencies
-build_libpcap
+if [ $# -eq 0 ]
+  then
+    build_libpcap
+fi
 build_libgpgerror
 build_libgcrypt
+build_libndpi
 
 
 

@@ -365,6 +365,7 @@ struct ndpi_flow_udp_struct {
   uint32_t wireguard_peer_index[2];
   uint8_t *quic_reasm_buf;
   uint32_t quic_reasm_buf_len;
+  uint32_t quic_reasm_buf_last_pos;
   uint8_t csgo_strid[18], csgo_state, csgo_s2;
   uint32_t csgo_id2;
   uint8_t rdp_to_srv[3], rdp_from_srv[3], rdp_to_srv_pkts, rdp_from_srv_pkts;

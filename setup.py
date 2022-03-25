@@ -15,20 +15,28 @@ If not, see <http://www.gnu.org/licenses/>.
 
 import sys
 import os
-import subprocess
 import platform
-
-if (not sys.version_info[0] == 3) and (not sys.version_info[1] >= 6):
-    sys.exit("Sorry, nfstream requires Python3.6+ versions.")
-
-
+import pathlib
+import subprocess
 from setuptools import setup
 from setuptools.command.build_ext import build_ext
 from setuptools.command.build_py import build_py
 
+if (not sys.version_info[0] == 3) and (not sys.version_info[1] >= 6):
+    sys.exit("Sorry, nfstream requires Python3.6+ versions.")
 
-this_directory = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+BUILD_SCRIPT_PATH = pathlib.Path(__file__).parent.resolve().joinpath("nfstream").joinpath("engine")\
+    .joinpath("dependencies").joinpath("build.sh")
+
+DEPENDENCIES_DIR = pathlib.Path(__file__).parent.resolve().joinpath("nfstream").joinpath("engine")\
+    .joinpath("dependencies")
+
+ENGINE_DIR = pathlib.Path(__file__).parent.resolve().joinpath("nfstream").joinpath("engine")
+
+THIS_DIRECTORY = os.path.abspath(os.path.dirname(__file__))
+
+
+with open(os.path.join(THIS_DIRECTORY, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 
@@ -37,14 +45,19 @@ def setup_engine_cc():
     if sys.platform == 'darwin':
         platform_compiler = "clang"
     print("\nSetting up engine_cc. Platform: {plat}, Byteorder: {bo}".format(plat=sys.platform, bo=sys.byteorder))
-    subprocess.check_call([platform_compiler, '-I/usr/local/include/ndpi', '-shared', '-o',
-                           'nfstream/engine/engine_cc.so',
-                           '-g', '-fPIC', '-DPIC', '-O2', '-Wall', 'nfstream/engine/engine_cc.c',
+    subprocess.check_call([platform_compiler,
+                           '-I' + str(DEPENDENCIES_DIR.joinpath("nDPI").joinpath("src").joinpath("include")),
+                           '-shared',
+                           '-o', str(ENGINE_DIR.joinpath("engine_cc.so")),
+                           '-g', '-fPIC', '-DPIC', '-O2', '-Wall',
+                           str(ENGINE_DIR.joinpath("engine_cc.c")),
                            # Required compiled static libs
-                           '/usr/local/lib/libpcap.a',
-                           '/usr/local/lib/libndpi.a',
-                           '/usr/local/lib/libgcrypt.a',
-                           '/usr/local/lib/libgpg-error.a'
+                           str(DEPENDENCIES_DIR.joinpath("libpcap").joinpath("libpcap.a")),
+                           str(DEPENDENCIES_DIR.joinpath("nDPI").joinpath("src").joinpath("lib").joinpath("libndpi.a")),
+                           str(DEPENDENCIES_DIR.joinpath("libgcrypt").joinpath("src").joinpath(".libs")\
+                               .joinpath("libgcrypt.a")),
+                           str(DEPENDENCIES_DIR.joinpath("libgpg-error").joinpath("src").joinpath(".libs")\
+                               .joinpath("libgpg-error.a")),
                            ])
 
 
@@ -56,10 +69,13 @@ class BuildPyCommand(build_py):
 
 class BuildNativeCommand(build_ext):
     def run(self):
-        if os.name != 'posix':  # Windows case, handle it manually.
-            pass
+        # Build Dependencies
+        if os.name != 'posix':  # Windows case, no libpcap
+            subprocess.check_call([str(BUILD_SCRIPT_PATH), '--skip-libpcap'])
         else:
-            setup_engine_cc()
+            subprocess.check_call([str(BUILD_SCRIPT_PATH)])
+        # Build engine
+        setup_engine_cc()
         build_ext.run(self)
 
 
