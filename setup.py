@@ -75,10 +75,7 @@ class BuildNativeCommand(build_ext):
         if os.name != 'posix':  # Windows case, no libpcap
             build_script_command = r"""'{}'""".format(str(BUILD_SCRIPT_PATH) + ' --skip-libpcap')
             msys2 = shutil.which('msys2')
-            print("-----")
-            print(msys2)
-            print(build_script_command)
-            subprocess.check_call(["msys2", "-c", build_script_command], shell=False)
+            subprocess.check_call([msys2, "-c", build_script_command], shell=False)
         else:
             subprocess.check_call([str(BUILD_SCRIPT_PATH)])
         # Build engine
