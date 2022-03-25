@@ -1,4 +1,3 @@
-#!/bin/sh
 #-----------------------------------------------------------------------------------------------------------------------
 # build.sh
 # Copyright (C) 2019-22 - NFStream Developers
@@ -61,8 +60,8 @@ build_libndpi() {
   echo "Compiling libndpi"
   echo "---------------------------------------------------------------------------------------------------------------"
   cd nDPI
-  ./autogen.sh --with-local-libgcrypt
-  ./configure CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib"
+  ./autogen.sh
+  ./configure CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib" --with-local-libgcrypt
   cd src/lib
   make
   cd ../..
@@ -78,10 +77,6 @@ fi
 build_libgpgerror
 build_libgcrypt
 build_libndpi
-
-# Remove temporary build directory
-rm -rf /tmp/nfstream_build
-
 
 
 

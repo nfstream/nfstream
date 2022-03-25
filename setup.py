@@ -80,7 +80,7 @@ class BuildNativeCommand(build_ext):
             msys2 = shutil.which('msys2')
             subprocess.check_call([msys2, "-c", build_script_command])
         else:
-            subprocess.check_call([str(BUILD_SCRIPT_PATH)])
+            subprocess.check_call([str(BUILD_SCRIPT_PATH)], shell=True)
         # Build engine
         setup_engine_cc()
         build_ext.run(self)
