@@ -33,7 +33,7 @@ build_libgpgerror() {
   cd libgpg-error
   ./autogen.sh
   ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc --disable-nls
-  make
+  make DESTDIR=$PWD install
   cd ..
   echo "---------------------------------------------------------------------------------------------------------------"
   echo ""
@@ -45,8 +45,8 @@ build_libgcrypt() {
   echo "Compiling libgcrypt"
   echo "---------------------------------------------------------------------------------------------------------------"
   cd libgcrypt
-  env CFLAGS='-L../libgpg-error/src/.libs' ./autogen.sh
-  ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc
+  ./autogen.sh
+  ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc --with-libgpg-error-prefix="../libgpg-error"
   make
   cd ..
   echo "---------------------------------------------------------------------------------------------------------------"
