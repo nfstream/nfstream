@@ -19,6 +19,7 @@ build_libpcap() {
   cd libpcap
   ./configure --enable-ipv6 --disable-universal --enable-dbus=no --without-libnl
   make
+  make DESTDIR=/tmp/nfstream_build install
   cd ..
   echo "---------------------------------------------------------------------------------------------------------------"
   echo ""
@@ -62,9 +63,7 @@ build_libndpi() {
   cd nDPI
   ./autogen.sh
   ./configure CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib" --with-local-libgcrypt
-  cd src/lib
   make
-  cd ../..
   echo "---------------------------------------------------------------------------------------------------------------"
   echo ""
   }
@@ -77,6 +76,7 @@ fi
 build_libgpgerror
 build_libgcrypt
 build_libndpi
+rm -rf /tmp/nfstream_build
 
 
 
