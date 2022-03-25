@@ -28,7 +28,7 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Install Prerequisites
+    - name: Install prerequisites
       run: |
         sudo add-apt-repository -y ppa:deadsnakes/ppa
         sudo apt-get -y update
@@ -38,7 +38,7 @@ jobs:
         sudo apt-get -y install libpython3.6-dev libpython3.7-dev libpython3.8-dev libpython3.9-dev libpython3.10-dev
         sudo apt-get -y install python3.10-distutils python3.9-distutils python3.8-distutils python3.7-distutils
 
-    - name: Installing NFStream requirements
+    - name: Install requirements
       run: |
         ${{ matrix.python-version }} -m pip install -r dev_requirements.txt
 
@@ -46,11 +46,11 @@ jobs:
       run: |
         ${{ matrix.python-version }} setup.py bdist_wheel
 
-    - name: Generated wheel
+    - name: Display generated wheel name
       run: |
         ls dist/
 
-    - name: Testing and coverage report generation
+    - name: Test and generate coverage report
       run: |
         ${{ matrix.python-version }} -m coverage run tests.py
         ${{ matrix.python-version }} -m coverage combine

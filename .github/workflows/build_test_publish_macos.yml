@@ -30,7 +30,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
         submodules: recursive
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Setup py-${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
@@ -41,7 +41,6 @@ jobs:
     - name: Get pip cache path
       id: get-pip-path
       run: |
-        python -c "import sys; print(sys.version)"
         id=$(echo ${{ env.pythonLocation }} | sed 's/\/bin//g')
         echo "::set-output name=id::$id"
 
@@ -56,7 +55,7 @@ jobs:
       run: |
         brew install autoconf automake libtool pkg-config gettext json-c
 
-    - name: Installing NFStream requirements
+    - name: Install requirements
       if: steps.pip-cache.outputs.cache-hit != 'true'
       run: |
         pip install -r dev_requirements.txt
@@ -65,11 +64,11 @@ jobs:
       run: |
         MACOSX_DEPLOYMENT_TARGET=10.14 python setup.py bdist_wheel
 
-    - name: Generated wheel
+    - name: Display generated wheel name
       run: |
         ls dist/
 
-    - name: Testing and coverage report generation
+    - name: Test and generate coverage report
       run: |
         python -m coverage run tests.py
         python -m coverage combine
