@@ -76,7 +76,7 @@ def setup_engine_cc():
 
 def setup_dependencies():
     if os.name != 'posix':  # Windows case, no libpcap
-        build_script_command = r"""'{}'""".format(BUILD_SCRIPT_PATH + " --skip-libpcap")
+        build_script_command = r"""'{}'""".format(BUILD_SCRIPT_PATH)
         msys2 = shutil.which('msys2')
         subprocess.check_call([msys2, "-l", "-c", build_script_command], shell=True)
     else:
