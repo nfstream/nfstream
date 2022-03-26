@@ -59,7 +59,7 @@ def setup_engine_cc():
                                    DEPENDENCIES_DIR + "/nDPI/src/lib/libndpi.a",
                                    DEPENDENCIES_DIR + "/libgcrypt/src/.libs/libgcrypt.a",
                                    DEPENDENCIES_DIR + "/libgpg-error/src/.libs/libgpg-error.a"
-                               )])
+                               )], shell=True)
     else:
         subprocess.check_call([platform_compiler,
                                '-I' + DEPENDENCIES_DIR + "/nDPI/src/include",
