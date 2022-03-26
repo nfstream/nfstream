@@ -26,13 +26,14 @@ from setuptools.command.build_py import build_py
 if (not sys.version_info[0] == 3) and (not sys.version_info[1] >= 6):
     sys.exit("Sorry, nfstream requires Python3.6+ versions.")
 
-BUILD_SCRIPT_PATH = pathlib.Path(__file__).parent.resolve().joinpath("nfstream").joinpath("engine")\
-    .joinpath("dependencies").joinpath("build.sh")
+BUILD_SCRIPT_PATH = str(pathlib.Path(__file__).parent.resolve().joinpath("nfstream").joinpath("engine")
+                        .joinpath("dependencies").joinpath("build.sh")).replace("\\", "/").replace("//", "/")
 
-DEPENDENCIES_DIR = pathlib.Path(__file__).parent.resolve().joinpath("nfstream").joinpath("engine")\
-    .joinpath("dependencies")
+DEPENDENCIES_DIR = str(pathlib.Path(__file__).parent.resolve().joinpath("nfstream").joinpath("engine")
+                       .joinpath("dependencies")).replace("\\", "/").replace("//", "/")
 
-ENGINE_DIR = pathlib.Path(__file__).parent.resolve().joinpath("nfstream").joinpath("engine")
+ENGINE_DIR = str(pathlib.Path(__file__).parent.resolve().joinpath("nfstream").joinpath("engine")).replace("\\", "/")\
+    .replace("//", "/")
 
 THIS_DIRECTORY = os.path.abspath(os.path.dirname(__file__))
 
@@ -46,21 +47,40 @@ def setup_engine_cc():
     if sys.platform == 'darwin':
         platform_compiler = "clang"
     print("\nSetting up engine_cc. Platform: {plat}, Byteorder: {bo}".format(plat=sys.platform, bo=sys.byteorder))
-    subprocess.check_call([platform_compiler,
-                           '-I' + str(DEPENDENCIES_DIR.joinpath("nDPI").joinpath("src").joinpath("include")),
-                           '-I' + str(DEPENDENCIES_DIR.joinpath("libpcap")),
-                           '-shared',
-                           '-o', str(ENGINE_DIR.joinpath("engine_cc.so")),
-                           '-g', '-fPIC', '-DPIC', '-O2', '-Wall',
-                           str(ENGINE_DIR.joinpath("engine_cc.c")),
-                           # Required compiled static libs
-                           str(DEPENDENCIES_DIR.joinpath("libpcap").joinpath("libpcap.a")),
-                           str(DEPENDENCIES_DIR.joinpath("nDPI").joinpath("src").joinpath("lib").joinpath("libndpi.a")),
-                           str(DEPENDENCIES_DIR.joinpath("libgcrypt").joinpath("src").joinpath(".libs")\
-                               .joinpath("libgcrypt.a")),
-                           str(DEPENDENCIES_DIR.joinpath("libgpg-error").joinpath("src").joinpath(".libs")\
-                               .joinpath("libgpg-error.a")),
-                           ])
+    if os.name != 'posix':
+        msys2 = shutil.which('msys2')
+        subprocess.check_call([msys2,
+                               "-l",
+                               "-c",
+                               """'gcc {} -shared -o {} -g -fPIC -DPIC -O2 -Wall {} {} {} {}'""".format(
+                                   '-I' + DEPENDENCIES_DIR + "/nDPI/src/include",
+                                   ENGINE_DIR + "/engine_cc.so",
+                                   ENGINE_DIR + "/engine_cc.c",
+                                   DEPENDENCIES_DIR + "/nDPI/src/lib/libndpi.a",
+                                   DEPENDENCIES_DIR + "/libgcrypt/src/.libs/libgcrypt.a",
+                                   DEPENDENCIES_DIR + "/libgpg-error/src/.libs/libgpg-error.a"
+                               )])
+    else:
+        subprocess.check_call([platform_compiler,
+                               '-I' + DEPENDENCIES_DIR + "/nDPI/src/include",
+                               '-I' + DEPENDENCIES_DIR + "/libpcap",
+                               '-shared',
+                               '-o', ENGINE_DIR + "/engine_cc.so",
+                               '-g', '-fPIC', '-DPIC', '-O2', '-Wall',
+                               ENGINE_DIR + "/engine_cc.c",
+                               DEPENDENCIES_DIR + "/libpcap/libpcap.a",
+                               DEPENDENCIES_DIR + "/nDPI/src/lib/libndpi.a",
+                               DEPENDENCIES_DIR + "/libgcrypt/src/.libs/libgcrypt.a",
+                               DEPENDENCIES_DIR + "/libgpg-error/src/.libs/libgpg-error.a"])
+
+
+def setup_dependencies():
+    if os.name != 'posix':  # Windows case, no libpcap
+        build_script_command = r"""'{}'""".format(BUILD_SCRIPT_PATH + "--skip-libpcap")
+        msys2 = shutil.which('msys2')
+        subprocess.check_call([msys2, "-l", "-c", build_script_command], shell=True)
+    else:
+        subprocess.check_call([str(BUILD_SCRIPT_PATH)], shell=True)
 
 
 class BuildPyCommand(build_py):
@@ -72,15 +92,7 @@ class BuildPyCommand(build_py):
 class BuildNativeCommand(build_ext):
     def run(self):
         # Build Dependencies
-        if os.name != 'posix':  # Windows case, no libpcap
-            build_script_command = r"""'{}'""".format(
-                str(BUILD_SCRIPT_PATH).replace("\\", "/").replace("//", "/")
-            )
-            print(build_script_command)
-            msys2 = shutil.which('msys2')
-            subprocess.check_call([msys2, "-l", "-c", build_script_command], shell=True)
-        else:
-            subprocess.check_call([str(BUILD_SCRIPT_PATH)], shell=True)
+        setup_dependencies()
         # Build engine
         setup_engine_cc()
         build_ext.run(self)
