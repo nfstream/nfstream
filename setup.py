@@ -27,7 +27,7 @@ if (not sys.version_info[0] == 3) and (not sys.version_info[1] >= 6):
     sys.exit("Sorry, nfstream requires Python3.6+ versions.")
 
 BUILD_SCRIPT_PATH = str(pathlib.Path(__file__).parent.resolve().joinpath("nfstream").joinpath("engine")\
-                        .joinpath("build.sh")).replace("\\", "/").replace("//", "/")
+                        .joinpath("build")).replace("\\", "/").replace("//", "/")
 
 THIS_DIRECTORY = os.path.abspath(os.path.dirname(__file__))
 
@@ -38,11 +38,14 @@ with open(os.path.join(THIS_DIRECTORY, 'README.md'), encoding='utf-8') as f:
 
 def setup_engine_cc():
     if os.name != 'posix':  # Windows case, no libpcap
-        build_script_command = r"""'{}'""".format(BUILD_SCRIPT_PATH)
+        build_script_command = r"""'{}'""".format(BUILD_SCRIPT_PATH + "_windows.sh")
         msys2 = shutil.which('msys2')
         subprocess.check_call([msys2, "-l", "-c", build_script_command], shell=True)
     else:
-        subprocess.check_call([str(BUILD_SCRIPT_PATH)], shell=True)
+        if sys.platform == 'darwin':
+            subprocess.check_call([BUILD_SCRIPT_PATH + "_macos.sh"], shell=True)
+        else:
+            subprocess.check_call([BUILD_SCRIPT_PATH + "_linux.sh"], shell=True)
 
 
 class BuildPyCommand(build_py):

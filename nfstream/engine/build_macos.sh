@@ -1,6 +1,5 @@
-#!/bin/sh
 #-----------------------------------------------------------------------------------------------------------------------
-# build.sh
+# build_macos.sh
 # Copyright (C) 2019-22 - NFStream Developers
 # This file is part of NFStream, a Flexible Network Data Analysis Framework (https://www.nfstream.org/).
 # NFStream is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
@@ -74,23 +73,7 @@ cd nfstream/engine/dependencies
 build_libgpgerror
 build_libgcrypt
 build_libndpi
-
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-  build_libpcap
-  cd ..
-  gcc -Idependencies/nDPI/src/include -Idependencies/libpcap -shared -o engine_cc.so -g -fPIC -DPIC -O2 -Wall engine_cc.c dependencies/libpcap/libpcap.a dependencies/nDPI/src/lib/libndpi.a dependencies/libgcrypt/src/.libs/libgcrypt.a dependencies/libgpg-error/src/.libs/libgpg-error.a
-elif [[ "$OSTYPE" == "darwin"* ]]; then
-  build_libpcap
-  cd ..
-  clang -Idependencies/nDPI/src/include -Idependencies/libpcap -shared -o engine_cc.so -g -fPIC -DPIC -O2 -Wall engine_cc.c dependencies/libpcap/libpcap.a dependencies/nDPI/src/lib/libndpi.a dependencies/libgcrypt/src/.libs/libgcrypt.a dependencies/libgpg-error/src/.libs/libgpg-error.a
-elif [[ "$OSTYPE" == "msys" ]]; then
-  cd ..
-  gcc -Idependencies/nDPI/src/include -shared -o engine_cc.so -g -fPIC -DPIC -O2 -Wall engine_cc.c dependencies/nDPI/src/lib/libndpi.a dependencies/libgcrypt/src/.libs/libgcrypt.a dependencies/libgpg-error/src/.libs/libgpg-error.a
-else
-  echo "Detected OS is not supported yet."
-fi
-
+build_libpcap
+cd ..
+clang -Idependencies/nDPI/src/include -Idependencies/libpcap -shared -o engine_cc.so -g -fPIC -DPIC -O2 -Wall engine_cc.c dependencies/libpcap/libpcap.a dependencies/nDPI/src/lib/libndpi.a dependencies/libgcrypt/src/.libs/libgcrypt.a dependencies/libgpg-error/src/.libs/libgpg-error.a
 rm -rf /tmp/nfstream_build
-
-
-
