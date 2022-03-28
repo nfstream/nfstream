@@ -48,7 +48,7 @@ build_libndpi() {
   echo "---------------------------------------------------------------------------------------------------------------"
   cd nDPI
   ./autogen.sh
-  env CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib" ./configure --with-local-libgcrypt --with-only-libndpi
+  env CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib" ./configure --with-local-libgcrypt
   make
   cd ..
   echo "---------------------------------------------------------------------------------------------------------------"
