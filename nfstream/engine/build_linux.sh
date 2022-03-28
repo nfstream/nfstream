@@ -62,7 +62,7 @@ build_libndpi() {
   echo "---------------------------------------------------------------------------------------------------------------"
   cd nDPI
   ./autogen.sh
-  env CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib" ./configure --with-local-libgcrypt
+  env CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib" ./configure --with-local-libgcrypt --with-only-libndpi
   make
   cd ..
   echo "---------------------------------------------------------------------------------------------------------------"
@@ -70,10 +70,10 @@ build_libndpi() {
   }
 
 cd nfstream/engine/dependencies
+build_libpcap
 build_libgpgerror
 build_libgcrypt
 build_libndpi
-build_libpcap
 cd ..
 gcc -Idependencies/nDPI/src/include -Idependencies/libpcap -shared -o engine_cc.so -g -fPIC -DPIC -O2 -Wall engine_cc.c dependencies/libpcap/libpcap.a dependencies/nDPI/src/lib/libndpi.a dependencies/libgcrypt/src/.libs/libgcrypt.a dependencies/libgpg-error/src/.libs/libgpg-error.a
 rm -rf /tmp/nfstream_build
