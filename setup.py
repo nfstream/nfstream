@@ -52,7 +52,7 @@ def setup_engine_cc():
         subprocess.check_call([msys2,
                                "-l",
                                "-c",
-                               """'gcc {} -shared -o {} -g -fPIC -DPIC -O2 -Wall {} {} {} {}'""".format(
+                               '"gcc {} -shared -o {} -g -fPIC -DPIC -O2 -Wall {} {} {} {}"'.format(
                                    '-I' + DEPENDENCIES_DIR + "/nDPI/src/include",
                                    ENGINE_DIR + "/engine_cc.so",
                                    ENGINE_DIR + "/engine_cc.c",
