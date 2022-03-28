@@ -59,7 +59,6 @@ cd nfstream/engine/dependencies
 build_libgpgerror
 build_libgcrypt
 build_libndpi
-build_libpcap
 cd ..
 gcc -Idependencies/nDPI/src/include -shared -o engine_cc.so -g -fPIC -DPIC -O2 -Wall engine_cc.c dependencies/nDPI/src/lib/libndpi.a dependencies/libgcrypt/src/.libs/libgcrypt.a dependencies/libgpg-error/src/.libs/libgpg-error.a
 rm -rf /tmp/nfstream_build
