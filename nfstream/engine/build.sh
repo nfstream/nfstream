@@ -62,20 +62,33 @@ build_libndpi() {
   echo "---------------------------------------------------------------------------------------------------------------"
   cd nDPI
   ./autogen.sh
-  ./configure CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib" --with-local-libgcrypt
+  env CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib" ./configure --with-local-libgcrypt
   make
+  cd ..
   echo "---------------------------------------------------------------------------------------------------------------"
   echo ""
   }
 
 cd nfstream/engine/dependencies
-if [ $# -eq 0 ] # If there is any argument, then we skip libpcap build
-  then
-    build_libpcap
-fi
 build_libgpgerror
 build_libgcrypt
 build_libndpi
+
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+  build_libpcap
+  cd ..
+  gcc -Idependencies/nDPI/src/include -Idependencies/libpcap -shared -o engine_cc.so -g -fPIC -DPIC -O2 -Wall engine_cc.c dependencies/libpcap/libpcap.a dependencies/nDPI/src/lib/libndpi.a dependencies/libgcrypt/src/.libs/libgcrypt.a dependencies/libgpg-error/src/.libs/libgpg-error.a
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+  build_libpcap
+  cd ..
+  clang -Idependencies/nDPI/src/include -Idependencies/libpcap -shared -o engine_cc.so -g -fPIC -DPIC -O2 -Wall engine_cc.c dependencies/libpcap/libpcap.a dependencies/nDPI/src/lib/libndpi.a dependencies/libgcrypt/src/.libs/libgcrypt.a dependencies/libgpg-error/src/.libs/libgpg-error.a
+elif [[ "$OSTYPE" == "msys" ]]; then
+  cd ..
+  gcc -Idependencies/nDPI/src/include -shared -o engine_cc.so -g -fPIC -DPIC -O2 -Wall engine_cc.c dependencies/nDPI/src/lib/libndpi.a dependencies/libgcrypt/src/.libs/libgcrypt.a dependencies/libgpg-error/src/.libs/libgpg-error.a
+else
+  echo "Detected OS is not supported yet."
+fi
+
 rm -rf /tmp/nfstream_build
 
 

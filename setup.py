@@ -26,14 +26,8 @@ from setuptools.command.build_py import build_py
 if (not sys.version_info[0] == 3) and (not sys.version_info[1] >= 6):
     sys.exit("Sorry, nfstream requires Python3.6+ versions.")
 
-BUILD_SCRIPT_PATH = str(pathlib.Path(__file__).parent.resolve().joinpath("nfstream").joinpath("engine")
-                        .joinpath("dependencies").joinpath("build.sh")).replace("\\", "/").replace("//", "/")
-
-DEPENDENCIES_DIR = str(pathlib.Path(__file__).parent.resolve().joinpath("nfstream").joinpath("engine")
-                       .joinpath("dependencies")).replace("\\", "/").replace("//", "/")
-
-ENGINE_DIR = str(pathlib.Path(__file__).parent.resolve().joinpath("nfstream").joinpath("engine")).replace("\\", "/")\
-    .replace("//", "/")
+BUILD_SCRIPT_PATH = str(pathlib.Path(__file__).parent.resolve().joinpath("nfstream").joinpath("engine")\
+                        .joinpath("build.sh")).replace("\\", "/").replace("//", "/")
 
 THIS_DIRECTORY = os.path.abspath(os.path.dirname(__file__))
 
@@ -43,38 +37,6 @@ with open(os.path.join(THIS_DIRECTORY, 'README.md'), encoding='utf-8') as f:
 
 
 def setup_engine_cc():
-    platform_compiler = "gcc"
-    if sys.platform == 'darwin':
-        platform_compiler = "clang"
-    print("\nSetting up engine_cc. Platform: {plat}, Byteorder: {bo}".format(plat=sys.platform, bo=sys.byteorder))
-    if os.name != 'posix':
-        msys2 = shutil.which('msys2')
-        subprocess.check_call([msys2,
-                               "-l",
-                               "-c",
-                               '"gcc {} -shared -o {} -g -fPIC -DPIC -O2 -Wall {} {} {} {}"'.format(
-                                   '-I' + DEPENDENCIES_DIR + "/nDPI/src/include",
-                                   ENGINE_DIR + "/engine_cc.so",
-                                   ENGINE_DIR + "/engine_cc.c",
-                                   DEPENDENCIES_DIR + "/nDPI/src/lib/libndpi.a",
-                                   DEPENDENCIES_DIR + "/libgcrypt/src/.libs/libgcrypt.a",
-                                   DEPENDENCIES_DIR + "/libgpg-error/src/.libs/libgpg-error.a"
-                               )], shell=False)
-    else:
-        subprocess.check_call([platform_compiler,
-                               '-I' + DEPENDENCIES_DIR + "/nDPI/src/include",
-                               '-I' + DEPENDENCIES_DIR + "/libpcap",
-                               '-shared',
-                               '-o', ENGINE_DIR + "/engine_cc.so",
-                               '-g', '-fPIC', '-DPIC', '-O2', '-Wall',
-                               ENGINE_DIR + "/engine_cc.c",
-                               DEPENDENCIES_DIR + "/libpcap/libpcap.a",
-                               DEPENDENCIES_DIR + "/nDPI/src/lib/libndpi.a",
-                               DEPENDENCIES_DIR + "/libgcrypt/src/.libs/libgcrypt.a",
-                               DEPENDENCIES_DIR + "/libgpg-error/src/.libs/libgpg-error.a"])
-
-
-def setup_dependencies():
     if os.name != 'posix':  # Windows case, no libpcap
         build_script_command = r"""'{}'""".format(BUILD_SCRIPT_PATH)
         msys2 = shutil.which('msys2')
@@ -91,15 +53,10 @@ class BuildPyCommand(build_py):
 
 class BuildNativeCommand(build_ext):
     def run(self):
-        # Build Dependencies
-        setup_dependencies()
-        # Build engine
         setup_engine_cc()
         build_ext.run(self)
 
 
-needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
-pytest_runner = ['pytest-runner'] if needs_pytest else []
 install_requires = ['cffi>=1.14.6',
                     'psutil>=5.8.0',
                     'dpkt>=1.9.7']
@@ -158,8 +115,6 @@ setup(
     packages=['nfstream', 'nfstream.plugins', 'nfstream.engine'],
     install_requires=install_requires,
     cmdclass=cmdclass,
-    setup_requires=pytest_runner,
-    tests_require=['pytest>=5.0.1'],
     include_package_data=True,
     platforms=["Linux", "Mac OS-X", "Windows", "Unix"],
     classifiers=[
