@@ -74,5 +74,5 @@ build_libgpgerror
 build_libgcrypt
 build_libndpi
 cd ..
-gcc -Idependencies/nDPI/src/include -Idependencies/libpcap -shared -o engine_cc.so -g -fPIC -DPIC -O2 -Wall engine_cc.c dependencies/libpcap/libpcap.a dependencies/nDPI/src/lib/libndpi.a dependencies/libgcrypt/src/.libs/libgcrypt.a dependencies/libgpg-error/src/.libs/libgpg-error.a
+gcc -Idependencies/nDPI/src/include -Idependencies/libpcap -shared -o engine_cc.so -g -fPIC -DPIC -O2 -Wall engine_cc.c /tmp/nfstream_build/usr/local/lib/libpcap.a dependencies/nDPI/src/lib/libndpi.a /tmp/nfstream_build/usr/local/lib/libgcrypt.a /tmp/nfstream_build/usr/local/lib/libgpg-error.a
 rm -rf /tmp/nfstream_build
