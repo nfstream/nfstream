@@ -33,7 +33,7 @@ build_libgcrypt() {
   echo "---------------------------------------------------------------------------------------------------------------"
   cd libgcrypt
   ./autogen.sh
-  ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib" --with-libgpg-error-prefix="/tmp/nfstream_build/usr/local"
+  ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc CFLAGS="-I/tmp/nfstream_build/mingw64/include" LDFLAGS="-L/tmp/nfstream_build/mingw64/lib" --with-libgpg-error-prefix="/tmp/nfstream_build/mingw64"
   make
   make DESTDIR=/tmp/nfstream_build install
   cd ..
@@ -47,7 +47,7 @@ build_libndpi() {
   echo "Compiling libndpi"
   echo "---------------------------------------------------------------------------------------------------------------"
   cd nDPI
-  env CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib" ./autogen.sh --with-local-libgcrypt
+  env CFLAGS="-I/tmp/nfstream_build/mingw64/include" LDFLAGS="-L/tmp/nfstream_build/mingw64/lib" ./autogen.sh --with-local-libgcrypt
   make
   cd ..
   echo "---------------------------------------------------------------------------------------------------------------"
