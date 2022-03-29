@@ -21,6 +21,13 @@ jobs:
                          "python3.7"]
 
     steps:
+    - name: Cleanup build folder
+      run: |
+        ls -la ./
+        rm -rf ./* || true
+        rm -rf ./.??* || true
+        ls -la ./
+
     - uses: actions/checkout@v2
       with:
         submodules: recursive
