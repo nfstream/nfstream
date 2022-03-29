@@ -74,5 +74,11 @@ build_libgpgerror
 build_libgcrypt
 build_libndpi
 cd ..
+echo ""
+echo "---------------------------------------------------------------------------------------------------------------"
+echo "Compiling engine_cc"
+echo "---------------------------------------------------------------------------------------------------------------"
 clang -Idependencies/nDPI/src/include -Idependencies/libpcap -shared -o engine_cc.so -g -fPIC -DPIC -O2 -Wall engine_cc.c dependencies/libpcap/libpcap.a dependencies/nDPI/src/lib/libndpi.a dependencies/libgcrypt/src/.libs/libgcrypt.a dependencies/libgpg-error/src/.libs/libgpg-error.a
+echo "---------------------------------------------------------------------------------------------------------------"
+echo ""
 rm -rf /tmp/nfstream_build

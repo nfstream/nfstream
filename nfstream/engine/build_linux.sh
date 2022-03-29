@@ -46,10 +46,8 @@ build_libgcrypt() {
   echo "Compiling libgcrypt"
   echo "---------------------------------------------------------------------------------------------------------------"
   cd libgcrypt
-  # patch for aarch64 (see https://dev.gnupg.org/T4425)
-  cd cipher
-  sed -i 's/adr/ldr/g' camellia-aarch64.S
-  cd ..
+  # patch for aarch64 (see https://dev.gnupg.org/T4317)
+  sed -i 's/.globl _gcry_camellia_arm_tables//g' cipher/camellia-aarch64.S
   ./autogen.sh
   ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib" --with-libgpg-error-prefix="/tmp/nfstream_build/usr/local"
   make
@@ -78,5 +76,11 @@ build_libgpgerror
 build_libgcrypt
 build_libndpi
 cd ..
-gcc -Idependencies/nDPI/src/include -Idependencies/libpcap -shared -o engine_cc.so -g -fPIC -DPIC -O2 -Wall engine_cc.c dependencies/libpcap/libpcap.a dependencies/nDPI/src/lib/libndpi.a dependencies/libgcrypt/src/.libs/libgcrypt.a dependencies/libgpg-error/src/.libs/libgpg-error.a
+echo ""
+echo "---------------------------------------------------------------------------------------------------------------"
+echo "Compiling engine_cc"
+echo "---------------------------------------------------------------------------------------------------------------"
+gcc -Idependencies/nDPI/src/include -Idependencies/libpcap -shared -o engine_cc.so -g -fPIC -DPIC -O2 -Wall engine_cc.c /tmp/nfstream_build/usr/local/lib/libpcap.a /tmp/nfstream_build/usr/local/lib/libndpi.a /tmp/nfstream_build/usr/local/lib/libgcrypt.a /tmp/nfstream_build/usr/local/lib/libgpg-error.a
+echo "---------------------------------------------------------------------------------------------------------------"
+echo ""
 rm -rf /tmp/nfstream_build
