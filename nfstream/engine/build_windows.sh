@@ -59,7 +59,9 @@ build_libgpgerror
 build_libgcrypt
 build_libndpi
 cd ..
-gcc -Idependencies/nDPI/src/include -shared -o engine_cc.so -g -fPIC -DPIC -O2 -Wall engine_cc.c dependencies/nDPI/src/lib/libndpi.a dependencies/libgcrypt/src/.libs/libgcrypt.a dependencies/libgpg-error/src/.libs/libgpg-error.a
+# We link D:/a/_temp/msys64/mingw64/lib/libws2_32.a which is hardcoded path extracted from CI runners
+# TODO: handle it in a more proper way.
+gcc -Idependencies/nDPI/src/include -shared -o engine_cc.so -g -fPIC -DPIC -O2 -Wall engine_cc.c dependencies/nDPI/src/lib/libndpi.a dependencies/libgcrypt/src/.libs/libgcrypt.a dependencies/libgpg-error/src/.libs/libgpg-error.a D:/a/_temp/msys64/mingw64/lib/libws2_32.a
 rm -rf /tmp/nfstream_build
 
 
