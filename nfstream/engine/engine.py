@@ -13,11 +13,18 @@ If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 """
 
-from os.path import abspath, dirname
 from psutil import net_if_addrs
+import pathlib
 import cffi
+import os
 
-ENGINE_PATH = dirname(abspath(__file__)) + '/engine_cc.so'
+if os.name != 'posix':
+    EXTENSION = "dll"
+else:
+    EXTENSION = "so"
+
+ENGINE_PATH = str(pathlib.Path(__file__).parent.resolve().joinpath("engine_cc.{ext}".format(ext=EXTENSION)))
+
 NPCAP_PATH = "C:\\Windows\\System32\\Npcap\\wpcap.dll"
 
 # We declare here all headers and APIs of native nfstream, This will include:

@@ -66,12 +66,7 @@ echo "Compiling engine_cc"
 echo "---------------------------------------------------------------------------------------------------------------"
 # We link D:/a/_temp/msys64/mingw64/lib/libws2_32.a which is hardcoded path extracted from CI runners
 # TODO: handle it in a more proper way.
-gcc -I/tmp/nfstream_build/mingw64/include/ndpi/ -shared -o engine_cc.so -g -fPIC -DPIC -O2 -Wall engine_cc.c /tmp/nfstream_build/mingw64/lib/libndpi.a /tmp/nfstream_build/mingw64/lib/libgcrypt.a /tmp/nfstream_build/mingw64/lib/libgpg-error.a D:/a/_temp/msys64/mingw64/lib/libws2_32.a
+gcc -I/tmp/nfstream_build/mingw64/include/ndpi/ -shared -o engine_cc.dll -g -fPIC -DPIC -O2 -Wall engine_cc.c /tmp/nfstream_build/mingw64/lib/libndpi.a /tmp/nfstream_build/mingw64/lib/libgcrypt.a /tmp/nfstream_build/mingw64/lib/libgpg-error.a D:/a/_temp/msys64/mingw64/lib/libws2_32.a
 echo "---------------------------------------------------------------------------------------------------------------"
 echo ""
 rm -rf /tmp/nfstream_build
-
-
-
-
-

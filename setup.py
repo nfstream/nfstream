@@ -26,8 +26,8 @@ from setuptools.command.build_py import build_py
 if (not sys.version_info[0] == 3) and (not sys.version_info[1] >= 6):
     sys.exit("Sorry, nfstream requires Python3.6+ versions.")
 
-BUILD_SCRIPT_PATH = str(pathlib.Path(__file__).parent.resolve().joinpath("nfstream").joinpath("engine")\
-                        .joinpath("build")).replace("\\", "/").replace("//", "/")
+BUILD_SCRIPT_PATH = str(pathlib.Path(__file__).parent.resolve().joinpath("nfstream").joinpath("engine").\
+                        joinpath("scripts").joinpath("build")).replace("\\", "/").replace("//", "/")
 
 THIS_DIRECTORY = os.path.abspath(os.path.dirname(__file__))
 

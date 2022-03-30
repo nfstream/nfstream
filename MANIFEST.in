@@ -1,1 +1,2 @@
 include nfstream/engine/engine_cc.so
+include nfstream/engine/engine_cc.dll
