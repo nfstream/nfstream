@@ -74,7 +74,8 @@ with open(str(os.path.join(os.path.dirname(__file__), "ndpi.pack")).replace("\\"
     ffi_builder.cdef(TYPES_DEF, override=True)
     ffi_builder.cdef(ndpi_pack.read().split("//CFFI.NDPI_PACKED_STRUCTURES")[1], packed=True)
     ffi_builder.cdef(NDPI_CDEF.replace(
-        "typedef __builtin_va_list __darwin_va_list;", ""), override=True)
+        "typedef __builtin_va_list __darwin_va_list;", "").replace(
+        "typedef __signed char int8_t;", ""), override=True)
     ffi_builder.cdef(ENGINE_SOURCE, override=True)
 
 
