@@ -16,18 +16,10 @@ If not, see <http://www.gnu.org/licenses/>.
 import sys
 import os
 import platform
-import pathlib
-import shutil
-import subprocess
 from setuptools import setup
-from setuptools.command.build_ext import build_ext
-from setuptools.command.build_py import build_py
 
 if (not sys.version_info[0] == 3) and (not sys.version_info[1] >= 6):
     sys.exit("Sorry, nfstream requires Python3.6+ versions.")
-
-BUILD_SCRIPT_PATH = str(pathlib.Path(__file__).parent.resolve().joinpath("nfstream").joinpath("engine").\
-                        joinpath("scripts").joinpath("build")).replace("\\", "/").replace("//", "/")
 
 THIS_DIRECTORY = os.path.abspath(os.path.dirname(__file__))
 
@@ -35,32 +27,7 @@ THIS_DIRECTORY = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(THIS_DIRECTORY, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-
-def setup_engine_cc():
-    if os.name != 'posix':  # Windows case, no libpcap
-        build_script_command = r"""'{}'""".format(BUILD_SCRIPT_PATH + "_windows.sh")
-        msys2 = shutil.which('msys2')
-        subprocess.check_call([msys2, "-l", "-c", build_script_command], shell=True)
-    else:
-        if sys.platform == 'darwin':
-            subprocess.check_call([BUILD_SCRIPT_PATH + "_macos.sh"], shell=True)
-        else:
-            subprocess.check_call([BUILD_SCRIPT_PATH + "_linux.sh"], shell=True)
-
-
-class BuildPyCommand(build_py):
-    def run(self):
-        self.run_command('build_native')
-        build_py.run(self)
-
-
-class BuildNativeCommand(build_ext):
-    def run(self):
-        setup_engine_cc()
-        build_ext.run(self)
-
-
-install_requires = ['cffi>=1.14.6',
+install_requires = ['cffi>=1.15.0',
                     'psutil>=5.8.0',
                     'dpkt>=1.9.7']
 
@@ -75,36 +42,6 @@ if platform.python_implementation() == 'PyPy':
 else:
     install_requires.append("pandas>=1.1.5")
 
-try:
-    from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
-
-    class bdist_wheel(_bdist_wheel):
-        def get_tag(self):
-            tag = _bdist_wheel.get_tag(self)
-            pypi_compliant_tag = list(tag)
-            if 'linux' == pypi_compliant_tag[2][0:5]:
-                pypi_compliant_tag[2] = pypi_compliant_tag[2].replace("linux", "manylinux1")
-            if pypi_compliant_tag[2] == "manylinux1_aarch64":
-                pypi_compliant_tag[2] = "manylinux2014_aarch64"
-            if pypi_compliant_tag[2] == "manylinux1_armv7l":
-                pypi_compliant_tag[2] = "manylinux2014_armv7l"
-            pypi_compliant_tag = tuple(pypi_compliant_tag)
-            return pypi_compliant_tag
-
-        def finalize_options(self):
-            _bdist_wheel.finalize_options(self)
-            self.root_is_pure = False
-
-
-except ImportError:
-    print('Warning: cannot import "wheel" package to build platform-specific wheel')
-    print('Install the "wheel" package to fix this warning')
-    bdist_wheel = None
-
-cmdclass = {'build_native': BuildNativeCommand,
-            'build_py': BuildPyCommand,
-            'bdist_wheel': bdist_wheel} if bdist_wheel is not None else dict()
-
 setup(
     name="nfstream",
     version='6.4.3',
@@ -116,8 +53,9 @@ setup(
     author='Zied Aouini',
     author_email='aouinizied@gmail.com',
     packages=['nfstream', 'nfstream.plugins', 'nfstream.engine'],
+    setup_requires=["cffi>=1.15.0"],
+    cffi_modules=["nfstream/engine/engine_build.py:ffi_builder"],
     install_requires=install_requires,
-    cmdclass=cmdclass,
     include_package_data=True,
     platforms=["Linux", "Mac OS-X", "Windows", "Unix"],
     classifiers=[

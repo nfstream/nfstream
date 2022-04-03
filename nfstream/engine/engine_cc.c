@@ -13,12 +13,14 @@ If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 */
 
-#include <ndpi_api.h>
-#include <ndpi_main.h>
-#include <ndpi_typedefs.h>
+
 #ifndef WIN32
 #include <pcap.h>
 #endif
+#include <ndpi_typedefs.h>
+#include <ndpi_api.h>
+#include <ndpi_main.h>
+#include "engine_cc.h"
 #include <stdlib.h>
 #ifdef WIN32
 #include <winsock2.h>
@@ -293,24 +295,6 @@ struct nfstream_udphdr
 } PACK_OFF;
 
 PACK_ON
-struct nfstream_dns_packet_header {
-  uint16_t tr_id;
-  uint16_t flags;
-  uint16_t num_queries;
-  uint16_t num_answers;
-  uint16_t authority_rrs;
-  uint16_t additional_rrs;
-} PACK_OFF;
-
-typedef union
-{
-  uint32_t ipv4;
-  uint8_t ipv4_uint8_t[4];
-  struct nfstream_in6_addr ipv6;
-} nfstream_ip_addr_t;
-
-
-PACK_ON
 struct nfstream_icmphdr {
   uint8_t type; // message type
   uint8_t code; // type sub-code
@@ -341,43 +325,6 @@ struct nfstream_icmp6hdr {
     uint8_t  icmp6_un_data8[4];  // type-specific field
   } icmp6_dataun;
 } PACK_OFF;
-
-
-PACK_ON
-struct nfstream_vxlanhdr {
-  uint16_t flags;
-  uint16_t groupPolicy;
-  uint32_t vni;
-} PACK_OFF;
-
-
-// Main structure for packet information.
-typedef struct nf_packet {
-  uint8_t direction;
-  uint64_t time;
-  uint64_t delta_time;
-  uint16_t src_port;
-  uint16_t dst_port;
-  uint8_t protocol;
-  uint16_t vlan_id;
-  char src_ip_str[48], dst_ip_str[48], src_mac[18], src_oui[9], dst_mac[18], dst_oui[9];
-  uint8_t ip_version;
-  uint16_t fin:1, syn:1, rst:1, psh:1, ack:1, urg:1, ece:1, cwr:1; // TCP Flags
-  uint16_t raw_size;
-  uint16_t ip_size;
-  uint16_t transport_size;
-  uint16_t payload_size;
-  uint16_t ip_content_len;
-  uint8_t *ip_content;
-  unsigned tunnel_id;
-} nf_packet_t;
-
-
-typedef struct nf_stat {
-  unsigned received;
-  unsigned dropped;
-  unsigned dropped_by_interface;
-} nf_stat_t;
 
 
 /**
@@ -507,17 +454,17 @@ void packet_get_info(struct nf_packet *nf_pkt, uint16_t *sport, uint16_t *dport,
   nf_pkt->payload_size = *payload_len;
   nf_pkt->ip_content_len = ipsize;
   nf_pkt->delta_time = 0; // This will be filled by meter.
-
+  nf_pkt->ip_size = ntohs(iph->tot_len);
   if (version == IPVERSION) {
-	inet_ntop(AF_INET, &iph->saddr, nf_pkt->src_ip_str, sizeof(nf_pkt->src_ip_str));
-	inet_ntop(AF_INET, &iph->daddr, nf_pkt->dst_ip_str, sizeof(nf_pkt->dst_ip_str));
-	nf_pkt->ip_size= ntohs(iph->tot_len);
 	nf_pkt->ip_content = (uint8_t *)iph;
+	nf_pkt->src_ip[0] = iph->saddr;
+	nf_pkt->dst_ip[0] = iph->daddr;
   } else {
-	inet_ntop(AF_INET6, &iph6->ip6_src, nf_pkt->src_ip_str, sizeof(nf_pkt->src_ip_str));
-	inet_ntop(AF_INET6, &iph6->ip6_dst, nf_pkt->dst_ip_str, sizeof(nf_pkt->dst_ip_str));
-	nf_pkt->ip_size = ntohs(iph->tot_len);
 	nf_pkt->ip_content = (uint8_t *)iph6;
+	nf_pkt->src_ip[0] = iph6->ip6_src.u6_addr.u6_addr64[0];
+	nf_pkt->src_ip[1] = iph6->ip6_src.u6_addr.u6_addr64[1];
+	nf_pkt->dst_ip[0] = iph6->ip6_dst.u6_addr.u6_addr64[0];
+	nf_pkt->dst_ip[1] = iph6->ip6_dst.u6_addr.u6_addr64[1];
   }
 }
 
@@ -690,56 +637,6 @@ void packet_dlt_ppp(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, 
 
 
 /**
- * packet_fill_mac_ether_strings: nf_packet ether info filler.
- */
-void packet_fill_mac_ether_strings(struct nf_packet *nf_pkt, const struct nfstream_ethhdr * ether) {
-  snprintf(nf_pkt->src_mac,
-           sizeof(nf_pkt->src_mac),
-           "%02x:%02x:%02x:%02x:%02x:%02x",
-           ether->h_source[0], ether->h_source[1], ether->h_source[2],
-           ether->h_source[3], ether->h_source[4], ether->h_source[5]);
-  snprintf(nf_pkt->dst_mac,
-           sizeof(nf_pkt->dst_mac),
-           "%02x:%02x:%02x:%02x:%02x:%02x",
-           ether->h_dest[0], ether->h_dest[1], ether->h_dest[2],
-           ether->h_dest[3], ether->h_dest[4], ether->h_dest[5]);
-  snprintf(nf_pkt->src_oui,
-           sizeof(nf_pkt->src_oui),
-           "%02x:%02x:%02x",
-           ether->h_source[0], ether->h_source[1], ether->h_source[2]);
-  snprintf(nf_pkt->dst_oui,
-           sizeof(nf_pkt->dst_oui),
-           "%02x:%02x:%02x",
-           ether->h_dest[0], ether->h_dest[1], ether->h_dest[2]);
-}
-
-
-/**
- * packet_fill_mac_wifi_strings: nf_packet wifi info filler.
- */
-void packet_fill_mac_wifi_strings(struct nf_packet *nf_pkt, const struct nfstream_wifi_header * wifi) {
-  snprintf(nf_pkt->src_mac,
-           sizeof(nf_pkt->src_mac),
-           "%02x:%02x:%02x:%02x:%02x:%02x",
-           wifi->trsm[0], wifi->trsm[1], wifi->trsm[2],
-           wifi->trsm[3], wifi->trsm[4], wifi->trsm[5]);
-  snprintf(nf_pkt->dst_mac,
-           sizeof(nf_pkt->dst_mac),
-           "%02x:%02x:%02x:%02x:%02x:%02x",
-           wifi->dest[0], wifi->dest[1], wifi->dest[2],
-           wifi->dest[3], wifi->dest[4], wifi->dest[5]);
-  snprintf(nf_pkt->src_oui,
-           sizeof(nf_pkt->src_oui),
-           "%02x:%02x:%02x",
-           wifi->trsm[0], wifi->trsm[1], wifi->trsm[2]);
-  snprintf(nf_pkt->dst_oui,
-           sizeof(nf_pkt->dst_oui),
-           "%02x:%02x:%02x",
-           wifi->dest[0], wifi->dest[1], wifi->dest[2]);
-}
-
-
-/**
  * packet_dlt_en10mb: Ethernet processing
  */
 int packet_dlt_en10mb(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, uint16_t *ip_offset,
@@ -748,7 +645,18 @@ int packet_dlt_en10mb(const uint8_t *packet, uint16_t eth_offset, uint16_t *type
   const struct nfstream_llc_header_snap *llc;
   int check = 0;
   ethernet = (struct nfstream_ethhdr *) &packet[eth_offset];
-  packet_fill_mac_ether_strings(nf_pkt, ethernet);
+  nf_pkt->src_mac[0] = ethernet->h_source[0];
+  nf_pkt->src_mac[1] = ethernet->h_source[1];
+  nf_pkt->src_mac[2] = ethernet->h_source[2];
+  nf_pkt->src_mac[3] = ethernet->h_source[3];
+  nf_pkt->src_mac[4] = ethernet->h_source[4];
+  nf_pkt->src_mac[5] = ethernet->h_source[5];
+  nf_pkt->dst_mac[0] = ethernet->h_dest[0];
+  nf_pkt->dst_mac[1] = ethernet->h_dest[1];
+  nf_pkt->dst_mac[2] = ethernet->h_dest[2];
+  nf_pkt->dst_mac[3] = ethernet->h_dest[3];
+  nf_pkt->dst_mac[4] = ethernet->h_dest[4];
+  nf_pkt->dst_mac[5] = ethernet->h_dest[5];
   (*ip_offset) = sizeof(struct nfstream_ethhdr) + eth_offset;
   check = ntohs(ethernet->h_proto);
   if (check <= 1500) (*pyld_eth_len) = check;
@@ -789,7 +697,18 @@ int packet_dlt_radiotap(const uint8_t *packet, uint32_t caplen, uint16_t eth_off
     if ((FCF_TO_DS((*fc)) && FCF_FROM_DS((*fc)) == 0x0)
         || (FCF_TO_DS((*fc)) == 0x0 && FCF_FROM_DS((*fc)))) (*wifi_len) = 26; // +4 byte fcs
   } else return 0;
-  packet_fill_mac_wifi_strings(nf_pkt, wifi);
+  nf_pkt->src_mac[0] = wifi->trsm[0];
+  nf_pkt->src_mac[1] = wifi->trsm[1];
+  nf_pkt->src_mac[2] = wifi->trsm[2];
+  nf_pkt->src_mac[3] = wifi->trsm[3];
+  nf_pkt->src_mac[4] = wifi->trsm[4];
+  nf_pkt->src_mac[5] = wifi->trsm[5];
+  nf_pkt->dst_mac[0] = wifi->dest[0];
+  nf_pkt->dst_mac[1] = wifi->dest[1];
+  nf_pkt->dst_mac[2] = wifi->dest[2];
+  nf_pkt->dst_mac[3] = wifi->dest[3];
+  nf_pkt->dst_mac[4] = wifi->dest[4];
+  nf_pkt->dst_mac[5] = wifi->dest[5];
   // Check ether_type from LLC
   if (caplen < (eth_offset + (*wifi_len) + (*radio_len) + sizeof(struct nfstream_llc_header_snap))) return 0;
   llc = (struct nfstream_llc_header_snap*)(packet + eth_offset + (*wifi_len) + (*radio_len));
@@ -1081,7 +1000,18 @@ int packet_process(int datalink_type, uint32_t caplen, uint32_t len, const uint8
 	        if (offset + 32 < caplen) {
 	          const struct nfstream_wifi_header *wifi_hdr;
               wifi_hdr = (struct nfstream_wifi_header*)(packet + offset);
-              packet_fill_mac_wifi_strings(nf_pkt, wifi_hdr);
+              nf_pkt->src_mac[0] = wifi_hdr->trsm[0];
+              nf_pkt->src_mac[1] = wifi_hdr->trsm[1];
+              nf_pkt->src_mac[2] = wifi_hdr->trsm[2];
+              nf_pkt->src_mac[3] = wifi_hdr->trsm[3];
+              nf_pkt->src_mac[4] = wifi_hdr->trsm[4];
+              nf_pkt->src_mac[5] = wifi_hdr->trsm[5];
+              nf_pkt->dst_mac[0] = wifi_hdr->dest[0];
+              nf_pkt->dst_mac[1] = wifi_hdr->dest[1];
+              nf_pkt->dst_mac[2] = wifi_hdr->dest[2];
+              nf_pkt->dst_mac[3] = wifi_hdr->dest[3];
+              nf_pkt->dst_mac[4] = wifi_hdr->dest[4];
+              nf_pkt->dst_mac[5] = wifi_hdr->dest[5];
 	          offset += 24;
 	          // LLC header is 8 bytes
 	          type = ntohs((uint16_t)*((uint16_t*)&packet[offset+6]));
@@ -1099,98 +1029,6 @@ int packet_process(int datalink_type, uint32_t caplen, uint32_t len, const uint8
 
 
 /***************************************** Flow layer *****************************************************************/
-
-
-// Flow main structure.
-typedef struct nf_flow {
-  char src_ip[48], src_mac[18], src_oui[9];
-  uint16_t src_port;
-  char dst_ip[48], dst_mac[18], dst_oui[9];
-  uint16_t dst_port;
-  uint8_t protocol;
-  uint8_t ip_version;
-  uint16_t vlan_id;
-  unsigned tunnel_id;
-  uint64_t bidirectional_first_seen_ms;
-  uint64_t bidirectional_last_seen_ms;
-  uint64_t bidirectional_duration_ms;
-  uint64_t bidirectional_packets;
-  uint64_t bidirectional_bytes;
-  uint64_t src2dst_first_seen_ms;
-  uint64_t src2dst_last_seen_ms;
-  uint64_t src2dst_duration_ms;
-  uint64_t src2dst_packets;
-  uint64_t src2dst_bytes;
-  uint64_t dst2src_first_seen_ms;
-  uint64_t dst2src_last_seen_ms;
-  uint64_t dst2src_duration_ms;
-  uint64_t dst2src_packets;
-  uint64_t dst2src_bytes;
-  uint16_t bidirectional_min_ps;
-  double bidirectional_mean_ps;
-  double bidirectional_stddev_ps;
-  uint16_t bidirectional_max_ps;
-  uint16_t src2dst_min_ps;
-  double src2dst_mean_ps;
-  double src2dst_stddev_ps;
-  uint16_t src2dst_max_ps;
-  uint16_t dst2src_min_ps;
-  double dst2src_mean_ps;
-  double dst2src_stddev_ps;
-  uint16_t dst2src_max_ps;
-  uint64_t bidirectional_min_piat_ms;
-  double bidirectional_mean_piat_ms;
-  double bidirectional_stddev_piat_ms;
-  uint64_t bidirectional_max_piat_ms;
-  uint64_t src2dst_min_piat_ms;
-  double src2dst_mean_piat_ms;
-  double src2dst_stddev_piat_ms;
-  uint64_t src2dst_max_piat_ms;
-  uint64_t dst2src_min_piat_ms;
-  double dst2src_mean_piat_ms;
-  double dst2src_stddev_piat_ms;
-  uint64_t dst2src_max_piat_ms;
-  uint64_t bidirectional_syn_packets;
-  uint64_t bidirectional_cwr_packets;
-  uint64_t bidirectional_ece_packets;
-  uint64_t bidirectional_urg_packets;
-  uint64_t bidirectional_ack_packets;
-  uint64_t bidirectional_psh_packets;
-  uint64_t bidirectional_rst_packets;
-  uint64_t bidirectional_fin_packets;
-  uint64_t src2dst_syn_packets;
-  uint64_t src2dst_cwr_packets;
-  uint64_t src2dst_ece_packets;
-  uint64_t src2dst_urg_packets;
-  uint64_t src2dst_ack_packets;
-  uint64_t src2dst_psh_packets;
-  uint64_t src2dst_rst_packets;
-  uint64_t src2dst_fin_packets;
-  uint64_t dst2src_syn_packets;
-  uint64_t dst2src_cwr_packets;
-  uint64_t dst2src_ece_packets;
-  uint64_t dst2src_urg_packets;
-  uint64_t dst2src_ack_packets;
-  uint64_t dst2src_psh_packets;
-  uint64_t dst2src_rst_packets;
-  uint64_t dst2src_fin_packets;
-  int8_t *splt_direction;
-  int32_t *splt_ps;
-  int64_t *splt_piat_ms;
-  uint8_t splt_closed;
-  char application_name[40];
-  char category_name[40];
-  char requested_server_name[80];
-  char c_hash[48];
-  char s_hash[48];
-  char content_type[64];
-  char user_agent[256];
-  struct ndpi_flow_struct *ndpi_flow;
-  uint8_t guessed;
-  ndpi_protocol detected_protocol;
-  uint8_t detection_completed;
-  ndpi_confidence_t confidence;
-} nf_flow_t;
 
 
 /**
@@ -1225,22 +1063,20 @@ void flow_bidirectional_dissection_collect_info(struct ndpi_detection_module_str
   // Application category name (Streaming, SocialNetwork, etc.).
   memcpy(flow->category_name, ndpi_category_get_name(dissector, flow->detected_protocol.category), 24);
   // Requested server name: HTTP server, DNS, etc.
-  snprintf(flow->requested_server_name, sizeof(flow->requested_server_name), "%s", flow->ndpi_flow->host_server_name);
+  memcpy(flow->requested_server_name, flow->ndpi_flow->host_server_name, sizeof(flow->requested_server_name));
   // DHCP: We put DHCP fingerprint in client side: this can be helpful for device identification approaches.
   if (flow_is_ndpi_proto(flow, NDPI_PROTOCOL_DHCP)) {
-    snprintf(flow->c_hash, sizeof(flow->c_hash), "%s", flow->ndpi_flow->protos.dhcp.fingerprint);
+    memcpy(flow->c_hash, flow->ndpi_flow->protos.dhcp.fingerprint, sizeof(flow->c_hash));
   }
   // HTTP: UserAgent and ContentType. With server name this is sufficient. (at least for now)
   else if (flow_is_ndpi_proto(flow, NDPI_PROTOCOL_HTTP)) {
-      snprintf(flow->content_type, sizeof(flow->content_type), "%s",
-               flow->ndpi_flow->http.content_type ? flow->ndpi_flow->http.content_type : "");
-      snprintf(flow->user_agent, sizeof(flow->user_agent), "%s",
-               flow->ndpi_flow->http.user_agent ? flow->ndpi_flow->http.user_agent : "");
+    memcpy(flow->content_type, flow->ndpi_flow->http.content_type ? flow->ndpi_flow->http.content_type : "", sizeof(flow->content_type));
+    memcpy(flow->user_agent, flow->ndpi_flow->http.user_agent ? flow->ndpi_flow->http.user_agent : "", sizeof(flow->user_agent));
   // SSH: https://github.com/salesforce/hassh
   //      We extract both client and server fingerprints hassh fingerprints for SSH.
   } else if (flow_is_ndpi_proto(flow, NDPI_PROTOCOL_SSH)) {
-    snprintf(flow->c_hash, sizeof(flow->c_hash), "%s", flow->ndpi_flow->protos.ssh.hassh_client);
-    snprintf(flow->s_hash, sizeof(flow->s_hash), "%s", flow->ndpi_flow->protos.ssh.hassh_server);
+    memcpy(flow->c_hash, flow->ndpi_flow->protos.ssh.hassh_client, sizeof(flow->c_hash));
+    memcpy(flow->s_hash, flow->ndpi_flow->protos.ssh.hassh_server, sizeof(flow->s_hash));
   }
   // TLS: We populate requested server name with the server name identifier extracted in client hello.
   //      Then we add JA3 fingerprints for both client and server: https://github.com/salesforce/ja3
@@ -1248,14 +1084,10 @@ void flow_bidirectional_dissection_collect_info(struct ndpi_detection_module_str
   else if ((flow_is_ndpi_proto(flow, NDPI_PROTOCOL_TLS)) ||
            (flow->ndpi_flow->protos.tls_quic.ja3_client[0] != '\0') ||
            flow_is_ndpi_proto(flow, NDPI_PROTOCOL_QUIC)) {
-    snprintf(flow->requested_server_name, sizeof(flow->requested_server_name), "%s",
-             flow->ndpi_flow->host_server_name);
-    snprintf(flow->user_agent, sizeof(flow->user_agent), "%s",
-             flow->ndpi_flow->http.user_agent ? flow->ndpi_flow->http.user_agent : "");
-    snprintf(flow->c_hash, sizeof(flow->c_hash), "%s",
-             flow->ndpi_flow->protos.tls_quic.ja3_client);
-    snprintf(flow->s_hash, sizeof(flow->s_hash), "%s",
-             flow->ndpi_flow->protos.tls_quic.ja3_server);
+    memcpy(flow->requested_server_name, flow->ndpi_flow->host_server_name, sizeof(flow->requested_server_name));
+    memcpy(flow->user_agent, flow->ndpi_flow->http.user_agent ? flow->ndpi_flow->http.user_agent : "", sizeof(flow->user_agent));
+    memcpy(flow->c_hash, flow->ndpi_flow->protos.tls_quic.ja3_client, sizeof(flow->c_hash));
+    memcpy(flow->s_hash, flow->ndpi_flow->protos.tls_quic.ja3_server, sizeof(flow->s_hash));
   }
 }
 
@@ -1380,6 +1212,28 @@ void flow_update_splt(uint8_t splt, struct nf_flow *flow, struct nf_packet *pack
   }
 }
 
+int ip_src_eq(struct nf_flow *flow, struct nf_packet *packet) {
+  if (packet->ip_version == 6) {
+    if(packet->src_ip[0] == flow->src_ip[0] &&
+       packet->src_ip[1] == flow->src_ip[1])
+       return 1;
+    return 0;
+  }
+  if (packet->src_ip[0] == flow->src_ip[0]) return 1;
+  return 0;
+}
+
+
+int ip_dst_eq(struct nf_flow *flow, struct nf_packet *packet) {
+  if (packet->ip_version == 6) {
+    if(packet->dst_ip[0] == flow->dst_ip[0] &&
+       packet->dst_ip[1] == flow->dst_ip[1])
+       return 1;
+    return 0;
+  }
+  if (packet->dst_ip[0] == flow->dst_ip[0]) return 1;
+  return 0;
+}
 
 /**
  * flow_set_packet_direction: Compute flow packet direction.
@@ -1390,7 +1244,7 @@ void flow_set_packet_direction(struct nf_flow *flow, struct nf_packet *packet) {
     packet->direction = 1;
   // Then IPs
   } else {
-    if ((memcmp(flow->src_ip, packet->src_ip_str, 48) != 0) || (memcmp(flow->dst_ip, packet->dst_ip_str, 48) != 0)) {
+    if (!ip_src_eq(flow, packet) || !ip_dst_eq(flow, packet)) {
       packet->direction = 1;
     }
   }
@@ -1401,7 +1255,7 @@ void flow_set_packet_direction(struct nf_flow *flow, struct nf_packet *packet) {
  * flow_init_bidirectional_dissection: Flow bidirectional dissection initialization.
  */
 uint8_t flow_init_bidirectional_dissection(struct ndpi_detection_module_struct *dissector, uint8_t n_dissections,
-                                           struct nf_flow *flow, struct nf_packet *packet) {
+                                           struct nf_flow *flow, struct nf_packet *packet, uint8_t sync) {
   flow->ndpi_flow = (struct ndpi_flow_struct *)ndpi_flow_malloc(SIZEOF_FLOW_STRUCT);
   if (flow->ndpi_flow == NULL) {
     ndpi_free(flow);
@@ -1412,13 +1266,12 @@ uint8_t flow_init_bidirectional_dissection(struct ndpi_detection_module_struct *
   // First packet are dissected.
   flow->detected_protocol = ndpi_detection_process_packet(dissector, flow->ndpi_flow, packet->ip_content,
                                                           packet->ip_content_len, packet->time);
-  flow_bidirectional_dissection_collect_info(dissector, flow); // Then we collect possible infos.
+  if (sync) flow_bidirectional_dissection_collect_info(dissector, flow); // Then we collect possible infos.
   if ((flow->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) && (n_dissections == 1)) {
     // Not identified and we are limited to 1, we try to guess.
     flow->detected_protocol = ndpi_detection_giveup(dissector, flow->ndpi_flow, 1, &flow->guessed);
-    flow_bidirectional_dissection_collect_info(dissector, flow); // Collect potentially guessed infos.
+    if (sync) flow_bidirectional_dissection_collect_info(dissector, flow); // Collect potentially guessed infos.
     flow->detection_completed = 1; // Close it.
-    flow_free_ndpi_data(flow); // Release dissector references.
   }
   return 1;
 }
@@ -1428,24 +1281,17 @@ uint8_t flow_init_bidirectional_dissection(struct ndpi_detection_module_struct *
  * flow_update_bidirectional_dissection: Flow bidirectional dissection updater.
  */
 void flow_update_bidirectional_dissection(struct ndpi_detection_module_struct *dissector, uint8_t n_dissections,
-                                          struct nf_flow *flow, struct nf_packet *packet) {
+                                          struct nf_flow *flow, struct nf_packet *packet, uint8_t sync) {
   if (flow->detection_completed == 0) { // application not detected yet.
     // We dissect only if still unknown or known and we didn't dissect all possible information yet.
     uint8_t still_dissect = (flow->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) ||
                              ((flow->detected_protocol.app_protocol != NDPI_PROTOCOL_UNKNOWN)
                                && ndpi_extra_dissection_possible(dissector, flow->ndpi_flow));
     if (still_dissect) { // Go for it.
-      if (packet->direction == 0) { // Check direction in order to give the dissector the right direction references.
-        flow->detected_protocol = ndpi_detection_process_packet(dissector, flow->ndpi_flow, packet->ip_content,
-                                                                packet->ip_content_len, packet->time);
-      } else {
-        flow->detected_protocol = ndpi_detection_process_packet(dissector, flow->ndpi_flow, packet->ip_content,
-                                                                packet->ip_content_len, packet->time);
-      }
-      flow_bidirectional_dissection_collect_info(dissector, flow); // Collect information to flow structure.
+      flow->detected_protocol = ndpi_detection_process_packet(dissector, flow->ndpi_flow, packet->ip_content,
+                                                              packet->ip_content_len, packet->time);
+      if (sync) flow_bidirectional_dissection_collect_info(dissector, flow); // Collect information to flow structure.
     } else { // We are done -> Known and no extra dissection possible.
-      // We release nDPI references as we are done.
-      flow_free_ndpi_data(flow);
       flow->detection_completed = 1; // Detection end. (detection_completed is used to trigger copy on sync mode)
       // Note we didn't collect information as this is already done in previous loop.
     }
@@ -1453,9 +1299,8 @@ void flow_update_bidirectional_dissection(struct ndpi_detection_module_struct *d
     if (n_dissections == flow->bidirectional_packets) { // if we reach user defined limit and application is unknown
       if (flow->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) {
         flow->detected_protocol = ndpi_detection_giveup(dissector, flow->ndpi_flow, 1, &flow->guessed);
-        flow_bidirectional_dissection_collect_info(dissector, flow); // copy guessed infos if present.
-      } // We reach it and detection is done, release references.
-      flow_free_ndpi_data(flow);
+        if (sync) flow_bidirectional_dissection_collect_info(dissector, flow); // copy guessed infos if present.
+      } // We reach it.
       flow->detection_completed = 1;
     }
   } else {
@@ -1605,7 +1450,7 @@ void flow_update_dst2src_piat_ms(struct nf_flow *flow, uint64_t dst2src_piat_ms)
  */
 uint8_t flow_init_bidirectional(struct ndpi_detection_module_struct *dissector, uint8_t n_dissections, uint8_t splt,
                                 uint8_t statistics, uint16_t packet_size, struct nf_flow *flow,
-                                struct nf_packet *packet) {
+                                struct nf_packet *packet, uint8_t sync) {
   if (splt) {
     uint8_t splt_init_success = flow_init_splt(flow, splt, packet_size);
     if (!splt_init_success) return 0;
@@ -1613,23 +1458,48 @@ uint8_t flow_init_bidirectional(struct ndpi_detection_module_struct *dissector, 
 
   if (n_dissections) { // we are configured to dissect
     uint8_t init_bidirectional_dissection_success = flow_init_bidirectional_dissection(dissector, n_dissections,
-                                                                                       flow, packet);
+                                                                                       flow, packet, sync);
     if (!init_bidirectional_dissection_success) return 0;
   }
   // Classical flow initialization.
   flow->bidirectional_first_seen_ms = packet->time;
   flow->bidirectional_last_seen_ms = packet->time;
   flow->tunnel_id = packet->tunnel_id;
-  memcpy(flow->src_ip, packet->src_ip_str, 48);
-  memcpy(flow->src_mac, packet->src_mac, 18);
-  memcpy(flow->src_oui, packet->src_oui, 9);
+  flow->ip_version = packet->ip_version;
+  if (flow->ip_version == 4) {
+	inet_ntop(AF_INET, (uint32_t *)&packet->src_ip[0], flow->src_ip_str, sizeof(flow->src_ip_str));
+	inet_ntop(AF_INET, (uint32_t *)&packet->dst_ip[0], flow->dst_ip_str, sizeof(flow->dst_ip_str));
+  } else {
+	inet_ntop(AF_INET6, (struct sockaddr_in6 *)&packet->src_ip[0], flow->src_ip_str, sizeof(flow->src_ip_str));
+	inet_ntop(AF_INET6, (struct sockaddr_in6 *)&packet->dst_ip[0], flow->dst_ip_str, sizeof(flow->dst_ip_str));
+  }
+  flow->src_ip[0] = packet->src_ip[0];
+  flow->src_ip[1] = packet->src_ip[1];
+  flow->src_mac[0] = packet->src_mac[0];
+  flow->src_mac[1] = packet->src_mac[1];
+  flow->src_mac[2] = packet->src_mac[2];
+  flow->src_mac[3] = packet->src_mac[3];
+  flow->src_mac[4] = packet->src_mac[4];
+  flow->src_mac[5] = packet->src_mac[5];
+  snprintf(flow->src_mac_str, sizeof(flow->src_mac_str), "%02x:%02x:%02x:%02x:%02x:%02x",
+           packet->src_mac[0], packet->src_mac[1], packet->src_mac[2],
+           packet->src_mac[3], packet->src_mac[4], packet->src_mac[5]);
+  memcpy(flow->src_oui, flow->src_mac_str, 8);
   flow->src_port = packet->src_port;
-  memcpy(flow->dst_ip, packet->dst_ip_str, 48);
-  memcpy(flow->dst_mac, packet->dst_mac, 18);
-  memcpy(flow->dst_oui, packet->dst_oui, 9);
+  flow->dst_ip[0] = packet->dst_ip[0];
+  flow->dst_ip[1] = packet->dst_ip[1];
+  flow->dst_mac[0] = packet->dst_mac[0];
+  flow->dst_mac[1] = packet->dst_mac[1];
+  flow->dst_mac[2] = packet->dst_mac[2];
+  flow->dst_mac[3] = packet->dst_mac[3];
+  flow->dst_mac[4] = packet->dst_mac[4];
+  flow->dst_mac[5] = packet->dst_mac[5];
+  snprintf(flow->dst_mac_str, sizeof(flow->dst_mac_str), "%02x:%02x:%02x:%02x:%02x:%02x",
+           packet->dst_mac[0], packet->dst_mac[1], packet->dst_mac[2],
+           packet->dst_mac[3], packet->dst_mac[4], packet->dst_mac[5]);
+  memcpy(flow->dst_oui, flow->dst_mac_str, 8);
   flow->dst_port = packet->dst_port;
   flow->protocol = packet->protocol;
-  flow->ip_version = packet->ip_version;
   flow->vlan_id = packet->vlan_id;
   flow->bidirectional_packets = 1;
   flow->bidirectional_bytes += packet_size;
@@ -1646,14 +1516,14 @@ uint8_t flow_init_bidirectional(struct ndpi_detection_module_struct *dissector, 
  */
 void flow_update_bidirectional(struct ndpi_detection_module_struct *dissector, uint8_t n_dissections, uint8_t splt,
                                uint8_t statistics, uint16_t packet_size, struct nf_flow *flow,
-                               struct nf_packet *packet) {
+                               struct nf_packet *packet, uint8_t sync) {
   uint64_t bidirectional_piat_ms = packet->time - flow->bidirectional_last_seen_ms;
   packet->delta_time = bidirectional_piat_ms; // This will be exposed as NFPacket feature.
   flow->bidirectional_packets++;
   flow_update_splt(splt, flow, packet, packet_size, bidirectional_piat_ms);
   flow->bidirectional_last_seen_ms = packet->time;
   flow->bidirectional_duration_ms = flow->bidirectional_last_seen_ms - flow->bidirectional_first_seen_ms;
-  if (n_dissections) flow_update_bidirectional_dissection(dissector, n_dissections, flow, packet);
+  if (n_dissections) flow_update_bidirectional_dissection(dissector, n_dissections, flow, packet, sync);
   flow->bidirectional_bytes += packet_size;
   if (statistics == 1) {
     flow_update_bidirectional_tcp_flags(flow, packet);
@@ -1913,7 +1783,6 @@ int capture_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tunn
   return -1;
 }
 
-
 /**
  * capture_stats: Get capture stats.
  */
@@ -1943,15 +1812,6 @@ void capture_close(pcap_t * pcap_handle) {
 #endif
 
 /***************************************** Dissector APIs *************************************************************/
-
-
-typedef struct dissector_checker {
-// We will check these following structure sizes at initialization.
-uint32_t flow_size;
-uint32_t id_size;
-uint32_t flow_tcp_size;
-uint32_t flow_udp_size;
-} dissector_checker_t;
 
 
 /**
@@ -1997,7 +1857,7 @@ void dissector_cleanup(struct ndpi_detection_module_struct *dissector) {
  */
 struct nf_flow *meter_initialize_flow(struct nf_packet *packet, uint8_t accounting_mode, uint8_t statistics,
                                       uint8_t splt, uint8_t n_dissections,
-                                      struct ndpi_detection_module_struct *dissector) {
+                                      struct ndpi_detection_module_struct *dissector, uint8_t sync) {
   struct nf_flow *flow = (struct nf_flow*)ndpi_malloc(sizeof(struct nf_flow));
   if (flow == NULL) return NULL; // not enough memory for flow.
   memset(flow, 0, sizeof(struct nf_flow));
@@ -2005,7 +1865,7 @@ struct nf_flow *meter_initialize_flow(struct nf_packet *packet, uint8_t accounti
   // This will allow us to provide a flexible choice without duplicating unnecessary information.
   uint16_t packet_size = flow_get_packet_size(packet, accounting_mode);
   uint8_t flow_init_bidirectional_success = flow_init_bidirectional(dissector, n_dissections, splt, statistics,
-                                                                    packet_size, flow, packet);
+                                                                    packet_size, flow, packet, sync);
   if (!flow_init_bidirectional_success) return NULL;
   flow_init_src2dst(statistics, packet_size, flow, packet);
   return flow; // we return a pointer to the created flow in order to be cached by Python side.
@@ -2017,12 +1877,12 @@ struct nf_flow *meter_initialize_flow(struct nf_packet *packet, uint8_t accounti
  */
 uint8_t meter_update_flow(struct nf_flow *flow, struct nf_packet *packet, uint64_t idle_timeout, uint64_t active_timeout,
                           uint8_t accounting_mode, uint8_t statistics, uint8_t splt, uint8_t n_dissections,
-                          struct ndpi_detection_module_struct *dissector) {
+                          struct ndpi_detection_module_struct *dissector, uint8_t sync) {
   uint8_t expired = flow_expiration_handler(flow, packet, idle_timeout, active_timeout);
   if (expired) return expired;
   flow_set_packet_direction(flow, packet);
   uint16_t packet_size = flow_get_packet_size(packet, accounting_mode);
-  flow_update_bidirectional(dissector, n_dissections, splt, statistics, packet_size, flow, packet);
+  flow_update_bidirectional(dissector, n_dissections, splt, statistics, packet_size, flow, packet, sync);
   if (packet->direction == 0) flow_update_src2dst(statistics, packet_size, flow, packet);
   else flow_update_dst2src(statistics, packet_size, flow, packet);
   return 0; // Update done, we return 0.
@@ -2036,11 +1896,8 @@ void meter_expire_flow(struct nf_flow *flow, uint8_t n_dissections, struct ndpi_
   if (n_dissections) {
     if ((flow->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) && (flow->detection_completed == 0)) {
       flow->detected_protocol = ndpi_detection_giveup(dissector, flow->ndpi_flow, 1, &flow->guessed);
-      flow_bidirectional_dissection_collect_info(dissector, flow);
     }
-    if (!flow->detection_completed) {
-      flow_free_ndpi_data(flow);
-    }
+    flow_bidirectional_dissection_collect_info(dissector, flow);
     flow->detection_completed = 1; // IMPORTANT: This will force copy on non sync mode.
   }
 }
