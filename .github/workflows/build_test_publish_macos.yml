@@ -63,6 +63,7 @@ jobs:
     - name: Build
       run: |
         python prepare.py
+        python setup.py build
         MACOSX_DEPLOYMENT_TARGET=10.14 python -m pip wheel --wheel-dir=dist .
 
     - name: Display generated wheel name
