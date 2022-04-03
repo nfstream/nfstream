@@ -77,7 +77,7 @@ ffi_builder = FFI()
 build_engine_cc()
 
 NDPI_CDEF = ""
-with open(os.path.join(os.path.dirname(__file__).replace("\\", "/"), "ndpi.cdef")) as ndpi_cdef:
+with open(str(os.path.join(os.path.dirname(__file__), "ndpi.cdef")).replace("\\", "/")) as ndpi_cdef:
     with open(os.path.join(os.path.dirname(__file__), "engine_cc.h")) as engine_cc_h:
         ENGINE_SOURCE = ""
         if os.name == 'posix':  # Windows case, no libpcap
@@ -90,10 +90,10 @@ ffi_builder.set_source("_engine",
                        include_dirs=[str(INCLUDE_DIR)],
                        extra_link_args=[str(pathlib.Path(__file__).parent.resolve()) + ENGINE_PATH])
 
-with open(os.path.join(os.path.dirname(__file__), "ndpi.pack").replace("\\", "/")) as ndpi_pack:
+with open(str(os.path.join(os.path.dirname(__file__), "ndpi.pack")).replace("\\", "/")) as ndpi_pack:
     ffi_builder.cdef(TYPES_DEF)
     ffi_builder.cdef(ndpi_pack.read().split("//CFFI.NDPI_PACKED_STRUCTURES")[1], packed=True)
-    ffi_builder.cdef(NDPI_CDEF.replace("__signed", ""))
+    ffi_builder.cdef(NDPI_CDEF.replace("__signed", "").replace("__builtin_va_list", ""))
     ffi_builder.cdef(ENGINE_SOURCE)
 
 
