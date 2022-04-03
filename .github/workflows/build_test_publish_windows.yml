@@ -52,7 +52,8 @@ jobs:
 
     - name: Build
       run: |
-         python setup.py install
+         python prepare.py
+         python -m pip wheel --wheel-dir=dist .
 
     - name: Test and generate coverage report
       run: |
@@ -67,4 +68,6 @@ jobs:
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      run: twine upload --skip-existing dist/*.whl
+      run: twine upload --skip-existing dist/nfstream-*.whl
+MACOSX_DEPLOYMENT_TARGET=10:
+  14:

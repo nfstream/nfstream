@@ -14,15 +14,8 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from cffi import FFI
-import subprocess
 import pathlib
-import shutil
-import sys
 import os
-
-
-BUILD_SCRIPT_PATH = str(pathlib.Path(__file__).parent.resolve().  # Current directory
-                        joinpath("scripts").joinpath("build")).replace("\\", "/").replace("//", "/")  # Patch for msys2
 
 NDPI_INCLUDES = """
 #include "ndpi_main.h"
@@ -60,21 +53,8 @@ ENGINE_PATH = "/engine_cc.{ext}".format(ext=EXTENSION)
 INCLUDE_DIR = pathlib.Path(__file__).parent.resolve().joinpath("dependencies").joinpath("nDPI").joinpath("src")\
     .joinpath("include")
 
-
-def build_engine_cc():
-    if os.name != 'posix':  # Windows case, no libpcap
-        build_script_command = r"""'{}'""".format(BUILD_SCRIPT_PATH + "_windows.sh")
-        msys2 = shutil.which('msys2')
-        subprocess.check_call([msys2, "-l", "-c", build_script_command], shell=True)
-    else:
-        if sys.platform == 'darwin':
-            subprocess.check_call([BUILD_SCRIPT_PATH + "_macos.sh"], shell=True)
-        else:
-            subprocess.check_call([BUILD_SCRIPT_PATH + "_linux.sh"], shell=True)
-
-
 ffi_builder = FFI()
-build_engine_cc()
+
 
 NDPI_CDEF = ""
 with open(str(os.path.join(os.path.dirname(__file__), "ndpi.cdef")).replace("\\", "/")) as ndpi_cdef:
