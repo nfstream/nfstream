@@ -65,7 +65,7 @@ jobs:
 
     - name: Build
       run: |
-        python setup.py bdist_wheel
+        python setup.py install
 
     - name: Display generated wheel name
       run: |

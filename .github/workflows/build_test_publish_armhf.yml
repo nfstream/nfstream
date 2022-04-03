@@ -48,7 +48,7 @@ jobs:
 
     - name: Build
       run: |
-        ${{ matrix.python-version }} setup.py bdist_wheel
+        ${{ matrix.python-version }} setup.py install
 
     - name: Display generated wheel name
       run: |

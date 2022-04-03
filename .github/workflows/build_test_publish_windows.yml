@@ -52,7 +52,7 @@ jobs:
 
     - name: Build
       run: |
-         python setup.py bdist_wheel
+         python setup.py install
 
     - name: Test and generate coverage report
       run: |

@@ -62,7 +62,7 @@ jobs:
 
     - name: Build
       run: |
-        MACOSX_DEPLOYMENT_TARGET=10.14 python setup.py bdist_wheel
+        MACOSX_DEPLOYMENT_TARGET=10.14 python setup.py install
 
     - name: Display generated wheel name
       run: |
