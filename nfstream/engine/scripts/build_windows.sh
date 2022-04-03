@@ -66,7 +66,7 @@ echo "--------------------------------------------------------------------------
 # We link D:/a/_temp/msys64/mingw64/lib/libws2_32.a which is hardcoded path extracted from CI runners
 # TODO: handle it in a more proper way.
 cd ..
-gcc -I/tmp/nfstream_build/mingw64/include/ndpi/ -shared -o engine_cc.dll -g -fPIC -DPIC -O2 -Wall engine_cc.c /tmp/nfstream_build/mingw64/lib/libndpi.a /tmp/nfstream_build/mingw64/lib/libgcrypt.a /tmp/nfstream_build/mingw64/lib/libgpg-error.a D:/a/_temp/msys64/mingw64/lib/libws2_32.a
+gcc -I/tmp/nfstream_build/mingw64/include/ndpi/ -ID:/a/_temp/msys64/mingw64/include/ -shared -o engine_cc.dll -g -fPIC -DPIC -O2 -Wall engine_cc.c /tmp/nfstream_build/mingw64/lib/libndpi.a /tmp/nfstream_build/mingw64/lib/libgcrypt.a /tmp/nfstream_build/mingw64/lib/libgpg-error.a D:/a/_temp/msys64/mingw64/lib/libws2_32.a
 gcc -DNDPI_LIB_COMPILATION -DNDPI_CFFI_PREPROCESSING -DNDPI_CFFI_PREPROCESSING_EXCLUDE_PACKED -E -x c -P -C /tmp/nfstream_build/mingw64/include/ndpi/ndpi_typedefs.h > ndpi.cdef
 gcc -DNDPI_LIB_COMPILATION -DNDPI_CFFI_PREPROCESSING -E -x c -P -C /tmp/nfstream_build/mingw64/include/ndpi/ndpi_typedefs.h > ndpi.pack
 echo "---------------------------------------------------------------------------------------------------------------"

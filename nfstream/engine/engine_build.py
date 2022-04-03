@@ -63,6 +63,10 @@ with open(str(os.path.join(os.path.dirname(__file__), "ndpi.cdef")).replace("\\"
         if os.name == 'posix':  # Windows case, no libpcap
             ENGINE_SOURCE = PCAP_INCLUDES
         NDPI_CDEF += ndpi_cdef.read()
+        NDPI_CDEF.replace(
+            "typedef __builtin_va_list __darwin_va_list;", "")\
+            .replace(
+            "typedef __signed char int8_t;", "")
         ENGINE_SOURCE += "".join(engine_cc_h.read().split("//CFFI_ENGINE_EXCLUDE")[2::2])
 
 ffi_builder.set_source("_engine",
@@ -73,9 +77,7 @@ ffi_builder.set_source("_engine",
 with open(str(os.path.join(os.path.dirname(__file__), "ndpi.pack")).replace("\\", "/")) as ndpi_pack:
     ffi_builder.cdef(TYPES_DEF)
     ffi_builder.cdef(ndpi_pack.read().split("//CFFI.NDPI_PACKED_STRUCTURES")[1], packed=True)
-    ffi_builder.cdef(NDPI_CDEF.replace(
-        "typedef __builtin_va_list __darwin_va_list;", "").replace(
-        "typedef __signed char int8_t;", ""))
+    ffi_builder.cdef(NDPI_CDEF)
     ffi_builder.cdef(ENGINE_SOURCE)
 
 
