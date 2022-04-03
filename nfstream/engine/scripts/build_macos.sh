@@ -74,7 +74,6 @@ build_libpcap
 build_libgpgerror
 build_libgcrypt
 build_libndpi
-cd ..
 echo ""
 echo "---------------------------------------------------------------------------------------------------------------"
 echo "Compiling engine_cc"
