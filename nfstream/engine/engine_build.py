@@ -12,12 +12,9 @@ You should have received a copy of the GNU Lesser General Public License along w
 If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 """
-
 from cffi import FFI
 import pathlib
-import sys
 import os
-import re
 
 NDPI_INCLUDES = """
 #include "ndpi_main.h"
@@ -50,6 +47,19 @@ if os.name != 'posix':
 else:
     EXTENSION = "so"
 
+
+def cdef_to_replace(cdef):
+    to_rep = []
+    cdef_list = cdef.split("static inline")
+    for idx, sub_def in enumerate(cdef_list):
+        end = sub_def.find("}")
+        if end and idx:
+            to_rep.append(sub_def[:end+1])
+    to_rep.append("typedef __builtin_va_list __darwin_va_list;")
+    to_rep.append("typedef __signed char int8_t;")
+    return to_rep
+
+
 ENGINE_PATH = "/engine_cc.{ext}".format(ext=EXTENSION)
 
 INCLUDE_DIR = pathlib.Path(__file__).parent.resolve().joinpath("dependencies").joinpath("nDPI").joinpath("src")\
@@ -62,20 +72,8 @@ with open(str(os.path.join(os.path.dirname(__file__), "ndpi.cdef")).replace("\\"
     with open(os.path.join(os.path.dirname(__file__), "engine_cc.h")) as engine_cc_h:
         ENGINE_SOURCE = PCAP_INCLUDES
         NDPI_CDEF += ndpi_cdef.read()
-        if sys.platform == 'darwin':  # patch for apple clang generated definitions
-            NDPI_CDEF += re.sub('static[^>]+}', '', NDPI_CDEF)
-            NDPI_CDEF = NDPI_CDEF.split("\n/*")
-            unsupported_cdefs = []
-            for i, x in enumerate(NDPI_CDEF):
-                if "inline" in x:
-                    unsupported_cdefs.append(i)
-            for i in unsupported_cdefs:
-                del NDPI_CDEF[i]
-            NDPI_CDEF = "\n/*".join(NDPI_CDEF)
-            NDPI_CDEF = NDPI_CDEF.replace(
-                "typedef __builtin_va_list __darwin_va_list;", "")\
-                .replace(
-                "typedef __signed char int8_t;", "")
+        for to_replace in cdef_to_replace(NDPI_CDEF):
+            NDPI_CDEF = NDPI_CDEF.replace(to_replace, "")
         ENGINE_SOURCE += "".join(engine_cc_h.read().split("//CFFI_ENGINE_EXCLUDE")[2::2])
 
 ffi_builder.set_source("_engine",
