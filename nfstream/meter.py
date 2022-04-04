@@ -213,7 +213,6 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
     error_child = ffi.new("char[256]")
     capture = setup_capture(is_windows, ffi, lib, npcap, source, snaplen, promisc, mode, error_child, group_id)
     if capture is None:
-        ffi.dlclose(lib)
         if npcap:
             ffi.dlclose(npcap)
         send_error(root_idx, channel, ffi.string(error_child).decode('utf-8', errors='ignore'))
@@ -239,7 +238,6 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
         lock.release()
     # Here the last operation, BPF filtering setup and activation.
     if not activate_capture(is_windows, npcap, ffi, capture, lib, error_child, bpf_filter, mode):
-        ffi.dlclose(lib)
         send_error(root_idx, channel, ffi.string(error_child).decode('utf-8', errors='ignore'))
         return
     while remaining_packets:
@@ -292,5 +290,4 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
     # Clean dissector
     lib.dissector_cleanup(dissector)
     # Release engine library
-    # ffi.dlclose(lib)
     channel.put(None)

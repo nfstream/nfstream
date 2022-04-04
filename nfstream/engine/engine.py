@@ -14,9 +14,9 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from psutil import net_if_addrs
+import sys
 import pathlib
-import os
-os.environ['DYLD_LIBRARY_PATH'] = str(pathlib.Path(__file__).parent.resolve())
+sys.path.insert(0, str(pathlib.Path(__file__).parent.resolve()))
 from _engine import ffi, lib
 
 
