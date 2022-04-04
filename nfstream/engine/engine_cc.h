@@ -154,10 +154,6 @@ typedef struct nf_packet {
   unsigned tunnel_id;
 } nf_packet_t;
 
-//CFFI_ENGINE_WIN32_EXCLUDE
-//CFFI_ENGINE_EXCLUDE
-#ifndef WIN32
-//CFFI_ENGINE_EXCLUDE
 pcap_t * capture_open(const uint8_t * pcap_file, int mode, char * child_error);
 int capture_activate(pcap_t * pcap_handle, int mode, char * child_error);
 int capture_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tunnels, int n_roots, uint64_t root_idx,
@@ -169,10 +165,6 @@ int capture_set_timeout(pcap_t * pcap_handle, int mode, char * child_error);
 int capture_set_promisc(pcap_t * pcap_handle, int mode, char * child_error, int promisc);
 int capture_set_snaplen(pcap_t * pcap_handle, int mode, char * child_error, unsigned snaplen);
 int capture_set_filter(pcap_t * pcap_handle, char * bpf_filter, char * child_error);
-//CFFI_ENGINE_EXCLUDE
-#endif
-//CFFI_ENGINE_EXCLUDE
-//CFFI_ENGINE_WIN32_EXCLUDE
 
 struct ndpi_detection_module_struct *dissector_init(struct dissector_checker *checker);
 void dissector_configure(struct ndpi_detection_module_struct *dissector);

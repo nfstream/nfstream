@@ -14,9 +14,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 
-#ifndef WIN32
 #include <pcap.h>
-#endif
 #include <ndpi_typedefs.h>
 #include <ndpi_api.h>
 #include <ndpi_main.h>
@@ -107,17 +105,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #endif
 #ifndef IPPROTO_IPIP
 #define IPPROTO_IPIP  4
-#endif
-#ifdef WIN32
-#define DLT_NULL  0
-#define DLT_PPP_SERIAL  50
-#define DLT_C_HDLC  104
-#define DLT_PPP  9
-#define DLT_IPV4  228
-#define DLT_IPV6  229
-#define DLT_EN10MB  1
-#define DLT_IEEE802_11_RADIO  127
-#define DLT_RAW  12
 #endif
 
 
@@ -1604,7 +1591,6 @@ void flow_update_dst2src(uint8_t statistics, uint16_t packet_size, struct nf_flo
 
 /***************************************** Capture APIs ***************************************************************/
 
-#ifndef WIN32
 /**
  * capture_open: Open a pcap file or a specified device.
  */
@@ -1809,7 +1795,6 @@ void capture_close(pcap_t * pcap_handle) {
   pcap_breakloop(pcap_handle);
   pcap_close(pcap_handle);
 }
-#endif
 
 /***************************************** Dissector APIs *************************************************************/
 
