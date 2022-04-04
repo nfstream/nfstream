@@ -54,8 +54,8 @@ jobs:
     - name: Build
       run: |
          python prepare.py
-         python setup.py build
-         python -m pip wheel --wheel-dir=dist . 
+         python -m pip install .
+         python -m pip wheel --wheel-dir=dist .
 
     - name: Test and generate coverage report
       run: |
