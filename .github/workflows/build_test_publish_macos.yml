@@ -61,9 +61,21 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install -r dev_requirements.txt
 
-    - name: Build
+    - name: Prepare
       run: |
         python prepare.py
+
+    - name: Upload generated defs
+      uses: actions/upload-artifact@v3
+      with:
+        name: generated_definitions
+        path: |
+          nfstream/engine/ndpi.cdef
+          nfstream/engine/ndpi.pack
+        retention-days: 1
+
+    - name: Build
+      run: |
         python -m pip install .
         python -m pip wheel --no-deps --wheel-dir=dist .
 
