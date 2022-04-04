@@ -61,7 +61,8 @@ jobs:
     - name: Install requirements
       if: steps.pip-cache.outputs.cache-hit != 'true'
       run: |
-        pip install -r dev_requirements.txt
+        python -m pip install --upgrade pip
+        python -m pip install -r dev_requirements.txt
 
     - name: Build
       run: |

@@ -47,6 +47,7 @@ jobs:
 
     - name: Install requirements
       run: |
+        ${{ matrix.python-version }} -m pip install --upgrade pip
         ${{ matrix.python-version }} -m pip install -r dev_requirements.txt
 
     - name: Build
