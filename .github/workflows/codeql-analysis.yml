@@ -38,7 +38,6 @@ jobs:
         python3 -m pip install -r dev_requirements.txt
         python3 prepare.py
         python3 -m pip install .
-        python3 -m pip wheel --wheel-dir=dist .
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1

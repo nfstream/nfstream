@@ -63,7 +63,7 @@ with open(str(os.path.join(os.path.dirname(__file__), "ndpi.cdef")).replace("\\"
         if os.name == 'posix':  # Windows case, no libpcap
             ENGINE_SOURCE = PCAP_INCLUDES
         NDPI_CDEF += ndpi_cdef.read()
-        NDPI_CDEF.replace(
+        NDPI_CDEF = NDPI_CDEF.replace(
             "typedef __builtin_va_list __darwin_va_list;", "")\
             .replace(
             "typedef __signed char int8_t;", "")
