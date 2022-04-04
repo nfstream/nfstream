@@ -14,6 +14,9 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from psutil import net_if_addrs
+import sys
+from .engine_build import ENGINE_PATH
+sys.path.insert(0, ENGINE_PATH)
 from _engine import ffi, lib
 
 

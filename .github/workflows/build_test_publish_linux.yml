@@ -81,10 +81,16 @@ jobs:
           dist/nfstream-*.whl
         retention-days: 1
 
-    - name: Test and generate coverage report
+    - name: Test (CPython)
+      if: startsWith(matrix.python-version, '3')
       run: |
         python -m coverage run -m unittest tests.py
         python -m coverage combine
+
+    - name: Test (PyPy)
+      if: startsWith(matrix.python-version, '3')
+      run: |
+        python tests.py
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
