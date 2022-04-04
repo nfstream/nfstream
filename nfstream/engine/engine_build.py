@@ -16,6 +16,7 @@ If not, see <http://www.gnu.org/licenses/>.
 from cffi import FFI
 import pathlib
 import os
+import re
 
 NDPI_INCLUDES = """
 #include "ndpi_main.h"
@@ -55,13 +56,10 @@ INCLUDE_DIR = pathlib.Path(__file__).parent.resolve().joinpath("dependencies").j
 
 ffi_builder = FFI()
 
-
-NDPI_CDEF = ""
 with open(str(os.path.join(os.path.dirname(__file__), "ndpi.cdef")).replace("\\", "/")) as ndpi_cdef:
     with open(os.path.join(os.path.dirname(__file__), "engine_cc.h")) as engine_cc_h:
-        ENGINE_SOURCE = ""
         ENGINE_SOURCE = PCAP_INCLUDES
-        NDPI_CDEF += ndpi_cdef.read()
+        NDPI_CDEF = re.sub('static inline[^>]+}', '', ndpi_cdef.read())
         NDPI_CDEF = NDPI_CDEF.replace(
             "typedef __builtin_va_list __darwin_va_list;", "")\
             .replace(
