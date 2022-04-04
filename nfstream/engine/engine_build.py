@@ -79,7 +79,7 @@ ffi_builder.set_source("_engine",
                        NDPI_INCLUDES + NDPI_CDEF.split("//CFFI.NDPI_MODULE_STRUCT")[1] + ENGINE_SOURCE,
                        include_dirs=[str(INCLUDE_DIR)],
                        library_dirs=[str(pathlib.Path(__file__).parent.resolve())],
-                       extra_link_args=[ENGINE_FILE])
+                       extra_link_args=[str(pathlib.Path(__file__).parent.resolve()) + "/" + ENGINE_FILE])
 
 with open(str(os.path.join(os.path.dirname(__file__), "ndpi.pack")).replace("\\", "/")) as ndpi_pack:
     ffi_builder.cdef(TYPES_DEF)
