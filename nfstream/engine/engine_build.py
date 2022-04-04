@@ -60,8 +60,7 @@ NDPI_CDEF = ""
 with open(str(os.path.join(os.path.dirname(__file__), "ndpi.cdef")).replace("\\", "/")) as ndpi_cdef:
     with open(os.path.join(os.path.dirname(__file__), "engine_cc.h")) as engine_cc_h:
         ENGINE_SOURCE = ""
-        if os.name == 'posix':  # Windows case, no libpcap
-            ENGINE_SOURCE = PCAP_INCLUDES
+        ENGINE_SOURCE = PCAP_INCLUDES
         NDPI_CDEF += ndpi_cdef.read()
         NDPI_CDEF = NDPI_CDEF.replace(
             "typedef __builtin_va_list __darwin_va_list;", "")\
@@ -75,7 +74,7 @@ ffi_builder.set_source("_engine",
                        extra_link_args=[str(pathlib.Path(__file__).parent.resolve()) + ENGINE_PATH])
 
 with open(str(os.path.join(os.path.dirname(__file__), "ndpi.pack")).replace("\\", "/")) as ndpi_pack:
-    ffi_builder.cdef(TYPES_DEF)
+    ffi_builder.cdef(TYPES_DEF, override=True)
     ffi_builder.cdef(ndpi_pack.read().split("//CFFI.NDPI_PACKED_STRUCTURES")[1], packed=True)
     ffi_builder.cdef(NDPI_CDEF)
     ffi_builder.cdef(ENGINE_SOURCE)
