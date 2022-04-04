@@ -1,6 +1,7 @@
 [submodule "nfstream/engine/dependencies/nDPI"]
 	path = nfstream/engine/dependencies/nDPI
 	url = https://github.com/ntop/nDPI.git
+	branch = dev
 [submodule "nfstream/engine/dependencies/libpcap"]
 	path = nfstream/engine/dependencies/libpcap
 	url = https://github.com/tsnoam/libpcap
