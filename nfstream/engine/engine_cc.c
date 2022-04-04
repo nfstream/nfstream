@@ -15,9 +15,9 @@ If not, see <http://www.gnu.org/licenses/>.
 
 
 #include <pcap.h>
-#include <ndpi_typedefs.h>
 #include <ndpi_api.h>
 #include <ndpi_main.h>
+#include <ndpi_typedefs.h>
 #include "engine_cc.h"
 #include <stdlib.h>
 #ifdef WIN32
