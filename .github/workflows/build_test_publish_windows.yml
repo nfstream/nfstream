@@ -51,11 +51,22 @@ jobs:
          wget --user ${{ secrets.NPCAP_OEM_USERNAME }} --password ${{ secrets.NPCAP_OEM_PASSWORD }} https://npcap.org/oem/dist/npcap-1.60-oem.exe
          Start-Process npcap-1.60-oem.exe -ArgumentList "/loopback_support=yes /winpcap_mode=yes /dot11_support=yes /S" -wait
 
+    - name: Prepare
+      run: |
+        python prepare.py
+
     - name: Build
       run: |
-         python prepare.py
-         python -m pip install .
-         python -m pip wheel --no-deps --wheel-dir=dist .
+        python -m pip install .
+        python -m pip wheel --no-deps --wheel-dir=dist .
+
+    - name: Upload generated wheel
+      uses: actions/upload-artifact@v3
+      with:
+        name: generated_wheel
+        path: |
+          dist/nfstream-*.whl
+        retention-days: 1
 
     - name: Test and generate coverage report
       run: |

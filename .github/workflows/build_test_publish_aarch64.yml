@@ -50,15 +50,22 @@ jobs:
         ${{ matrix.python-version }} -m pip install --upgrade pip
         ${{ matrix.python-version }} -m pip install -r dev_requirements.txt
 
-    - name: Build
+    - name: Prepare
       run: |
         ${{ matrix.python-version }} prepare.py
+
+    - name: Build
+      run: |
         ${{ matrix.python-version }} -m pip install .
         ${{ matrix.python-version }} -m pip wheel --no-deps --wheel-dir=dist .
 
-    - name: Display generated wheel name
-      run: |
-        ls dist/
+    - name: Upload generated wheel
+      uses: actions/upload-artifact@v3
+      with:
+        name: generated_wheel
+        path: |
+          dist/nfstream-*.whl
+        retention-days: 1
 
     - name: Test and generate coverage report
       run: |

@@ -65,23 +65,25 @@ jobs:
       run: |
         python prepare.py
 
-    - name: Upload generated defs
-      uses: actions/upload-artifact@v3
-      with:
-        name: generated_definitions
-        path: |
-          nfstream/engine/ndpi.cdef
-          nfstream/engine/ndpi.pack
-        retention-days: 1
-
     - name: Build
       run: |
         python -m pip install .
         python -m pip wheel --no-deps --wheel-dir=dist .
 
-    - name: Display generated wheel name
+    - name: Audit and repair generated wheel
       run: |
-        ls dist/
+        cd dist
+        python -m auditwheel show $(ls)
+        python -m auditwheel repair $(ls)
+        cd ..
+
+    - name: Upload generated wheel
+      uses: actions/upload-artifact@v3
+      with:
+        name: generated_wheel
+        path: |
+          dist/nfstream-*.whl
+        retention-days: 1
 
     - name: Test and generate coverage report
       run: |
