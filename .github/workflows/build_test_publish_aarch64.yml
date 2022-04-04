@@ -62,7 +62,7 @@ jobs:
 
     - name: Test and generate coverage report
       run: |
-        ${{ matrix.python-version }} -m coverage run tests.py
+        ${{ matrix.python-version }} -m coverage run -m unittest tests.py
         ${{ matrix.python-version }} -m coverage combine
 
     - name: Upload coverage to Codecov
