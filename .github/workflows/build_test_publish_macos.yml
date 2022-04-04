@@ -70,13 +70,6 @@ jobs:
         python -m pip install .
         python -m pip wheel --no-deps --wheel-dir=dist .
 
-    - name: Audit and repair generated wheel
-      run: |
-        cd dist
-        python -m auditwheel show $(ls)
-        python -m auditwheel repair $(ls)
-        cd ..
-
     - name: Upload generated wheel
       uses: actions/upload-artifact@v3
       with:
