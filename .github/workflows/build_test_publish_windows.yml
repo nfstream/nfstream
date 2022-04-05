@@ -38,7 +38,7 @@ jobs:
       with:
         msystem: MINGW64
         update: true
-        install: git mingw-w64-x86_64-toolchain automake1.16 automake-wrapper autoconf libtool make mingw-w64-x86_64-json-c mingw-w64-x86_64-crt-git
+        install: git unzip mingw-w64-x86_64-toolchain automake1.16 automake-wrapper autoconf libtool make mingw-w64-x86_64-json-c mingw-w64-x86_64-crt-git
 
     - name: Install requirements
       run: |
@@ -48,7 +48,6 @@ jobs:
     - name: Install NPCAP OEM
       run: |
          choco install wget --no-progress
-         choco install unzip --no-progress
          wget --user ${{ secrets.NPCAP_OEM_USERNAME }} --password ${{ secrets.NPCAP_OEM_PASSWORD }} https://npcap.org/oem/dist/npcap-1.60-oem.exe
          Start-Process npcap-1.60-oem.exe -ArgumentList "/loopback_support=yes /winpcap_mode=yes /dot11_support=yes /S" -wait
 

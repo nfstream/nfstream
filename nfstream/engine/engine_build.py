@@ -42,7 +42,7 @@ ENGINE_INCLUDES = """
 #include <pcap.h>
 """
 
-with open(os.path.join(os.path.dirname(__file__), "/tmp/nfstream_build/lib_engine_cdefinitions.c")) as engine_cdef:
+with open("/tmp/nfstream_build/lib_engine_cdefinitions.c") as engine_cdef:
     ENGINE_CDEF = engine_cdef.read()
 
 ENGINE_APIS = """
@@ -103,14 +103,14 @@ def cdef_to_replace(cdef):
     return to_rep
 
 
-with open(os.path.join(os.path.dirname(__file__), "/tmp/nfstream_build/ndpi_cdefinitions.h")) as ndpi_cdefs:
+with open("/tmp/nfstream_build/ndpi_cdefinitions.h") as ndpi_cdefs:
     NDPI_CDEF = ndpi_cdefs.read()
     for to_replace in cdef_to_replace(NDPI_CDEF):
         NDPI_CDEF = NDPI_CDEF.replace(to_replace, "")
     NDPI_MODULE_STRUCT_CDEF = NDPI_CDEF.split("//CFFI.NDPI_MODULE_STRUCT")[1]
 
 
-with open(os.path.join(os.path.dirname(__file__), "/tmp/nfstream_build/ndpi_cdefinitions_packed.h")) as ndpi_cdefs_pack:
+with open("/tmp/nfstream_build/ndpi_cdefinitions_packed.h") as ndpi_cdefs_pack:
     NDPI_PACKED = ndpi_cdefs_pack.read()
 
 NDPI_PACKED_STRUCTURES = NDPI_PACKED.split("//CFFI.NDPI_PACKED_STRUCTURES")[1]
