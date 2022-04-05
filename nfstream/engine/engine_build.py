@@ -40,9 +40,9 @@ ENGINE_INCLUDES = """
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
-#include "ndpi_main.h"
-#include "ndpi_typedefs.h"
-#include "ndpi_api.h"
+#include <ndpi_main.h>
+#include <ndpi_typedefs.h>
+#include <ndpi_api.h>
 #include <pcap.h>
 """
 
