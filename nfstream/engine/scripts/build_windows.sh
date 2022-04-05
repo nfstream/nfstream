@@ -71,6 +71,7 @@ build_libndpi() {
 
 rm -rf /tmp/nfstream_build
 cd nfstream/engine/dependencies
+setup_npcap
 build_libgpgerror
 build_libgcrypt
 build_libndpi
