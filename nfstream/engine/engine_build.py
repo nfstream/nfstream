@@ -150,9 +150,8 @@ struct in6_addr {
 struct pcap;
 typedef struct pcap pcap_t;
 """)
-
 ffi_builder.cdef(NDPI_PACKED_STRUCTURES, packed=True)
-ffi_builder.cdef(NDPI_CDEF)
+ffi_builder.cdef(NDPI_CDEF, override=True)
 ffi_builder.cdef(ENGINE_CDEF.split("//CFFI_SHARED_STRUCTURES")[1])
 ffi_builder.cdef(ENGINE_APIS)
 
