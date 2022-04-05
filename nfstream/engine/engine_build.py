@@ -25,6 +25,10 @@ USR = "usr"
 if os.name != 'posix':
     RPATH = "mingw64"
 
+TMP = "/tmp"
+if os.name != 'posix':
+    TMP = "D:/a/_temp/msys64/tmp"
+
 # As cdef do not support ifdef yet we fix it by simple string replacement
 SOCK_INCLUDES = """#include <unistd.h>\n#include <netinet/in.h>"""
 if os.name != 'posix':
@@ -42,7 +46,7 @@ ENGINE_INCLUDES = """
 #include <pcap.h>
 """
 
-with open("/tmp/nfstream_build/lib_engine_cdefinitions.c") as engine_cdef:
+with open("{tmp}/nfstream_build/lib_engine_cdefinitions.c".format(tmp=TMP)) as engine_cdef:
     ENGINE_CDEF = engine_cdef.read()
 
 ENGINE_APIS = """
@@ -75,20 +79,20 @@ const char *engine_lib_ndpi_version(void);
 const char *engine_lib_pcap_version(void);
 """
 
-INCLUDE_DIRS = ["/tmp/nfstream_build/{usr}/include/ndpi".format(usr=USR),
-                "/tmp/nfstream_build/{usr}/include".format(usr=USR_LOCAL)]
+INCLUDE_DIRS = ["{tmp}/nfstream_build/{usr}/include/ndpi".format(usr=USR, tmp=TMP),
+                "{tmp}/nfstream_build/{usr}/include".format(usr=USR_LOCAL, tmp=TMP)]
 if os.name != 'posix':
-    INCLUDE_DIRS.append("/tmp/nfstream_build/npcap/Include")
+    INCLUDE_DIRS.append("{tmp}/nfstream_build/npcap/Include".format(tmp=TMP))
 
-EXTRALINK_ARGS = ["/tmp/nfstream_build/{usr}/lib/libndpi.a".format(usr=USR),
-                  "/tmp/nfstream_build/{usr}/lib/libgcrypt.a".format(usr=USR_LOCAL),
-                  "/tmp/nfstream_build/{usr}/lib/libgpg-error.a".format(usr=USR_LOCAL)]
+EXTRALINK_ARGS = ["{tmp}/nfstream_build/{usr}/lib/libndpi.a".format(usr=USR, tmp=TMP),
+                  "{tmp}/nfstream_build/{usr}/lib/libgcrypt.a".format(usr=USR_LOCAL, tmp=TMP),
+                  "{tmp}/nfstream_build/{usr}/lib/libgpg-error.a".format(usr=USR_LOCAL, tmp=TMP)]
 
 if os.name != 'posix':
     # FIXME: Need to check an env variable and if not defined, then use this hacky ci path.
     EXTRALINK_ARGS.append("D:/a/_temp/msys64/mingw64/lib/libws2_32.a")
 else:
-    EXTRALINK_ARGS.append("/tmp/nfstream_build/{usr}/lib/libpcap.a".format(usr=USR_LOCAL))
+    EXTRALINK_ARGS.append("{tmp}/nfstream_build/{usr}/lib/libpcap.a".format(usr=USR_LOCAL, tmp=TMP))
 
 
 def cdef_to_replace(cdef):
@@ -103,14 +107,14 @@ def cdef_to_replace(cdef):
     return to_rep
 
 
-with open("/tmp/nfstream_build/ndpi_cdefinitions.h") as ndpi_cdefs:
+with open("{tmp}/nfstream_build/ndpi_cdefinitions.h".format(tmp=TMP)) as ndpi_cdefs:
     NDPI_CDEF = ndpi_cdefs.read()
     for to_replace in cdef_to_replace(NDPI_CDEF):
         NDPI_CDEF = NDPI_CDEF.replace(to_replace, "")
     NDPI_MODULE_STRUCT_CDEF = NDPI_CDEF.split("//CFFI.NDPI_MODULE_STRUCT")[1]
 
 
-with open("/tmp/nfstream_build/ndpi_cdefinitions_packed.h") as ndpi_cdefs_pack:
+with open("{tmp}/nfstream_build/ndpi_cdefinitions_packed.h".format(tmp=TMP)) as ndpi_cdefs_pack:
     NDPI_PACKED = ndpi_cdefs_pack.read()
 
 NDPI_PACKED_STRUCTURES = NDPI_PACKED.split("//CFFI.NDPI_PACKED_STRUCTURES")[1]
@@ -124,7 +128,7 @@ if os.name != 'posix':
     ffi_builder.set_source("_lib_engine",
                            ENGINE_SOURCE,
                            libraries=["wpcap"],
-                           library_dirs=["/tmp/nfstream_build/npcap/Lib"],
+                           library_dirs=["{tmp}/nfstream_build/npcap/Lib".format(tmp=TMP)],
                            include_dirs=INCLUDE_DIRS,
                            extra_link_args=EXTRALINK_ARGS)
 else:
