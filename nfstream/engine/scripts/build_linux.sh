@@ -20,6 +20,7 @@ build_libpcap() {
   ./configure --enable-ipv6 --disable-universal --enable-dbus=no --without-libnl
   make
   make DESTDIR=/tmp/nfstream_build install
+  make clean
   cd ..
   echo "---------------------------------------------------------------------------------------------------------------"
   echo ""
@@ -35,6 +36,7 @@ build_libgpgerror() {
   ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc --disable-nls
   make
   make DESTDIR=/tmp/nfstream_build install
+  make clean
   cd ..
   echo "---------------------------------------------------------------------------------------------------------------"
   echo ""
@@ -46,12 +48,11 @@ build_libgcrypt() {
   echo "Compiling libgcrypt"
   echo "---------------------------------------------------------------------------------------------------------------"
   cd libgcrypt
-  # patch for aarch64 (see https://dev.gnupg.org/T4317)
-  sed -i 's/.globl _gcry_camellia_arm_tables//g' cipher/camellia-aarch64.S
   ./autogen.sh
   ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib" --with-libgpg-error-prefix="/tmp/nfstream_build/usr/local"
   make
   make DESTDIR=/tmp/nfstream_build install
+  make clean
   cd ..
   echo "---------------------------------------------------------------------------------------------------------------"
   echo ""
@@ -66,11 +67,13 @@ build_libndpi() {
   env CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib" ./autogen.sh --with-local-libgcrypt
   make
   make DESTDIR=/tmp/nfstream_build install
+  make clean
   cd ..
   echo "---------------------------------------------------------------------------------------------------------------"
   echo ""
   }
 
+rm -rf /tmp/nfstream_build
 cd nfstream/engine/dependencies
 build_libpcap
 build_libgpgerror
@@ -78,13 +81,12 @@ build_libgcrypt
 build_libndpi
 echo ""
 echo "---------------------------------------------------------------------------------------------------------------"
-echo "Compiling engine_cc"
+echo "Prepare engine_cc"
 echo "---------------------------------------------------------------------------------------------------------------"
 cd ..
-gcc -I/tmp/nfstream_build/usr/local/include -I/tmp/nfstream_build/usr/include/ndpi/ -shared -o engine_cc.so -g -fPIC -DPIC -O2 -Wall engine_cc.c /tmp/nfstream_build/usr/local/lib/libpcap.a /tmp/nfstream_build/usr/lib/libndpi.a /tmp/nfstream_build/usr/local/lib/libgcrypt.a /tmp/nfstream_build/usr/local/lib/libgpg-error.a
-gcc -DNDPI_LIB_COMPILATION -DNDPI_CFFI_PREPROCESSING -DNDPI_CFFI_PREPROCESSING_EXCLUDE_PACKED -E -x c -P -C /tmp/nfstream_build/usr/include/ndpi/ndpi_typedefs.h > ndpi.cdef
-gcc -DNDPI_LIB_COMPILATION -DNDPI_CFFI_PREPROCESSING -E -x c -P -C /tmp/nfstream_build/usr/include/ndpi/ndpi_typedefs.h > ndpi.pack
+gcc -DNDPI_LIB_COMPILATION -DNDPI_CFFI_PREPROCESSING -DNDPI_CFFI_PREPROCESSING_EXCLUDE_PACKED -E -x c -P -C /tmp/nfstream_build/usr/include/ndpi/ndpi_typedefs.h > /tmp/nfstream_build/ndpi_cdefinitions.h
+gcc -DNDPI_LIB_COMPILATION -DNDPI_CFFI_PREPROCESSING -E -x c -P -C /tmp/nfstream_build/usr/include/ndpi/ndpi_typedefs.h > /tmp/nfstream_build/ndpi_cdefinitions_packed.h
+gcc -E -x c -P -C lib_engine.c > /tmp/nfstream_build/lib_engine_cdefinitions.c
 echo "---------------------------------------------------------------------------------------------------------------"
 echo ""
 cd ../..
-rm -rf /tmp/nfstream_build

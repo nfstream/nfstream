@@ -13,6 +13,7 @@ If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 """
 
+import platform
 import subprocess
 import pathlib
 import shutil
@@ -24,17 +25,19 @@ BUILD_SCRIPT_PATH = str(pathlib.Path(__file__).parent.resolve().joinpath("nfstre
                         .joinpath("scripts").joinpath("build")).replace("\\", "/").replace("//", "/")  # Patch for msys2
 
 
-def build_engine_cc():
-    if os.name != 'posix':  # Windows case, no libpcap
+def prepare_lib_engine_requirements():
+    if os.name != 'posix':  # Windows case
         build_script_command = r"""'{}'""".format(BUILD_SCRIPT_PATH + "_windows.sh")
         msys2 = shutil.which('msys2')
         subprocess.check_call([msys2, "-l", "-c", build_script_command], shell=True)
     else:
         if sys.platform == 'darwin':
             subprocess.check_call([BUILD_SCRIPT_PATH + "_macos.sh"], shell=True)
+        elif "aarch" in platform.machine():
+            subprocess.check_call([BUILD_SCRIPT_PATH + "_aarch64.sh"], shell=True)
         else:
             subprocess.check_call([BUILD_SCRIPT_PATH + "_linux.sh"], shell=True)
 
 
 if __name__ == "__main__":
-    build_engine_cc()
+    prepare_lib_engine_requirements()

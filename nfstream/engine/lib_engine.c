@@ -13,66 +13,6 @@ If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 */
 
-
-#include <pcap.h>
-#include <ndpi_api.h>
-#include <ndpi_main.h>
-#include <ndpi_typedefs.h>
-#include "engine_cc.h"
-#include <stdlib.h>
-#ifdef WIN32
-#include <winsock2.h>
-#include <process.h>
-#include <io.h>
-#else
-#include <unistd.h>
-#include <netinet/in.h>
-#endif
-#include <math.h>
-#include <stdint.h>
-#include <string.h>
-#ifndef WIN32
-#include <sys/time.h>
-#endif
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
-#include <machine/endian.h>
-#endif
-#ifdef __OpenBSD__
-#include <endian.h>
-#define __BYTE_ORDER BYTE_ORDER
-#if BYTE_ORDER == LITTLE_ENDIAN
-#define __LITTLE_ENDIAN__
-#else
-#define __BIG_ENDIAN__
-#endif // BYTE_ORDER
-#endif //OPENBSD
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-#ifndef __LITTLE_ENDIAN__
-#define __LITTLE_ENDIAN__
-#endif
-#else
-#ifndef __BIG_ENDIAN__
-#define __BIG_ENDIAN__
-#endif
-#endif
-#if !(defined(__LITTLE_ENDIAN__) || defined(__BIG_ENDIAN__))
-#if defined(__mips__)
-#undef __LITTLE_ENDIAN__
-#undef __LITTLE_ENDIAN
-#define __BIG_ENDIAN__
-#endif
-#if (defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__))
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-#define __LITTLE_ENDIAN__
-#else
-#define __BIG_ENDIAN__
-#endif
-#endif
-#endif
-
-#define PACK_ON
-#define PACK_OFF  __attribute__((packed))
-
 #define TICK_RESOLUTION          1000
 #define	IPVERSION	4
 #ifndef ETH_P_IP
@@ -94,8 +34,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #define FCF_SUBTYPE(fc)  (((fc) >> 4) & 0xF)    // 0000 1111 = 0xF
 #define FCF_TO_DS(fc)        ((fc) & 0x0100)
 #define FCF_FROM_DS(fc)      ((fc) & 0x0200)
-#define nfstream_min(a,b)   ((a < b) ? a : b)
-#define nfstream_max(a,b)   ((a > b) ? a : b)
 #define BAD_FCS                         0x50  // 0101 0000
 #define GTP_U_V1_PORT                  2152
 #define NFSTREAM_CAPWAP_DATA_PORT          5247
@@ -106,263 +44,171 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef IPPROTO_IPIP
 #define IPPROTO_IPIP  4
 #endif
+#ifdef WIN32
+#define DLT_NULL  0
+#define DLT_PPP_SERIAL  50
+#define DLT_C_HDLC  104
+#define DLT_PPP  9
+#define DLT_IPV4  228
+#define DLT_IPV6  229
+#define DLT_EN10MB  1
+#define DLT_IEEE802_11_RADIO  127
+#define DLT_RAW  12
+#endif
 
+//CFFI_SHARED_STRUCTURES
+typedef struct dissector_checker {
+  uint32_t flow_size;
+  uint32_t id_size;
+  uint32_t flow_tcp_size;
+  uint32_t flow_udp_size;
+} dissector_checker_t;
 
-/*
-------------------------------------------------------------------------------------------------------------------------
-                                           Engine Internals
-------------------------------------------------------------------------------------------------------------------------
-*/
+typedef struct nf_stat {
+  unsigned received;
+  unsigned dropped;
+  unsigned dropped_by_interface;
+} nf_stat_t;
 
+// Flow main structure.
+typedef struct nf_flow {
+  uint64_t src_ip[2];
+  uint64_t dst_ip[2];
+  uint8_t src_mac[6];
+  char src_mac_str[18];
+  char src_oui[9];
+  uint8_t dst_mac[6];
+  char dst_mac_str[18];
+  char dst_oui[9];
+  char src_ip_str[48];
+  uint16_t src_port;
+  char dst_ip_str[48];
+  uint16_t dst_port;
+  uint8_t protocol;
+  uint8_t ip_version;
+  uint16_t vlan_id;
+  unsigned tunnel_id;
+  uint64_t bidirectional_first_seen_ms;
+  uint64_t bidirectional_last_seen_ms;
+  uint64_t bidirectional_duration_ms;
+  uint64_t bidirectional_packets;
+  uint64_t bidirectional_bytes;
+  uint64_t src2dst_first_seen_ms;
+  uint64_t src2dst_last_seen_ms;
+  uint64_t src2dst_duration_ms;
+  uint64_t src2dst_packets;
+  uint64_t src2dst_bytes;
+  uint64_t dst2src_first_seen_ms;
+  uint64_t dst2src_last_seen_ms;
+  uint64_t dst2src_duration_ms;
+  uint64_t dst2src_packets;
+  uint64_t dst2src_bytes;
+  uint16_t bidirectional_min_ps;
+  double bidirectional_mean_ps;
+  double bidirectional_stddev_ps;
+  uint16_t bidirectional_max_ps;
+  uint16_t src2dst_min_ps;
+  double src2dst_mean_ps;
+  double src2dst_stddev_ps;
+  uint16_t src2dst_max_ps;
+  uint16_t dst2src_min_ps;
+  double dst2src_mean_ps;
+  double dst2src_stddev_ps;
+  uint16_t dst2src_max_ps;
+  uint64_t bidirectional_min_piat_ms;
+  double bidirectional_mean_piat_ms;
+  double bidirectional_stddev_piat_ms;
+  uint64_t bidirectional_max_piat_ms;
+  uint64_t src2dst_min_piat_ms;
+  double src2dst_mean_piat_ms;
+  double src2dst_stddev_piat_ms;
+  uint64_t src2dst_max_piat_ms;
+  uint64_t dst2src_min_piat_ms;
+  double dst2src_mean_piat_ms;
+  double dst2src_stddev_piat_ms;
+  uint64_t dst2src_max_piat_ms;
+  uint64_t bidirectional_syn_packets;
+  uint64_t bidirectional_cwr_packets;
+  uint64_t bidirectional_ece_packets;
+  uint64_t bidirectional_urg_packets;
+  uint64_t bidirectional_ack_packets;
+  uint64_t bidirectional_psh_packets;
+  uint64_t bidirectional_rst_packets;
+  uint64_t bidirectional_fin_packets;
+  uint64_t src2dst_syn_packets;
+  uint64_t src2dst_cwr_packets;
+  uint64_t src2dst_ece_packets;
+  uint64_t src2dst_urg_packets;
+  uint64_t src2dst_ack_packets;
+  uint64_t src2dst_psh_packets;
+  uint64_t src2dst_rst_packets;
+  uint64_t src2dst_fin_packets;
+  uint64_t dst2src_syn_packets;
+  uint64_t dst2src_cwr_packets;
+  uint64_t dst2src_ece_packets;
+  uint64_t dst2src_urg_packets;
+  uint64_t dst2src_ack_packets;
+  uint64_t dst2src_psh_packets;
+  uint64_t dst2src_rst_packets;
+  uint64_t dst2src_fin_packets;
+  int8_t *splt_direction;
+  int32_t *splt_ps;
+  int64_t *splt_piat_ms;
+  uint8_t splt_closed;
+  char application_name[40];
+  char category_name[40];
+  char requested_server_name[80];
+  char c_hash[48];
+  char s_hash[48];
+  char content_type[64];
+  char user_agent[256];
+  struct ndpi_flow_struct *ndpi_flow;
+  uint8_t guessed;
+  ndpi_protocol detected_protocol;
+  uint8_t detection_completed;
+  ndpi_confidence_t confidence;
+} nf_flow_t;
+
+// Main structure for packet information.
+typedef struct nf_packet {
+  uint8_t direction;
+  uint64_t time;
+  uint64_t delta_time;
+  uint64_t src_ip[2];
+  uint64_t dst_ip[2];
+  uint16_t src_port;
+  uint8_t src_mac[6];
+  uint8_t dst_mac[6];
+  uint16_t dst_port;
+  uint8_t ip_version;
+  uint8_t protocol;
+  uint16_t vlan_id;
+  uint16_t fin:1, syn:1, rst:1, psh:1, ack:1, urg:1, ece:1, cwr:1; // TCP Flags
+  uint16_t raw_size;
+  uint16_t ip_size;
+  uint16_t transport_size;
+  uint16_t payload_size;
+  uint16_t ip_content_len;
+  uint8_t *ip_content;
+  unsigned tunnel_id;
+} nf_packet_t;
+//CFFI_SHARED_STRUCTURES
 
 /***************************************** Packet layer ***************************************************************/
-
-
-typedef enum {
-  nfstream_no_tunnel = 0,
-  nfstream_gtp_tunnel,
-  nfstream_capwap_tunnel,
-  nfstream_tzsp_tunnel,
-} nfstream_packet_tunnel;
-
-
-PACK_ON
-struct nfstream_chdlc
-{
-  uint8_t addr;          // 0x0F (Unicast) - 0x8F (Broadcast)
-  uint8_t ctrl;          // always 0x00
-  uint16_t proto_code;   // protocol type (e.g. 0x0800 IP)
-} PACK_OFF;
-
-
-PACK_ON
-struct nfstream_ethhdr
-{
-  uint8_t h_dest[6];       // destination eth addr
-  uint8_t h_source[6];     // source ether addr
-  uint16_t h_proto;        // data length (<= 1500) or type ID proto (>=1536)
-} PACK_OFF;
-
-
-PACK_ON
-struct nfstream_snap_extension
-{
-  uint16_t   oui;
-  uint8_t    oui2;
-  uint16_t   proto_ID;
-} PACK_OFF;
-
-
-PACK_ON
-struct nfstream_llc_header_snap
-{
-  uint8_t    dsap;
-  uint8_t    ssap;
-  uint8_t    ctrl;
-  struct nfstream_snap_extension snap;
-} PACK_OFF;
-
-
-PACK_ON
-struct nfstream_radiotap_header
-{
-  uint8_t version; // set to 0
-  uint8_t pad;
-  uint16_t len;
-  uint32_t present;
-  uint64_t MAC_timestamp;
-  uint8_t flags;
-} PACK_OFF;
-
-
-PACK_ON
-struct nfstream_wifi_header
-{
-  uint16_t fc;
-  uint16_t duration;
-  uint8_t rcvr[6];
-  uint8_t trsm[6];
-  uint8_t dest[6];
-  uint16_t seq_ctrl;
-  // uint64_t ccmp - for data encryption only - check fc.flag */
-} PACK_OFF;
-
-
-PACK_ON
-struct nfstream_mpls_header
-{
-  // Before using this strcut to parse an MPLS header, you will need to convert
-  // the 4-byte data to the correct endianess with ntohl(). */
-#if defined(__LITTLE_ENDIAN__)
-  uint32_t ttl:8, s:1, exp:3, label:20;
-#elif defined(__BIG_ENDIAN__)
-  uint32_t label:20, exp:3, s:1, ttl:8;
-#else
-# error "Byte order must be defined"
-#endif
-} PACK_OFF;
-
-
-PACK_ON
-struct nfstream_iphdr {
-#if defined(__LITTLE_ENDIAN__)
-  uint8_t ihl:4, version:4;
-#elif defined(__BIG_ENDIAN__)
-  uint8_t version:4, ihl:4;
-#else
-# error "Byte order must be defined"
-#endif
-  uint8_t tos;
-  uint16_t tot_len;
-  uint16_t id;
-  uint16_t frag_off;
-  uint8_t ttl;
-  uint8_t protocol;
-  uint16_t check;
-  uint32_t saddr;
-  uint32_t daddr;
-} PACK_OFF;
-
-
-PACK_ON
-struct nfstream_in6_addr {
-  union {
-    uint8_t   u6_addr8[16];
-    uint16_t  u6_addr16[8];
-    uint32_t  u6_addr32[4];
-    uint64_t  u6_addr64[2];
-  } u6_addr;  // 128-bit IP6 address
-} PACK_OFF;
-
-
-PACK_ON
-struct nfstream_ip6_hdrctl {
-  uint32_t ip6_un1_flow;
-  uint16_t ip6_un1_plen;
-  uint8_t ip6_un1_nxt;
-  uint8_t ip6_un1_hlim;
-} PACK_OFF;
-
-
-PACK_ON
-struct nfstream_ipv6hdr {
-  struct nfstream_ip6_hdrctl ip6_hdr;
-  struct nfstream_in6_addr ip6_src;
-  struct nfstream_in6_addr ip6_dst;
-} PACK_OFF;
-
-
-PACK_ON
-struct nfstream_tcphdr
-{
-  uint16_t source;
-  uint16_t dest;
-  uint32_t seq;
-  uint32_t ack_seq;
-#if defined(__LITTLE_ENDIAN__)
-  uint16_t res1:4, doff:4, fin:1, syn:1, rst:1, psh:1, ack:1, urg:1, ece:1, cwr:1;
-#elif defined(__BIG_ENDIAN__)
-  uint16_t doff:4, res1:4, cwr:1, ece:1, urg:1, ack:1, psh:1, rst:1, syn:1, fin:1;
-#else
-# error "Byte order must be defined"
-#endif
-  uint16_t window;
-  uint16_t check;
-  uint16_t urg_ptr;
-} PACK_OFF;
-
-
-PACK_ON
-struct nfstream_udphdr
-{
-  uint16_t source;
-  uint16_t dest;
-  uint16_t len;
-  uint16_t check;
-} PACK_OFF;
-
-PACK_ON
-struct nfstream_icmphdr {
-  uint8_t type; // message type
-  uint8_t code; // type sub-code
-  uint16_t checksum;
-  union {
-    struct {
-      uint16_t id;
-      uint16_t sequence;
-    } echo; // echo datagram
-
-    uint32_t gateway; // gateway address
-    struct {
-      uint16_t _unused;
-      uint16_t mtu;
-    } frag; // path mtu discovery
-  } un;
-} PACK_OFF;
-
-
-PACK_ON
-struct nfstream_icmp6hdr {
-    uint8_t icmp6_type;   // type field
-    uint8_t icmp6_code;   // code field
-    uint16_t icmp6_cksum;  // checksum field
-  union {
-    uint32_t icmp6_un_data32[1]; // type-specific field
-    uint16_t icmp6_un_data16[2]; // type-specific field
-    uint8_t  icmp6_un_data8[4];  // type-specific field
-  } icmp6_dataun;
-} PACK_OFF;
-
-
-/**
- * packet_handle_ipv6_extension_headers: Handle IPv6 extensions header.
- */
-int packet_handle_ipv6_extension_headers(uint16_t l3len, const uint8_t **l4ptr, uint16_t *l4len, uint8_t *nxt_hdr) {
-  while (l3len > 1 && (*nxt_hdr == 0 || *nxt_hdr == 43 || *nxt_hdr == 44 || *nxt_hdr == 60 || *nxt_hdr == 135 || *nxt_hdr == 59)) {
-    uint16_t ehdr_len;
-    // no next header
-    if (*nxt_hdr == 59) return 1;
-    // fragment extension header has fixed size of 8 bytes and the first byte is the next header type
-    if (*nxt_hdr == 44) {
-      if (*l4len < 8) return 1;
-      if (l3len < 5) return 1;
-      l3len -= 5;
-      *nxt_hdr = (*l4ptr)[0];
-      *l4len -= 8;
-      (*l4ptr) += 8;
-      continue;
-    }
-    // the other extension headers have one byte for the next header type
-    // and one byte for the extension header length in 8 byte steps minus the first 8 bytes
-    if (*l4len < 2) return 1;
-    ehdr_len = (*l4ptr)[1];
-    ehdr_len *= 8;
-    ehdr_len += 8;
-    if (ehdr_len > l3len) return 1;
-    l3len -= ehdr_len;
-    if (*l4len < ehdr_len) return 1;
-    *nxt_hdr = (*l4ptr)[0];
-    if (*l4len < ehdr_len) return 1;
-    *l4len -= ehdr_len;
-    (*l4ptr) += ehdr_len;
-  }
-  return 0;
-}
-
 
 /**
  * packet_get_tcp_info: TCP transport infos processing.
  */
-void packet_get_tcp_info(const uint8_t *l4, uint16_t l4_packet_len, struct nf_packet *nf_pkt,
-                         struct nfstream_tcphdr **tcph, uint16_t *sport, uint16_t *dport,
-                         uint32_t *l4_data_len, uint8_t **payload, uint16_t *payload_len ) {
+static void packet_get_tcp_info(const uint8_t *l4, uint16_t l4_packet_len, struct nf_packet *nf_pkt,
+                         struct ndpi_tcphdr **tcph, uint16_t *sport, uint16_t *dport,
+                         uint32_t *l4_data_len, uint8_t **payload, uint16_t *payload_len) {
   unsigned tcp_len;
-  *tcph = (struct nfstream_tcphdr *)l4;
+  *tcph = (struct ndpi_tcphdr *)l4;
   *sport = (*tcph)->source, *dport = (*tcph)->dest;
-  tcp_len = nfstream_min(4*(*tcph)->doff, l4_packet_len);
+  tcp_len = ndpi_min(4*(*tcph)->doff, l4_packet_len);
   *payload = (uint8_t*)&l4[tcp_len];
-  *payload_len = nfstream_max(0, l4_packet_len-4*(*tcph)->doff);
-  *l4_data_len = l4_packet_len - sizeof(struct nfstream_tcphdr);
+  *payload_len = ndpi_max(0, l4_packet_len-4*(*tcph)->doff);
+  *l4_data_len = l4_packet_len - sizeof(struct ndpi_tcphdr);
   nf_pkt->fin = (*tcph)->fin;
   nf_pkt->syn = (*tcph)->syn;
   nf_pkt->rst = (*tcph)->rst;
@@ -373,18 +219,17 @@ void packet_get_tcp_info(const uint8_t *l4, uint16_t l4_packet_len, struct nf_pa
   nf_pkt->cwr = (*tcph)->cwr;
 }
 
-
 /**
  * packet_get_udp_info: UDP transport info processing.
  */
-void packet_get_udp_info(const uint8_t *l4, uint16_t l4_packet_len, struct nf_packet *nf_pkt,
-                         struct nfstream_udphdr **udph, uint16_t *sport, uint16_t *dport,
+static void packet_get_udp_info(const uint8_t *l4, uint16_t l4_packet_len, struct nf_packet *nf_pkt,
+                         struct ndpi_udphdr **udph, uint16_t *sport, uint16_t *dport,
                          uint32_t *l4_data_len, uint8_t **payload, uint16_t *payload_len) {
-  *udph = (struct nfstream_udphdr *)l4;
+  *udph = (struct ndpi_udphdr *)l4;
   *sport = (*udph)->source, *dport = (*udph)->dest;
-  *payload = (uint8_t*)&l4[sizeof(struct nfstream_udphdr)];
-  *payload_len = (l4_packet_len > sizeof(struct nfstream_udphdr)) ? l4_packet_len-sizeof(struct nfstream_udphdr) : 0;
-  *l4_data_len = l4_packet_len - sizeof(struct nfstream_udphdr);
+  *payload = (uint8_t*)&l4[sizeof(struct ndpi_udphdr)];
+  *payload_len = (l4_packet_len > sizeof(struct ndpi_udphdr)) ? l4_packet_len-sizeof(struct ndpi_udphdr) : 0;
+  *l4_data_len = l4_packet_len - sizeof(struct ndpi_udphdr);
   nf_pkt->fin = nf_pkt->syn = nf_pkt->rst = nf_pkt->psh = nf_pkt->ack = nf_pkt->urg = nf_pkt->ece = nf_pkt->cwr = 0;
 }
 
@@ -392,11 +237,11 @@ void packet_get_udp_info(const uint8_t *l4, uint16_t l4_packet_len, struct nf_pa
 /**
  * packet_get_icmp_info: ICMP transport info processing.
  */
-void packet_get_icmp_info(const uint8_t *l4, uint16_t l4_packet_len, struct nf_packet *nf_pkt, uint16_t *sport,
+static void packet_get_icmp_info(const uint8_t *l4, uint16_t l4_packet_len, struct nf_packet *nf_pkt, uint16_t *sport,
                           uint16_t *dport, uint32_t *l4_data_len, uint8_t **payload, uint16_t *payload_len) {
-  *payload = (uint8_t*)&l4[sizeof(struct nfstream_icmphdr )];
-  *payload_len = (l4_packet_len > sizeof(struct nfstream_icmphdr)) ? l4_packet_len-sizeof(struct nfstream_icmphdr) : 0;
-  *l4_data_len = l4_packet_len - sizeof(struct nfstream_icmphdr);
+  *payload = (uint8_t*)&l4[sizeof(struct ndpi_icmphdr )];
+  *payload_len = (l4_packet_len > sizeof(struct ndpi_icmphdr)) ? l4_packet_len-sizeof(struct ndpi_icmphdr) : 0;
+  *l4_data_len = l4_packet_len - sizeof(struct ndpi_icmphdr);
   *sport = *dport = 0;
   nf_pkt->fin = nf_pkt->syn = nf_pkt->rst = nf_pkt->psh = nf_pkt->ack = nf_pkt->urg = nf_pkt->ece = nf_pkt->cwr = 0;
 }
@@ -405,11 +250,11 @@ void packet_get_icmp_info(const uint8_t *l4, uint16_t l4_packet_len, struct nf_p
 /**
  * packet_get_icmp6_info: ICMPv6 transport infos processing.
  */
-void packet_get_icmp6_info(const uint8_t *l4, uint16_t l4_packet_len, struct nf_packet *nf_pkt, uint16_t *sport,
+static void packet_get_icmp6_info(const uint8_t *l4, uint16_t l4_packet_len, struct nf_packet *nf_pkt, uint16_t *sport,
                            uint16_t *dport, uint32_t *l4_data_len, uint8_t **payload, uint16_t *payload_len) {
-  *payload = (uint8_t*)&l4[sizeof(struct nfstream_icmp6hdr)];
-  *payload_len = (l4_packet_len > sizeof(struct nfstream_icmp6hdr)) ? l4_packet_len-sizeof(struct nfstream_icmp6hdr) : 0;
-  *l4_data_len = l4_packet_len - sizeof(struct nfstream_icmp6hdr);
+  *payload = (uint8_t*)&l4[sizeof(struct ndpi_icmp6hdr)];
+  *payload_len = (l4_packet_len > sizeof(struct ndpi_icmp6hdr)) ? l4_packet_len-sizeof(struct ndpi_icmp6hdr) : 0;
+  *l4_data_len = l4_packet_len - sizeof(struct ndpi_icmp6hdr);
   *sport = *dport = 0;
   nf_pkt->fin = nf_pkt->syn = nf_pkt->rst = nf_pkt->psh = nf_pkt->ack = nf_pkt->urg = nf_pkt->ece = nf_pkt->cwr = 0;
 }
@@ -418,7 +263,7 @@ void packet_get_icmp6_info(const uint8_t *l4, uint16_t l4_packet_len, struct nf_
 /**
  * packet_get_unknown_transport_info: Non TCP/UDP/ICMP/ICMPv6 infos processing.
  */
-void packet_get_unknown_transport_info(struct nf_packet *nf_pkt, uint16_t *sport, uint16_t *dport,
+static void packet_get_unknown_transport_info(struct nf_packet *nf_pkt, uint16_t *sport, uint16_t *dport,
                                        uint32_t *l4_data_len) {
   *sport = *dport = 0;
   *l4_data_len = 0;
@@ -429,8 +274,8 @@ void packet_get_unknown_transport_info(struct nf_packet *nf_pkt, uint16_t *sport
 /**
  * packet_get_info: Fill required nf packet information.
  */
-void packet_get_info(struct nf_packet *nf_pkt, uint16_t *sport, uint16_t *dport, uint32_t *l4_data_len,
-                     uint16_t *payload_len, const struct nfstream_iphdr *iph, const struct nfstream_ipv6hdr *iph6,
+static void packet_get_info(struct nf_packet *nf_pkt, uint16_t *sport, uint16_t *dport, uint32_t *l4_data_len,
+                     uint16_t *payload_len, const struct ndpi_iphdr *iph, const struct ndpi_ipv6hdr *iph6,
                      uint16_t ipsize, const uint8_t version, uint16_t vlan_id) {
   nf_pkt->protocol = iph->protocol;
   nf_pkt->vlan_id = vlan_id;
@@ -455,11 +300,10 @@ void packet_get_info(struct nf_packet *nf_pkt, uint16_t *sport, uint16_t *dport,
   }
 }
 
-
 /**
  * packet_fanout: Network flow packet fanout.
  */
-int packet_fanout(int mode, uint64_t hashval, int n_roots, uint64_t root_idx) {
+static int packet_fanout(int mode, uint64_t hashval, int n_roots, uint64_t root_idx) {
   if (mode == 0) { // Offline, we perform fanout like strategy
     if ((hashval % n_roots) == root_idx) { // If packet match meter idx, he will consume it and process it.
       return 1;
@@ -479,16 +323,15 @@ int packet_fanout(int mode, uint64_t hashval, int n_roots, uint64_t root_idx) {
   }
 }
 
-
 /**
  * packet_get_ip_info: nf_packet structure filler.
  */
-int packet_get_ip_info(const uint8_t version, uint16_t vlan_id, nfstream_packet_tunnel tunnel_id,
-                       const struct nfstream_iphdr *iph, const struct nfstream_ipv6hdr *iph6,
-                       uint16_t ipsize, uint16_t l4_packet_len, uint16_t l4_offset, struct nfstream_tcphdr **tcph,
-                       struct nfstream_udphdr **udph, uint16_t *sport, uint16_t *dport, uint8_t *proto,
-                       uint8_t **payload, uint16_t *payload_len, struct nf_packet *nf_pkt,
-                       int n_roots, uint64_t root_idx, int mode) {
+static int packet_get_ip_info(const uint8_t version, uint16_t vlan_id, ndpi_packet_tunnel tunnel_id,
+                              const struct ndpi_iphdr *iph, const struct ndpi_ipv6hdr *iph6,
+                              uint16_t ipsize, uint16_t l4_packet_len, uint16_t l4_offset, struct ndpi_tcphdr **tcph,
+                              struct ndpi_udphdr **udph, uint16_t *sport, uint16_t *dport, uint8_t *proto,
+                              uint8_t **payload, uint16_t *payload_len, struct nf_packet *nf_pkt,
+                              int n_roots, uint64_t root_idx, int mode) {
   const uint8_t *l3, *l4;
   uint32_t l4_data_len = 0XFEEDFACE;
   if (version == IPVERSION) {
@@ -499,12 +342,12 @@ int packet_get_ip_info(const uint8_t version, uint16_t vlan_id, nfstream_packet_
     if (l4_offset > ipsize) return 0;
     l3 = (const uint8_t*)iph6;
   }
-  if (nfstream_max(ntohs(iph->tot_len) , ipsize)< l4_offset + l4_packet_len) return 0;
+  if (ndpi_max(ntohs(iph->tot_len) , ipsize)< l4_offset + l4_packet_len) return 0;
   *proto = iph->protocol;
   l4 =& ((const uint8_t *) l3)[l4_offset];
-  if (*proto == IPPROTO_TCP && l4_packet_len >= sizeof(struct nfstream_tcphdr)) { // TCP Processing
+  if (*proto == IPPROTO_TCP && l4_packet_len >= sizeof(struct ndpi_tcphdr)) { // TCP Processing
     packet_get_tcp_info(l4, l4_packet_len, nf_pkt, tcph, sport, dport, &l4_data_len, payload, payload_len);
-  } else if (*proto == IPPROTO_UDP && l4_packet_len >= sizeof(struct nfstream_udphdr)) { // UDP Processing
+  } else if (*proto == IPPROTO_UDP && l4_packet_len >= sizeof(struct ndpi_udphdr)) { // UDP Processing
     packet_get_udp_info(l4, l4_packet_len, nf_pkt, udph, sport, dport, &l4_data_len, payload, payload_len);
   } else if (*proto == IPPROTO_ICMP) { // ICMP Processing
     packet_get_icmp_info(l4, l4_packet_len, nf_pkt, sport, dport, &l4_data_len, payload, payload_len);
@@ -521,18 +364,17 @@ int packet_get_ip_info(const uint8_t version, uint16_t vlan_id, nfstream_packet_
   return packet_fanout(mode, hashval, n_roots, root_idx);
 }
 
-
 /**
  * packet_get_ipv6_info: Convert IPv6 headers to IPv4.
  */
-static int packet_get_ipv6_info(uint16_t vlan_id, nfstream_packet_tunnel tunnel_id,
-                                const struct nfstream_ipv6hdr *iph6, uint16_t ipsize,
-                                struct nfstream_tcphdr **tcph, struct nfstream_udphdr **udph,
+static int packet_get_ipv6_info(uint16_t vlan_id, ndpi_packet_tunnel tunnel_id,
+                                const struct ndpi_ipv6hdr *iph6, uint16_t ipsize,
+                                struct ndpi_tcphdr **tcph, struct ndpi_udphdr **udph,
                                 uint16_t *sport, uint16_t *dport, uint8_t *proto, uint8_t **payload,
                                 uint16_t *payload_len, struct nf_packet *nf_pkt, int n_roots,
                                 uint64_t root_idx, int mode) {
   // We move field to iph to treat it by the same function for IPV4
-  struct nfstream_iphdr iph;
+  struct ndpi_iphdr iph;
   if (ipsize < 40) return 0;
   memset(&iph, 0, sizeof(iph));
   iph.version = IPVERSION;
@@ -540,9 +382,9 @@ static int packet_get_ipv6_info(uint16_t vlan_id, nfstream_packet_tunnel tunnel_
   iph.daddr = iph6->ip6_dst.u6_addr.u6_addr32[2] + iph6->ip6_dst.u6_addr.u6_addr32[3];
   uint8_t l4proto = iph6->ip6_hdr.ip6_un1_nxt;
   uint16_t ip_len = ntohs(iph6->ip6_hdr.ip6_un1_plen);
-  const uint8_t *l4ptr = (((const uint8_t *) iph6) + sizeof(struct nfstream_ipv6hdr));
-  if (ipsize < sizeof(struct nfstream_ipv6hdr) + ip_len) return 0;
-  if (packet_handle_ipv6_extension_headers(ipsize - sizeof(struct nfstream_ipv6hdr), &l4ptr, &ip_len, &l4proto) != 0) {
+  const uint8_t *l4ptr = (((const uint8_t *) iph6) + sizeof(struct ndpi_ipv6hdr));
+  if (ipsize < sizeof(struct ndpi_ipv6hdr) + ip_len) return 0;
+  if (ndpi_handle_ipv6_extension_headers(ipsize - sizeof(struct ndpi_ipv6hdr), &l4ptr, &ip_len, &l4proto) != 0) {
     return 0;
   }
   iph.protocol = l4proto;
@@ -551,15 +393,14 @@ static int packet_get_ipv6_info(uint16_t vlan_id, nfstream_packet_tunnel tunnel_
 	     tcph, udph, sport, dport, proto, payload, payload_len, nf_pkt, n_roots, root_idx, mode));
 }
 
-
 /**
  * packet_parse: Packet information parsing function.
  */
-int packet_parse(const uint64_t time,
+static int packet_parse(const uint64_t time,
                  uint16_t vlan_id,
-                 nfstream_packet_tunnel tunnel_id,
-                 const struct nfstream_iphdr *iph,
-                 struct nfstream_ipv6hdr *iph6,
+                 ndpi_packet_tunnel tunnel_id,
+                 const struct ndpi_iphdr *iph,
+                 struct ndpi_ipv6hdr *iph6,
                  uint16_t ipsize,
                  uint16_t rawsize,
                  struct nf_packet *nf_pkt,
@@ -567,8 +408,8 @@ int packet_parse(const uint64_t time,
                  uint64_t root_idx,
                  int mode) {
   uint8_t proto;
-  struct nfstream_tcphdr *tcph = NULL;
-  struct nfstream_udphdr *udph = NULL;
+  struct ndpi_tcphdr *tcph = NULL;
+  struct ndpi_udphdr *udph = NULL;
   uint16_t sport, dport, payload_len = 0;
   uint8_t *payload;
   nf_pkt->direction = 0;
@@ -585,11 +426,10 @@ int packet_parse(const uint64_t time,
                                 &payload, &payload_len, nf_pkt, n_roots, root_idx, mode);
 }
 
-
 /**
  * packet_dlt_null: null datatype processing
  */
-void packet_dlt_null(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, uint16_t *ip_offset) {
+static void packet_dlt_null(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, uint16_t *ip_offset) {
   if (ntohl(*((uint32_t*)&packet[eth_offset])) == 2) (*type) = ETH_P_IP;
   else (*type) = ETH_P_IPV6;
   (*ip_offset) = 4 + eth_offset;
@@ -599,10 +439,10 @@ void packet_dlt_null(const uint8_t *packet, uint16_t eth_offset, uint16_t *type,
 /**
  * packet_dlt_ppp_serial: cisco ppp processing
  */
-void packet_dlt_ppp_serial(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, uint16_t *ip_offset) {
-  const struct nfstream_chdlc *chdlc;
-  chdlc = (struct nfstream_chdlc *) &packet[eth_offset];
-  (*ip_offset) = eth_offset + sizeof(struct nfstream_chdlc); // CHDLC_OFF = 4
+static void packet_dlt_ppp_serial(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, uint16_t *ip_offset) {
+  const struct ndpi_chdlc *chdlc;
+  chdlc = (struct ndpi_chdlc *) &packet[eth_offset];
+  (*ip_offset) = eth_offset + sizeof(struct ndpi_chdlc); // CHDLC_OFF = 4
   (*type) = ntohs(chdlc->proto_code);
 }
 
@@ -610,11 +450,11 @@ void packet_dlt_ppp_serial(const uint8_t *packet, uint16_t eth_offset, uint16_t 
 /**
  * packet_dlt_ppp: ppp processing
  */
-void packet_dlt_ppp(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, uint16_t *ip_offset) {
-  const struct nfstream_chdlc *chdlc;
+static void packet_dlt_ppp(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, uint16_t *ip_offset) {
+  const struct ndpi_chdlc *chdlc;
   if(packet[0] == 0x0f || packet[0] == 0x8f) {
-    chdlc = (struct nfstream_chdlc *) &packet[eth_offset];
-    (*ip_offset) = eth_offset + sizeof(struct nfstream_chdlc); /* CHDLC_OFF = 4 */
+    chdlc = (struct ndpi_chdlc *) &packet[eth_offset];
+    (*ip_offset) = eth_offset + sizeof(struct ndpi_chdlc); /* CHDLC_OFF = 4 */
     (*type) = ntohs(chdlc->proto_code);
   } else {
     (*ip_offset) = eth_offset + 2;
@@ -626,12 +466,12 @@ void packet_dlt_ppp(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, 
 /**
  * packet_dlt_en10mb: Ethernet processing
  */
-int packet_dlt_en10mb(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, uint16_t *ip_offset,
+static int packet_dlt_en10mb(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, uint16_t *ip_offset,
                int *pyld_eth_len, struct nf_packet *nf_pkt) {
-  const struct nfstream_ethhdr *ethernet;
-  const struct nfstream_llc_header_snap *llc;
+  const struct ndpi_ethhdr *ethernet;
+  const struct ndpi_llc_header_snap *llc;
   int check = 0;
-  ethernet = (struct nfstream_ethhdr *) &packet[eth_offset];
+  ethernet = (struct ndpi_ethhdr *) &packet[eth_offset];
   nf_pkt->src_mac[0] = ethernet->h_source[0];
   nf_pkt->src_mac[1] = ethernet->h_source[1];
   nf_pkt->src_mac[2] = ethernet->h_source[2];
@@ -644,13 +484,13 @@ int packet_dlt_en10mb(const uint8_t *packet, uint16_t eth_offset, uint16_t *type
   nf_pkt->dst_mac[3] = ethernet->h_dest[3];
   nf_pkt->dst_mac[4] = ethernet->h_dest[4];
   nf_pkt->dst_mac[5] = ethernet->h_dest[5];
-  (*ip_offset) = sizeof(struct nfstream_ethhdr) + eth_offset;
+  (*ip_offset) = sizeof(struct ndpi_ethhdr) + eth_offset;
   check = ntohs(ethernet->h_proto);
   if (check <= 1500) (*pyld_eth_len) = check;
   else if (check >= 1536) (*type) = check;
 
   if ((*pyld_eth_len) != 0) {
-    llc = (struct nfstream_llc_header_snap *)(&packet[(*ip_offset)]);
+    llc = (struct ndpi_llc_header_snap *)(&packet[(*ip_offset)]);
     // check for LLC layer with SNAP extension */
     if (llc->dsap == SNAP || llc->ssap == SNAP) {
       (*type) = llc->snap.proto_ID;
@@ -666,18 +506,18 @@ int packet_dlt_en10mb(const uint8_t *packet, uint16_t eth_offset, uint16_t *type
 /**
  * packet_dlt_radiotap: Radiotap link-layer processing
  */
-int packet_dlt_radiotap(const uint8_t *packet, uint32_t caplen, uint16_t eth_offset, uint16_t *type,
+static int packet_dlt_radiotap(const uint8_t *packet, uint32_t caplen, uint16_t eth_offset, uint16_t *type,
                         uint16_t *ip_offset, uint16_t *radio_len, uint16_t *fc, int *wifi_len,
                         struct nf_packet *nf_pkt) {
-  const struct nfstream_radiotap_header *radiotap;
-  const struct nfstream_wifi_header *wifi;
-  const struct nfstream_llc_header_snap *llc;
-  radiotap = (struct nfstream_radiotap_header *) &packet[eth_offset];
+  const struct ndpi_radiotap_header *radiotap;
+  const struct ndpi_wifi_header *wifi;
+  const struct ndpi_llc_header_snap *llc;
+  radiotap = (struct ndpi_radiotap_header *) &packet[eth_offset];
   (*radio_len) = radiotap->len;
   if ((radiotap->flags & BAD_FCS) == BAD_FCS) return 0;
-  if (caplen < (eth_offset + (*radio_len) + sizeof(struct nfstream_wifi_header))) return 0;
+  if (caplen < (eth_offset + (*radio_len) + sizeof(struct ndpi_wifi_header))) return 0;
   // Calculate 802.11 header length (variable)
-  wifi = (struct nfstream_wifi_header*)( packet + eth_offset + (*radio_len));
+  wifi = (struct ndpi_wifi_header*)( packet + eth_offset + (*radio_len));
   (*fc) = wifi->fc;
   // Check wifi data presence
   if (FCF_TYPE((*fc)) == WIFI_DATA) {
@@ -697,10 +537,10 @@ int packet_dlt_radiotap(const uint8_t *packet, uint32_t caplen, uint16_t eth_off
   nf_pkt->dst_mac[4] = wifi->dest[4];
   nf_pkt->dst_mac[5] = wifi->dest[5];
   // Check ether_type from LLC
-  if (caplen < (eth_offset + (*wifi_len) + (*radio_len) + sizeof(struct nfstream_llc_header_snap))) return 0;
-  llc = (struct nfstream_llc_header_snap*)(packet + eth_offset + (*wifi_len) + (*radio_len));
+  if (caplen < (eth_offset + (*wifi_len) + (*radio_len) + sizeof(struct ndpi_llc_header_snap))) return 0;
+  llc = (struct ndpi_llc_header_snap*)(packet + eth_offset + (*wifi_len) + (*radio_len));
   if (llc->dsap == SNAP) (*type) = ntohs(llc->snap.proto_ID);
-  (*ip_offset) = (*wifi_len) + (*radio_len) + sizeof(struct nfstream_llc_header_snap) + eth_offset;
+  (*ip_offset) = (*wifi_len) + (*radio_len) + sizeof(struct ndpi_llc_header_snap) + eth_offset;
   return 1;
 }
 
@@ -708,7 +548,7 @@ int packet_dlt_radiotap(const uint8_t *packet, uint32_t caplen, uint16_t eth_off
 /**
  * packet_dlt_linux_ssl: Linux cooked capture processing
  */
-void packet_dlt_linux_ssl(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, uint16_t *ip_offset) {
+static void packet_dlt_linux_ssl(const uint8_t *packet, uint16_t eth_offset, uint16_t *type, uint16_t *ip_offset) {
   (*type) = (packet[eth_offset+14] << 8) + packet[eth_offset+15];
   (*ip_offset) = 16 + eth_offset;
 }
@@ -717,7 +557,7 @@ void packet_dlt_linux_ssl(const uint8_t *packet, uint16_t eth_offset, uint16_t *
 /**
  * packet_dlt_ipv4: Raw IPv4
  */
-void packet_dlt_ipv4(uint16_t *type, uint16_t eth_offset, uint16_t *ip_offset) {
+static void packet_dlt_ipv4(uint16_t *type, uint16_t eth_offset, uint16_t *ip_offset) {
   (*type) = ETH_P_IP;
   (*ip_offset) = eth_offset;
 }
@@ -726,7 +566,7 @@ void packet_dlt_ipv4(uint16_t *type, uint16_t eth_offset, uint16_t *ip_offset) {
 /**
  * packet_dlt_ipv6: Raw IPv6
  */
-void packet_dlt_ipv6(uint16_t *type, uint16_t eth_offset, uint16_t *ip_offset) {
+static void packet_dlt_ipv6(uint16_t *type, uint16_t eth_offset, uint16_t *ip_offset) {
   (*type) = ETH_P_IPV6;
   (*ip_offset) = eth_offset;
 }
@@ -735,7 +575,7 @@ void packet_dlt_ipv6(uint16_t *type, uint16_t eth_offset, uint16_t *ip_offset) {
 /**
  * packet_datalink_checker: Compute offsets based on datalink type.
  */
-int packet_datalink_checker(uint32_t caplen, const uint8_t *packet, uint16_t eth_offset, uint16_t *type,
+static int packet_datalink_checker(uint32_t caplen, const uint8_t *packet, uint16_t eth_offset, uint16_t *type,
                             int datalink_type, uint16_t *ip_offset, int *pyld_eth_len, uint16_t *radio_len, uint16_t *fc,
                             int *wifi_len, struct nf_packet *nf_pkt) {
   if (caplen < (eth_offset + 28)) return 0; /* 28 = min IP + min UDP */
@@ -778,12 +618,12 @@ int packet_datalink_checker(uint32_t caplen, const uint8_t *packet, uint16_t eth
 /**
  * packet_ether_type_checker: Check ether type.
  */
-int packet_ether_type_checker(uint32_t caplen, const uint8_t *packet, uint16_t *type,
+static int packet_ether_type_checker(uint32_t caplen, const uint8_t *packet, uint16_t *type,
                                uint16_t *vlan_id, uint16_t *ip_offset, uint8_t *recheck_type) {
   // MPLS header
   union mpls {
     uint32_t u32;
-    struct nfstream_mpls_header mpls;
+    struct ndpi_mpls_header mpls;
   } mpls;
   switch((*type)) {
   case VLAN:
@@ -823,17 +663,16 @@ int packet_ether_type_checker(uint32_t caplen, const uint8_t *packet, uint16_t *
   return 1;
 }
 
-
 /**
  * packet_process: Main packet processing function.
  */
-int packet_process(int datalink_type, uint32_t caplen, uint32_t len, const uint8_t *packet, int decode_tunnels,
+static int packet_process(int datalink_type, uint32_t caplen, uint32_t len, const uint8_t *packet, int decode_tunnels,
                    struct nf_packet *nf_pkt, int n_roots, uint64_t root_idx, int mode, uint64_t time) {
   // IP header
-  struct nfstream_iphdr *iph;
+  struct ndpi_iphdr *iph;
   // IPv6 header
-  struct nfstream_ipv6hdr *iph6;
-  nfstream_packet_tunnel tunnel_id = nfstream_no_tunnel;
+  struct ndpi_ipv6hdr *iph6;
+  ndpi_packet_tunnel tunnel_id = ndpi_no_tunnel;
   uint32_t eth_offset = 0;
   uint16_t radio_len = 0, fc = 0, type = 0, ip_offset = 0, ip_len = 0, frag_off = 0, vlan_id = 0;
   int wifi_len = 0, pyld_eth_len = 0;
@@ -852,8 +691,8 @@ int packet_process(int datalink_type, uint32_t caplen, uint32_t len, const uint8
 
  iph_check:
   // Check and set IP header size and total packet length
-  if (caplen < ip_offset + sizeof(struct nfstream_iphdr)) return 0;
-  iph = (struct nfstream_iphdr *) &packet[ip_offset];
+  if (caplen < ip_offset + sizeof(struct ndpi_iphdr)) return 0;
+  iph = (struct ndpi_iphdr *) &packet[ip_offset];
 
   // just work on Ethernet packets that contain IP */
   if (type == ETH_P_IP && caplen >= ip_offset) {
@@ -873,15 +712,15 @@ int packet_process(int datalink_type, uint32_t caplen, uint32_t len, const uint8
     if ((frag_off & 0x1FFF) != 0) return 0;
 
   } else if (iph->version == 6) {
-    if (caplen < ip_offset + sizeof(struct nfstream_ipv6hdr)) return 0;
-    iph6 = (struct nfstream_ipv6hdr *)&packet[ip_offset];
+    if (caplen < ip_offset + sizeof(struct ndpi_ipv6hdr)) return 0;
+    iph6 = (struct ndpi_ipv6hdr *)&packet[ip_offset];
     proto = iph6->ip6_hdr.ip6_un1_nxt;
     ip_len = ntohs(iph6->ip6_hdr.ip6_un1_plen);
-    if (caplen < (ip_offset + sizeof(struct nfstream_ipv6hdr) + ntohs(iph6->ip6_hdr.ip6_un1_plen))) return 0;
+    if (caplen < (ip_offset + sizeof(struct ndpi_ipv6hdr) + ntohs(iph6->ip6_hdr.ip6_un1_plen))) return 0;
 
-    const uint8_t *l4ptr = (((const uint8_t *) iph6) + sizeof(struct nfstream_ipv6hdr));
+    const uint8_t *l4ptr = (((const uint8_t *) iph6) + sizeof(struct ndpi_ipv6hdr));
     uint16_t ipsize = caplen - ip_offset;
-    if (packet_handle_ipv6_extension_headers(ipsize - sizeof(struct nfstream_ipv6hdr), &l4ptr, &ip_len, &proto) != 0) return 0;
+    if (ndpi_handle_ipv6_extension_headers(ipsize - sizeof(struct ndpi_ipv6hdr), &l4ptr, &ip_len, &proto) != 0) return 0;
 
     if (proto == IPPROTO_IPV6 || proto == IPPROTO_IPIP) {
       if (l4ptr > packet) { // Better safe than sorry
@@ -895,16 +734,16 @@ int packet_process(int datalink_type, uint32_t caplen, uint32_t len, const uint8
   }
 
   if (decode_tunnels && (proto == IPPROTO_UDP)) { // Tunnel decoding if configured by the user.
-    if (caplen < ip_offset + ip_len + sizeof(struct nfstream_udphdr)) return 0; // Too short for UDP header
+    if (caplen < ip_offset + ip_len + sizeof(struct ndpi_udphdr)) return 0; // Too short for UDP header
     else {
-      struct nfstream_udphdr *udp = (struct nfstream_udphdr *)&packet[ip_offset+ip_len];
+      struct ndpi_udphdr *udp = (struct ndpi_udphdr *)&packet[ip_offset+ip_len];
       uint16_t sport = ntohs(udp->source), dport = ntohs(udp->dest);
       if (((sport == GTP_U_V1_PORT) || (dport == GTP_U_V1_PORT)) && ((ip_offset + ip_len +
-                                                                      sizeof(struct nfstream_udphdr) + 8)
+                                                                      sizeof(struct ndpi_udphdr) + 8)
                                                                       < caplen)
                                                                       ) {
         // Check if it's GTPv1
-        unsigned offset = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
+        unsigned offset = ip_offset+ip_len+sizeof(struct ndpi_udphdr);
         uint8_t flags = packet[offset];
         uint8_t message_type = packet[offset+1];
         uint8_t exts_parsing_error = 0;
@@ -928,28 +767,28 @@ int packet_process(int datalink_type, uint32_t caplen, uint32_t len, const uint8
 
           if (offset < caplen && !exts_parsing_error) {
 	        /* Ok, valid GTP-U */
-	        tunnel_id = nfstream_gtp_tunnel;
+	        tunnel_id = ndpi_gtp_tunnel;
 	        ip_offset = offset;
-	        iph = (struct nfstream_iphdr *)&packet[ip_offset];
+	        iph = (struct ndpi_iphdr *)&packet[ip_offset];
 	        if (iph->version == 6) {
-	          iph6 = (struct nfstream_ipv6hdr *)&packet[ip_offset];
+	          iph6 = (struct ndpi_ipv6hdr *)&packet[ip_offset];
 	          iph = NULL;
-	          if (caplen < ip_offset + sizeof(struct nfstream_ipv6hdr)) return 0;
+	          if (caplen < ip_offset + sizeof(struct ndpi_ipv6hdr)) return 0;
 	        } else if (iph->version != IPVERSION) {
 	            return 0;
 	        } else {
-	            if (caplen < ip_offset + sizeof(struct nfstream_iphdr)) return 0;
+	            if (caplen < ip_offset + sizeof(struct ndpi_iphdr)) return 0;
 	        }
 	      }
 	    }
       } else if ((sport == TZSP_PORT) || (dport == TZSP_PORT)) {
         // https://en.wikipedia.org/wiki/TZSP
-        if (caplen < ip_offset + ip_len + sizeof(struct nfstream_udphdr) + 4) return 0;
-        unsigned offset = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
+        if (caplen < ip_offset + ip_len + sizeof(struct ndpi_udphdr) + 4) return 0;
+        unsigned offset = ip_offset+ip_len+sizeof(struct ndpi_udphdr);
         uint8_t version = packet[offset];
         uint8_t ts_type = packet[offset+1];
         uint16_t encapsulates = ntohs(*((uint16_t*)&packet[offset+2]));
-        tunnel_id = nfstream_tzsp_tunnel;
+        tunnel_id = ndpi_tzsp_tunnel;
         if ((version == 1) && (ts_type == 0) && (encapsulates == 1)) {
           uint8_t stop = 0;
           offset += 4;
@@ -978,15 +817,15 @@ int packet_process(int datalink_type, uint32_t caplen, uint32_t len, const uint8
 	    }
       } else if ((sport == NFSTREAM_CAPWAP_DATA_PORT) || (dport == NFSTREAM_CAPWAP_DATA_PORT)) {
 	    // We decode CAPWAP DATA
-	    unsigned offset = ip_offset+ip_len+sizeof(struct nfstream_udphdr);
+	    unsigned offset = ip_offset+ip_len+sizeof(struct ndpi_udphdr);
 	    if ((offset+1) < caplen) {
 	      uint8_t preamble = packet[offset];
 	      if ((preamble & 0x0F) == 0) { // CAPWAP header
 	        uint16_t msg_len = (packet[offset+1] & 0xF8) >> 1;
 	        offset += msg_len;
 	        if (offset + 32 < caplen) {
-	          const struct nfstream_wifi_header *wifi_hdr;
-              wifi_hdr = (struct nfstream_wifi_header*)(packet + offset);
+	          const struct ndpi_wifi_header *wifi_hdr;
+              wifi_hdr = (struct ndpi_wifi_header*)(packet + offset);
               nf_pkt->src_mac[0] = wifi_hdr->trsm[0];
               nf_pkt->src_mac[1] = wifi_hdr->trsm[1];
               nf_pkt->src_mac[2] = wifi_hdr->trsm[2];
@@ -1003,7 +842,7 @@ int packet_process(int datalink_type, uint32_t caplen, uint32_t len, const uint8
 	          // LLC header is 8 bytes
 	          type = ntohs((uint16_t)*((uint16_t*)&packet[offset+6]));
 	          ip_offset = offset + 8;
-	          tunnel_id = nfstream_capwap_tunnel;
+	          tunnel_id = ndpi_capwap_tunnel;
 	          goto iph_check;
 	        }
 	      }
@@ -1013,15 +852,12 @@ int packet_process(int datalink_type, uint32_t caplen, uint32_t len, const uint8
   }
   return packet_parse(time, vlan_id, tunnel_id, iph, iph6, caplen - ip_offset, len, nf_pkt, n_roots, root_idx, mode);
 }
-
-
 /***************************************** Flow layer *****************************************************************/
-
 
 /**
  * flow_get_packet_size: Return packet_size according to configured accounting mode.
  */
-uint16_t flow_get_packet_size(struct nf_packet *packet, uint8_t accounting_mode) {
+static uint16_t flow_get_packet_size(struct nf_packet *packet, uint8_t accounting_mode) {
   if (accounting_mode == 0) return packet->raw_size;
   else if (accounting_mode == 1) return packet->ip_size;
   else if (accounting_mode == 2) return packet->transport_size;
@@ -1032,16 +868,15 @@ uint16_t flow_get_packet_size(struct nf_packet *packet, uint8_t accounting_mode)
 /**
  * flow_is_ndpi_proto: helper to check is flow protocol equal to an id.
  */
-uint8_t flow_is_ndpi_proto(struct nf_flow *flow, uint16_t id) {
+static uint8_t flow_is_ndpi_proto(struct nf_flow *flow, uint16_t id) {
   if ((flow->detected_protocol.master_protocol == id)|| (flow->detected_protocol.app_protocol == id)) return 1;
   else return 0;
 }
 
-
 /**
  * flow_bidirectional_dissection_collect_info: Dissection info collector.
  */
-void flow_bidirectional_dissection_collect_info(struct ndpi_detection_module_struct *dissector, struct nf_flow *flow) {
+static void flow_bidirectional_dissection_collect_info(struct ndpi_detection_module_struct *dissector, struct nf_flow *flow) {
   // We copy useful information to fileds in our flow structure in order to release dissector references at early stage.
   if (!flow->ndpi_flow) return;
   flow->confidence = flow->ndpi_flow->confidence;
@@ -1078,30 +913,27 @@ void flow_bidirectional_dissection_collect_info(struct ndpi_detection_module_str
   }
 }
 
-
 /**
  * flow_free_ndpi_data: nDPI references freer.
  */
-void flow_free_ndpi_data(struct nf_flow *flow) {
+static void flow_free_ndpi_data(struct nf_flow *flow) {
   if (flow->ndpi_flow) { ndpi_flow_free(flow->ndpi_flow); flow->ndpi_flow = NULL; }
 }
-
 
 /**
  * flow_free_splt_data: SPLT fields freer.
  */
-void flow_free_splt_data(struct nf_flow *flow) {
+static void flow_free_splt_data(struct nf_flow *flow) {
   if (flow->splt_direction) { ndpi_free(flow->splt_direction); flow->splt_direction = NULL; }
   if (flow->splt_ps) { ndpi_free(flow->splt_ps); flow->splt_ps = NULL; }
   if (flow->splt_piat_ms) { ndpi_free(flow->splt_piat_ms); flow->splt_piat_ms = NULL; }
   flow->splt_closed = 1;
 }
 
-
 /**
  * flow_update_bidirectional_tcp_flags: Update bidirectional tcp flags flow counters.
  */
-void flow_update_bidirectional_tcp_flags(struct nf_flow *flow, struct nf_packet *packet) {
+static void flow_update_bidirectional_tcp_flags(struct nf_flow *flow, struct nf_packet *packet) {
   flow->bidirectional_syn_packets += packet->syn;
   flow->bidirectional_cwr_packets += packet->cwr;
   flow->bidirectional_ece_packets += packet->ece;
@@ -1112,11 +944,10 @@ void flow_update_bidirectional_tcp_flags(struct nf_flow *flow, struct nf_packet 
   flow->bidirectional_fin_packets += packet->fin;
 }
 
-
 /**
  * flow_update_src2dst_tcp_flags: Update src2dst tcp flags flow counters.
  */
-void flow_update_src2dst_tcp_flags(struct nf_flow *flow, struct nf_packet *packet) {
+static void flow_update_src2dst_tcp_flags(struct nf_flow *flow, struct nf_packet *packet) {
   flow->src2dst_syn_packets += packet->syn;
   flow->src2dst_cwr_packets += packet->cwr;
   flow->src2dst_ece_packets += packet->ece;
@@ -1127,11 +958,10 @@ void flow_update_src2dst_tcp_flags(struct nf_flow *flow, struct nf_packet *packe
   flow->src2dst_fin_packets += packet->fin;
 }
 
-
 /**
  * flow_update_dst2src_tcp_flags: Update dst2src tcp flags flow counters.
  */
-void flow_update_dst2src_tcp_flags(struct nf_flow *flow, struct nf_packet *packet) {
+static void flow_update_dst2src_tcp_flags(struct nf_flow *flow, struct nf_packet *packet) {
   flow->dst2src_syn_packets += packet->syn;
   flow->dst2src_cwr_packets += packet->cwr;
   flow->dst2src_ece_packets += packet->ece;
@@ -1142,11 +972,10 @@ void flow_update_dst2src_tcp_flags(struct nf_flow *flow, struct nf_packet *packe
   flow->dst2src_fin_packets += packet->fin;
 }
 
-
 /**
  * flow_expiration_handler: Flow expiration handler.
  */
-uint8_t flow_expiration_handler(struct nf_flow *flow, struct nf_packet *packet,
+static uint8_t flow_expiration_handler(struct nf_flow *flow, struct nf_packet *packet,
                            uint64_t idle_timeout, uint64_t active_timeout) {
   if ((packet->time - flow->bidirectional_last_seen_ms) >= idle_timeout) return 1; // Inactive expiration
   if ((packet->time - flow->bidirectional_first_seen_ms) >= active_timeout) return 2; // active expiration
@@ -1154,11 +983,10 @@ uint8_t flow_expiration_handler(struct nf_flow *flow, struct nf_packet *packet,
   return 0;
 }
 
-
 /**
  * flow_init_splt: Flow SPLT structure initializer.
  */
-uint8_t flow_init_splt(struct nf_flow *flow, uint8_t splt, uint16_t packet_size) {
+static uint8_t flow_init_splt(struct nf_flow *flow, uint8_t splt, uint16_t packet_size) {
   flow->splt_direction = (int8_t*)ndpi_malloc(sizeof(int8_t) * splt); // direction on int8 is more than sufficient.
   if (flow->splt_direction == NULL) {
     ndpi_free(flow);
@@ -1186,12 +1014,11 @@ uint8_t flow_init_splt(struct nf_flow *flow, uint8_t splt, uint16_t packet_size)
   return 1;
 }
 
-
 /**
  * flow_update_splt: Flow SPLT structure updater.
  */
-void flow_update_splt(uint8_t splt, struct nf_flow *flow, struct nf_packet *packet,
-                 uint16_t packet_size, uint64_t bidirectional_piat_ms) {
+static void flow_update_splt(uint8_t splt, struct nf_flow *flow, struct nf_packet *packet, uint16_t packet_size,
+                             uint64_t bidirectional_piat_ms) {
   if ((flow->bidirectional_packets - 1) < splt) {
       flow->splt_direction[flow->bidirectional_packets - 1] = packet->direction;
       flow->splt_ps[flow->bidirectional_packets - 1] = packet_size;
@@ -1199,7 +1026,10 @@ void flow_update_splt(uint8_t splt, struct nf_flow *flow, struct nf_packet *pack
   }
 }
 
-int ip_src_eq(struct nf_flow *flow, struct nf_packet *packet) {
+/**
+ * ip_src_eq: Compare packet-flow IP source
+ */
+static int ip_src_eq(struct nf_flow *flow, struct nf_packet *packet) {
   if (packet->ip_version == 6) {
     if(packet->src_ip[0] == flow->src_ip[0] &&
        packet->src_ip[1] == flow->src_ip[1])
@@ -1210,8 +1040,10 @@ int ip_src_eq(struct nf_flow *flow, struct nf_packet *packet) {
   return 0;
 }
 
-
-int ip_dst_eq(struct nf_flow *flow, struct nf_packet *packet) {
+/**
+ * ip_dst_eq: Compare packet-flow IP destination
+ */
+static int ip_dst_eq(struct nf_flow *flow, struct nf_packet *packet) {
   if (packet->ip_version == 6) {
     if(packet->dst_ip[0] == flow->dst_ip[0] &&
        packet->dst_ip[1] == flow->dst_ip[1])
@@ -1225,7 +1057,7 @@ int ip_dst_eq(struct nf_flow *flow, struct nf_packet *packet) {
 /**
  * flow_set_packet_direction: Compute flow packet direction.
  */
-void flow_set_packet_direction(struct nf_flow *flow, struct nf_packet *packet) {
+static void flow_set_packet_direction(struct nf_flow *flow, struct nf_packet *packet) {
   // We first check ports to determine direction.
   if ((flow->src_port != packet->src_port) || (flow->dst_port != packet->dst_port)) {
     packet->direction = 1;
@@ -1237,11 +1069,10 @@ void flow_set_packet_direction(struct nf_flow *flow, struct nf_packet *packet) {
   }
 }
 
-
 /**
  * flow_init_bidirectional_dissection: Flow bidirectional dissection initialization.
  */
-uint8_t flow_init_bidirectional_dissection(struct ndpi_detection_module_struct *dissector, uint8_t n_dissections,
+static uint8_t flow_init_bidirectional_dissection(struct ndpi_detection_module_struct *dissector, uint8_t n_dissections,
                                            struct nf_flow *flow, struct nf_packet *packet, uint8_t sync) {
   flow->ndpi_flow = (struct ndpi_flow_struct *)ndpi_flow_malloc(SIZEOF_FLOW_STRUCT);
   if (flow->ndpi_flow == NULL) {
@@ -1263,11 +1094,10 @@ uint8_t flow_init_bidirectional_dissection(struct ndpi_detection_module_struct *
   return 1;
 }
 
-
 /**
  * flow_update_bidirectional_dissection: Flow bidirectional dissection updater.
  */
-void flow_update_bidirectional_dissection(struct ndpi_detection_module_struct *dissector, uint8_t n_dissections,
+static void flow_update_bidirectional_dissection(struct ndpi_detection_module_struct *dissector, uint8_t n_dissections,
                                           struct nf_flow *flow, struct nf_packet *packet, uint8_t sync) {
   if (flow->detection_completed == 0) { // application not detected yet.
     // We dissect only if still unknown or known and we didn't dissect all possible information yet.
@@ -1295,21 +1125,19 @@ void flow_update_bidirectional_dissection(struct ndpi_detection_module_struct *d
   }
 }
 
-
 /**
  * flow_init_bidirectional_ps: Flow bidirectional packet sizes statistics initializer.
  */
-void flow_init_bidirectional_ps(struct nf_flow *flow, uint16_t packet_size) {
+static void flow_init_bidirectional_ps(struct nf_flow *flow, uint16_t packet_size) {
   flow->bidirectional_min_ps += packet_size;
   flow->bidirectional_mean_ps += packet_size;
   flow->bidirectional_max_ps += packet_size;
 }
 
-
 /**
  * flow_update_bidirectional_ps: Flow bidirectional packet sizes statistics updater.
  */
-void flow_update_bidirectional_ps(struct nf_flow *flow, uint16_t packet_size) {
+static void flow_update_bidirectional_ps(struct nf_flow *flow, uint16_t packet_size) {
   if (packet_size > flow->bidirectional_max_ps) flow->bidirectional_max_ps = packet_size;
   if (packet_size < flow->bidirectional_min_ps) flow->bidirectional_min_ps = packet_size;
   double bidirectional_mean_ps = flow->bidirectional_mean_ps;
@@ -1317,21 +1145,19 @@ void flow_update_bidirectional_ps(struct nf_flow *flow, uint16_t packet_size) {
   flow->bidirectional_stddev_ps += (packet_size - bidirectional_mean_ps) * (packet_size - flow->bidirectional_mean_ps);
 }
 
-
 /**
  * flow_init_bidirectional_piat_ms: Flow bidirectional piat statistics initializer.
  */
-void flow_init_bidirectional_piat_ms(struct nf_flow *flow, uint64_t bidirectional_piat_ms) {
+static void flow_init_bidirectional_piat_ms(struct nf_flow *flow, uint64_t bidirectional_piat_ms) {
   flow->bidirectional_min_piat_ms += bidirectional_piat_ms;
   flow->bidirectional_mean_piat_ms += bidirectional_piat_ms;
   flow->bidirectional_max_piat_ms += bidirectional_piat_ms;
 }
 
-
 /**
  * flow_update_bidirectional_piat_ms: Flow bidirectional piat statistics updater.
  */
-void flow_update_bidirectional_piat_ms(struct nf_flow *flow, uint64_t bidirectional_piat_ms) {
+static void flow_update_bidirectional_piat_ms(struct nf_flow *flow, uint64_t bidirectional_piat_ms) {
   if (bidirectional_piat_ms > flow->bidirectional_max_piat_ms) flow->bidirectional_max_piat_ms = bidirectional_piat_ms;
   if (bidirectional_piat_ms < flow->bidirectional_min_piat_ms) flow->bidirectional_min_piat_ms = bidirectional_piat_ms;
   double bidirectional_mean_piat_ms = flow->bidirectional_mean_piat_ms;
@@ -1341,21 +1167,19 @@ void flow_update_bidirectional_piat_ms(struct nf_flow *flow, uint64_t bidirectio
                                         * (bidirectional_piat_ms - flow->bidirectional_mean_piat_ms);
 }
 
-
 /**
  * flow_init_src2dst_ps: Flow src2dst packet sizes statistics initializer.
  */
-void flow_init_src2dst_ps(struct nf_flow *flow, uint16_t packet_size) {
+static void flow_init_src2dst_ps(struct nf_flow *flow, uint16_t packet_size) {
   flow->src2dst_min_ps += packet_size;
   flow->src2dst_mean_ps += packet_size;
   flow->src2dst_max_ps += packet_size;
 }
 
-
 /**
  * flow_update_src2dst_ps: Flow src2dst packet sizes statistics updater.
  */
-void flow_update_src2dst_ps(struct nf_flow *flow, uint16_t packet_size) {
+static void flow_update_src2dst_ps(struct nf_flow *flow, uint16_t packet_size) {
   if (packet_size > flow->src2dst_max_ps) flow->src2dst_max_ps = packet_size;
   if (packet_size < flow->src2dst_min_ps) flow->src2dst_min_ps = packet_size;
   double src2dst_mean_ps = flow->src2dst_mean_ps;
@@ -1363,21 +1187,19 @@ void flow_update_src2dst_ps(struct nf_flow *flow, uint16_t packet_size) {
   flow->src2dst_stddev_ps += (packet_size - src2dst_mean_ps)*(packet_size - flow->src2dst_mean_ps);
 }
 
-
 /**
  * flow_init_src2dst_piat_ms: Flow src2dst piat statistics initializer.
  */
-void flow_init_src2dst_piat_ms(struct nf_flow *flow, uint64_t src2dst_piat_ms) {
+static void flow_init_src2dst_piat_ms(struct nf_flow *flow, uint64_t src2dst_piat_ms) {
   flow->src2dst_min_piat_ms += src2dst_piat_ms;
   flow->src2dst_mean_piat_ms += src2dst_piat_ms;
   flow->src2dst_max_piat_ms += src2dst_piat_ms;
 }
 
-
 /**
  * flow_update_src2dst_piat_ms: Flow src2dst piat statistics updater.
  */
-void flow_update_src2dst_piat_ms(struct nf_flow *flow, uint64_t src2dst_piat_ms) {
+static void flow_update_src2dst_piat_ms(struct nf_flow *flow, uint64_t src2dst_piat_ms) {
   if (src2dst_piat_ms > flow->src2dst_max_piat_ms) flow->src2dst_max_piat_ms = src2dst_piat_ms;
   if (src2dst_piat_ms < flow->src2dst_min_piat_ms) flow->src2dst_min_piat_ms = src2dst_piat_ms;
   double src2dst_mean_piat_ms = flow->src2dst_mean_piat_ms;
@@ -1386,21 +1208,19 @@ void flow_update_src2dst_piat_ms(struct nf_flow *flow, uint64_t src2dst_piat_ms)
                                   * (src2dst_piat_ms - flow->src2dst_mean_piat_ms);
 }
 
-
 /**
  * flow_init_dst2src_ps: Flow dst2src packet sizes statistics initializer.
  */
-void flow_init_dst2src_ps(struct nf_flow *flow, uint16_t packet_size) {
+static void flow_init_dst2src_ps(struct nf_flow *flow, uint16_t packet_size) {
   flow->dst2src_min_ps += packet_size;
   flow->dst2src_mean_ps += packet_size;
   flow->dst2src_max_ps += packet_size;
 }
 
-
 /**
  * flow_update_dst2src_ps: Flow dst2src packet sizes statistics updater.
  */
-void flow_update_dst2src_ps(struct nf_flow *flow, uint16_t packet_size) {
+static void flow_update_dst2src_ps(struct nf_flow *flow, uint16_t packet_size) {
   if (packet_size > flow->dst2src_max_ps) flow->dst2src_max_ps = packet_size;
   if (packet_size < flow->dst2src_min_ps) flow->dst2src_min_ps = packet_size;
   double dst2src_mean_ps = flow->dst2src_mean_ps;
@@ -1408,21 +1228,19 @@ void flow_update_dst2src_ps(struct nf_flow *flow, uint16_t packet_size) {
   flow->dst2src_stddev_ps += (packet_size - dst2src_mean_ps)*(packet_size - flow->dst2src_mean_ps);
 }
 
-
 /**
  * flow_init_dst2src_piat_ms: Flow dst2src piat statistics initializer.
  */
-void flow_init_dst2src_piat_ms(struct nf_flow *flow, uint64_t dst2src_piat_ms) {
+static void flow_init_dst2src_piat_ms(struct nf_flow *flow, uint64_t dst2src_piat_ms) {
   flow->dst2src_min_piat_ms += dst2src_piat_ms;
   flow->dst2src_mean_piat_ms += dst2src_piat_ms;
   flow->dst2src_max_piat_ms += dst2src_piat_ms;
 }
 
-
 /**
  * flow_update_dst2src_piat_ms: Flow dst2src piat statistics updater.
  */
-void flow_update_dst2src_piat_ms(struct nf_flow *flow, uint64_t dst2src_piat_ms) {
+static void flow_update_dst2src_piat_ms(struct nf_flow *flow, uint64_t dst2src_piat_ms) {
   if (dst2src_piat_ms > flow->dst2src_max_piat_ms) flow->dst2src_max_piat_ms = dst2src_piat_ms;
   if (dst2src_piat_ms < flow->dst2src_min_piat_ms) flow->dst2src_min_piat_ms = dst2src_piat_ms;
   double dst2src_mean_piat_ms = flow->dst2src_mean_piat_ms;
@@ -1431,13 +1249,12 @@ void flow_update_dst2src_piat_ms(struct nf_flow *flow, uint64_t dst2src_piat_ms)
                                   (dst2src_piat_ms - flow->dst2src_mean_piat_ms);
 }
 
-
 /**
  * flow_init_bidirectional: Flow bidirectional initializer.
  */
-uint8_t flow_init_bidirectional(struct ndpi_detection_module_struct *dissector, uint8_t n_dissections, uint8_t splt,
-                                uint8_t statistics, uint16_t packet_size, struct nf_flow *flow,
-                                struct nf_packet *packet, uint8_t sync) {
+static uint8_t flow_init_bidirectional(struct ndpi_detection_module_struct *dissector, uint8_t n_dissections,
+                                       uint8_t splt, uint8_t statistics, uint16_t packet_size, struct nf_flow *flow,
+                                       struct nf_packet *packet, uint8_t sync) {
   if (splt) {
     uint8_t splt_init_success = flow_init_splt(flow, splt, packet_size);
     if (!splt_init_success) return 0;
@@ -1497,11 +1314,10 @@ uint8_t flow_init_bidirectional(struct ndpi_detection_module_struct *dissector, 
   return 1;
 }
 
-
 /**
  * flow_update_bidirectional: Flow bidirectional updater.
  */
-void flow_update_bidirectional(struct ndpi_detection_module_struct *dissector, uint8_t n_dissections, uint8_t splt,
+static void flow_update_bidirectional(struct ndpi_detection_module_struct *dissector, uint8_t n_dissections, uint8_t splt,
                                uint8_t statistics, uint16_t packet_size, struct nf_flow *flow,
                                struct nf_packet *packet, uint8_t sync) {
   uint64_t bidirectional_piat_ms = packet->time - flow->bidirectional_last_seen_ms;
@@ -1521,11 +1337,10 @@ void flow_update_bidirectional(struct ndpi_detection_module_struct *dissector, u
   }
 }
 
-
 /**
  * flow_init_src2dst: Flow src2dst initializer.
  */
-void flow_init_src2dst(uint8_t statistics, uint16_t packet_size, struct nf_flow *flow, struct nf_packet *packet) {
+static void flow_init_src2dst(uint8_t statistics, uint16_t packet_size, struct nf_flow *flow, struct nf_packet *packet) {
   flow->src2dst_first_seen_ms = packet->time;
   flow->src2dst_last_seen_ms = packet->time;
   flow->src2dst_packets = 1;
@@ -1536,11 +1351,10 @@ void flow_init_src2dst(uint8_t statistics, uint16_t packet_size, struct nf_flow 
   }
 }
 
-
 /**
  * flow_update_src2dst: Flow src2dst updater.
  */
-void flow_update_src2dst(uint8_t statistics, uint16_t packet_size, struct nf_flow *flow, struct nf_packet *packet) {
+static void flow_update_src2dst(uint8_t statistics, uint16_t packet_size, struct nf_flow *flow, struct nf_packet *packet) {
   flow->src2dst_packets++;
   uint64_t src2dst_piat_ms = packet->time - flow->src2dst_last_seen_ms;
   flow->src2dst_last_seen_ms = packet->time;
@@ -1554,11 +1368,10 @@ void flow_update_src2dst(uint8_t statistics, uint16_t packet_size, struct nf_flo
   }
 }
 
-
 /**
  * flow_update_dst2src: Flow dst2src updater.
  */
-void flow_update_dst2src(uint8_t statistics, uint16_t packet_size, struct nf_flow *flow, struct nf_packet *packet) {
+static void flow_update_dst2src(uint8_t statistics, uint16_t packet_size, struct nf_flow *flow, struct nf_packet *packet) {
   flow->dst2src_packets++;
   flow->dst2src_bytes += packet_size;
   if (flow->dst2src_packets == 1) {
@@ -1588,7 +1401,6 @@ void flow_update_dst2src(uint8_t statistics, uint16_t packet_size, struct nf_flo
 ------------------------------------------------------------------------------------------------------------------------
 */
 
-
 /***************************************** Capture APIs ***************************************************************/
 
 /**
@@ -1611,7 +1423,6 @@ pcap_t * capture_open(const uint8_t * pcap_file, int mode, char * child_error) {
   }
 }
 
-
 /**
  * capture_set_fanout: Set fanout mode.
  */
@@ -1630,7 +1441,6 @@ int capture_set_fanout(pcap_t * pcap_handle, int mode, char * child_error, int g
   }
 }
 
-
 /**
  * capture_activate: Activate capture.
  */
@@ -1646,7 +1456,6 @@ int capture_activate(pcap_t * pcap_handle, int mode, char * child_error) {
   return set_activate;
   }
 }
-
 
 /**
  * capture_set_timeout: Set buffer timeout.
@@ -1664,7 +1473,6 @@ int capture_set_timeout(pcap_t * pcap_handle, int mode, char * child_error) {
   }
 }
 
-
 /**
  * capture_set_promisc: Set promisc mode.
  */
@@ -1681,7 +1489,6 @@ int capture_set_promisc(pcap_t * pcap_handle, int mode, char * child_error, int 
   }
 }
 
-
 /**
  * capture_set_snaplen: Set snaplen.
  */
@@ -1697,7 +1504,6 @@ int capture_set_snaplen(pcap_t * pcap_handle, int mode, char * child_error, unsi
   return set_snaplen;
   }
 }
-
 
 /**
  * capture_set_filter: Configure pcap_t with specified bpf_filter.
@@ -1722,7 +1528,6 @@ int capture_set_filter(pcap_t * pcap_handle, char * bpf_filter, char * child_err
     return 0;
   }
 }
-
 
 /**
  * capture_next: Get next packet information from pcap handle.
@@ -1787,7 +1592,6 @@ void capture_stats(pcap_t * pcap_handle, struct nf_stat *nf_statistics, unsigned
   }
 }
 
-
 /**
  * capture_close: Close capture handle.
  */
@@ -1796,8 +1600,8 @@ void capture_close(pcap_t * pcap_handle) {
   pcap_close(pcap_handle);
 }
 
-/***************************************** Dissector APIs *************************************************************/
 
+/***************************************** Dissector APIs *************************************************************/
 
 /**
  * dissector_init: Dissector initializer.
@@ -1836,7 +1640,6 @@ void dissector_cleanup(struct ndpi_detection_module_struct *dissector) {
 
 /***************************************** Meter APIs *****************************************************************/
 
-
 /**
  * meter_initialize_flow: Initialize flow based on packet values and set packet direction.
  */
@@ -1856,7 +1659,6 @@ struct nf_flow *meter_initialize_flow(struct nf_packet *packet, uint8_t accounti
   return flow; // we return a pointer to the created flow in order to be cached by Python side.
 }
 
-
 /**
  * meter_update_flow: Check expiration state, and update flow based on packet values if case of active one.
  */
@@ -1873,7 +1675,6 @@ uint8_t meter_update_flow(struct nf_flow *flow, struct nf_packet *packet, uint64
   return 0; // Update done, we return 0.
 }
 
-
 /**
  * meter_expire_flow: Flow expiration. Mainly to guess idle flows that were not detected.
  */
@@ -1887,7 +1688,6 @@ void meter_expire_flow(struct nf_flow *flow, uint8_t n_dissections, struct ndpi_
   }
 }
 
-
 /**
  * meter_free_flow: Flow structure freer.
  */
@@ -1900,4 +1700,25 @@ void meter_free_flow(struct nf_flow *flow, uint8_t n_dissections, uint8_t splt, 
   } else { // SPLT only
     flow_free_splt_data(flow);
   }
+}
+
+/**
+ * engine_version: return engine library version.
+ */
+const char *engine_lib_version(void) {
+  return "6.4.3";
+}
+
+/**
+ * engine_version: return engine ndpi library version.
+ */
+const char *engine_lib_ndpi_version(void) {
+  return ndpi_revision();
+}
+
+/**
+ * engine_version: return engine libpcap version.
+ */
+const char *engine_lib_pcap_version(void) {
+  return pcap_lib_version();
 }

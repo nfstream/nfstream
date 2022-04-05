@@ -14,10 +14,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from psutil import net_if_addrs
-import sys
-import pathlib
-sys.path.insert(0, str(pathlib.Path(__file__).parent.resolve()))
-from _engine import ffi, lib
+from _lib_engine import ffi, lib
 
 
 NPCAP_PATH = "C:\\Windows\\System32\\Npcap\\wpcap.dll"

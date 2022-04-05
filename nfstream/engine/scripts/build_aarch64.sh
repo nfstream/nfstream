@@ -1,5 +1,5 @@
 #-----------------------------------------------------------------------------------------------------------------------
-# build_macos.sh
+# build_aarch64.sh
 # Copyright (C) 2019-22 - NFStream Developers
 # This file is part of NFStream, a Flexible Network Data Analysis Framework (https://www.nfstream.org/).
 # NFStream is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
@@ -48,6 +48,8 @@ build_libgcrypt() {
   echo "Compiling libgcrypt"
   echo "---------------------------------------------------------------------------------------------------------------"
   cd libgcrypt
+  # patch for aarch64 (see https://dev.gnupg.org/T4317)
+  sed -i 's/.globl _gcry_camellia_arm_tables//g' cipher/camellia-aarch64.S
   ./autogen.sh
   ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib" --with-libgpg-error-prefix="/tmp/nfstream_build/usr/local"
   make

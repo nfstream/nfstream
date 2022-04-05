@@ -12,22 +12,117 @@ You should have received a copy of the GNU Lesser General Public License along w
 If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 """
+
 from cffi import FFI
-import pathlib
 import os
 
-NDPI_INCLUDES = """
+# Adapt PATH for temporary build directory output according to detected platform
+USR_LOCAL = "usr/local"
+if os.name != 'posix':
+    RPATH = "mingw64"
+
+USR = "usr"
+if os.name != 'posix':
+    RPATH = "mingw64"
+
+# As cdef do not support ifdef yet we fix it by simple string replacement
+SOCK_INCLUDES = """#include <unistd.h>\n#include <netinet/in.h>"""
+if os.name != 'posix':
+    SOCK_INCLUDES = """#include <winsock2.h>\n#include <process.h>\n#include <io.h>\n#include <sys/time.h>"""
+
+ENGINE_INCLUDES = """
+#include <stdlib.h>
+""" + SOCK_INCLUDES + """
+#include <math.h>
+#include <stdint.h>
+#include <string.h>
 #include "ndpi_main.h"
 #include "ndpi_typedefs.h"
 #include "ndpi_api.h"
+#include <pcap.h>
 """
 
-PCAP_INCLUDES = """
-struct pcap;
-typedef struct pcap pcap_t;
+with open(os.path.join(os.path.dirname(__file__), "/tmp/nfstream_build/lib_engine_cdefinitions.c")) as engine_cdef:
+    ENGINE_CDEF = engine_cdef.read()
+
+ENGINE_APIS = """
+pcap_t * capture_open(const uint8_t * pcap_file, int mode, char * child_error);
+int capture_activate(pcap_t * pcap_handle, int mode, char * child_error);
+int capture_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tunnels, int n_roots, uint64_t root_idx,
+                 int mode);
+void capture_close(pcap_t * pcap_handle);
+void capture_stats(pcap_t * pcap_handle, struct nf_stat *nf_statistics, unsigned mode);
+int capture_set_fanout(pcap_t * pcap_handle, int mode, char * child_error, int group_id);
+int capture_set_timeout(pcap_t * pcap_handle, int mode, char * child_error);
+int capture_set_promisc(pcap_t * pcap_handle, int mode, char * child_error, int promisc);
+int capture_set_snaplen(pcap_t * pcap_handle, int mode, char * child_error, unsigned snaplen);
+int capture_set_filter(pcap_t * pcap_handle, char * bpf_filter, char * child_error);
+
+struct ndpi_detection_module_struct *dissector_init(struct dissector_checker *checker);
+void dissector_configure(struct ndpi_detection_module_struct *dissector);
+void dissector_cleanup(struct ndpi_detection_module_struct *dissector);
+
+struct nf_flow *meter_initialize_flow(struct nf_packet *packet, uint8_t accounting_mode, uint8_t statistics,
+                                      uint8_t splt, uint8_t n_dissections,
+                                      struct ndpi_detection_module_struct *dissector, uint8_t sync);
+uint8_t meter_update_flow(struct nf_flow *flow, struct nf_packet *packet, uint64_t idle_timeout, uint64_t active_timeout,
+                          uint8_t accounting_mode, uint8_t statistics, uint8_t splt, uint8_t n_dissections,
+                          struct ndpi_detection_module_struct *dissector, uint8_t sync);
+void meter_expire_flow(struct nf_flow *flow, uint8_t n_dissections, struct ndpi_detection_module_struct *dissector);
+void meter_free_flow(struct nf_flow *flow, uint8_t n_dissections, uint8_t splt, uint8_t full);
+const char *engine_lib_version(void);
+const char *engine_lib_ndpi_version(void);
+const char *engine_lib_pcap_version(void);
 """
 
-TYPES_DEF = """
+ffi_builder = FFI()
+
+INCLUDE_DIRS = ["/tmp/nfstream_build/{usr}/include/ndpi".format(usr=USR),
+                "/tmp/nfstream_build/{usr}/include".format(usr=USR_LOCAL)]
+if os.name != 'posix':
+    INCLUDE_DIRS.append("/tmp/nfstream_build/npcap/Include")
+
+EXTRALINK_ARGS = ["/tmp/nfstream_build/{usr}/lib/libndpi.a".format(usr=USR),
+                  "/tmp/nfstream_build/{usr}/lib/libgcrypt.a".format(usr=USR_LOCAL),
+                  "/tmp/nfstream_build/{usr}/lib/libgpg-error.a".format(usr=USR_LOCAL)]
+
+if os.name != 'posix':
+    # FIXME: Need to check an env variable and if not defined, then use this hacky ci path.
+    EXTRALINK_ARGS.append("D:/a/_temp/msys64/mingw64/lib/libws2_32.a")
+else:
+    EXTRALINK_ARGS.append("/tmp/nfstream_build/{usr}/lib/libpcap.a".format(usr=USR_LOCAL))
+
+
+with open(os.path.join(os.path.dirname(__file__), "/tmp/nfstream_build/ndpi_cdefinitions.h")) as ndpi_cdefinitions:
+    NDPI_CDEF = ndpi_cdefinitions.read()
+
+NDPI_MODULE_STRUCT_CDEF = NDPI_CDEF.split("//CFFI.NDPI_MODULE_STRUCT")[1]
+
+
+with open(os.path.join(os.path.dirname(__file__), "/tmp/nfstream_build/ndpi_cdefinitions_packed.h")) as ndpi_cdefinitions_packed:
+    NDPI_PACKED = ndpi_cdefinitions_packed.read()
+
+NDPI_PACKED_STRUCTURES = NDPI_PACKED.split("//CFFI.NDPI_PACKED_STRUCTURES")[1]
+
+ENGINE_SOURCE = ENGINE_INCLUDES + NDPI_MODULE_STRUCT_CDEF + ENGINE_CDEF
+
+# IMPORTANT: on Windows, we do not bundle npcap as its license do not allow to.
+# We link to it dynamically and ask the users to install it to enable live capture.
+if os.name != 'posix':
+    ffi_builder.set_source("_lib_engine",
+                           ENGINE_SOURCE,
+                           libraries=["wpcap"],
+                           library_dirs=["/tmp/nfstream_build/npcap/Lib"],
+                           include_dirs=INCLUDE_DIRS,
+                           extra_link_args=EXTRALINK_ARGS)
+else:
+    ffi_builder.set_source("_lib_engine",
+                           ENGINE_SOURCE,
+                           include_dirs=INCLUDE_DIRS,
+                           extra_link_args=EXTRALINK_ARGS)
+
+
+ffi_builder.cdef("""
 typedef uint64_t u_int64_t;
 typedef uint32_t u_int32_t;
 typedef uint16_t u_int16_t;
@@ -38,54 +133,16 @@ struct in_addr {
   unsigned long s_addr;
 };
 struct in6_addr {
-  unsigned char s6_addr[16];
+    unsigned char s6_addr[16];
 };
-"""
+struct pcap;
+typedef struct pcap pcap_t;
+""")
 
-if os.name != 'posix':
-    EXTENSION = "dll"
-else:
-    EXTENSION = "so"
-ENGINE_FILE = "engine_cc.{ext}".format(ext=EXTENSION)
-
-
-def cdef_to_replace(cdef):
-    to_rep = []
-    cdef_list = cdef.split("static inline")
-    for idx, sub_def in enumerate(cdef_list):
-        end = sub_def.find("}")
-        if end and idx:
-            to_rep.append(sub_def[:end+1])
-    to_rep.append("typedef __builtin_va_list __darwin_va_list;")
-    to_rep.append("typedef __signed char int8_t;")
-    return to_rep
-
-
-INCLUDE_DIR = pathlib.Path(__file__).parent.resolve().joinpath("dependencies").joinpath("nDPI").joinpath("src")\
-    .joinpath("include")
-
-ffi_builder = FFI()
-
-NDPI_CDEF = ""
-with open(str(os.path.join(os.path.dirname(__file__), "ndpi.cdef")).replace("\\", "/")) as ndpi_cdef:
-    with open(os.path.join(os.path.dirname(__file__), "engine_cc.h")) as engine_cc_h:
-        ENGINE_SOURCE = PCAP_INCLUDES
-        NDPI_CDEF += ndpi_cdef.read()
-        for to_replace in cdef_to_replace(NDPI_CDEF):
-            NDPI_CDEF = NDPI_CDEF.replace(to_replace, "")
-        ENGINE_SOURCE += "".join(engine_cc_h.read().split("//CFFI_ENGINE_EXCLUDE")[2::2])
-
-ffi_builder.set_source("_engine",
-                       NDPI_INCLUDES + NDPI_CDEF.split("//CFFI.NDPI_MODULE_STRUCT")[1] + ENGINE_SOURCE,
-                       include_dirs=[str(INCLUDE_DIR)],
-                       library_dirs=[str(pathlib.Path(__file__).parent.resolve())],
-                       extra_link_args=[str(pathlib.Path(__file__).parent.resolve()) + "/" + ENGINE_FILE])
-
-with open(str(os.path.join(os.path.dirname(__file__), "ndpi.pack")).replace("\\", "/")) as ndpi_pack:
-    ffi_builder.cdef(TYPES_DEF)
-    ffi_builder.cdef(ndpi_pack.read().split("//CFFI.NDPI_PACKED_STRUCTURES")[1], packed=True)
-    ffi_builder.cdef(NDPI_CDEF, override=True)
-    ffi_builder.cdef(ENGINE_SOURCE)
+ffi_builder.cdef(NDPI_PACKED_STRUCTURES, packed=True)
+ffi_builder.cdef(NDPI_CDEF)
+ffi_builder.cdef(ENGINE_CDEF.split("//CFFI_SHARED_STRUCTURES")[1])
+ffi_builder.cdef(ENGINE_APIS)
 
 
 if __name__ == "__main__":
