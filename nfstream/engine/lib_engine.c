@@ -1,6 +1,6 @@
 /*
 ------------------------------------------------------------------------------------------------------------------------
-engine.c
+lib_engine.c
 Copyright (C) 2019-22 - NFStream Developers
 This file is part of NFStream, a Flexible Network Data Analysis Framework (https://www.nfstream.org/).
 NFStream is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
@@ -233,7 +233,6 @@ static void packet_get_udp_info(const uint8_t *l4, uint16_t l4_packet_len, struc
   nf_pkt->fin = nf_pkt->syn = nf_pkt->rst = nf_pkt->psh = nf_pkt->ack = nf_pkt->urg = nf_pkt->ece = nf_pkt->cwr = 0;
 }
 
-
 /**
  * packet_get_icmp_info: ICMP transport info processing.
  */
@@ -245,7 +244,6 @@ static void packet_get_icmp_info(const uint8_t *l4, uint16_t l4_packet_len, stru
   *sport = *dport = 0;
   nf_pkt->fin = nf_pkt->syn = nf_pkt->rst = nf_pkt->psh = nf_pkt->ack = nf_pkt->urg = nf_pkt->ece = nf_pkt->cwr = 0;
 }
-
 
 /**
  * packet_get_icmp6_info: ICMPv6 transport infos processing.
@@ -259,7 +257,6 @@ static void packet_get_icmp6_info(const uint8_t *l4, uint16_t l4_packet_len, str
   nf_pkt->fin = nf_pkt->syn = nf_pkt->rst = nf_pkt->psh = nf_pkt->ack = nf_pkt->urg = nf_pkt->ece = nf_pkt->cwr = 0;
 }
 
-
 /**
  * packet_get_unknown_transport_info: Non TCP/UDP/ICMP/ICMPv6 infos processing.
  */
@@ -269,7 +266,6 @@ static void packet_get_unknown_transport_info(struct nf_packet *nf_pkt, uint16_t
   *l4_data_len = 0;
   nf_pkt->fin = nf_pkt->syn = nf_pkt->rst = nf_pkt->psh = nf_pkt->ack = nf_pkt->urg = nf_pkt->ece = nf_pkt->cwr = 0;
 }
-
 
 /**
  * packet_get_info: Fill required nf packet information.
@@ -435,7 +431,6 @@ static void packet_dlt_null(const uint8_t *packet, uint16_t eth_offset, uint16_t
   (*ip_offset) = 4 + eth_offset;
 }
 
-
 /**
  * packet_dlt_ppp_serial: cisco ppp processing
  */
@@ -445,7 +440,6 @@ static void packet_dlt_ppp_serial(const uint8_t *packet, uint16_t eth_offset, ui
   (*ip_offset) = eth_offset + sizeof(struct ndpi_chdlc); // CHDLC_OFF = 4
   (*type) = ntohs(chdlc->proto_code);
 }
-
 
 /**
  * packet_dlt_ppp: ppp processing
