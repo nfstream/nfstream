@@ -79,9 +79,9 @@ echo "--------------------------------------------------------------------------
 echo "Compiling engine_cc"
 echo "---------------------------------------------------------------------------------------------------------------"
 cd ..
-clang -I/tmp/nfstream_build/usr/local/include -I/tmp/nfstream_build/usr/include/ndpi/ -shared -o engine_cc.so -g -fPIC -DPIC -O2 -Wall engine_cc.c /tmp/nfstream_build/usr/local/lib/libpcap.a /tmp/nfstream_build/usr/lib/libndpi.a /tmp/nfstream_build/usr/local/lib/libgcrypt.a /tmp/nfstream_build/usr/local/lib/libgpg-error.a
-clang -DNDPI_LIB_COMPILATION -DNDPI_CFFI_PREPROCESSING -DNDPI_CFFI_PREPROCESSING_EXCLUDE_PACKED -E -x c -P -C /tmp/nfstream_build/usr/include/ndpi/ndpi_typedefs.h > ndpi.cdef
-clang -DNDPI_LIB_COMPILATION -DNDPI_CFFI_PREPROCESSING -E -x c -P -C /tmp/nfstream_build/usr/include/ndpi/ndpi_typedefs.h > ndpi.pack
+gcc -I/tmp/nfstream_build/usr/local/include -I/tmp/nfstream_build/usr/include/ndpi/ -shared -o engine_cc.so -g -fPIC -DPIC -O2 -Wall engine_cc.c /tmp/nfstream_build/usr/local/lib/libpcap.a /tmp/nfstream_build/usr/lib/libndpi.a /tmp/nfstream_build/usr/local/lib/libgcrypt.a /tmp/nfstream_build/usr/local/lib/libgpg-error.a
+gcc -DNDPI_LIB_COMPILATION -DNDPI_CFFI_PREPROCESSING -DNDPI_CFFI_PREPROCESSING_EXCLUDE_PACKED -E -x c -P -C /tmp/nfstream_build/usr/include/ndpi/ndpi_typedefs.h > ndpi.cdef
+gcc -DNDPI_LIB_COMPILATION -DNDPI_CFFI_PREPROCESSING -E -x c -P -C /tmp/nfstream_build/usr/include/ndpi/ndpi_typedefs.h > ndpi.pack
 echo "---------------------------------------------------------------------------------------------------------------"
 echo ""
 cd ../..
