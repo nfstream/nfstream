@@ -75,8 +75,6 @@ const char *engine_lib_ndpi_version(void);
 const char *engine_lib_pcap_version(void);
 """
 
-ffi_builder = FFI()
-
 INCLUDE_DIRS = ["/tmp/nfstream_build/{usr}/include/ndpi".format(usr=USR),
                 "/tmp/nfstream_build/{usr}/include".format(usr=USR_LOCAL)]
 if os.name != 'posix':
@@ -93,19 +91,33 @@ else:
     EXTRALINK_ARGS.append("/tmp/nfstream_build/{usr}/lib/libpcap.a".format(usr=USR_LOCAL))
 
 
-with open(os.path.join(os.path.dirname(__file__), "/tmp/nfstream_build/ndpi_cdefinitions.h")) as ndpi_cdefinitions:
-    NDPI_CDEF = ndpi_cdefinitions.read()
+def cdef_to_replace(cdef):
+    to_rep = []
+    cdef_list = cdef.split("static inline")
+    for idx, sub_def in enumerate(cdef_list):
+        end = sub_def.find("}")
+        if end and idx:
+            to_rep.append(sub_def[:end+1])
+    to_rep.append("typedef __builtin_va_list __darwin_va_list;")
+    to_rep.append("typedef __signed char int8_t;")
+    return to_rep
 
-NDPI_MODULE_STRUCT_CDEF = NDPI_CDEF.split("//CFFI.NDPI_MODULE_STRUCT")[1]
+
+with open(os.path.join(os.path.dirname(__file__), "/tmp/nfstream_build/ndpi_cdefinitions.h")) as ndpi_cdefs:
+    NDPI_CDEF = ndpi_cdefs.read()
+    for to_replace in cdef_to_replace(NDPI_CDEF):
+        NDPI_CDEF = NDPI_CDEF.replace(to_replace, "")
+    NDPI_MODULE_STRUCT_CDEF = NDPI_CDEF.split("//CFFI.NDPI_MODULE_STRUCT")[1]
 
 
-with open(os.path.join(os.path.dirname(__file__), "/tmp/nfstream_build/ndpi_cdefinitions_packed.h")) as ndpi_cdefinitions_packed:
-    NDPI_PACKED = ndpi_cdefinitions_packed.read()
+with open(os.path.join(os.path.dirname(__file__), "/tmp/nfstream_build/ndpi_cdefinitions_packed.h")) as ndpi_cdefs_pack:
+    NDPI_PACKED = ndpi_cdefs_pack.read()
 
 NDPI_PACKED_STRUCTURES = NDPI_PACKED.split("//CFFI.NDPI_PACKED_STRUCTURES")[1]
 
 ENGINE_SOURCE = ENGINE_INCLUDES + NDPI_MODULE_STRUCT_CDEF + ENGINE_CDEF
 
+ffi_builder = FFI()
 # IMPORTANT: on Windows, we do not bundle npcap as its license do not allow to.
 # We link to it dynamically and ask the users to install it to enable live capture.
 if os.name != 'posix':
