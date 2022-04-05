@@ -30,9 +30,9 @@ if os.name != 'posix':
     TMP = "D:/a/_temp/msys64/tmp"
 
 # As cdef do not support ifdef yet we fix it by simple string replacement
-SOCK_INCLUDES = """#include <unistd.h>\n#include <netinet/in.h>"""
+SOCK_INCLUDES = """#include <unistd.h>\n#include <netinet/in.h>\n#include <sys/time.h>"""
 if os.name != 'posix':
-    SOCK_INCLUDES = """#include <winsock2.h>\n#include <process.h>\n#include <io.h>\n#include <sys/time.h>"""
+    SOCK_INCLUDES = """#include <winsock2.h>\n#include <process.h>\n#include <io.h>"""
 
 ENGINE_INCLUDES = """
 #include <stdlib.h>
