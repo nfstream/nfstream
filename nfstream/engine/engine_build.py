@@ -129,7 +129,7 @@ if os.name != 'posix':
                            ENGINE_SOURCE,
                            libraries=["wpcap"],
                            library_dirs=["{tmp}/nfstream_build/npcap/Lib".format(tmp=TMP)],
-                           include_dirs=INCLUDE_DIRS,
+                           include_dirs=INCLUDE_DIRS.append("D:/a/_temp/msys64/mingw64/include"),
                            extra_link_args=EXTRALINK_ARGS)
 else:
     ffi_builder.set_source("_lib_engine",
