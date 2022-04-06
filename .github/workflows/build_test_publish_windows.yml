@@ -57,7 +57,8 @@ jobs:
 
     - name: Build
       env:
-        MSYS2_NFSTREAM_LOCATION: D:\\a\\_temp\\msys64
+        # We set the location for msys64 path
+        MSYS2_NFSTREAM_LOCATION: D:/a/_temp/msys64
       run: |
         python -m pip install .
         python -m pip wheel --no-deps --wheel-dir=dist .

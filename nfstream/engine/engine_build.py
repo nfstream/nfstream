@@ -18,6 +18,7 @@ import os
 
 
 def cdef_to_replace(cdef):
+    """ helper function that replaces unsupported definitions for cffi """
     to_rep = []
     cdef_list = cdef.split("static inline")
     for idx, sub_def in enumerate(cdef_list):
@@ -30,30 +31,37 @@ def cdef_to_replace(cdef):
 
 
 def convert_path(p):
+    """ dummy path converter """
     if os.name == 'posix':
         return p
     return p.replace("/", "\\")
 
 
+# On Unix, we have our classic paths
 ROOT = ""
 USR = "usr"
 USR_LOCAL = "usr/local"
-if os.name != 'posix':
-    MSYS2_NFSTREAM_LOCATION = os.getenv("MSYS2_NFSTREAM_LOCATION")
-    if MSYS2_NFSTREAM_LOCATION is None:  # User didn't set this location, we use default
+if os.name != 'posix':  # Windows case, we must take into account msys2 path tree.
+    MSYS2_NFSTREAM_LOCATION = os.getenv("MSYS2_NFSTREAM_LOCATION")  # If user have custom msys2 installation
+    if MSYS2_NFSTREAM_LOCATION is None:  # User didn't set this location, we use default one
         os.environ["MSYS2_NFSTREAM_LOCATION"] = "C:/msys64"
     ROOT = os.getenv("MSYS2_NFSTREAM_LOCATION")
     USR = "mingw64"
     USR_LOCAL = "mingw64"
 
+
 INCLUDE_DIRS = ["{root}/tmp/nfstream_build/{usr}/include/ndpi".format(root=ROOT, usr=USR),
                 "{root}/tmp/nfstream_build/{usr}/include".format(root=ROOT, usr=USR_LOCAL)]
 EXTRALINK_ARGS = ["{root}/tmp/nfstream_build/{usr}/lib/libndpi.a".format(root=ROOT, usr=USR)]
 
-if os.name != 'posix':  # windows
+if os.name != 'posix':  # Windows
     INCLUDE_DIRS.append("{root}/tmp/nfstream_build/npcap/Include".format(root=ROOT))
     EXTRALINK_ARGS.append("{root}/{usr}/lib/libmingwex.a".format(root=ROOT, usr=USR))
-    EXTRALINK_ARGS.append("{root}/{usr}/lib/gcc/x86_64-w64-mingw32/11.2.0/libgcc.a".format(root=ROOT, usr=USR))
+    with open(convert_path("{root}/tmp/nfstream_build/gcc_version.in".format(root=ROOT))) as gcc_version_in:
+        GCC_VERSION = gcc_version_in.read().split("\n")[0].split(")")[-1].strip()
+    EXTRALINK_ARGS.append("{root}/{usr}/lib/gcc/x86_64-w64-mingw32/{version}/libgcc.a".format(root=ROOT,
+                                                                                              usr=USR,
+                                                                                              version=GCC_VERSION))
     # IMPORTANT: We link with wpcap.lib from downloaded SDK in order to not bundle npcap OEM binaries.
     # Consequently, the generated extension will still look for these binaries on the host machine.
     # Instructions on how to install npcap binaries are provided in README (Windows Note).
@@ -63,7 +71,6 @@ else:
     EXTRALINK_ARGS.append("{root}/tmp/nfstream_build/{usr}/lib/libpcap.a".format(root=ROOT, usr=USR_LOCAL))
     EXTRALINK_ARGS.append("{root}/tmp/nfstream_build/{usr}/lib/libgcrypt.a".format(root=ROOT, usr=USR_LOCAL))
     EXTRALINK_ARGS.append("{root}/tmp/nfstream_build/{usr}/lib/libgpg-error.a".format(root=ROOT, usr=USR_LOCAL))
-
 
 with open(convert_path("{root}/tmp/nfstream_build/lib_engine_cdefinitions.c".format(root=ROOT))) as engine_cdef:
     ENGINE_CDEF = engine_cdef.read()
@@ -83,7 +90,7 @@ NDPI_PACKED_STRUCTURES = NDPI_PACKED.split("//CFFI.NDPI_PACKED_STRUCTURES")[1]
 # --------------------------------Engine Library Magic Code Generator --------------------------------------------------
 
 
-# As cdef do not support ifdef yet we fix it by simple string replacement
+# As cdef do not support if-def, yet we fix it by simple string replacement
 SOCK_INCLUDES = """#include <unistd.h>\n#include <netinet/in.h>\n#include <sys/time.h>"""
 if os.name != 'posix':
     SOCK_INCLUDES = """#include <winsock2.h>\n#include <process.h>\n#include <io.h>"""
