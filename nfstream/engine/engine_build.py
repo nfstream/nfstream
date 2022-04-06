@@ -16,18 +16,18 @@ If not, see <http://www.gnu.org/licenses/>.
 from cffi import FFI
 import os
 
-# Adapt PATH for temporary build directory output according to detected platform
-USR_LOCAL = "usr/local"
-if os.name != 'posix':
-    RPATH = "mingw64"
 
+MSYS2_NFSTREAM_LOCATION = os.getenv("MSYS2_NFSTREAM_LOCATION")
+if MSYS2_NFSTREAM_LOCATION is None: # User didn't set this location, we use default
+    os.environ["MSYS2_NFSTREAM_LOCATION"] = "C:\\msys64"
+ROOT = os.getenv("MSYS2_NFSTREAM_LOCATION")
 USR = "usr"
-if os.name != 'posix':
+USR_LOCAL = "usr/local"
+if os.name == 'posix':
+    ROOT = ""
     USR = "mingw64"
+    USR_LOCAL = "mingw64"
 
-TMP = "/tmp"
-if os.name != 'posix':
-    TMP = "D:/a/_temp/msys64/tmp"
 
 # As cdef do not support ifdef yet we fix it by simple string replacement
 SOCK_INCLUDES = """#include <unistd.h>\n#include <netinet/in.h>\n#include <sys/time.h>"""
@@ -46,9 +46,58 @@ ENGINE_INCLUDES = """
 #include <pcap.h>
 """
 
-with open("{tmp}/nfstream_build/lib_engine_cdefinitions.c".format(tmp=TMP)) as engine_cdef:
+
+
+INCLUDE_DIRS = ["{root}/tmp/nfstream_build/{usr}/include/ndpi".format(root=ROOT, usr=USR),
+                "{root}/tmp/nfstream_build/{usr}/include".format(root=ROOT, usr=USR_LOCAL)]
+EXTRALINK_ARGS = ["{root}/tmp/nfstream_build/{usr}/lib/libndpi.a".format(root=ROOT, usr=USR)]
+
+if os.name != 'posix': # windows
+    INCLUDE_DIRS.append("{root}/tmp/nfstream_build/npcap/Include".format(root=ROOT))
+    EXTRALINK_ARGS.append("{root}/{usr}/x86_64-w64-mingw32/lib/libmingwex.a".format(root=ROOT, usr=USR))
+    EXTRALINK_ARGS.append("{root}/{usr}/lib/gcc/x86_64-w64-mingw32/11.2.0/libgcc.a".format(root=ROOT, usr=USR))
+    EXTRALINK_ARGS.append("{root}/tmp/nfstream_build/npcap/Lib/x64/wpcap.lib".format(root=ROOT))
+    EXTRALINK_ARGS.append("{root}/usr/lib/w32api/libws2_32.a".format(root=ROOT, usr=USR))
+else:
+    EXTRALINK_ARGS.append("{root}/tmp/nfstream_build/{usr}/lib/libpcap.a".format(root=ROOT, usr=USR_LOCAL))
+    EXTRALINK_ARGS.append("{root}/tmp/nfstream_build/{usr}/lib/libgcrypt.a".format(root=ROOT, usr=USR_LOCAL))
+    EXTRALINK_ARGS.append("{root}/tmp/nfstream_build/{usr}/lib/libgpg-error.a".format(root=ROOT, usr=USR_LOCAL))
+
+
+def cdef_to_replace(cdef):
+    to_rep = []
+    cdef_list = cdef.split("static inline")
+    for idx, sub_def in enumerate(cdef_list):
+        end = sub_def.find("}")
+        if end and idx:
+            to_rep.append(sub_def[:end+1])
+    to_rep.append("typedef __builtin_va_list __darwin_va_list;")
+    to_rep.append("typedef __signed char int8_t;")
+    return to_rep
+
+
+def convert_path(p):
+    if os.name == 'posix':
+        return p
+    return p.replace("/", "\\")
+
+
+with open(convert_path("{root}/tmp/nfstream_build/lib_engine_cdefinitions.c".format(root=ROOT))) as engine_cdef:
     ENGINE_CDEF = engine_cdef.read()
 
+with open(convert_path("{root}/tmp/nfstream_build/ndpi_cdefinitions.h".format(root=ROOT))) as ndpi_cdefs:
+    NDPI_CDEF = ndpi_cdefs.read()
+    for to_replace in cdef_to_replace(NDPI_CDEF):
+        NDPI_CDEF = NDPI_CDEF.replace(to_replace, "")
+    NDPI_MODULE_STRUCT_CDEF = NDPI_CDEF.split("//CFFI.NDPI_MODULE_STRUCT")[1]
+
+with open(convert_path("{root}/tmp/nfstream_build/ndpi_cdefinitions_packed.h".format(root=ROOT))) as ndpi_cdefs_pack:
+    NDPI_PACKED = ndpi_cdefs_pack.read()
+
+NDPI_PACKED_STRUCTURES = NDPI_PACKED.split("//CFFI.NDPI_PACKED_STRUCTURES")[1]
+
+# Magic Code Generator
+ENGINE_SOURCE = ENGINE_INCLUDES + NDPI_MODULE_STRUCT_CDEF + ENGINE_CDEF
 ENGINE_APIS = """
 pcap_t * capture_open(const uint8_t * pcap_file, int mode, char * child_error);
 int capture_activate(pcap_t * pcap_handle, int mode, char * child_error);
@@ -78,66 +127,11 @@ const char *engine_lib_version(void);
 const char *engine_lib_ndpi_version(void);
 const char *engine_lib_pcap_version(void);
 """
-
-INCLUDE_DIRS = ["{tmp}/nfstream_build/{usr}/include/ndpi".format(usr=USR, tmp=TMP),
-                "{tmp}/nfstream_build/{usr}/include".format(usr=USR_LOCAL, tmp=TMP)]
-if os.name != 'posix':
-    INCLUDE_DIRS.append("{tmp}/nfstream_build/npcap/Include".format(tmp=TMP))
-
-EXTRALINK_ARGS = ["{tmp}/nfstream_build/{usr}/lib/libndpi.a".format(usr=USR, tmp=TMP),
-                  "{tmp}/nfstream_build/{usr}/lib/libgcrypt.a".format(usr=USR_LOCAL, tmp=TMP),
-                  "{tmp}/nfstream_build/{usr}/lib/libgpg-error.a".format(usr=USR_LOCAL, tmp=TMP)]
-
-if os.name != 'posix':
-    # FIXME: Need to check an env variable and if not defined, then use this hacky ci path.
-    EXTRALINK_ARGS.append("D:/a/_temp/msys64/mingw64/lib/libws2_32.a")
-else:
-    EXTRALINK_ARGS.append("{tmp}/nfstream_build/{usr}/lib/libpcap.a".format(usr=USR_LOCAL, tmp=TMP))
-
-
-def cdef_to_replace(cdef):
-    to_rep = []
-    cdef_list = cdef.split("static inline")
-    for idx, sub_def in enumerate(cdef_list):
-        end = sub_def.find("}")
-        if end and idx:
-            to_rep.append(sub_def[:end+1])
-    to_rep.append("typedef __builtin_va_list __darwin_va_list;")
-    to_rep.append("typedef __signed char int8_t;")
-    return to_rep
-
-
-with open("{tmp}/nfstream_build/ndpi_cdefinitions.h".format(tmp=TMP)) as ndpi_cdefs:
-    NDPI_CDEF = ndpi_cdefs.read()
-    for to_replace in cdef_to_replace(NDPI_CDEF):
-        NDPI_CDEF = NDPI_CDEF.replace(to_replace, "")
-    NDPI_MODULE_STRUCT_CDEF = NDPI_CDEF.split("//CFFI.NDPI_MODULE_STRUCT")[1]
-
-
-with open("{tmp}/nfstream_build/ndpi_cdefinitions_packed.h".format(tmp=TMP)) as ndpi_cdefs_pack:
-    NDPI_PACKED = ndpi_cdefs_pack.read()
-
-NDPI_PACKED_STRUCTURES = NDPI_PACKED.split("//CFFI.NDPI_PACKED_STRUCTURES")[1]
-
-ENGINE_SOURCE = ENGINE_INCLUDES + NDPI_MODULE_STRUCT_CDEF + ENGINE_CDEF
-
 ffi_builder = FFI()
-# IMPORTANT: on Windows, we do not bundle npcap as its license do not allow to.
-# We link to it dynamically and ask the users to install it to enable live capture.
-if os.name != 'posix':
-    ffi_builder.set_source("_lib_engine",
-                           ENGINE_SOURCE,
-                           libraries=["wpcap"],
-                           library_dirs=["{tmp}/nfstream_build/npcap/Lib".format(tmp=TMP)],
-                           include_dirs=INCLUDE_DIRS.append("D:/a/_temp/msys64/mingw64/include"),
-                           extra_link_args=EXTRALINK_ARGS)
-else:
-    ffi_builder.set_source("_lib_engine",
-                           ENGINE_SOURCE,
-                           include_dirs=INCLUDE_DIRS,
-                           extra_link_args=EXTRALINK_ARGS)
-
-
+ffi_builder.set_source("_lib_engine",
+                       ENGINE_SOURCE,
+                       include_dirs=[convert_path(d) for d in INCLUDE_DIRS],
+                       extra_link_args=[convert_path(a) for a in EXTRALINK_ARGS])
 ffi_builder.cdef("""
 typedef uint64_t u_int64_t;
 typedef uint32_t u_int32_t;

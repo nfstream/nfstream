@@ -13,12 +13,10 @@ If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 """
 
-from .engine import create_engine, setup_capture, setup_dissector, activate_capture, capture_next, capture_close
-from .engine import capture_stats
+from .engine import create_engine, setup_capture, setup_dissector, activate_capture
 from .utils import set_affinity, InternalError, NFEvent
 from collections import OrderedDict
 from .flow import NFlow
-import platform
 
 
 ENGINE_LOAD_ERR = "Error when loading engine library. This means that you are probably building nfstream from source \
@@ -180,12 +178,9 @@ def meter_cleanup(cache, channel, udps, sync, n_dissections, statistics, splt, f
         del flow
 
 
-def capture_track(lib, ffi, npcap, capture, mode, interface_stats, tracker, processed, ignored, is_windows):
+def capture_track(lib, capture, mode, interface_stats, tracker, processed, ignored):
     """ Update shared performance values """
-    if is_windows:
-        capture_stats(ffi, npcap, capture, interface_stats, mode)
-    else:
-        lib.capture_stats(capture, interface_stats, mode)
+    lib.capture_stats(capture, interface_stats, mode)
     tracker[0].value = interface_stats.dropped
     tracker[1].value = processed
     tracker[2].value = ignored
@@ -200,21 +195,14 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
                    idle_timeout, active_timeout, accounting_mode, udps, n_dissections, statistics, splt,
                    channel, tracker, lock, group_id, system_visibility_mode):
     """ Metering workflow """
-    is_windows = "windows" in platform.system().lower()
     set_affinity(root_idx+1)
-    ffi, lib, npcap = create_engine(is_windows)
+    ffi, lib = create_engine()
     if lib is None:
         send_error(root_idx, channel, ENGINE_LOAD_ERR)
         return
-    if is_windows and npcap is None:
-        send_error(root_idx, channel, NPCAP_LOAD_ERR)
-        return
-    # npcap is None in case of non Windows platform
     error_child = ffi.new("char[256]")
-    capture = setup_capture(is_windows, ffi, lib, npcap, source, snaplen, promisc, mode, error_child, group_id)
+    capture = setup_capture(ffi, lib, source, snaplen, promisc, mode, error_child, group_id)
     if capture is None:
-        if npcap:
-            ffi.dlclose(npcap)
         send_error(root_idx, channel, ffi.string(error_child).decode('utf-8', errors='ignore'))
         return
     meter_tick, meter_scan_tick, meter_track_tick = 0, 0, 0  # meter, idle scan and perf track timelines
@@ -237,15 +225,12 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
         lock.acquire()
         lock.release()
     # Here the last operation, BPF filtering setup and activation.
-    if not activate_capture(is_windows, npcap, ffi, capture, lib, error_child, bpf_filter, mode):
+    if not activate_capture(capture, lib, error_child, bpf_filter, mode):
         send_error(root_idx, channel, ffi.string(error_child).decode('utf-8', errors='ignore'))
         return
     while remaining_packets:
         nf_packet = ffi.new("struct nf_packet *")
-        if is_windows:
-            ret = capture_next(ffi, npcap, lib, capture, nf_packet, decode_tunnels, n_roots, root_idx, mode)
-        else:
-            ret = lib.capture_next(capture, nf_packet, decode_tunnels, n_roots, root_idx, mode)
+        ret = lib.capture_next(capture, nf_packet, decode_tunnels, n_roots, root_idx, mode)
         if ret > 0:  # Valid must be processed by meter
             packet_time = nf_packet.time
             if packet_time > meter_tick:
@@ -280,13 +265,12 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
         else:  # End of file
             remaining_packets = False  # end of loop
         if meter_tick - meter_track_tick >= meter_track_interval:  # Performance tracking
-            capture_track(lib, ffi, npcap, capture, mode, interface_stats, tracker, processed_packets,
-                          ignored_packets, is_windows)
+            capture_track(lib, capture, mode, interface_stats, tracker, processed_packets, ignored_packets)
             meter_track_tick = meter_tick
     # Expire all remaining flows in the cache.
     meter_cleanup(cache, channel, udps, sync, n_dissections, statistics, splt, ffi, lib, dissector)
     # Close capture
-    capture_close(is_windows, npcap, lib, capture)
+    lib.capture_close(capture)
     # Clean dissector
     lib.dissector_cleanup(dissector)
     # Release engine library

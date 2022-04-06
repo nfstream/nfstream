@@ -1627,8 +1627,7 @@ void dissector_configure(struct ndpi_detection_module_struct *dissector) {
  * dissector_cleanup: Dissector cleaner.
  */
 void dissector_cleanup(struct ndpi_detection_module_struct *dissector) {
-  if (dissector == NULL) return;
-  else return ndpi_exit_detection_module(dissector);
+  if (dissector != NULL) ndpi_exit_detection_module(dissector);
 }
 
 

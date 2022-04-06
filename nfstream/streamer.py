@@ -104,7 +104,7 @@ class NFStreamer(object):
         if isfile(value):
             self._mode = 0
         else:
-            interface = is_interface(value, NFStreamer.is_windows)
+            interface = is_interface(value)
             if interface is not None:
                 self._mode = 1
                 value = interface
