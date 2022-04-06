@@ -53,8 +53,7 @@ sed -i 's/#include <getopt.h>//g' /tmp/nfstream_build/mingw64/include/ndpi/ndpi_
 echo "Discover file tree"
 echo "ls D:/a/_temp/msys64/mingw64/lib/gcc/x86_64-w64-mingw32"
 ls D:/a/_temp/msys64/mingw64/lib/gcc/x86_64-w64-mingw32
-echo "ls D:/a/_temp/msys64/mingw64/lib/gcc/"
-ls D:/a/_temp/msys64/mingw64/lib/gcc/
+gcc --version
 echo "---------------------------------------------------------------------------------------------------------------"
 echo ""
 cd ../..

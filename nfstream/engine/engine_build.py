@@ -16,50 +16,6 @@ If not, see <http://www.gnu.org/licenses/>.
 from cffi import FFI
 import os
 
-ROOT = ""
-USR = "usr"
-USR_LOCAL = "usr/local"
-if os.name != 'posix':
-    MSYS2_NFSTREAM_LOCATION = os.getenv("MSYS2_NFSTREAM_LOCATION")
-    if MSYS2_NFSTREAM_LOCATION is None:  # User didn't set this location, we use default
-        os.environ["MSYS2_NFSTREAM_LOCATION"] = "C:/msys64"
-    ROOT = os.getenv("MSYS2_NFSTREAM_LOCATION")
-    USR = "mingw64"
-    USR_LOCAL = "mingw64"
-
-
-# As cdef do not support ifdef yet we fix it by simple string replacement
-SOCK_INCLUDES = """#include <unistd.h>\n#include <netinet/in.h>\n#include <sys/time.h>"""
-if os.name != 'posix':
-    SOCK_INCLUDES = """#include <winsock2.h>\n#include <process.h>\n#include <io.h>"""
-
-ENGINE_INCLUDES = """
-#include <stdlib.h>
-""" + SOCK_INCLUDES + """
-#include <math.h>
-#include <stdint.h>
-#include <string.h>
-#include <ndpi_main.h>
-#include <ndpi_typedefs.h>
-#include <ndpi_api.h>
-#include <pcap.h>
-"""
-
-INCLUDE_DIRS = ["{root}/tmp/nfstream_build/{usr}/include/ndpi".format(root=ROOT, usr=USR),
-                "{root}/tmp/nfstream_build/{usr}/include".format(root=ROOT, usr=USR_LOCAL)]
-EXTRALINK_ARGS = ["{root}/tmp/nfstream_build/{usr}/lib/libndpi.a".format(root=ROOT, usr=USR)]
-
-if os.name != 'posix':  # windows
-    INCLUDE_DIRS.append("{root}/tmp/nfstream_build/npcap/Include".format(root=ROOT))
-    EXTRALINK_ARGS.append("{root}/{usr}/lib/libmingwex.a".format(root=ROOT, usr=USR))
-    EXTRALINK_ARGS.append("{root}/{usr}/lib/gcc/x86_64-w64-mingw32/11.2.0/libgcc.a".format(root=ROOT, usr=USR))
-    EXTRALINK_ARGS.append("{root}/tmp/nfstream_build/npcap/Lib/x64/wpcap.lib".format(root=ROOT))
-    EXTRALINK_ARGS.append("{root}/{usr}/lib/libws2_32.a".format(root=ROOT, usr=USR))
-else:
-    EXTRALINK_ARGS.append("{root}/tmp/nfstream_build/{usr}/lib/libpcap.a".format(root=ROOT, usr=USR_LOCAL))
-    EXTRALINK_ARGS.append("{root}/tmp/nfstream_build/{usr}/lib/libgcrypt.a".format(root=ROOT, usr=USR_LOCAL))
-    EXTRALINK_ARGS.append("{root}/tmp/nfstream_build/{usr}/lib/libgpg-error.a".format(root=ROOT, usr=USR_LOCAL))
-
 
 def cdef_to_replace(cdef):
     to_rep = []
@@ -79,6 +35,36 @@ def convert_path(p):
     return p.replace("/", "\\")
 
 
+ROOT = ""
+USR = "usr"
+USR_LOCAL = "usr/local"
+if os.name != 'posix':
+    MSYS2_NFSTREAM_LOCATION = os.getenv("MSYS2_NFSTREAM_LOCATION")
+    if MSYS2_NFSTREAM_LOCATION is None:  # User didn't set this location, we use default
+        os.environ["MSYS2_NFSTREAM_LOCATION"] = "C:/msys64"
+    ROOT = os.getenv("MSYS2_NFSTREAM_LOCATION")
+    USR = "mingw64"
+    USR_LOCAL = "mingw64"
+
+INCLUDE_DIRS = ["{root}/tmp/nfstream_build/{usr}/include/ndpi".format(root=ROOT, usr=USR),
+                "{root}/tmp/nfstream_build/{usr}/include".format(root=ROOT, usr=USR_LOCAL)]
+EXTRALINK_ARGS = ["{root}/tmp/nfstream_build/{usr}/lib/libndpi.a".format(root=ROOT, usr=USR)]
+
+if os.name != 'posix':  # windows
+    INCLUDE_DIRS.append("{root}/tmp/nfstream_build/npcap/Include".format(root=ROOT))
+    EXTRALINK_ARGS.append("{root}/{usr}/lib/libmingwex.a".format(root=ROOT, usr=USR))
+    EXTRALINK_ARGS.append("{root}/{usr}/lib/gcc/x86_64-w64-mingw32/11.2.0/libgcc.a".format(root=ROOT, usr=USR))
+    # IMPORTANT: We link with wpcap.lib from downloaded SDK in order to not bundle npcap OEM binaries.
+    # Consequently, the generated extension will still look for these binaries on the host machine.
+    # Instructions on how to install npcap binaries are provided in README (Windows Note).
+    EXTRALINK_ARGS.append("{root}/tmp/nfstream_build/npcap/Lib/x64/wpcap.lib".format(root=ROOT))
+    EXTRALINK_ARGS.append("{root}/{usr}/lib/libws2_32.a".format(root=ROOT, usr=USR))
+else:
+    EXTRALINK_ARGS.append("{root}/tmp/nfstream_build/{usr}/lib/libpcap.a".format(root=ROOT, usr=USR_LOCAL))
+    EXTRALINK_ARGS.append("{root}/tmp/nfstream_build/{usr}/lib/libgcrypt.a".format(root=ROOT, usr=USR_LOCAL))
+    EXTRALINK_ARGS.append("{root}/tmp/nfstream_build/{usr}/lib/libgpg-error.a".format(root=ROOT, usr=USR_LOCAL))
+
+
 with open(convert_path("{root}/tmp/nfstream_build/lib_engine_cdefinitions.c".format(root=ROOT))) as engine_cdef:
     ENGINE_CDEF = engine_cdef.read()
 
@@ -93,7 +79,25 @@ with open(convert_path("{root}/tmp/nfstream_build/ndpi_cdefinitions_packed.h".fo
 
 NDPI_PACKED_STRUCTURES = NDPI_PACKED.split("//CFFI.NDPI_PACKED_STRUCTURES")[1]
 
-# Magic Code Generator
+
+# --------------------------------Engine Library Magic Code Generator --------------------------------------------------
+
+
+# As cdef do not support ifdef yet we fix it by simple string replacement
+SOCK_INCLUDES = """#include <unistd.h>\n#include <netinet/in.h>\n#include <sys/time.h>"""
+if os.name != 'posix':
+    SOCK_INCLUDES = """#include <winsock2.h>\n#include <process.h>\n#include <io.h>"""
+ENGINE_INCLUDES = """
+#include <stdlib.h>
+""" + SOCK_INCLUDES + """
+#include <math.h>
+#include <stdint.h>
+#include <string.h>
+#include <ndpi_main.h>
+#include <ndpi_typedefs.h>
+#include <ndpi_api.h>
+#include <pcap.h>
+"""
 ENGINE_SOURCE = ENGINE_INCLUDES + NDPI_MODULE_STRUCT_CDEF + ENGINE_CDEF
 ENGINE_APIS = """
 pcap_t * capture_open(const uint8_t * pcap_file, int mode, char * child_error);
