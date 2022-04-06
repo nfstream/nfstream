@@ -54,7 +54,7 @@ if os.name != 'posix':  # windows
     EXTRALINK_ARGS.append("{root}/{usr}/x86_64-w64-mingw32/lib/libmingwex.a".format(root=ROOT, usr=USR))
     EXTRALINK_ARGS.append("{root}/{usr}/lib/gcc/x86_64-w64-mingw32/11.2.0/libgcc.a".format(root=ROOT, usr=USR))
     EXTRALINK_ARGS.append("{root}/tmp/nfstream_build/npcap/Lib/x64/wpcap.lib".format(root=ROOT))
-    EXTRALINK_ARGS.append("{root}/usr/lib/w32api/libws2_32.a".format(root=ROOT, usr=USR))
+    EXTRALINK_ARGS.append("{root}/{usr}/lib/libws2_32.a".format(root=ROOT, usr=USR))
 else:
     EXTRALINK_ARGS.append("{root}/tmp/nfstream_build/{usr}/lib/libpcap.a".format(root=ROOT, usr=USR_LOCAL))
     EXTRALINK_ARGS.append("{root}/tmp/nfstream_build/{usr}/lib/libgcrypt.a".format(root=ROOT, usr=USR_LOCAL))
