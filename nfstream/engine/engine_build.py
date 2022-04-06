@@ -17,14 +17,14 @@ from cffi import FFI
 import os
 
 
-MSYS2_NFSTREAM_LOCATION = os.getenv("MSYS2_NFSTREAM_LOCATION")
-if MSYS2_NFSTREAM_LOCATION is None: # User didn't set this location, we use default
-    os.environ["MSYS2_NFSTREAM_LOCATION"] = "C:\\msys64"
 ROOT = os.getenv("MSYS2_NFSTREAM_LOCATION")
 USR = "usr"
+ROOT = ""
 USR_LOCAL = "usr/local"
-if os.name == 'posix':
-    ROOT = ""
+if os.name != 'posix':
+    MSYS2_NFSTREAM_LOCATION = os.getenv("MSYS2_NFSTREAM_LOCATION")
+    if MSYS2_NFSTREAM_LOCATION is None:  # User didn't set this location, we use default
+        os.environ["MSYS2_NFSTREAM_LOCATION"] = "C:\\msys64"
     USR = "mingw64"
     USR_LOCAL = "mingw64"
 
@@ -46,13 +46,11 @@ ENGINE_INCLUDES = """
 #include <pcap.h>
 """
 
-
-
 INCLUDE_DIRS = ["{root}/tmp/nfstream_build/{usr}/include/ndpi".format(root=ROOT, usr=USR),
                 "{root}/tmp/nfstream_build/{usr}/include".format(root=ROOT, usr=USR_LOCAL)]
 EXTRALINK_ARGS = ["{root}/tmp/nfstream_build/{usr}/lib/libndpi.a".format(root=ROOT, usr=USR)]
 
-if os.name != 'posix': # windows
+if os.name != 'posix':  # windows
     INCLUDE_DIRS.append("{root}/tmp/nfstream_build/npcap/Include".format(root=ROOT))
     EXTRALINK_ARGS.append("{root}/{usr}/x86_64-w64-mingw32/lib/libmingwex.a".format(root=ROOT, usr=USR))
     EXTRALINK_ARGS.append("{root}/{usr}/lib/gcc/x86_64-w64-mingw32/11.2.0/libgcc.a".format(root=ROOT, usr=USR))
