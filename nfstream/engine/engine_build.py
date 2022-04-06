@@ -23,7 +23,7 @@ if os.name != 'posix':
 
 USR = "usr"
 if os.name != 'posix':
-    RPATH = "mingw64"
+    USR = "mingw64"
 
 TMP = "/tmp"
 if os.name != 'posix':
