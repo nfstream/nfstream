@@ -16,15 +16,14 @@ If not, see <http://www.gnu.org/licenses/>.
 from cffi import FFI
 import os
 
-
-ROOT = os.getenv("MSYS2_NFSTREAM_LOCATION")
-USR = "usr"
 ROOT = ""
+USR = "usr"
 USR_LOCAL = "usr/local"
 if os.name != 'posix':
     MSYS2_NFSTREAM_LOCATION = os.getenv("MSYS2_NFSTREAM_LOCATION")
     if MSYS2_NFSTREAM_LOCATION is None:  # User didn't set this location, we use default
-        os.environ["MSYS2_NFSTREAM_LOCATION"] = "C:\\msys64"
+        os.environ["MSYS2_NFSTREAM_LOCATION"] = "C:/msys64"
+    ROOT = os.getenv("MSYS2_NFSTREAM_LOCATION")
     USR = "mingw64"
     USR_LOCAL = "mingw64"
 
