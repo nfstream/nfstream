@@ -51,10 +51,10 @@ gcc -DNDPI_LIB_COMPILATION -DNDPI_CFFI_PREPROCESSING -E -x c -P -C /tmp/nfstream
 gcc -E -x c -P -C lib_engine.c > /tmp/nfstream_build/lib_engine_cdefinitions.c
 sed -i 's/#include <getopt.h>//g' /tmp/nfstream_build/mingw64/include/ndpi/ndpi_win32.h
 echo "Discover file tree"
-echo "ls D:/a/_temp/msys64/mingw64/lib/"
-ls D:/a/_temp/msys64/mingw64/lib/
-echo "ls D:/a/_temp/msys64/mingw64/"
-ls D:/a/_temp/msys64/mingw64/
+echo "ls D:/a/_temp/msys64/mingw64/lib/gcc/x86_64-w64-mingw32"
+ls D:/a/_temp/msys64/mingw64/lib/gcc/x86_64-w64-mingw32
+echo "ls D:/a/_temp/msys64/mingw64/lib/gcc/"
+ls D:/a/_temp/msys64/mingw64/lib/gcc/
 echo "---------------------------------------------------------------------------------------------------------------"
 echo ""
 cd ../..
