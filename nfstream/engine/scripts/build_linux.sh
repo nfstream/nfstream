@@ -64,8 +64,7 @@ build_libndpi() {
   echo "Compiling libndpi"
   echo "---------------------------------------------------------------------------------------------------------------"
   cd nDPI
-  sed -i 's/PKG_CHECK_MODULES([JSONC], [json-c], [JSONC_LIBS="${pkg_cv_JSONC_LIBS}" JSONC_CFLAGS="${pkg_cv_JSONC_CFLAGS}"])//g' configure.ac
-  env CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib" ./autogen.sh --with-local-libgcrypt
+  env CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib" ./autogen.sh --with-local-libgcrypt --with_only_libndpi
   make
   make DESTDIR=/tmp/nfstream_build install
   make clean
