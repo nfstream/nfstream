@@ -31,14 +31,13 @@ build_libndpi() {
   ./autogen.sh
   make
   make DESTDIR=/tmp/nfstream_build install
-  make clean
   cd ..
   echo "---------------------------------------------------------------------------------------------------------------"
   echo ""
   }
 
 rm -rf /tmp/nfstream_build
-cd nfstream/engine/dependencies
+cd $1/dependencies
 setup_npcap
 build_libndpi
 echo ""

@@ -42,10 +42,10 @@ ROOT = ""
 USR = "usr"
 USR_LOCAL = "usr/local"
 if os.name != 'posix':  # Windows case, we must take into account msys2 path tree.
-    MSYS2_NFSTREAM_LOCATION = os.getenv("MSYS2_NFSTREAM_LOCATION")  # If user have custom msys2 installation
-    if MSYS2_NFSTREAM_LOCATION is None:  # User didn't set this location, we use default one
-        os.environ["MSYS2_NFSTREAM_LOCATION"] = "C:/msys64"
-    ROOT = os.getenv("MSYS2_NFSTREAM_LOCATION")
+    MSYS2_PATH = os.getenv("MSYS2_PATH")  # If user have custom msys2 installation
+    if MSYS2_PATH is None:  # User didn't set this path, we use default one
+        os.environ["MSYS2_PATH"] = "C:/msys64"
+    ROOT = os.getenv("MSYS2_PATH")
     USR = "mingw64"
     USR_LOCAL = "mingw64"
 
@@ -56,7 +56,10 @@ EXTRALINK_ARGS = ["{root}/tmp/nfstream_build/{usr}/lib/libndpi.a".format(root=RO
 
 if os.name != 'posix':  # Windows
     INCLUDE_DIRS.append("{root}/tmp/nfstream_build/npcap/Include".format(root=ROOT))
-    EXTRALINK_ARGS.append("{root}/{usr}/lib/libmingwex.a".format(root=ROOT, usr=USR))
+    if os.path.exists(convert_path("{root}/{usr}/lib/libmingwex.a".format(root=ROOT, usr=USR))):
+        EXTRALINK_ARGS.append("{root}/{usr}/lib/libmingwex.a".format(root=ROOT, usr=USR))
+    else: # best effort guess
+        EXTRALINK_ARGS.append("{root}/{usr}/lib/libmingwex.a".format(root=ROOT, usr=USR+"/x86_64-w64-mingw32"))
     with open(convert_path("{root}/tmp/nfstream_build/gcc_version.in".format(root=ROOT))) as gcc_version_in:
         GCC_VERSION = gcc_version_in.read().split("\n")[0].split(")")[-1].strip()
     EXTRALINK_ARGS.append("{root}/{usr}/lib/gcc/x86_64-w64-mingw32/{version}/libgcc.a".format(root=ROOT,
@@ -66,7 +69,11 @@ if os.name != 'posix':  # Windows
     # Consequently, the generated extension will still look for these binaries on the host machine.
     # Instructions on how to install npcap binaries are provided in README (Windows Note).
     EXTRALINK_ARGS.append("{root}/tmp/nfstream_build/npcap/Lib/x64/wpcap.lib".format(root=ROOT))
-    EXTRALINK_ARGS.append("{root}/{usr}/lib/libws2_32.a".format(root=ROOT, usr=USR))
+    # And finally socket stuff
+    if os.path.exists(convert_path("{root}/{usr}/lib/libws2_32.a".format(root=ROOT, usr=USR))):
+        EXTRALINK_ARGS.append("{root}/{usr}/lib/libws2_32.a".format(root=ROOT, usr=USR))
+    else: # best effort guess
+        EXTRALINK_ARGS.append("{root}/usr/lib/w32api/libws2_32.a".format(root=ROOT))
 else:
     EXTRALINK_ARGS.append("{root}/tmp/nfstream_build/{usr}/lib/libpcap.a".format(root=ROOT, usr=USR_LOCAL))
     EXTRALINK_ARGS.append("{root}/tmp/nfstream_build/{usr}/lib/libgcrypt.a".format(root=ROOT, usr=USR_LOCAL))

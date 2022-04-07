@@ -16,27 +16,35 @@ If not, see <http://www.gnu.org/licenses/>.
 import platform
 import subprocess
 import pathlib
-import shutil
 import sys
 import os
 
-
 BUILD_SCRIPT_PATH = str(pathlib.Path(__file__).parent.resolve().joinpath("nfstream").joinpath("engine")
-                        .joinpath("scripts").joinpath("build")).replace("\\", "/").replace("//", "/")  # Patch for msys2
+                        .joinpath("scripts").joinpath("build"))
+
+# Patched path as it is passed to msys2 bash
+ENGINE_PATH = str(pathlib.Path(__file__).parent.resolve().joinpath("nfstream").joinpath("engine")).replace("\\", "/")
 
 
 def prepare_lib_engine_requirements():
     if os.name != 'posix':  # Windows case
-        build_script_command = r"""'{}'""".format(BUILD_SCRIPT_PATH + "_windows.sh")
-        msys2 = shutil.which('msys2')
-        subprocess.check_call([msys2, "-l", "-c", build_script_command], shell=True)
+        os.environ["MSYSTEM"] = "MINGW64"
+        msys = os.getenv("MSYS2_PATH")
+        if msys is None:
+            os.environ["MSYS2_PATH"] = "C:/msys64"
+        msys = os.getenv("MSYS2_PATH")
+        build_script_command = r"""'{}'""".format(str(BUILD_SCRIPT_PATH) + "_windows.sh")
+        subprocess.check_call(["{msys}/usr/bin/bash".format(msys=msys).replace("/", "\\"),
+                               "-l",
+                               build_script_command, ENGINE_PATH],
+                              shell=True)
     else:
         if sys.platform == 'darwin':
-            subprocess.check_call([BUILD_SCRIPT_PATH + "_macos.sh"], shell=True)
+            subprocess.check_call([str(BUILD_SCRIPT_PATH) + "_macos.sh"], shell=True)
         elif "aarch" in platform.machine():
-            subprocess.check_call([BUILD_SCRIPT_PATH + "_aarch64.sh"], shell=True)
+            subprocess.check_call([str(BUILD_SCRIPT_PATH) + "_aarch64.sh"], shell=True)
         else:
-            subprocess.check_call([BUILD_SCRIPT_PATH + "_linux.sh"], shell=True)
+            subprocess.check_call([str(BUILD_SCRIPT_PATH) + "_linux.sh"], shell=True)
 
 
 if __name__ == "__main__":

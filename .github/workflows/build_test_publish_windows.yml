@@ -52,13 +52,15 @@ jobs:
          Start-Process npcap-1.60-oem.exe -ArgumentList "/loopback_support=yes /winpcap_mode=yes /dot11_support=yes /S" -wait
 
     - name: Prepare
+      env:
+        MSYSTEM: MINGW64
+        MSYS2_PATH: D:/a/_temp/msys64
       run: |
         python prepare.py
 
     - name: Build
       env:
-        # We set the location for msys64 path
-        MSYS2_NFSTREAM_LOCATION: D:/a/_temp/msys64
+        MSYS2_PATH: D:/a/_temp/msys64
       run: |
         python -m pip install .
         python -m pip wheel --no-deps --wheel-dir=dist .
