@@ -27,7 +27,7 @@ jobs:
     - name: Build and generate wheels
       uses: RalfG/python-wheels-manylinux-build@v0.4.2-manylinux_2_24_x86_64
       with:
-        python-versions: 'cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39 cp310-cp310'
+        python-versions: 'cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39 cp310-cp310 pp37-pypy37_pp73 pp38-pypy38_pp73'
         build-requirements: 'cffi>=1.15.0 psutil>=5.8.0 numpy>=1.19.5 pandas>=1.1.5,<6.3 dpkt>=1.9.7'
         system-packages: 'autoconf automake libtool pkg-config gettext libjson-c-dev libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison python3-pip'
         pre-build-command: 'python3 prepare.py'
