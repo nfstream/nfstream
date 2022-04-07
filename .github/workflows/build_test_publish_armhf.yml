@@ -66,7 +66,7 @@ jobs:
 
     - name: Test
       # On other versions then 3.9, we test only. (without coverage generation)
-      if: !startsWith(matrix.python-version, 'python3.9')
+      if: startsWith(matrix.python-version, 'py') && !startsWith(matrix.python-version, 'python3.9')
       run: |
         ${{ matrix.python-version }} tests.py
 

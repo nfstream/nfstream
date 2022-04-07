@@ -68,8 +68,7 @@ jobs:
         retention-days: 1
 
     - name: Test
-      # On other versions then 3.10, we test only. (without coverage generation)
-      if: !startsWith(matrix.python-version, 'python3.10')
+      if: startsWith(matrix.python-version, 'py') && !startsWith(matrix.python-version, 'python3.10')
       run: |
         ${{ matrix.python-version }} tests.py
 

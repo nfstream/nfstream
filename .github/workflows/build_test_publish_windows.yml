@@ -73,7 +73,7 @@ jobs:
 
     - name: Test
       # On other versions then 3.10, we test only. (without coverage generation)
-      if: !startsWith(matrix.python-version, '3.10')
+      if: startsWith(matrix.python-version, 'py') && !startsWith(matrix.python-version, '3.10')
       run: |
         python tests.py
 
