@@ -64,12 +64,21 @@ jobs:
           dist/nfstream-*.whl
         retention-days: 1
 
+    - name: Test
+      # On other versions then 3.9, we test only. (without coverage generation)
+      if: !startsWith(matrix.python-version, 'python3.9')
+      run: |
+        ${{ matrix.python-version }} tests.py
+
     - name: Test and generate coverage report
+      # On version 3.9, we test and generate coverage report.
+      if: startsWith(matrix.python-version, 'python3.9')
       run: |
         ${{ matrix.python-version }} -m coverage run -m unittest tests.py
         ${{ matrix.python-version }} -m coverage combine
 
     - name: Upload coverage to Codecov
+      if: startsWith(matrix.python-version, 'python3.9')
       uses: codecov/codecov-action@v1
 
     - name: Publish on Pypi

@@ -71,12 +71,21 @@ jobs:
           dist/nfstream-*.whl
         retention-days: 1
 
-    - name: Test and generate coverage report
+    - name: Test
+      # On other versions then 3.10, we test only. (without coverage generation)
+      if: !startsWith(matrix.python-version, '3.10')
       run: |
-         python -m coverage run -m unittest tests.py
-         python -m coverage combine
+        python tests.py
+
+    - name: Test and generate coverage report
+      # On version 3.10, we test and generate coverage report.
+      if: startsWith(matrix.python-version, '3.10')
+      run: |
+        python -m coverage run -m unittest tests.py
+        python -m coverage combine
 
     - name: Upload coverage to Codecov
+      if: startsWith(matrix.python-version, '3.10')
       uses: codecov/codecov-action@v1
 
     - name: Publish on Pypi
