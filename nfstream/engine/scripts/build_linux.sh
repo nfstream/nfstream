@@ -64,7 +64,7 @@ build_libndpi() {
   echo "Compiling libndpi"
   echo "---------------------------------------------------------------------------------------------------------------"
   cd nDPI
-  env CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib" ./autogen.sh --with-local-libgcrypt --with_only_libndpi
+  env CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib" ./autogen.sh --with-local-libgcrypt --with-only-libndpi
   make
   make DESTDIR=/tmp/nfstream_build install
   make clean
