@@ -42,6 +42,28 @@ if platform.python_implementation() == 'PyPy':
 else:
     install_requires.append("pandas>=1.1.5")
 
+try:
+    from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+
+    class bdist_wheel(_bdist_wheel):
+        def get_tag(self):
+            tag = _bdist_wheel.get_tag(self)
+            pypi_compliant_tag = list(tag)
+            if 'linux' == pypi_compliant_tag[2][0:5]:
+                pypi_compliant_tag[2] = pypi_compliant_tag[2].replace("linux", "manylinux1")
+            if pypi_compliant_tag[2] == "manylinux1_aarch64":
+                pypi_compliant_tag[2] = "manylinux2014_aarch64"
+            pypi_compliant_tag = tuple(pypi_compliant_tag)
+            return pypi_compliant_tag
+
+
+except ImportError:
+    print('Warning: cannot import "wheel" package to build platform-specific wheel')
+    print('Install the "wheel" package to fix this warning')
+    bdist_wheel = None
+
+cmdclass = {'bdist_wheel': bdist_wheel} if bdist_wheel is not None else dict()
+
 setup(
     name="nfstream",
     version='6.4.3',
