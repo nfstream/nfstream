@@ -63,8 +63,8 @@ across experiments.
 <tr>
   <td><b>Continuous Integration</b></td>
   <td>
-    <a href="https://github.com/nfstream/nfstream/actions?query=workflow%3Abuild_test_publish_linux">
-    <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_publish_linux/master?logo=linux&style=for-the-badge&label=linux" alt="Linux WorkFlows" />
+    <a href="https://github.com/nfstream/nfstream/actions/workflows/build_test_linux.yml">
+    <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_linux/master?logo=linux&style=for-the-badge&label=linux" alt="Linux WorkFlows" />
     </a>
     <a href="https://github.com/nfstream/nfstream/actions?query=workflow%3Abuild_test_publish_macos">
     <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_publish_macos/master?logo=apple&style=for-the-badge&label=macos" alt="MacOS WorkFlows" />
@@ -72,11 +72,11 @@ across experiments.
     <a href="https://github.com/nfstream/nfstream/actions?query=workflow%3Abuild_test_publish_windows">
     <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_publish_windows/master?logo=windows&style=for-the-badge&label=windows" alt="Windows WorkFlows" />
     </a>
-    <a href="https://github.com/nfstream/nfstream/actions?query=workflow%3Abuild_test_publish_aarch64">
-    <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_publish_aarch64/master?logo=arm&style=for-the-badge&label=arm64" alt="ARM64 WorkFlows" />
+    <a href="https://github.com/nfstream/nfstream/actions/workflows/build_test_aarch64.yml">
+    <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_aarch64/master?logo=arm&style=for-the-badge&label=arm64" alt="ARM64 WorkFlows" />
     </a>
-    <a href="https://github.com/nfstream/nfstream/actions?query=workflow%3Abuild_test_publish_armhf">
-    <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_publish_armhf/master?logo=arm&style=for-the-badge&label=arm32" alt="ARM32 WorkFlows" />
+    <a href="https://github.com/nfstream/nfstream/actions/workflows/build_test_armhf.yml">
+    <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_armhf/master?logo=arm&style=for-the-badge&label=arm32" alt="ARM32 WorkFlows" />
     </a>
   </td>
 </tr>
