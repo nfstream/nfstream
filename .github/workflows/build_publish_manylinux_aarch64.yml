@@ -1,7 +1,7 @@
 name: build_publish_manylinux_aarch64
 
 on:
-  push: # temporary for debugging purposes.
+  push: # temporary on push for debugging purposes.
     branches:
     - master
   release:
