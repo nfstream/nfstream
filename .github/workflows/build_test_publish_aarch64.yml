@@ -27,8 +27,8 @@ jobs:
     - name: Cleanup build folder
       run: |
         ls -la ./
-        rm -rf ./* || true
-        rm -rf ./.??* || true
+        sudo rm -rf ./* || true
+        sudo rm -rf ./.??* || true
         ls -la ./
 
     - uses: actions/checkout@v3

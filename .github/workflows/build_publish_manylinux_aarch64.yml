@@ -11,9 +11,18 @@ jobs:
   build_publish_manylinux:
     runs-on: [self-hosted, ARM64]
     steps:
+
+    - name: Cleanup build folder
+      run: |
+        ls -la ./
+        sudo rm -rf ./* || true
+        sudo rm -rf ./.??* || true
+        ls -la ./
+
     - uses: actions/checkout@v3
       with:
         submodules: recursive
+
     - name: Install dependencies
       run: |
         python3 -m pip install --upgrade pip
