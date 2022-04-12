@@ -1,9 +1,6 @@
 name: build_publish_manylinux_x86_64
 
 on:
-  push: # just to debug
-    branches:
-    - master
   release:
     types: [created]
 
@@ -33,5 +30,12 @@ jobs:
       with:
         name: generated_wheel
         path: |
-          dist/nfstream-*.whl
+          dist/nfstream-*manylinux*.whl
         retention-days: 1
+
+    - name: Publish on Pypi
+      if: startsWith(github.ref, 'refs/tags/')
+      env:
+        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      run: python3 -m twine upload --skip-existing dist/nfstream-*manylinux*.whl
