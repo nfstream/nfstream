@@ -1410,7 +1410,7 @@ char * capture_get_interface(char * intf_name) {
   dev = alldev;
   while (dev != NULL && (strcmp(dev->name, intf_name) != 0)) {
       if (dev->description != NULL) {
-         if (strcmp(dev->description, intf_name) == 0) break; // helper for windows
+         if (strcmp(dev->description, intf_name) == 0) break; // helper for windows interface name
       }
       dev=dev->next;
   }
