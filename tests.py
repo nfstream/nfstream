@@ -225,28 +225,28 @@ def test_statistical():
         assert flow.dst2src_packets == 12
         assert flow.dst2src_bytes == 7408
         assert flow.bidirectional_min_ps == 40
-        assert flow.bidirectional_mean_ps == 310.57142857142856
-        assert flow.bidirectional_stddev_ps == 500.54617788019937
+        assert flow.bidirectional_mean_ps == pytest.approx(310.571, 0.001)
+        assert flow.bidirectional_stddev_ps == pytest.approx(500.546, 0.001)
         assert flow.bidirectional_max_ps == 1470
         assert flow.src2dst_min_ps == 40
-        assert flow.src2dst_mean_ps == 80.49999999999999
-        assert flow.src2dst_stddev_ps == 89.55519713189922
+        assert flow.src2dst_mean_ps == pytest.approx(80.499, 0.001)
+        assert flow.src2dst_stddev_ps == pytest.approx(89.555, 0.001)
         assert flow.src2dst_max_ps == 354
         assert flow.dst2src_min_ps == 40
-        assert flow.dst2src_mean_ps == 617.3333333333334
-        assert flow.dst2src_stddev_ps == 651.4524099458397
+        assert flow.dst2src_mean_ps == pytest.approx(617.333, 0.001)
+        assert flow.dst2src_stddev_ps == pytest.approx(651.452, 0.001)
         assert flow.dst2src_max_ps == 1470
         assert flow.bidirectional_min_piat_ms == 0
-        assert flow.bidirectional_mean_piat_ms == 247.037037037037
-        assert flow.bidirectional_stddev_piat_ms == 324.04599406227237
+        assert flow.bidirectional_mean_piat_ms == pytest.approx(247.037, 0.001)
+        assert flow.bidirectional_stddev_piat_ms == pytest.approx(324.045, 0.001)
         assert flow.bidirectional_max_piat_ms == 995
         assert flow.src2dst_min_piat_ms == 76
-        assert flow.src2dst_mean_piat_ms == 444.6666666666667
-        assert flow.src2dst_stddev_piat_ms == 397.60329595261277
+        assert flow.src2dst_mean_piat_ms == pytest.approx(444.666, 0.001)
+        assert flow.src2dst_stddev_piat_ms == pytest.approx(397.603, 0.001)
         assert flow.src2dst_max_piat_ms == 1185
         assert flow.dst2src_min_piat_ms == 66
-        assert flow.dst2src_mean_piat_ms == 599.1818181818182
-        assert flow.dst2src_stddev_piat_ms == 384.78456782511904
+        assert flow.dst2src_mean_piat_ms == pytest.approx(599.181, 0.001)
+        assert flow.dst2src_stddev_piat_ms == pytest.approx(384.784, 0.001)
         assert flow.dst2src_max_piat_ms == 1213
         assert flow.bidirectional_syn_packets == 2
         assert flow.bidirectional_cwr_packets == 0

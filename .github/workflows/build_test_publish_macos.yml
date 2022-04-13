@@ -88,6 +88,7 @@ jobs:
       # On version 3.9, we test and generate coverage report.
       if: startsWith(matrix.python-version, '3.9')
       run: |
+        ${{ matrix.python-version }} -m pip install coverage
         python -m coverage run -m pytest tests.py
         python -m coverage combine
 

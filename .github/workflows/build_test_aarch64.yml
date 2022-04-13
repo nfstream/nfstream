@@ -56,6 +56,7 @@ jobs:
 
     - name: Test and generate coverage report
       run: |
+        ${{ matrix.python-version }} -m pip install coverage
         ${{ matrix.python-version }} -m coverage run -m pytest tests.py
         ${{ matrix.python-version }} -m coverage combine
 
