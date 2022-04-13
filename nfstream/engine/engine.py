@@ -13,7 +13,6 @@ If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 """
 
-from psutil import net_if_addrs
 from _lib_engine import ffi, lib
 
 
@@ -36,7 +35,6 @@ def setup_capture(ffi, lib, source, snaplen, promisc, mode, error_child, group_i
     return capture
 
 
-
 def setup_filter(capture, lib, error_child, bpf_filter):
     """ Compile and setup BPF filter """
     if bpf_filter is not None:
@@ -52,7 +50,6 @@ def activate_capture(capture, lib, error_child, bpf_filter, mode):
     if activation_failed:
         return False
     return setup_filter(capture, lib, error_child, bpf_filter)
-
 
 
 def setup_dissector(ffi, lib, n_dissections):
@@ -74,11 +71,10 @@ def setup_dissector(ffi, lib, n_dissections):
 
 def is_interface(val):
     """ Check if val is a valid interface name and return it if true else None """
-    interfaces_map = dict.fromkeys(net_if_addrs().keys(), "")
-    for k, v in interfaces_map.items():
-        if val == k or val == v:
-            return k
-    return None
+    intf = lib.capture_get_interface(val.encode('ascii'))
+    if intf == ffi.NULL:
+        return None
+    return ffi.string(intf).decode('ascii', 'ignore')
 
 
 def create_engine():

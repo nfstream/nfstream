@@ -114,6 +114,7 @@ ENGINE_INCLUDES = """
 """
 ENGINE_SOURCE = ENGINE_INCLUDES + NDPI_MODULE_STRUCT_CDEF + ENGINE_CDEF
 ENGINE_APIS = """
+char * capture_get_interface(char * intf_name);
 pcap_t * capture_open(const uint8_t * pcap_file, int mode, char * child_error);
 int capture_activate(pcap_t * pcap_handle, int mode, char * child_error);
 int capture_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tunnels, int n_roots, uint64_t root_idx,

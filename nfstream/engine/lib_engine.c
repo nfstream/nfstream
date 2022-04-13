@@ -1397,6 +1397,34 @@ static void flow_update_dst2src(uint8_t statistics, uint16_t packet_size, struct
 
 /***************************************** Capture APIs ***************************************************************/
 
+
+/**
+ * capture_get_interface: load available interface
+ */
+char * capture_get_interface(char * intf_name) {
+  char errbuf[PCAP_ERRBUF_SIZE];
+  pcap_if_t *alldev = NULL;
+  pcap_if_t *dev = NULL;
+  char * if_name;
+  if (pcap_findalldevs(&alldev, errbuf) != 0) return NULL;
+  dev = alldev;
+  while (dev != NULL && (strcmp(dev->name, intf_name) != 0)) {
+      if (dev->description != NULL) {
+         if (strcmp(dev->description, intf_name) == 0) break; // helper for windows
+      }
+      dev=dev->next;
+  }
+  if (dev == NULL) {
+    pcap_freealldevs(alldev);
+    return NULL;
+  } else {
+    if_name = strdup(dev->name);
+    pcap_freealldevs(alldev);
+    return if_name;
+  }
+}
+
+
 /**
  * capture_open: Open a pcap file or a specified device.
  */
