@@ -75,13 +75,13 @@ jobs:
     - name: Test
       if: startsWith(matrix.os, 'ubuntu') && !startsWith(matrix.python-version, '3.10')
       run: |
-        python tests.py
+        python -m pytest tests.py
 
     - name: Test and generate coverage report
       # On version 3.10, we test and generate coverage report.
       if: startsWith(matrix.python-version, '3.10')
       run: |
-        python -m coverage run -m unittest tests.py
+        python -m coverage run -m pytest tests.py
         python -m coverage combine
 
     - name: Upload coverage to Codecov
