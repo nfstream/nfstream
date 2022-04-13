@@ -348,7 +348,7 @@ def test_ndpi_integration():
                                                        "application_confidence"]].to_dict()
 
             true = pd.read_csv(result_files[file_idx]).to_dict()
-            assert test, true
+            assert test == true
         except AssertionError:
             failures += 1
     if os.name != 'posix':  # FIXME once nDPI Windows support is finalized.
