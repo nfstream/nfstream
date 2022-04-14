@@ -337,15 +337,16 @@ def test_ndpi_integration():
     failures = 0
     for file_idx, test_file in enumerate(pcap_files):
         try:
-            test = NFStreamer(source=test_file,
-                              n_dissections=20,
-                              n_meters=1).to_pandas()[["id",
-                                                       "bidirectional_packets",
-                                                       "bidirectional_bytes",
-                                                       "application_name",
-                                                       "application_category_name",
-                                                       "application_is_guessed",
-                                                       "application_confidence"]].to_dict()
+            test = {}
+            test_df = NFStreamer(source=test_file, n_dissections=20, n_meters=1).to_pandas()
+            if test_df is not None:
+                test = test_df[["id",
+                                "bidirectional_packets",
+                                "bidirectional_bytes",
+                                "application_name",
+                                "application_category_name",
+                                "application_is_guessed",
+                                "application_confidence"]].to_dict()
 
             true = pd.read_csv(result_files[file_idx]).to_dict()
             assert test == true
