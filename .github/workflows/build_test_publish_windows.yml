@@ -19,10 +19,10 @@ jobs:
       matrix:
         os: ["windows-latest"]
         python-version: ["3.10",
-                         "3.9",
+                         "3.9.10",
                          "3.8",
-                         "3.7",
-                         "3.6"]
+                         "3.7.9",
+                         "3.6.8"]
 
     steps:
     - uses: actions/checkout@v3
