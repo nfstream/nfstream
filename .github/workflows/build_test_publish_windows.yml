@@ -8,8 +8,6 @@ on:
     - master
   release:
     types: [created]
-  schedule:
-    - cron:  '0 12 * * *'
 jobs:
   build_test_publish_windows:
     name: ${{ matrix.python-version }} on ${{ matrix.os }}

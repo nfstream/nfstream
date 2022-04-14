@@ -6,10 +6,6 @@ on:
   pull_request:
     branches:
     - master
-  release:
-    types: [created]
-  schedule:
-    - cron:  '0 12 * * *'
 jobs:
   build_test_linux:
     name: ${{ matrix.python-version }} on linux-armhf
@@ -37,9 +33,9 @@ jobs:
         sudo apt-get -y update
         sudo apt-get -y --fix-broken install python3-pip autoconf automake libtool pkg-config gettext libjson-c-dev
         sudo apt-get -y --fix-broken install libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison
-        sudo apt-get -y --fix-broken install python3.10 python3.9 python3.7 python3.6
-        sudo apt-get -y --fix-broken install libpython3.6-dev libpython3.7-dev libpython3.8-dev libpython3.9-dev libpython3.10-dev
-        sudo apt-get -y --fix-broken install python3.10-distutils python3.9-distutils python3.8-distutils python3.7-distutils
+        sudo apt-get -y --fix-broken install python3.9
+        sudo apt-get -y --fix-broken install libpython3.9-dev
+        sudo apt-get -y --fix-broken install python3.9-distutils
         sudo apt-get -y autoremove
 
     - name: Install requirements
