@@ -6,7 +6,7 @@ on:
   pull_request:
     branches:
     - master
-  release:
+  release: # Trigger CI
     types: [created]
 jobs:
   build_test_publish_windows:
