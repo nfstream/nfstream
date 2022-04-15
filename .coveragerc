@@ -1,2 +1,3 @@
 [run]
 concurrency = multiprocessing
+parallel = True
