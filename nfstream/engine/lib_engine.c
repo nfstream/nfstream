@@ -1279,9 +1279,9 @@ static uint8_t flow_init_bidirectional(struct ndpi_detection_module_struct *diss
   flow->src_mac[3] = packet->src_mac[3];
   flow->src_mac[4] = packet->src_mac[4];
   flow->src_mac[5] = packet->src_mac[5];
-  snprintf(flow->src_mac_str, sizeof(flow->src_mac_str), "%02x:%02x:%02x:%02x:%02x:%02x",
-           packet->src_mac[0], packet->src_mac[1], packet->src_mac[2],
-           packet->src_mac[3], packet->src_mac[4], packet->src_mac[5]);
+  ndpi_snprintf(flow->src_mac_str, sizeof(flow->src_mac_str), "%02x:%02x:%02x:%02x:%02x:%02x",
+                packet->src_mac[0], packet->src_mac[1], packet->src_mac[2],
+                packet->src_mac[3], packet->src_mac[4], packet->src_mac[5]);
   memcpy(flow->src_oui, flow->src_mac_str, 8);
   flow->src_port = packet->src_port;
   flow->dst_ip[0] = packet->dst_ip[0];
@@ -1292,9 +1292,9 @@ static uint8_t flow_init_bidirectional(struct ndpi_detection_module_struct *diss
   flow->dst_mac[3] = packet->dst_mac[3];
   flow->dst_mac[4] = packet->dst_mac[4];
   flow->dst_mac[5] = packet->dst_mac[5];
-  snprintf(flow->dst_mac_str, sizeof(flow->dst_mac_str), "%02x:%02x:%02x:%02x:%02x:%02x",
-           packet->dst_mac[0], packet->dst_mac[1], packet->dst_mac[2],
-           packet->dst_mac[3], packet->dst_mac[4], packet->dst_mac[5]);
+  ndpi_snprintf(flow->dst_mac_str, sizeof(flow->dst_mac_str), "%02x:%02x:%02x:%02x:%02x:%02x",
+                packet->dst_mac[0], packet->dst_mac[1], packet->dst_mac[2],
+                packet->dst_mac[3], packet->dst_mac[4], packet->dst_mac[5]);
   memcpy(flow->dst_oui, flow->dst_mac_str, 8);
   flow->dst_port = packet->dst_port;
   flow->protocol = packet->protocol;
@@ -1440,7 +1440,7 @@ pcap_t * capture_open(const uint8_t * pcap_file, int mode, char * child_error) {
   if (pcap_handle != NULL) {
     return pcap_handle;
   } else {
-    snprintf(child_error, 256, "%s", pcap_error_buffer);
+    ndpi_snprintf(child_error, 256, "%s", pcap_error_buffer);
     return NULL;
   }
 }
@@ -1456,7 +1456,7 @@ int capture_set_fanout(pcap_t * pcap_handle, int mode, char * child_error, int g
     set_fanout = pcap_set_fanout_linux(pcap_handle, 1, 0x8000, (uint16_t) group_id);
     if (set_fanout != 0) {
       pcap_close(pcap_handle);
-      snprintf(child_error, 256, "%s", "Unable to setup fanout mode.");
+      ndpi_snprintf(child_error, 256, "%s", "Unable to setup fanout mode.");
     }
 #endif
   return set_fanout;
@@ -1473,7 +1473,7 @@ int capture_activate(pcap_t * pcap_handle, int mode, char * child_error) {
     set_activate = pcap_activate(pcap_handle);
     if (set_activate != 0) {
       pcap_close(pcap_handle);
-      snprintf(child_error, 256, "%s", "Unable to activate source.");
+      ndpi_snprintf(child_error, 256, "%s", "Unable to activate source.");
     }
   return set_activate;
   }
@@ -1489,7 +1489,7 @@ int capture_set_timeout(pcap_t * pcap_handle, int mode, char * child_error) {
     set_timeout = pcap_set_timeout(pcap_handle, 1000);
     if (set_timeout != 0) {
       pcap_close(pcap_handle);
-      snprintf(child_error, 256, "Unable to set buffer timeout.");
+      ndpi_snprintf(child_error, 256, "Unable to set buffer timeout.");
     }
   return set_timeout;
   }
@@ -1505,7 +1505,7 @@ int capture_set_promisc(pcap_t * pcap_handle, int mode, char * child_error, int 
     set_promisc = pcap_set_promisc(pcap_handle, promisc);
     if (set_promisc != 0) {
       pcap_close(pcap_handle);
-      snprintf(child_error, 256, "Unable to set promisc mode.");
+      ndpi_snprintf(child_error, 256, "Unable to set promisc mode.");
     }
   return set_promisc;
   }
@@ -1521,7 +1521,7 @@ int capture_set_snaplen(pcap_t * pcap_handle, int mode, char * child_error, unsi
     set_snaplen = pcap_set_snaplen(pcap_handle, snaplen);
     if (set_snaplen != 0) {
       pcap_close(pcap_handle);
-      snprintf(child_error, 256, "Unable to set snaplen.");
+      ndpi_snprintf(child_error, 256, "Unable to set snaplen.");
     }
   return set_snaplen;
   }
@@ -1534,12 +1534,12 @@ int capture_set_filter(pcap_t * pcap_handle, char * bpf_filter, char * child_err
   if (bpf_filter != NULL) {
     struct bpf_program fcode;
     if (pcap_compile(pcap_handle, &fcode, bpf_filter, 1, 0xFFFFFF00) < 0) {
-      snprintf(child_error, 256, "Unable to compile BPF filter.");
+      ndpi_snprintf(child_error, 256, "Unable to compile BPF filter.");
       pcap_close(pcap_handle);
       return 1;
     } else {
       if (pcap_setfilter(pcap_handle, &fcode) < 0) {
-	    snprintf(child_error, 256, "Unable to compile BPF filter.");
+	    ndpi_snprintf(child_error, 256, "Unable to compile BPF filter.");
 	    pcap_close(pcap_handle);
 	    return 1;
       } else {
