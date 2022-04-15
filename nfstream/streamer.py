@@ -436,6 +436,8 @@ class NFStreamer(object):
                     for i in range(n_meters):  # We break workflow loop
                         meters[i].terminate()
                     break
+            while not channel.empty(): # Fix join hangs on Windows platforms when Queue is not empty.
+                channel.get()          # https://docs.python.org/3.6/library/multiprocessing.html#pipes-and-queues
             for i in range(n_meters):
                 meters[i].join()  # Join metering jobs
             if self._mode == 1 and self.performance_report > 0:
