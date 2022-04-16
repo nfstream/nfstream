@@ -69,7 +69,7 @@ across experiments.
     <a href="https://github.com/nfstream/nfstream/actions/workflows/build_test_publish_macos.yml">
     <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_publish_macos/master?logo=apple&style=for-the-badge&label=macos" alt="MacOS WorkFlows" />
     </a>
-    <a href="https://github.com/nfstream/nfstream/actions?query=workflow%3Abuild_test_publish_windows">
+    <a href="https://github.com/nfstream/nfstream/actions/workflows/build_test_publish_windows.yml">
     <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_publish_windows/master?logo=windows&style=for-the-badge&label=windows" alt="Windows WorkFlows" />
     </a>
     <a href="https://github.com/nfstream/nfstream/actions/workflows/build_test_aarch64.yml">
