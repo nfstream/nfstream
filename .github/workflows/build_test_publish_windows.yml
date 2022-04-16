@@ -73,7 +73,8 @@ jobs:
 
     - name: Test
       # On other versions then 3.9, we test only. (without coverage generation)
-      if: startsWith(matrix.os, 'windows') && !startsWith(matrix.python-version, '3.9')
+      # Disable 3.6 and 3.7
+      if: startsWith(matrix.os, 'windows') && !startsWith(matrix.python-version, '3.9') && !startsWith(matrix.python-version, '3.7') && !startsWith(matrix.python-version, '3.6')
       run: |
         python tests.py
 
