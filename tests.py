@@ -32,7 +32,7 @@ def get_files_list(path):
     return files
 
 
-class TestMethods(unittest.TestCase):
+class NFStreamTest(object):
     @staticmethod
     def test_source_parameter():
         print("\n----------------------------------------------------------------------")
@@ -526,4 +526,30 @@ class TestMethods(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    NFStreamTest.test_source_parameter()
+    NFStreamTest.test_decode_tunnels_parameter()
+    NFStreamTest.test_bpf_filter_parameter()
+    NFStreamTest.test_promiscuous_mode_parameter()
+    NFStreamTest.test_snapshot_length_parameter()
+    NFStreamTest.test_idle_timeout_parameter()
+    NFStreamTest.test_active_timeout_parameter()
+    NFStreamTest.test_accounting_mode_parameter()
+    NFStreamTest.test_udps_parameter()
+    NFStreamTest.test_n_dissections_parameter()
+    NFStreamTest.test_system_visibility_mode_parameter()
+    NFStreamTest.test_system_visibility_extension_port()
+    NFStreamTest.test_system_visibility_poll_ms()
+    NFStreamTest.test_statistical_analysis_parameter()
+    NFStreamTest.test_splt_analysis_parameter()
+    NFStreamTest.test_n_meters_parameter()
+    NFStreamTest.test_performance_report_parameter()
+    NFStreamTest.test_expiration_management()
+    NFStreamTest.test_tunnel_decoding()
+    NFStreamTest.test_statistical()
+    NFStreamTest.test_fingerprint_extraction()
+    NFStreamTest.test_export()
+    NFStreamTest.test_bpf()
+    NFStreamTest.test_ndpi_integration()
+    NFStreamTest.test_splt()
+    NFStreamTest.test_dhcp()
+    NFStreamTest.test_mdns()

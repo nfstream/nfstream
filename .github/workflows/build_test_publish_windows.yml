@@ -82,7 +82,7 @@ jobs:
       if: startsWith(matrix.python-version, '3.9')
       run: |
         python -m pip install coverage
-        python -m coverage run -m unittest tests.py
+        python -m coverage run tests.py
         python -m coverage combine
 
     - name: Upload coverage to Codecov
