@@ -13,7 +13,6 @@ If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 """
 
-import unittest
 import pandas as pd
 import json
 import os
