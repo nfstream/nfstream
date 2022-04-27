@@ -17,6 +17,7 @@ build_libpcap() {
   echo "Compiling libpcap (fanout)"
   echo "---------------------------------------------------------------------------------------------------------------"
   cd libpcap
+  git config --global --add safe.directory $(realpath .) &&
   ./configure --enable-ipv6 --disable-universal --enable-dbus=no --without-libnl
   make
   make DESTDIR=/tmp/nfstream_build install
@@ -32,6 +33,7 @@ build_libgpgerror() {
   echo "Compiling libgpg-error"
   echo "---------------------------------------------------------------------------------------------------------------"
   cd libgpg-error
+  git config --global --add safe.directory $(realpath .) &&
   ./autogen.sh
   ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc --disable-nls
   make
@@ -48,6 +50,7 @@ build_libgcrypt() {
   echo "Compiling libgcrypt"
   echo "---------------------------------------------------------------------------------------------------------------"
   cd libgcrypt
+  git config --global --add safe.directory $(realpath .) &&
   ./autogen.sh
   ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib" --with-libgpg-error-prefix="/tmp/nfstream_build/usr/local"
   make
@@ -64,6 +67,7 @@ build_libndpi() {
   echo "Compiling libndpi"
   echo "---------------------------------------------------------------------------------------------------------------"
   cd nDPI
+  git config --global --add safe.directory $(realpath .) &&
   gcc --version
   sed -i 's/PKG_CHECK_MODULES/dnl> /g' configure.ac
   env CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib" ./autogen.sh --with-local-libgcrypt
