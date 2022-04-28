@@ -1,14 +1,11 @@
 name: build_test_aarch64
 on:
-  release:
-    types: [created]
-#on:
-#  push:
-#    branches:
-#    - master
-#  pull_request:
-#    branches:
-#    - master
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
 jobs:
   build_test_linux:
     name: ${{ matrix.python-version }} on linux-aarch64

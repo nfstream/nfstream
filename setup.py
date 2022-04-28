@@ -66,7 +66,7 @@ cmdclass = {'bdist_wheel': bdist_wheel} if bdist_wheel is not None else dict()
 
 setup(
     name="nfstream",
-    version='6.5.1',
+    version='6.5.2',
     url='https://www.nfstream.org/',
     license='LGPLv3',
     description="A Flexible Network Data Analysis Framework",
