@@ -1,12 +1,19 @@
 name: build_publish_manylinux_aarch64
-
 on:
-  release:
-    types: [created]
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+#on:
+#  release:
+#    types: [created]
 
 jobs:
   build_publish_manylinux:
     runs-on: [self-hosted, ARM64]
+    timeout-minutes: 720
     steps:
 
     - name: Cleanup build folder
@@ -26,6 +33,7 @@ jobs:
         python3 -m pip install twine
 
     - name: Build and generate wheels
+      timeout-minutes: 720
       uses: RalfG/python-wheels-manylinux-build@v0.4.2-manylinux_2_24_aarch64
       with:
         python-versions: 'cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39 cp310-cp310 pp37-pypy37_pp73 pp38-pypy38_pp73 pp39-pypy39_pp73'
@@ -42,7 +50,7 @@ jobs:
         retention-days: 1
 
     - name: Publish on Pypi
-      if: startsWith(github.ref, 'refs/tags/')
+      # if: startsWith(github.ref, 'refs/tags/')
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
