@@ -391,9 +391,9 @@ class NFStreamer(object):
                     rt = RepeatedTimer(self.performance_report, update_performances, performances, False, idx_generator)
             if self._mode == self.Mode.INTERFACE and self.system_visibility_mode > 0:
                 socket_listener = self._mp_context.Process(target=system_socket_worflow,
-                                                            args=(channel,
-                                                                  self.idle_timeout*1000,
-                                                                  self.system_visibility_poll_ms/1000,))
+                                                           args=(channel,
+                                                                 self.idle_timeout*1000,
+                                                                 self.system_visibility_poll_ms/1000,))
                 socket_listener.daemon = True  # demonize socket_listener
                 socket_listener.start()
                 if self.system_visibility_mode == 2:
