@@ -29,6 +29,12 @@ class NFEvent(Enum):
     BROWSER_REQUEST = -5
 
 
+class NFMode(Enum):
+    SINGLE_FILE = 0
+    INTERFACE = 1
+    MULTIPLE_FILES = 2
+
+
 InternalError = namedtuple('InternalError', ['id', 'message'])
 
 
