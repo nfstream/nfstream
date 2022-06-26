@@ -97,7 +97,6 @@ class NFStreamer(object):
         else:
             self._mp_context = get_context("fork")
 
-
     @property
     def source(self):
         return self._source
