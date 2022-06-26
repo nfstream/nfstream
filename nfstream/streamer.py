@@ -26,7 +26,7 @@ from os.path import isfile
 from .meter import meter_workflow
 from .anonymizer import NFAnonymizer
 from .engine import is_interface
-from.plugin import NFPlugin
+from .plugin import NFPlugin
 from .utils import csv_converter, open_file, RepeatedTimer, update_performances, set_affinity, validate_flows_per_file
 from .utils import create_csv_file_path, NFEvent, process_unify, validate_rotate_files
 from .system import system_socket_worflow, match_flow_conn, system_browser_workflow, RequestCache, browser_processes
