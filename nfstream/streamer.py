@@ -14,6 +14,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from multiprocessing import get_context
+from enum import Enum
 import threading
 import pandas as pd
 import time as tm
@@ -35,6 +36,12 @@ class NFStreamer(object):
     streamer_id = 0  # class id generator
     glock = threading.Lock()
     is_windows = "windows" in platform.system().lower()
+
+    class Mode(Enum):
+        SINGLE_FILE = 0
+        INTERFACE = 1
+        MULTIPLE_FILES = 2
+
     """ Network Flow Streamer
 
     Examples:
@@ -67,7 +74,7 @@ class NFStreamer(object):
         with NFStreamer.glock:
             NFStreamer.streamer_id += 1
             self._idx = NFStreamer.streamer_id
-        self._mode = 0
+        self._mode = self.Mode.SINGLE_FILE
         self.source = source
         self.decode_tunnels = decode_tunnels
         self.bpf_filter = bpf_filter
@@ -102,11 +109,11 @@ class NFStreamer(object):
         except TypeError:
             raise ValueError("Please specify a pcap file path or a valid network interface name as source.")
         if isfile(value):
-            self._mode = 0
+            self._mode = self.Mode.SINGLE_FILE
         else:
             interface = is_interface(value)
             if interface is not None:
-                self._mode = 1
+                self._mode = self.Mode.INTERFACE
                 value = interface
             else:
                 raise ValueError("Please specify a pcap file path or a valid network interface name as source.")
@@ -251,7 +258,7 @@ class NFStreamer(object):
         if c_cores is None:  # Patch for platforms returning None (https://github.com/giampaolo/psutil/issues/1078)
             c_cores = c_cpus
         if value == 0:
-            if platform.system() == "Linux" and self._mode == 1:
+            if platform.system() == "Linux" and self._mode == self.Mode.INTERFACE:
                 self._n_meters = c_cpus - 1
             else:
                 if c_cpus >= c_cores:
@@ -290,7 +297,7 @@ class NFStreamer(object):
     @system_visibility_mode.setter
     def system_visibility_mode(self, value):
         if isinstance(value, int) and value in [0, 1, 2]:
-            if self._mode == 0 and value > 0:
+            if self._mode == self.Mode.SINGLE_FILE and value > 0:
                 print("WARNING: system_visibility_mode switched to 0 in offline capture "
                       "(available only for live capture)")
                 value = 0
@@ -378,12 +385,12 @@ class NFStreamer(object):
                 meters[i].daemon = True  # demonize meter
                 meters[i].start()
             idx_generator = self._mp_context.Value('i', 0)
-            if self._mode == 1 and self.performance_report > 0:
+            if self._mode == self.Mode.INTERFACE and self.performance_report > 0:
                 if platform.system() == "Linux":
                     rt = RepeatedTimer(self.performance_report, update_performances, performances, True, idx_generator)
                 else:
                     rt = RepeatedTimer(self.performance_report, update_performances, performances, False, idx_generator)
-            if self._mode == 1 and self.system_visibility_mode > 0:
+            if self._mode == self.Mode.INTERFACE and self.system_visibility_mode > 0:
                 socket_listener = self._mp_context.Process(target=system_socket_worflow,
                                                             args=(channel,
                                                                   self.idle_timeout*1000,
@@ -397,7 +404,7 @@ class NFStreamer(object):
                     browser_listener.daemon = True  # demonize browser_listener
                     browser_listener.start()
             while True:
-                if self._mode == 1 and self.system_visibility_mode == 2:
+                if self._mode == self.Mode.INTERFACE and self.system_visibility_mode == 2:
                     for browser in request_cache.keys():
                         request_cache[browser].scan()
                 try:
@@ -426,7 +433,7 @@ class NFStreamer(object):
                         else:  # NFEvent.FLOW
                             recv.id = idx_generator.value  # Unify ID
                             idx_generator.value = idx_generator.value + 1
-                            if self._mode == 1 and self.system_visibility_mode > 0:
+                            if self._mode == self.Mode.INTERFACE and self.system_visibility_mode > 0:
                                 recv = match_flow_conn(conn_cache, recv)
                                 if self.system_visibility_mode == 2:
                                     if recv.system_process_name in browser_processes:
@@ -439,9 +446,9 @@ class NFStreamer(object):
             for i in range(n_meters):
                 if meters[i].is_alive():
                     meters[i].join()  # Join metering jobs
-            if self._mode == 1 and self.performance_report > 0:
+            if self._mode == self.Mode.INTERFACE and self.performance_report > 0:
                 rt.stop()
-            if self._mode == 1 and self.system_visibility_mode > 0:
+            if self._mode == self.Mode.INTERFACE and self.system_visibility_mode > 0:
                 socket_listener.terminate()
                 if self.system_visibility_mode == 2:
                     browser_listener.terminate()
