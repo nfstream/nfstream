@@ -55,11 +55,11 @@ class NFPlugin(object):
         ----------------------------------------------------------------
         """
 
-    def on_ignore(self, packet):
+    def on_ignore(self):
         """
-        on_ignore(self, packet):     Method called at packet filtering/ignore (e.g., non-IP)
+        on_ignore(self):     Method called at packet filtering/ignore (e.g., non-IP)
         Example: -------------------------------------------------------
-                 print(f"packet ignored by NFStream: {packet}")
+                 print("packet ignored")
         ----------------------------------------------------------------
         """
 

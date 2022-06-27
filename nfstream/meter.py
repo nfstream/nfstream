@@ -261,7 +261,7 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
         elif ret == 0:  # Ignored packet
             ignored_packets += 1
             for udp in udps:
-                udp.on_ignore(nf_packet)
+                udp.on_ignore()
         elif ret == -1:  # Read error or empty buffer
             pass
         else:  # End of file

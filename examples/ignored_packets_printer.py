@@ -13,13 +13,24 @@ If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 """
 
-from nfstream import NFStreamer, NFPlugin
 import sys
+from nfstream import NFStreamer, NFPlugin
 
 
 class IgnoredPacketsPrinter(NFPlugin):
-    def on_ignore(self, packet):
-        print(f"NFStream ignored packet: {packet}")
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.num_packets = 0
+
+    def on_init(self, packet, flow):
+        self.num_packets += 1
+
+    def on_update(self, packet, flow):
+        self.num_packets += 1
+
+    def on_ignore(self):
+        self.num_packets += 1
+        print(f"ignored packet {self.num_packets}")
 
 
 if __name__ == '__main__':  # Mandatory if you are running on Windows Platform
@@ -27,10 +38,8 @@ if __name__ == '__main__':  # Mandatory if you are running on Windows Platform
     flow_streamer = NFStreamer(source=path,
                                statistical_analysis=False,
                                idle_timeout=1,
-                               udps=IgnoredPacketsPrinter())
-    result = {}
-    try:
-        for flow in flow_streamer:
-            print(flow.id)
-    except KeyboardInterrupt:
-        print("Terminated.")
+                               udps=IgnoredPacketsPrinter(),
+                               n_meters=1)
+
+    for flow in flow_streamer:
+        pass
