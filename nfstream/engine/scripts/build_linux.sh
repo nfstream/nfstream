@@ -18,7 +18,7 @@ build_libpcap() {
   echo "---------------------------------------------------------------------------------------------------------------"
   cd libpcap
   git config --global --add safe.directory $(realpath .) &&
-  ./configure --enable-ipv6 --disable-universal --enable-dbus=no --without-libnl
+  ./configure --enable-ipv6 --disable-universal --enable-dbus=no --without-libnl --disable-rdma
   make
   make DESTDIR=/tmp/nfstream_build install
   make clean
