@@ -1,5 +1,5 @@
 id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
-0,2,196,DNS.AnyDesk,RemoteAccess,0,4
-1,2,196,DNS.AnyDesk,RemoteAccess,0,4
-2,2064,341529,TLS.AnyDesk,RemoteAccess,0,4
-3,15,4192,TLS.AnyDesk,RemoteAccess,0,4
+0,2,196,DNS.AnyDesk,RemoteAccess,0,6
+1,2,196,DNS.AnyDesk,RemoteAccess,0,6
+2,2064,341529,TLS.AnyDesk,RemoteAccess,0,6
+3,15,4192,TLS.AnyDesk,RemoteAccess,0,6
