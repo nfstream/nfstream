@@ -237,7 +237,7 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
             return
         while remaining_packets:
             nf_packet = ffi.new("struct nf_packet *")
-            ret = lib.capture_next(capture, nf_packet, decode_tunnels, n_roots, root_idx, mode)
+            ret = lib.capture_next(capture, nf_packet, decode_tunnels, n_roots, root_idx, int(mode))
             if ret > 0:  # Valid must be processed by meter
                 packet_time = nf_packet.time
                 if packet_time > meter_tick:

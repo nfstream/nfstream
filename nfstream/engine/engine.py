@@ -17,19 +17,19 @@ from _lib_engine import ffi, lib
 
 
 def setup_capture(ffi, lib, source, snaplen, promisc, mode, error_child, group_id):
-    capture = lib.capture_open(bytes(source, 'utf-8'), mode, error_child)
+    capture = lib.capture_open(bytes(source, 'utf-8'), int(mode), error_child)
     if capture == ffi.NULL:
         return
-    fanout_set_failed = lib.capture_set_fanout(capture, mode, error_child, group_id)
+    fanout_set_failed = lib.capture_set_fanout(capture, int(mode), error_child, group_id)
     if fanout_set_failed:
         return
-    timeout_set_failed = lib.capture_set_timeout(capture, mode, error_child)
+    timeout_set_failed = lib.capture_set_timeout(capture, int(mode), error_child)
     if timeout_set_failed:
         return
-    promisc_set_failed = lib.capture_set_promisc(capture, mode, error_child, int(promisc))
+    promisc_set_failed = lib.capture_set_promisc(capture, int(mode), error_child, int(promisc))
     if promisc_set_failed:
         return
-    snaplen_set_failed = lib.capture_set_snaplen(capture, mode, error_child, snaplen)
+    snaplen_set_failed = lib.capture_set_snaplen(capture, int(mode), error_child, snaplen)
     if snaplen_set_failed:
         return
     return capture
@@ -46,7 +46,7 @@ def setup_filter(capture, lib, error_child, bpf_filter):
 
 def activate_capture(capture, lib, error_child, bpf_filter, mode):
     """ Capture activation function """
-    activation_failed = lib.capture_activate(capture, mode, error_child)
+    activation_failed = lib.capture_activate(capture, int(mode), error_child)
     if activation_failed:
         return False
     return setup_filter(capture, lib, error_child, bpf_filter)
