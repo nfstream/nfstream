@@ -1,3 +1,3 @@
 id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
-0,20,1717,HTTP.AnyDesk,RemoteAccess,1,2
-1,6943,2793743,TLS.AnyDesk,RemoteAccess,0,4
+0,20,1717,TLS.AnyDesk,RemoteAccess,0,6
+1,6943,2793743,TLS.AnyDesk,RemoteAccess,0,6

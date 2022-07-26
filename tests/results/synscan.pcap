@@ -6,7 +6,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 4,1,58,Unknown,Unspecified,0,0
 5,1,58,Unknown,Unspecified,0,0
 6,1,58,POPS,Email,1,1
-7,1,58,SMTPS,Email,1,1
+7,1,58,SMTP,Email,1,1
 8,5,298,DNS,Network,1,1
 9,1,58,VNC,RemoteAccess,1,1
 10,1,58,FTP_CONTROL,Download,1,1
@@ -20,7 +20,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 18,1,58,NetBIOS,System,1,1
 19,1,58,FTP_CONTROL,Download,1,1
 20,1,58,VNC,RemoteAccess,1,1
-21,1,58,SMTPS,Email,1,1
+21,1,58,SMTP,Email,1,1
 22,1,58,POPS,Email,1,1
 23,1,58,Unknown,Unspecified,0,0
 24,1,58,Unknown,Unspecified,0,0
@@ -743,7 +743,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 741,1,58,Unknown,Unspecified,0,0
 742,1,58,Unknown,Unspecified,0,0
 743,1,58,Unknown,Unspecified,0,0
-744,1,58,TargusDataspeed,Network,0,4
+744,1,58,TargusDataspeed,Network,1,1
 745,1,58,Unknown,Unspecified,0,0
 746,1,58,Unknown,Unspecified,0,0
 747,1,58,Unknown,Unspecified,0,0
@@ -808,7 +808,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 806,1,58,Unknown,Unspecified,0,0
 807,1,58,Unknown,Unspecified,0,0
 808,1,58,Unknown,Unspecified,0,0
-809,1,58,TargusDataspeed,Network,0,4
+809,1,58,TargusDataspeed,Network,1,1
 810,1,58,Unknown,Unspecified,0,0
 811,1,58,Unknown,Unspecified,0,0
 812,1,58,Unknown,Unspecified,0,0
@@ -884,7 +884,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 882,1,58,Unknown,Unspecified,0,0
 883,1,58,Unknown,Unspecified,0,0
 884,1,58,Unknown,Unspecified,0,0
-885,1,58,IPsec,VPN,1,1
+885,1,58,IPSec,VPN,1,1
 886,1,58,Unknown,Unspecified,0,0
 887,1,58,Unknown,Unspecified,0,0
 888,1,58,SIP,VoIP,1,1
@@ -967,7 +967,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 965,1,58,SIP,VoIP,1,1
 966,1,58,Unknown,Unspecified,0,0
 967,1,58,Unknown,Unspecified,0,0
-968,1,58,IPsec,VPN,1,1
+968,1,58,IPSec,VPN,1,1
 969,1,58,Unknown,Unspecified,0,0
 970,1,58,Unknown,Unspecified,0,0
 971,1,58,Unknown,Unspecified,0,0

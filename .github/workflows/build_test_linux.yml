@@ -14,21 +14,20 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["pypy-3.8",
+        python-version: ["pypy-3.9",
+                         "pypy-3.8",
                          "pypy-3.7",
-                         "pypy-3.6",
                          "3.10",
                          "3.9",
                          "3.8",
-                         "3.7",
-                         "3.6"]
+                         "3.7"]
 
     steps:
     - uses: actions/checkout@v3
       with:
         submodules: recursive
     - name: Setup py-${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
       # Caching improves build time, we use pythonLocation to cache everything including wheels to avoid building
@@ -42,7 +41,7 @@ jobs:
         echo "::set-output name=id::$id"
 
     - name: Pip cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       id: pip-cache
       with:
         path: ${{ steps.get-pip-path.outputs.id }}

@@ -900,9 +900,11 @@ static void flow_bidirectional_dissection_collect_info(struct ndpi_detection_mod
   // TLS: We populate requested server name with the server name identifier extracted in client hello.
   //      Then we add JA3 fingerprints for both client and server: https://github.com/salesforce/ja3
   // We also add QUIC user Agent ID in case of QUIC protocol.
-  else if ((flow_is_ndpi_proto(flow, NDPI_PROTOCOL_TLS)) ||
-           (flow->ndpi_flow->protos.tls_quic.ja3_client[0] != '\0') ||
-           flow_is_ndpi_proto(flow, NDPI_PROTOCOL_QUIC)) {
+
+
+  else if (flow_is_ndpi_proto(flow, NDPI_PROTOCOL_TLS) || flow_is_ndpi_proto(flow, NDPI_PROTOCOL_DTLS) ||
+           flow_is_ndpi_proto(flow, NDPI_PROTOCOL_MAIL_SMTPS) || flow_is_ndpi_proto(flow, NDPI_PROTOCOL_MAIL_IMAPS) ||
+           flow_is_ndpi_proto(flow, NDPI_PROTOCOL_MAIL_POPS) || flow_is_ndpi_proto(flow, NDPI_PROTOCOL_QUIC)) {
     memcpy(flow->requested_server_name, flow->ndpi_flow->host_server_name, sizeof(flow->requested_server_name));
     memcpy(flow->user_agent, flow->ndpi_flow->http.user_agent ? flow->ndpi_flow->http.user_agent : "", sizeof(flow->user_agent));
     memcpy(flow->c_hash, flow->ndpi_flow->protos.tls_quic.ja3_client, sizeof(flow->c_hash));
@@ -1730,7 +1732,7 @@ void meter_free_flow(struct nf_flow *flow, uint8_t n_dissections, uint8_t splt, 
  * engine_version: return engine library version.
  */
 const char *engine_lib_version(void) {
-  return "6.5.1";
+  return "6.5.2";
 }
 
 /**

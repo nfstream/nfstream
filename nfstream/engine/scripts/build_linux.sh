@@ -18,7 +18,7 @@ build_libpcap() {
   echo "---------------------------------------------------------------------------------------------------------------"
   cd libpcap
   git config --global --add safe.directory $(realpath .) &&
-  ./configure --enable-ipv6 --disable-universal --enable-dbus=no --without-libnl
+  ./configure --enable-ipv6 --disable-universal --enable-dbus=no --without-libnl --disable-rdma
   make
   make DESTDIR=/tmp/nfstream_build install
   make clean
@@ -69,9 +69,10 @@ build_libndpi() {
   cd nDPI
   git config --global --add safe.directory $(realpath .) &&
   gcc --version
-  sed -i 's/PKG_CHECK_MODULES/dnl> /g' configure.ac
-  env CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib" ./autogen.sh --with-local-libgcrypt
-  make
+  ./autogen.sh
+  CFLAGS="-I/tmp/nfstream_build/usr/local/include"
+  LDFLAGS="-L/tmp/nfstream_build/usr/local/lib"
+  CFLAGS=${CFLAGS} LDFLAGS=${LDFLAGS} ./configure --with-local-libgcrypt && CFLAGS=${CFLAGS} LDFLAGS=${LDFLAGS} make
   make DESTDIR=/tmp/nfstream_build install
   make clean
   cd ..
