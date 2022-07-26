@@ -14,7 +14,6 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from multiprocessing import get_context
-from enum import Enum
 import threading
 import pandas as pd
 import time as tm
