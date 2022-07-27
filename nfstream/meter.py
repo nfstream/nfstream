@@ -14,7 +14,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from .engine import create_engine, setup_capture, setup_dissector, activate_capture
-from .utils import set_affinity, InternalError, NFEvent
+from .utils import set_affinity, InternalError, NFEvent, NFMode
 from collections import OrderedDict
 from .flow import NFlow
 
@@ -200,11 +200,6 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
     if lib is None:
         send_error(root_idx, channel, ENGINE_LOAD_ERR)
         return
-    error_child = ffi.new("char[256]")
-    capture = setup_capture(ffi, lib, source, snaplen, promisc, mode, error_child, group_id)
-    if capture is None:
-        send_error(root_idx, channel, ffi.string(error_child).decode('utf-8', errors='ignore'))
-        return
     meter_tick, meter_scan_tick, meter_track_tick = 0, 0, 0  # meter, idle scan and perf track timelines
     meter_scan_interval, meter_track_interval = 10, 1000  # we scan each 10 msecs and update perf each sec.
     cache = NFCache()
@@ -224,53 +219,67 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
     else:
         lock.acquire()
         lock.release()
-    # Here the last operation, BPF filtering setup and activation.
-    if not activate_capture(capture, lib, error_child, bpf_filter, mode):
-        send_error(root_idx, channel, ffi.string(error_child).decode('utf-8', errors='ignore'))
-        return
-    while remaining_packets:
-        nf_packet = ffi.new("struct nf_packet *")
-        ret = lib.capture_next(capture, nf_packet, decode_tunnels, n_roots, root_idx, mode)
-        if ret > 0:  # Valid must be processed by meter
-            packet_time = nf_packet.time
-            if packet_time > meter_tick:
-                meter_tick = packet_time
-            else:
-                nf_packet.time = meter_tick  # Force time order
-            if ret == 1:  # Must be processed
-                processed_packets += 1
-                go_scan = False
-                if meter_tick - meter_scan_tick >= meter_scan_interval:
-                    go_scan = True  # Activate scan
-                    meter_scan_tick = meter_tick
-                # Consume packet and return diff
-                diff = consume(nf_packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps, sync,
-                               accounting_mode, n_dissections, statistics, splt, dissector, decode_tunnels,
-                               system_visibility_mode)
-                active_flows += diff
-                if go_scan:
-                    idles = meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, n_dissections,
-                                       statistics, splt, ffi, lib, dissector)
-                    active_flows -= idles
-            else:  # time ticker
-                if meter_tick - meter_scan_tick >= meter_scan_interval:
-                    idles = meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, n_dissections,
-                                       statistics, splt, ffi, lib, dissector)
-                    active_flows -= idles
-                    meter_scan_tick = meter_tick
-        elif ret == 0:  # Ignored packet
-            ignored_packets += 1
-        elif ret == -1:  # Read error or empty buffer
-            pass
-        else:  # End of file
-            remaining_packets = False  # end of loop
-        if meter_tick - meter_track_tick >= meter_track_interval:  # Performance tracking
-            capture_track(lib, capture, mode, interface_stats, tracker, processed_packets, ignored_packets)
-            meter_track_tick = meter_tick
+
+    if mode == NFMode.MULTIPLE_FILES:
+        sources = source
+    else:
+        sources = [source]
+
+    for source in sources:
+        error_child = ffi.new("char[256]")
+        capture = setup_capture(ffi, lib, source, snaplen, promisc, mode, error_child, group_id)
+        if capture is None:
+            send_error(root_idx, channel, ffi.string(error_child).decode('utf-8', errors='ignore'))
+            return
+        # Here the last operation, BPF filtering setup and activation.
+        if not activate_capture(capture, lib, error_child, bpf_filter, mode):
+            send_error(root_idx, channel, ffi.string(error_child).decode('utf-8', errors='ignore'))
+            return
+        while remaining_packets:
+            nf_packet = ffi.new("struct nf_packet *")
+            ret = lib.capture_next(capture, nf_packet, decode_tunnels, n_roots, root_idx, int(mode))
+            if ret > 0:  # Valid must be processed by meter
+                packet_time = nf_packet.time
+                if packet_time > meter_tick:
+                    meter_tick = packet_time
+                else:
+                    nf_packet.time = meter_tick  # Force time order
+                if ret == 1:  # Must be processed
+                    processed_packets += 1
+                    go_scan = False
+                    if meter_tick - meter_scan_tick >= meter_scan_interval:
+                        go_scan = True  # Activate scan
+                        meter_scan_tick = meter_tick
+                    # Consume packet and return diff
+                    diff = consume(nf_packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps, sync,
+                                   accounting_mode, n_dissections, statistics, splt, dissector, decode_tunnels,
+                                   system_visibility_mode)
+                    active_flows += diff
+                    if go_scan:
+                        idles = meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, n_dissections,
+                                           statistics, splt, ffi, lib, dissector)
+                        active_flows -= idles
+                else:  # time ticker
+                    if meter_tick - meter_scan_tick >= meter_scan_interval:
+                        idles = meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, n_dissections,
+                                           statistics, splt, ffi, lib, dissector)
+                        active_flows -= idles
+                        meter_scan_tick = meter_tick
+            elif ret == 0:  # Ignored packet
+                ignored_packets += 1
+            elif ret == -1:  # Read error or empty buffer
+                pass
+            else:  # End of file
+                remaining_packets = False  # end of loop
+            if meter_tick - meter_track_tick >= meter_track_interval:  # Performance tracking
+                capture_track(lib, capture, mode, interface_stats, tracker, processed_packets, ignored_packets)
+                meter_track_tick = meter_tick
+
+        # Close capture
+        lib.capture_close(capture)
+
     # Expire all remaining flows in the cache.
     meter_cleanup(cache, channel, udps, sync, n_dissections, statistics, splt, ffi, lib, dissector)
-    # Close capture
-    lib.capture_close(capture)
     # Clean dissector
     lib.dissector_cleanup(dissector)
     # Release engine library
