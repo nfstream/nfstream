@@ -523,6 +523,19 @@ class NFStreamTest(object):
                                               "'_workstation._tcp.local']"
         print("{}\t: {}".format(".test_mdns".ljust(60, ' '), colored('OK', 'green')))
 
+    @staticmethod
+    def test_multi_files():
+        print("\n----------------------------------------------------------------------")
+        multi_files = [os.path.join("tests", "pcaps", "one_flow_1_5.pcap"),
+                       os.path.join("tests", "pcaps", "one_flow_6_10.pcap"),
+                       os.path.join("tests", "pcaps", "one_flow_11_15.pcap"),
+                       os.path.join("tests", "pcaps", "one_flow_16_19.pcap")]
+        for flow in NFStreamer(source=multi_files):
+            print(flow)
+
+        for flow in NFStreamer(source=os.path.join("tests", "pcaps", "one_flow.pcap")):
+            print(flow)
+
 
 if __name__ == '__main__':
     NFStreamTest.test_source_parameter()
@@ -552,3 +565,4 @@ if __name__ == '__main__':
     NFStreamTest.test_splt()
     NFStreamTest.test_dhcp()
     NFStreamTest.test_mdns()
+    NFStreamTest.test_multi_files()

@@ -26,8 +26,8 @@ from .meter import meter_workflow
 from .anonymizer import NFAnonymizer
 from .engine import is_interface
 from .plugin import NFPlugin
-from .utils import csv_converter, open_file, RepeatedTimer, update_performances, set_affinity, validate_flows_per_file, \
-    NFMode
+from .utils import csv_converter, open_file, RepeatedTimer, update_performances, set_affinity
+from .utils import validate_flows_per_file, NFMode
 from .utils import create_csv_file_path, NFEvent, process_unify, validate_rotate_files
 from .system import system_socket_worflow, match_flow_conn, system_browser_workflow, RequestCache, browser_processes
 
@@ -71,7 +71,6 @@ class NFStreamer(object):
             NFStreamer.streamer_id += 1
             self._idx = NFStreamer.streamer_id
         self._mode = NFMode.SINGLE_FILE
-        self._current_source_index = None
         self.source = source
         self.decode_tunnels = decode_tunnels
         self.bpf_filter = bpf_filter
@@ -100,31 +99,32 @@ class NFStreamer(object):
 
     @source.setter
     def source(self, value):
-        if type(value) == list:
-            if len(value) <= 0:
+        if type(value) == list:  # List of pcap files to consider as a single one.
+            if len(value) == 0:
                 raise ValueError("Please provide a non-empty list of sources.")
-            for i in range(len(value)):
-                try:
-                    value[i] = str(os.fspath(value[i]))
-                except TypeError:
-                    raise ValueError("Invalid pcap file path or network interface name at index " + str(i) + ".")
+            else:
+                for i in range(len(value)):
+                    try:
+                        value[i] = str(os.fspath(value[i]))
+                        if not isfile(value[i]):
+                            raise TypeError
+                    except TypeError:
+                        raise ValueError("Invalid pcap file path at index: " + str(i) + ".")
+                self._mode = NFMode.MULTIPLE_FILES
         else:
             try:
                 value = str(os.fspath(value))
             except TypeError:
                 raise ValueError("Please specify a pcap file path or a valid network interface name as source.")
-        if type(value) == list:
-            self._mode = NFMode.MULTIPLE_FILES
-            self._current_source_index = 0
-        elif isfile(value):
-            self._mode = NFMode.SINGLE_FILE
-        else:
-            interface = is_interface(value)
-            if interface is not None:
-                self._mode = NFMode.INTERFACE
-                value = interface
+            if isfile(value):
+                self._mode = NFMode.SINGLE_FILE
             else:
-                raise ValueError("Please specify a pcap file path or a valid network interface name as source.")
+                interface = is_interface(value)
+                if interface is not None:
+                    self._mode = NFMode.INTERFACE
+                    value = interface
+                else:
+                    raise ValueError("Please specify a pcap file path or a valid network interface name as source.")
         self._source = value
 
     @property

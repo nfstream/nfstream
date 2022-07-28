@@ -211,7 +211,6 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
     sync = False
     if len(udps) > 0:  # streamer started with udps: sync internal structures on update.
         sync = True
-    remaining_packets = True
     interface_stats = ffi.new("struct nf_stat *")
     # We ensure that processes start at the same time
     if root_idx == n_roots - 1:
@@ -225,7 +224,7 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
     else:
         sources = [source]
 
-    for source in sources:
+    for source_idx, source in enumerate(sources):
         error_child = ffi.new("char[256]")
         capture = setup_capture(ffi, lib, source, snaplen, promisc, mode, error_child, group_id)
         if capture is None:
@@ -235,6 +234,8 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
         if not activate_capture(capture, lib, error_child, bpf_filter, mode):
             send_error(root_idx, channel, ffi.string(error_child).decode('utf-8', errors='ignore'))
             return
+
+        remaining_packets = True
         while remaining_packets:
             nf_packet = ffi.new("struct nf_packet *")
             ret = lib.capture_next(capture, nf_packet, decode_tunnels, n_roots, root_idx, int(mode))
@@ -274,7 +275,6 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
             if meter_tick - meter_track_tick >= meter_track_interval:  # Performance tracking
                 capture_track(lib, capture, mode, interface_stats, tracker, processed_packets, ignored_packets)
                 meter_track_tick = meter_tick
-
         # Close capture
         lib.capture_close(capture)
 

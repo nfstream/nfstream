@@ -18,8 +18,10 @@ import sys
 
 
 if __name__ == '__main__':  # Mandatory if you are running on Windows Platform
-    path = sys.argv[1]
-    flow_streamer = NFStreamer(source=path,
+    input_filepaths = []
+    for path in sys.argv[1:]:
+        input_filepaths.append(path)
+    flow_streamer = NFStreamer(source=input_filepaths,
                                statistical_analysis=False,
                                idle_timeout=1)
     result = {}

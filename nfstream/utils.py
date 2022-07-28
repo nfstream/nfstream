@@ -64,6 +64,8 @@ def validate_rotate_files(n):
 def create_csv_file_path(path, source):
     """ file path creator """
     if path is None:
+        if type(source) == list:
+            return str(source[0]) + '.csv'
         return str(source) + '.csv'
     return path
 
