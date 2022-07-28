@@ -531,10 +531,44 @@ class NFStreamTest(object):
                        os.path.join("tests", "pcaps", "one_flow_11_15.pcap"),
                        os.path.join("tests", "pcaps", "one_flow_16_19.pcap")]
         for flow in NFStreamer(source=multi_files):
-            print(flow)
-
-        for flow in NFStreamer(source=os.path.join("tests", "pcaps", "one_flow.pcap")):
-            print(flow)
+            assert flow.id == 0
+            assert flow.expiration_id == 0
+            assert flow.src_ip == "192.168.43.18"
+            assert flow.src_mac == "30:52:cb:6c:9c:1b"
+            assert flow.src_oui == "30:52:cb"
+            assert flow.src_port == 52066
+            assert flow.dst_ip == "66.220.156.68"
+            assert flow.dst_mac == "98:0c:82:d3:3c:7c"
+            assert flow.dst_oui == "98:0c:82"
+            assert flow.dst_port == 443
+            assert flow.protocol == 6
+            assert flow.ip_version == 4
+            assert flow.vlan_id == 0
+            assert flow.tunnel_id == 0
+            assert flow.bidirectional_first_seen_ms == 1472393122365
+            assert flow.bidirectional_last_seen_ms == 1472393123665
+            assert flow.bidirectional_duration_ms == 1300
+            assert flow.bidirectional_packets == 19
+            assert flow.bidirectional_bytes == 5745
+            assert flow.src2dst_first_seen_ms == 1472393122365
+            assert flow.src2dst_last_seen_ms == 1472393123408
+            assert flow.src2dst_duration_ms == 1043
+            assert flow.src2dst_packets == 9
+            assert flow.src2dst_bytes == 1345
+            assert flow.dst2src_first_seen_ms == 1472393122668
+            assert flow.dst2src_last_seen_ms == 1472393123665
+            assert flow.dst2src_duration_ms == 997
+            assert flow.dst2src_packets == 10
+            assert flow.dst2src_bytes == 4400
+            assert flow.application_name == "TLS.Facebook"
+            assert flow.application_category_name == "SocialNetwork"
+            assert flow.application_is_guessed == 0
+            assert flow.application_confidence == 6
+            assert flow.requested_server_name == "facebook.com"
+            assert flow.client_fingerprint == "bfcc1a3891601edb4f137ab7ab25b840"
+            assert flow.server_fingerprint == "2d1eb5817ece335c24904f516ad5da12"
+            assert flow.user_agent == ""
+            assert flow.content_type == ""
 
 
 if __name__ == '__main__':
