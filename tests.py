@@ -475,9 +475,6 @@ class NFStreamTest(object):
             except AssertionError:
                 failures += 1
                 print("{}\t: {}".format(test_case_name.ljust(60, ' '), colored('KO', 'red')))
-                print(test)
-                print("------- expected --------")
-                print(true)
         # Everything must be OK
         assert failures == 0
 
@@ -572,6 +569,7 @@ class NFStreamTest(object):
             assert flow.server_fingerprint == "2d1eb5817ece335c24904f516ad5da12"
             assert flow.user_agent == ""
             assert flow.content_type == ""
+        print("{}\t: {}".format(".test_multi_files".ljust(60, ' '), colored('OK', 'green')))
 
 
 if __name__ == '__main__':
