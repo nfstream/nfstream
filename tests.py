@@ -475,6 +475,9 @@ class NFStreamTest(object):
             except AssertionError:
                 failures += 1
                 print("{}\t: {}".format(test_case_name.ljust(60, ' '), colored('KO', 'red')))
+                print(test)
+                print("------- expected --------")
+                print(true)
         # Everything must be OK
         assert failures == 0
 
