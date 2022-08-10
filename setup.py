@@ -27,7 +27,7 @@ THIS_DIRECTORY = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(THIS_DIRECTORY, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-install_requires = ['cffi>=1.15.0',
+install_requires = ['cffi>=1.15.1',
                     'psutil>=5.8.0',
                     'dpkt>=1.9.7',
                     'numpy>=1.19.5']

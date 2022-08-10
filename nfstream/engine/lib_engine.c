@@ -889,8 +889,8 @@ static void flow_bidirectional_dissection_collect_info(struct ndpi_detection_mod
   }
   // HTTP: UserAgent and ContentType. With server name this is sufficient. (at least for now)
   else if (flow_is_ndpi_proto(flow, NDPI_PROTOCOL_HTTP)) {
-    memcpy(flow->content_type, flow->ndpi_flow->http.content_type ? flow->ndpi_flow->http.content_type : "", sizeof(flow->content_type));
-    memcpy(flow->user_agent, flow->ndpi_flow->http.user_agent ? flow->ndpi_flow->http.user_agent : "", sizeof(flow->user_agent));
+    ndpi_snprintf(flow->content_type, sizeof(flow->content_type), "%s", flow->ndpi_flow->http.content_type ? flow->ndpi_flow->http.content_type : "");
+    ndpi_snprintf(flow->user_agent, sizeof(flow->user_agent), "%s", (flow->ndpi_flow->http.user_agent ? flow->ndpi_flow->http.user_agent : ""));
   // SSH: https://github.com/salesforce/hassh
   //      We extract both client and server fingerprints hassh fingerprints for SSH.
   } else if (flow_is_ndpi_proto(flow, NDPI_PROTOCOL_SSH)) {
@@ -906,7 +906,7 @@ static void flow_bidirectional_dissection_collect_info(struct ndpi_detection_mod
            flow_is_ndpi_proto(flow, NDPI_PROTOCOL_MAIL_SMTPS) || flow_is_ndpi_proto(flow, NDPI_PROTOCOL_MAIL_IMAPS) ||
            flow_is_ndpi_proto(flow, NDPI_PROTOCOL_MAIL_POPS) || flow_is_ndpi_proto(flow, NDPI_PROTOCOL_QUIC)) {
     memcpy(flow->requested_server_name, flow->ndpi_flow->host_server_name, sizeof(flow->requested_server_name));
-    memcpy(flow->user_agent, flow->ndpi_flow->http.user_agent ? flow->ndpi_flow->http.user_agent : "", sizeof(flow->user_agent));
+    ndpi_snprintf(flow->user_agent, sizeof(flow->user_agent), "%s", (flow->ndpi_flow->http.user_agent ? flow->ndpi_flow->http.user_agent : ""));
     memcpy(flow->c_hash, flow->ndpi_flow->protos.tls_quic.ja3_client, sizeof(flow->c_hash));
     memcpy(flow->s_hash, flow->ndpi_flow->protos.tls_quic.ja3_server, sizeof(flow->s_hash));
   }
