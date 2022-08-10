@@ -55,6 +55,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #define DLT_IEEE802_11_RADIO  127
 #define DLT_RAW  12
 #endif
+#define MODE_SINGLE_FILE 0
+#define MODE_INTERFACE 1
+#define MODE_MULTIPLE_FILES 2
 
 //CFFI_SHARED_STRUCTURES
 typedef struct dissector_checker {
@@ -300,7 +303,7 @@ static void packet_get_info(struct nf_packet *nf_pkt, uint16_t *sport, uint16_t 
  * packet_fanout: Network flow packet fanout.
  */
 static int packet_fanout(int mode, uint64_t hashval, int n_roots, uint64_t root_idx) {
-  if (mode == 0) { // Offline, we perform fanout like strategy
+  if (mode == MODE_SINGLE_FILE || mode == MODE_MULTIPLE_FILES) { // Offline, we perform fanout like strategy
     if ((hashval % n_roots) == root_idx) { // If packet match meter idx, he will consume it and process it.
       return 1;
     } else {
@@ -897,9 +900,11 @@ static void flow_bidirectional_dissection_collect_info(struct ndpi_detection_mod
   // TLS: We populate requested server name with the server name identifier extracted in client hello.
   //      Then we add JA3 fingerprints for both client and server: https://github.com/salesforce/ja3
   // We also add QUIC user Agent ID in case of QUIC protocol.
-  else if ((flow_is_ndpi_proto(flow, NDPI_PROTOCOL_TLS)) ||
-           (flow->ndpi_flow->protos.tls_quic.ja3_client[0] != '\0') ||
-           flow_is_ndpi_proto(flow, NDPI_PROTOCOL_QUIC)) {
+
+
+  else if (flow_is_ndpi_proto(flow, NDPI_PROTOCOL_TLS) || flow_is_ndpi_proto(flow, NDPI_PROTOCOL_DTLS) ||
+           flow_is_ndpi_proto(flow, NDPI_PROTOCOL_MAIL_SMTPS) || flow_is_ndpi_proto(flow, NDPI_PROTOCOL_MAIL_IMAPS) ||
+           flow_is_ndpi_proto(flow, NDPI_PROTOCOL_MAIL_POPS) || flow_is_ndpi_proto(flow, NDPI_PROTOCOL_QUIC)) {
     memcpy(flow->requested_server_name, flow->ndpi_flow->host_server_name, sizeof(flow->requested_server_name));
     memcpy(flow->user_agent, flow->ndpi_flow->http.user_agent ? flow->ndpi_flow->http.user_agent : "", sizeof(flow->user_agent));
     memcpy(flow->c_hash, flow->ndpi_flow->protos.tls_quic.ja3_client, sizeof(flow->c_hash));
@@ -1431,7 +1436,7 @@ char * capture_get_interface(char * intf_name) {
 pcap_t * capture_open(const uint8_t * pcap_file, int mode, char * child_error) {
   pcap_t * pcap_handle = NULL;
   char pcap_error_buffer[PCAP_ERRBUF_SIZE];
-  if (mode == 0) {
+  if (mode == MODE_SINGLE_FILE || mode == MODE_MULTIPLE_FILES) {
     pcap_handle = pcap_open_offline((char*)pcap_file, pcap_error_buffer);
   }
   if (mode == 1) {
@@ -1450,7 +1455,7 @@ pcap_t * capture_open(const uint8_t * pcap_file, int mode, char * child_error) {
  */
 int capture_set_fanout(pcap_t * pcap_handle, int mode, char * child_error, int group_id) {
   int set_fanout = 0;
-  if (mode == 0) return set_fanout;
+  if (mode == MODE_SINGLE_FILE || mode == MODE_MULTIPLE_FILES) return set_fanout;
   else {
 #ifdef __linux__
     set_fanout = pcap_set_fanout_linux(pcap_handle, 1, 0x8000, (uint16_t) group_id);
@@ -1468,7 +1473,7 @@ int capture_set_fanout(pcap_t * pcap_handle, int mode, char * child_error, int g
  */
 int capture_activate(pcap_t * pcap_handle, int mode, char * child_error) {
   int set_activate = 0;
-  if (mode == 0) return set_activate;
+  if (mode == MODE_SINGLE_FILE || mode == MODE_MULTIPLE_FILES) return set_activate;
   else {
     set_activate = pcap_activate(pcap_handle);
     if (set_activate != 0) {
@@ -1484,7 +1489,7 @@ int capture_activate(pcap_t * pcap_handle, int mode, char * child_error) {
  */
 int capture_set_timeout(pcap_t * pcap_handle, int mode, char * child_error) {
   int set_timeout = 0;
-  if (mode == 0) return set_timeout;
+  if (mode == MODE_SINGLE_FILE || mode == MODE_MULTIPLE_FILES) return set_timeout;
   else {
     set_timeout = pcap_set_timeout(pcap_handle, 1000);
     if (set_timeout != 0) {
@@ -1500,7 +1505,7 @@ int capture_set_timeout(pcap_t * pcap_handle, int mode, char * child_error) {
  */
 int capture_set_promisc(pcap_t * pcap_handle, int mode, char * child_error, int promisc) {
   int set_promisc = 0;
-  if (mode == 0) return set_promisc;
+  if (mode == MODE_SINGLE_FILE || mode == MODE_MULTIPLE_FILES) return set_promisc;
   else {
     set_promisc = pcap_set_promisc(pcap_handle, promisc);
     if (set_promisc != 0) {
@@ -1516,7 +1521,7 @@ int capture_set_promisc(pcap_t * pcap_handle, int mode, char * child_error, int 
  */
 int capture_set_snaplen(pcap_t * pcap_handle, int mode, char * child_error, unsigned snaplen) {
   int set_snaplen = 0;
-  if (mode == 0) return set_snaplen;
+  if (mode == MODE_SINGLE_FILE || mode == MODE_MULTIPLE_FILES) return set_snaplen;
   else {
     set_snaplen = pcap_set_snaplen(pcap_handle, snaplen);
     if (set_snaplen != 0) {
@@ -1600,7 +1605,7 @@ int capture_next(pcap_t * pcap_handle, struct nf_packet *nf_pkt, int decode_tunn
  * capture_stats: Get capture stats.
  */
 void capture_stats(pcap_t * pcap_handle, struct nf_stat *nf_statistics, unsigned mode) {
-  if (mode == 0) return;
+  if (mode == MODE_SINGLE_FILE || mode == MODE_MULTIPLE_FILES) return;
   else {
     struct pcap_stat statistics;
     int ret = pcap_stats(pcap_handle, &statistics);
@@ -1727,7 +1732,7 @@ void meter_free_flow(struct nf_flow *flow, uint8_t n_dissections, uint8_t splt, 
  * engine_version: return engine library version.
  */
 const char *engine_lib_version(void) {
-  return "6.5.1";
+  return "6.5.2";
 }
 
 /**

@@ -18,7 +18,7 @@ import platform
 import psutil
 from threading import Timer
 from collections import namedtuple
-from enum import Enum
+from enum import Enum, IntEnum
 
 
 class NFEvent(Enum):
@@ -27,6 +27,12 @@ class NFEvent(Enum):
     SOCKET_CREATE = -3
     SOCKET_REMOVE = -4
     BROWSER_REQUEST = -5
+
+
+class NFMode(IntEnum):
+    SINGLE_FILE = 0
+    INTERFACE = 1
+    MULTIPLE_FILES = 2
 
 
 InternalError = namedtuple('InternalError', ['id', 'message'])
@@ -58,6 +64,8 @@ def validate_rotate_files(n):
 def create_csv_file_path(path, source):
     """ file path creator """
     if path is None:
+        if type(source) == list:
+            return str(source[0]) + '.csv'
         return str(source) + '.csv'
     return path
 

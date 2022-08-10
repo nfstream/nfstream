@@ -29,14 +29,10 @@ with open(os.path.join(THIS_DIRECTORY, 'README.md'), encoding='utf-8') as f:
 
 install_requires = ['cffi>=1.15.0',
                     'psutil>=5.8.0',
-                    'dpkt>=1.9.7']
+                    'dpkt>=1.9.7',
+                    'numpy>=1.19.5']
 
-# This is mandatory to fix both issues with numpy using Accelerate backend on macos and pandas issues with PyPy
-if sys.platform == 'darwin':
-    install_requires.append("numpy<=1.18.5")
-else:
-    install_requires.append("numpy>=1.19.5")
-
+# This is mandatory to fix pandas issues with PyPy
 if platform.python_implementation() == 'PyPy':
     install_requires.append("pandas<=1.2.5")
 else:
@@ -66,7 +62,7 @@ cmdclass = {'bdist_wheel': bdist_wheel} if bdist_wheel is not None else dict()
 
 setup(
     name="nfstream",
-    version='6.5.1',
+    version='6.5.2',
     url='https://www.nfstream.org/',
     license='LGPLv3',
     description="A Flexible Network Data Analysis Framework",
@@ -89,7 +85,6 @@ setup(
         'Intended Audience :: Science/Research',
         'Intended Audience :: Developers',
         'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',

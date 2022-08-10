@@ -1,9 +1,9 @@
 id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
-0,7,459,TLS.Cloudflare,Web,1,2
-1,268,31882,TLS.DoH_DoT,Network,0,4
-2,785,529323,TLS.Cloudflare,Web,0,4
-3,23,5998,TLS.Cloudflare,Web,0,4
-4,23,5998,TLS.Cloudflare,Web,0,4
-5,35,9328,TLS.Cloudflare,Web,0,4
-6,22,5574,TLS.Cloudflare,Web,0,4
-7,22,5574,TLS.Cloudflare,Web,0,4
+0,7,459,TLS.Cloudflare,Web,0,6
+1,268,31882,TLS.DoH_DoT,Network,0,6
+2,785,529323,TLS.Cloudflare,Web,0,6
+3,23,5998,TLS.Cloudflare,Web,0,6
+4,23,5998,TLS.Cloudflare,Web,0,6
+5,35,9328,TLS.Cloudflare,Web,0,6
+6,22,5574,TLS.Cloudflare,Web,0,6
+7,22,5574,TLS.Cloudflare,Web,0,6

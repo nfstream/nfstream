@@ -25,8 +25,9 @@ from os.path import isfile
 from .meter import meter_workflow
 from .anonymizer import NFAnonymizer
 from .engine import is_interface
-from.plugin import NFPlugin
-from .utils import csv_converter, open_file, RepeatedTimer, update_performances, set_affinity, validate_flows_per_file
+from .plugin import NFPlugin
+from .utils import csv_converter, open_file, RepeatedTimer, update_performances, set_affinity
+from .utils import validate_flows_per_file, NFMode
 from .utils import create_csv_file_path, NFEvent, process_unify, validate_rotate_files
 from .system import system_socket_worflow, match_flow_conn, system_browser_workflow, RequestCache, browser_processes
 
@@ -35,6 +36,7 @@ class NFStreamer(object):
     streamer_id = 0  # class id generator
     glock = threading.Lock()
     is_windows = "windows" in platform.system().lower()
+
     """ Network Flow Streamer
 
     Examples:
@@ -46,6 +48,7 @@ class NFStreamer(object):
         >>> df = streamer.to_pandas()
 
     """
+
     def __init__(self,
                  source=None,
                  decode_tunnels=True,
@@ -67,7 +70,7 @@ class NFStreamer(object):
         with NFStreamer.glock:
             NFStreamer.streamer_id += 1
             self._idx = NFStreamer.streamer_id
-        self._mode = 0
+        self._mode = NFMode.SINGLE_FILE
         self.source = source
         self.decode_tunnels = decode_tunnels
         self.bpf_filter = bpf_filter
@@ -90,26 +93,38 @@ class NFStreamer(object):
         else:
             self._mp_context = get_context("fork")
 
-
     @property
     def source(self):
         return self._source
 
     @source.setter
     def source(self, value):
-        try:
-            value = str(os.fspath(value))
-        except TypeError:
-            raise ValueError("Please specify a pcap file path or a valid network interface name as source.")
-        if isfile(value):
-            self._mode = 0
-        else:
-            interface = is_interface(value)
-            if interface is not None:
-                self._mode = 1
-                value = interface
+        if type(value) == list:  # List of pcap files to consider as a single one.
+            if len(value) == 0:
+                raise ValueError("Please provide a non-empty list of sources.")
             else:
+                for i in range(len(value)):
+                    try:
+                        value[i] = str(os.fspath(value[i]))
+                        if not isfile(value[i]):
+                            raise TypeError
+                    except TypeError:
+                        raise ValueError("Invalid pcap file path at index: " + str(i) + ".")
+                self._mode = NFMode.MULTIPLE_FILES
+        else:
+            try:
+                value = str(os.fspath(value))
+            except TypeError:
                 raise ValueError("Please specify a pcap file path or a valid network interface name as source.")
+            if isfile(value):
+                self._mode = NFMode.SINGLE_FILE
+            else:
+                interface = is_interface(value)
+                if interface is not None:
+                    self._mode = NFMode.INTERFACE
+                    value = interface
+                else:
+                    raise ValueError("Please specify a pcap file path or a valid network interface name as source.")
         self._source = value
 
     @property
@@ -159,7 +174,7 @@ class NFStreamer(object):
     @idle_timeout.setter
     def idle_timeout(self, value):
         if not isinstance(value, int) or (isinstance(value, int) and
-                                          ((value < 0) or (value*1000) > 18446744073709551615)):  # max uint64_t
+                                          ((value < 0) or (value * 1000) > 18446744073709551615)):  # max uint64_t
             raise ValueError("Please specify a valid idle_timeout parameter (positive integer in seconds).")
         self._idle_timeout = value
 
@@ -170,7 +185,7 @@ class NFStreamer(object):
     @active_timeout.setter
     def active_timeout(self, value):
         if not isinstance(value, int) or (isinstance(value, int) and
-                                          ((value < 0) or (value*1000) > 18446744073709551615)):  # max uint64_t
+                                          ((value < 0) or (value * 1000) > 18446744073709551615)):  # max uint64_t
             raise ValueError("Please specify a valid active_timeout parameter (positive integer in seconds).")
         self._active_timeout = value
 
@@ -251,14 +266,14 @@ class NFStreamer(object):
         if c_cores is None:  # Patch for platforms returning None (https://github.com/giampaolo/psutil/issues/1078)
             c_cores = c_cpus
         if value == 0:
-            if platform.system() == "Linux" and self._mode == 1:
+            if platform.system() == "Linux" and self._mode == NFMode.INTERFACE:
                 self._n_meters = c_cpus - 1
             else:
                 if c_cpus >= c_cores:
                     if c_cpus == 2 * c_cores or c_cpus == c_cores:  # multi-thread or single threaded
                         self._n_meters = c_cores - 1
                     else:
-                        self._n_meters = int(divmod(c_cpus/2, 1)[0]) - 1
+                        self._n_meters = int(divmod(c_cpus / 2, 1)[0]) - 1
                 else:  # weird case, fallback on cpu count.
                     self._n_meters = c_cpus - 1
         else:
@@ -290,7 +305,7 @@ class NFStreamer(object):
     @system_visibility_mode.setter
     def system_visibility_mode(self, value):
         if isinstance(value, int) and value in [0, 1, 2]:
-            if self._mode == 0 and value > 0:
+            if self._mode == NFMode.SINGLE_FILE and value > 0:
                 print("WARNING: system_visibility_mode switched to 0 in offline capture "
                       "(available only for live capture)")
                 value = 0
@@ -363,8 +378,8 @@ class NFStreamer(object):
                                                              n_meters,
                                                              i,
                                                              self._mode,
-                                                             self.idle_timeout*1000,
-                                                             self.active_timeout*1000,
+                                                             self.idle_timeout * 1000,
+                                                             self.active_timeout * 1000,
                                                              self.accounting_mode,
                                                              self.udps,
                                                              self.n_dissections,
@@ -378,16 +393,16 @@ class NFStreamer(object):
                 meters[i].daemon = True  # demonize meter
                 meters[i].start()
             idx_generator = self._mp_context.Value('i', 0)
-            if self._mode == 1 and self.performance_report > 0:
+            if self._mode == NFMode.INTERFACE and self.performance_report > 0:
                 if platform.system() == "Linux":
                     rt = RepeatedTimer(self.performance_report, update_performances, performances, True, idx_generator)
                 else:
                     rt = RepeatedTimer(self.performance_report, update_performances, performances, False, idx_generator)
-            if self._mode == 1 and self.system_visibility_mode > 0:
+            if self._mode == NFMode.INTERFACE and self.system_visibility_mode > 0:
                 socket_listener = self._mp_context.Process(target=system_socket_worflow,
-                                                            args=(channel,
-                                                                  self.idle_timeout*1000,
-                                                                  self.system_visibility_poll_ms/1000,))
+                                                           args=(channel,
+                                                                 self.idle_timeout * 1000,
+                                                                 self.system_visibility_poll_ms / 1000,))
                 socket_listener.daemon = True  # demonize socket_listener
                 socket_listener.start()
                 if self.system_visibility_mode == 2:
@@ -397,7 +412,7 @@ class NFStreamer(object):
                     browser_listener.daemon = True  # demonize browser_listener
                     browser_listener.start()
             while True:
-                if self._mode == 1 and self.system_visibility_mode == 2:
+                if self._mode == NFMode.INTERFACE and self.system_visibility_mode == 2:
                     for browser in request_cache.keys():
                         request_cache[browser].scan()
                 try:
@@ -426,7 +441,7 @@ class NFStreamer(object):
                         else:  # NFEvent.FLOW
                             recv.id = idx_generator.value  # Unify ID
                             idx_generator.value = idx_generator.value + 1
-                            if self._mode == 1 and self.system_visibility_mode > 0:
+                            if self._mode == NFMode.INTERFACE and self.system_visibility_mode > 0:
                                 recv = match_flow_conn(conn_cache, recv)
                                 if self.system_visibility_mode == 2:
                                     if recv.system_process_name in browser_processes:
@@ -439,9 +454,9 @@ class NFStreamer(object):
             for i in range(n_meters):
                 if meters[i].is_alive():
                     meters[i].join()  # Join metering jobs
-            if self._mode == 1 and self.performance_report > 0:
+            if self._mode == NFMode.INTERFACE and self.performance_report > 0:
                 rt.stop()
-            if self._mode == 1 and self.system_visibility_mode > 0:
+            if self._mode == NFMode.INTERFACE and self.system_visibility_mode > 0:
                 socket_listener.terminate()
                 if self.system_visibility_mode == 2:
                     browser_listener.terminate()

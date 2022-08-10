@@ -1,5 +1,5 @@
 id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
-0,26,6101,TINC,VPN,0,4
-1,27,6910,TINC,VPN,0,4
-2,130,169516,TINC,VPN,0,3
-3,134,169764,TINC,VPN,0,3
+0,26,6101,TINC,VPN,0,6
+1,27,6910,TINC,VPN,0,6
+2,130,169516,TINC,VPN,0,5
+3,134,169764,TINC,VPN,0,5
