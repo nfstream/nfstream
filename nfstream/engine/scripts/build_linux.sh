@@ -27,40 +27,6 @@ build_libpcap() {
   echo ""
   }
 
-build_libgpgerror() {
-  echo ""
-  echo "---------------------------------------------------------------------------------------------------------------"
-  echo "Compiling libgpg-error"
-  echo "---------------------------------------------------------------------------------------------------------------"
-  cd libgpg-error
-  git config --global --add safe.directory $(realpath .) &&
-  ./autogen.sh
-  ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc --disable-nls
-  make
-  make DESTDIR=/tmp/nfstream_build install
-  make clean
-  cd ..
-  echo "---------------------------------------------------------------------------------------------------------------"
-  echo ""
-  }
-
-build_libgcrypt() {
-  echo ""
-  echo "---------------------------------------------------------------------------------------------------------------"
-  echo "Compiling libgcrypt"
-  echo "---------------------------------------------------------------------------------------------------------------"
-  cd libgcrypt
-  git config --global --add safe.directory $(realpath .) &&
-  ./autogen.sh
-  ./configure -enable-maintainer-mode --enable-static --enable-shared --with-pic --disable-doc CFLAGS="-I/tmp/nfstream_build/usr/local/include" LDFLAGS="-L/tmp/nfstream_build/usr/local/lib" --with-libgpg-error-prefix="/tmp/nfstream_build/usr/local"
-  make
-  make DESTDIR=/tmp/nfstream_build install
-  make clean
-  cd ..
-  echo "---------------------------------------------------------------------------------------------------------------"
-  echo ""
-  }
-
 build_libndpi() {
   echo ""
   echo "---------------------------------------------------------------------------------------------------------------"
@@ -72,7 +38,7 @@ build_libndpi() {
   ./autogen.sh
   CFLAGS="-I/tmp/nfstream_build/usr/local/include"
   LDFLAGS="-L/tmp/nfstream_build/usr/local/lib"
-  CFLAGS=${CFLAGS} LDFLAGS=${LDFLAGS} ./configure --with-local-libgcrypt && CFLAGS=${CFLAGS} LDFLAGS=${LDFLAGS} make
+  CFLAGS=${CFLAGS} LDFLAGS=${LDFLAGS} ./configure && CFLAGS=${CFLAGS} LDFLAGS=${LDFLAGS} make
   make DESTDIR=/tmp/nfstream_build install
   make clean
   cd ..
@@ -83,8 +49,6 @@ build_libndpi() {
 rm -rf /tmp/nfstream_build
 cd nfstream/engine/dependencies
 build_libpcap
-build_libgpgerror
-build_libgcrypt
 build_libndpi
 echo ""
 echo "---------------------------------------------------------------------------------------------------------------"

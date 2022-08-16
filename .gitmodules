@@ -6,11 +6,3 @@
 	path = nfstream/engine/dependencies/libpcap
 	url = https://github.com/tsnoam/libpcap
 	branch = fanout
-[submodule "nfstream/engine/dependencies/libgpg-error"]
-	path = nfstream/engine/dependencies/libgpg-error
-	url = https://github.com/gpg/libgpg-error
-	branch = libgpg-error-1.42
-[submodule "nfstream/engine/dependencies/libgcrypt"]
-	path = nfstream/engine/dependencies/libgcrypt
-	url = https://github.com/gpg/libgcrypt
-	branch = libgcrypt-1.8.8

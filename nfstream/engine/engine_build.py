@@ -80,8 +80,6 @@ if os.name != 'posix':  # Windows
         EXTRALINK_ARGS.append("{root}/usr/lib/w32api/libws2_32.a".format(root=ROOT))
 else:
     EXTRALINK_ARGS.append("{root}/tmp/nfstream_build/{usr}/lib/libpcap.a".format(root=ROOT, usr=USR_LOCAL))
-    EXTRALINK_ARGS.append("{root}/tmp/nfstream_build/{usr}/lib/libgcrypt.a".format(root=ROOT, usr=USR_LOCAL))
-    EXTRALINK_ARGS.append("{root}/tmp/nfstream_build/{usr}/lib/libgpg-error.a".format(root=ROOT, usr=USR_LOCAL))
 
 with open(convert_path("{root}/tmp/nfstream_build/lib_engine_cdefinitions.c".format(root=ROOT))) as engine_cdef:
     ENGINE_CDEF = engine_cdef.read()
