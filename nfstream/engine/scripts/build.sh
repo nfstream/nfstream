@@ -50,7 +50,7 @@ build_libpcap
 build_libndpi
 echo ""
 echo "---------------------------------------------------------------------------------------------------------------"
-echo "Prepare engine_cc"
+echo "Preprocessing engine_cc headers"
 echo "---------------------------------------------------------------------------------------------------------------"
 cd ..
 gcc -DNDPI_LIB_COMPILATION -DNDPI_CFFI_PREPROCESSING -DNDPI_CFFI_PREPROCESSING_EXCLUDE_PACKED -E -x c -P -C /tmp/nfstream_build/usr/include/ndpi/ndpi_typedefs.h > /tmp/nfstream_build/ndpi_cdefinitions.h

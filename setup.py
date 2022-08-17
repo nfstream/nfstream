@@ -49,20 +49,19 @@ else:
 class BuildPyCommand(build_py):
     """ Custom build command to compile lib_engine dependencies."""
     def run(self):
-        if not self.dry_run:
-            if os.name != 'posix':  # Windows case
-                os.environ["MSYSTEM"] = "MINGW64"
-                msys = os.getenv("MSYS2_PATH")
-                if msys is None:
-                    os.environ["MSYS2_PATH"] = "C:/msys64"
-                msys = os.getenv("MSYS2_PATH")
-                build_script_command = r"""'{}'""".format(str(BUILD_SCRIPT_PATH) + "_windows.sh")
-                subprocess.check_call(["{msys}/usr/bin/bash".format(msys=msys).replace("/", "\\"),
-                                       "-l",
-                                       build_script_command, ENGINE_PATH],
-                                      shell=True)
-            else:  # Linux, MacOS
-                subprocess.check_call([str(BUILD_SCRIPT_PATH) + ".sh"], shell=True)
+        if os.name != 'posix':  # Windows case
+            os.environ["MSYSTEM"] = "MINGW64"
+            msys = os.getenv("MSYS2_PATH")
+            if msys is None:
+                os.environ["MSYS2_PATH"] = "C:/msys64"
+            msys = os.getenv("MSYS2_PATH")
+            build_script_command = r"""'{}'""".format(str(BUILD_SCRIPT_PATH) + "_windows.sh")
+            subprocess.check_call(["{msys}/usr/bin/bash".format(msys=msys).replace("/", "\\"),
+                                   "-l",
+                                   build_script_command, ENGINE_PATH],
+                                  shell=True)
+        else:  # Linux, MacOS
+            subprocess.check_call([str(BUILD_SCRIPT_PATH) + ".sh"], shell=True)
         build_py.run(self)
 
 
