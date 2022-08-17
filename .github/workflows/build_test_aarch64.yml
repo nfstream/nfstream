@@ -32,12 +32,9 @@ jobs:
         ${{ matrix.python-version }} -m pip install --upgrade pip
         ${{ matrix.python-version }} -m pip install -r dev_requirements.txt
 
-    - name: Prepare
-      run: |
-        ${{ matrix.python-version }} prepare.py
-
     - name: Build
       run: |
+        ${{ matrix.python-version }} setup.py build
         ${{ matrix.python-version }} -m pip install .
 
     - name: Test and generate coverage report

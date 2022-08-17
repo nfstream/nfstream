@@ -1,5 +1,5 @@
 #-----------------------------------------------------------------------------------------------------------------------
-# build_linux.sh
+# build.sh
 # Copyright (C) 2019-22 - NFStream Developers
 # This file is part of NFStream, a Flexible Network Data Analysis Framework (https://www.nfstream.org/).
 # NFStream is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
@@ -17,7 +17,6 @@ build_libpcap() {
   echo "Compiling libpcap (fanout)"
   echo "---------------------------------------------------------------------------------------------------------------"
   cd libpcap
-  git config --global --add safe.directory $(realpath .) &&
   ./configure --enable-ipv6 --disable-universal --enable-dbus=no --without-libnl --disable-rdma
   make
   make DESTDIR=/tmp/nfstream_build install
@@ -33,7 +32,6 @@ build_libndpi() {
   echo "Compiling libndpi"
   echo "---------------------------------------------------------------------------------------------------------------"
   cd nDPI
-  git config --global --add safe.directory $(realpath .) &&
   gcc --version
   ./autogen.sh
   CFLAGS="-I/tmp/nfstream_build/usr/local/include"

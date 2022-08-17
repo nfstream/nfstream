@@ -50,17 +50,12 @@ jobs:
          wget --user ${{ secrets.NPCAP_OEM_USERNAME }} --password ${{ secrets.NPCAP_OEM_PASSWORD }} https://npcap.org/oem/dist/npcap-1.60-oem.exe
          Start-Process npcap-1.60-oem.exe -ArgumentList "/loopback_support=yes /winpcap_mode=yes /dot11_support=yes /S" -wait
 
-    - name: Prepare
+    - name: Build
       env:
         MSYSTEM: MINGW64
         MSYS2_PATH: D:/a/_temp/msys64
       run: |
-        python prepare.py
-
-    - name: Build
-      env:
-        MSYS2_PATH: D:/a/_temp/msys64
-      run: |
+        python setup.py build
         python -m pip install .
         python -m pip wheel --no-deps --wheel-dir=dist .
 

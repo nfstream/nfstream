@@ -10,4 +10,4 @@ setuptools>=57.4.0
 codecov>=2.1.12
 termcolor>=1.1.0
 tqdm>=4.63.0
-auditwheel>=5.1.2
+cibuildwheel==2.9.0

@@ -59,12 +59,9 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install -r dev_requirements.txt
 
-    - name: Prepare
-      run: |
-        python prepare.py
-
     - name: Build
       run: |
+        python setup.py build
         python -m pip install .
 
     - name: Test

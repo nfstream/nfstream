@@ -13,67 +13,76 @@ If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 """
 
+from setuptools.command.build_py import build_py
+from setuptools import setup
+import subprocess
+import platform
+import pathlib
 import sys
 import os
-import platform
-from setuptools import setup
+
+THIS_DIRECTORY = str(pathlib.Path(__file__).parent.resolve())
+
+BUILD_SCRIPT_PATH = str(pathlib.Path(__file__).parent.resolve().joinpath("nfstream").joinpath("engine")
+                        .joinpath("scripts").joinpath("build"))
+
+# Patched path as it is passed to msys2 bash
+ENGINE_PATH = str(pathlib.Path(__file__).parent.resolve().joinpath("nfstream").joinpath("engine")).replace("\\", "/")
 
 if (not sys.version_info[0] == 3) and (not sys.version_info[1] >= 6):
     sys.exit("Sorry, nfstream requires Python3.6+ versions.")
 
-THIS_DIRECTORY = os.path.abspath(os.path.dirname(__file__))
-
-
 with open(os.path.join(THIS_DIRECTORY, 'README.md'), encoding='utf-8') as f:
-    long_description = f.read()
+    LONG_DESCRIPTION = f.read()
 
-install_requires = ['cffi>=1.15.0',
+INSTALL_REQUIRES = ['cffi>=1.15.0',
                     'psutil>=5.8.0',
                     'dpkt>=1.9.7',
                     'numpy>=1.19.5']
 
-# This is mandatory to fix pandas issues with PyPy
-if platform.python_implementation() == 'PyPy':
-    install_requires.append("pandas<=1.2.5")
+if platform.python_implementation() == 'PyPy':  # This is mandatory to fix pandas issues with PyPy
+    INSTALL_REQUIRES.append("pandas<=1.2.5")
 else:
-    install_requires.append("pandas>=1.1.5")
-
-try:
-    from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
-
-    class bdist_wheel(_bdist_wheel):
-        def get_tag(self):
-            tag = _bdist_wheel.get_tag(self)
-            pypi_compliant_tag = list(tag)
-            if 'linux' == pypi_compliant_tag[2][0:5]:
-                pypi_compliant_tag[2] = pypi_compliant_tag[2].replace("linux", "manylinux1")
-            if pypi_compliant_tag[2] == "manylinux1_aarch64":
-                pypi_compliant_tag[2] = "manylinux2014_aarch64"
-            pypi_compliant_tag = tuple(pypi_compliant_tag)
-            return pypi_compliant_tag
+    INSTALL_REQUIRES.append("pandas>=1.1.5")
 
 
-except ImportError:
-    print('Warning: cannot import "wheel" package to build platform-specific wheel')
-    print('Install the "wheel" package to fix this warning')
-    bdist_wheel = None
+class BuildPyCommand(build_py):
+    """ Custom build command to compile lib_engine dependencies."""
+    def run(self):
+        if not self.dry_run:
+            if os.name != 'posix':  # Windows case
+                os.environ["MSYSTEM"] = "MINGW64"
+                msys = os.getenv("MSYS2_PATH")
+                if msys is None:
+                    os.environ["MSYS2_PATH"] = "C:/msys64"
+                msys = os.getenv("MSYS2_PATH")
+                build_script_command = r"""'{}'""".format(str(BUILD_SCRIPT_PATH) + "_windows.sh")
+                subprocess.check_call(["{msys}/usr/bin/bash".format(msys=msys).replace("/", "\\"),
+                                       "-l",
+                                       build_script_command, ENGINE_PATH],
+                                      shell=True)
+            else:  # Linux, MacOS
+                subprocess.check_call([str(BUILD_SCRIPT_PATH) + ".sh"], shell=True)
+        build_py.run(self)
 
-cmdclass = {'bdist_wheel': bdist_wheel} if bdist_wheel is not None else dict()
 
 setup(
+    cmdclass={
+        "build_py": BuildPyCommand
+    },
     name="nfstream",
     version='6.5.2',
     url='https://www.nfstream.org/',
     license='LGPLv3',
     description="A Flexible Network Data Analysis Framework",
-    long_description=long_description,
+    long_description=LONG_DESCRIPTION,
     long_description_content_type='text/markdown',
     author='Zied Aouini',
     author_email='aouinizied@gmail.com',
     packages=['nfstream', 'nfstream.plugins', 'nfstream.engine'],
     setup_requires=["cffi>=1.15.0"],
     cffi_modules=["nfstream/engine/engine_build.py:ffi_builder"],
-    install_requires=install_requires,
+    install_requires=INSTALL_REQUIRES,
     include_package_data=True,
     platforms=["Linux", "Mac OS-X", "Windows", "Unix"],
     classifiers=[
