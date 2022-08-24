@@ -14,6 +14,8 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from cffi import FFI
+import subprocess
+import pathlib
 import os
 
 
@@ -50,6 +52,23 @@ if os.name != 'posix':  # Windows case, we must take into account msys2 path tre
     USR_LOCAL = "mingw64"
 
 
+BUILD_SCRIPT_PATH = str(pathlib.Path(__file__).parent.resolve().joinpath("scripts").joinpath("build"))
+# Patched path as it is passed to msys2 bash
+ENGINE_PATH = str(pathlib.Path(__file__).parent.resolve()).replace("\\", "/")
+
+
+if os.name != 'posix':  # Windows case
+    os.environ["MSYSTEM"] = "MINGW64"
+    BUILD_CMD = r"""'{}'""".format(str(BUILD_SCRIPT_PATH) + "_windows.sh")
+    subprocess.check_call(["{msys}/usr/bin/bash".format(msys=ROOT).replace("/", "\\"),
+                           "-l",
+                           BUILD_CMD,
+                           ENGINE_PATH],
+                          shell=True)
+else:  # Linux, MacOS
+    subprocess.check_call([str(BUILD_SCRIPT_PATH) + ".sh"], shell=True)
+
+
 INCLUDE_DIRS = ["{root}/tmp/nfstream_build/{usr}/include/ndpi".format(root=ROOT, usr=USR),
                 "{root}/tmp/nfstream_build/{usr}/include".format(root=ROOT, usr=USR_LOCAL)]
 EXTRALINK_ARGS = ["{root}/tmp/nfstream_build/{usr}/lib/libndpi.a".format(root=ROOT, usr=USR)]
@@ -58,11 +77,11 @@ if os.name != 'posix':  # Windows
     INCLUDE_DIRS.append("{root}/tmp/nfstream_build/npcap/Include".format(root=ROOT))
     if os.path.exists(convert_path("{root}/{usr}/lib/libmingwex.a".format(root=ROOT, usr=USR))):
         EXTRALINK_ARGS.append("{root}/{usr}/lib/libmingwex.a".format(root=ROOT, usr=USR))
-    else: # best effort guess
+    else:  # best effort guess
         EXTRALINK_ARGS.append("{root}/{usr}/lib/libmingwex.a".format(root=ROOT, usr=USR+"/x86_64-w64-mingw32"))
     if os.path.exists(convert_path("{root}/{usr}/lib/libmsvcrt.a".format(root=ROOT, usr=USR))):
         EXTRALINK_ARGS.append("{root}/{usr}/lib/libmsvcrt.a".format(root=ROOT, usr=USR))
-    else: # best effort guess
+    else:  # best effort guess
         EXTRALINK_ARGS.append("{root}/{usr}/lib/libmsvcrt.a".format(root=ROOT, usr=USR+"/x86_64-w64-mingw32"))
     with open(convert_path("{root}/tmp/nfstream_build/gcc_version.in".format(root=ROOT))) as gcc_version_in:
         GCC_VERSION = gcc_version_in.read().split("\n")[0].split(")")[-1].strip()
@@ -76,7 +95,7 @@ if os.name != 'posix':  # Windows
     # And finally socket stuff
     if os.path.exists(convert_path("{root}/{usr}/lib/libws2_32.a".format(root=ROOT, usr=USR))):
         EXTRALINK_ARGS.append("{root}/{usr}/lib/libws2_32.a".format(root=ROOT, usr=USR))
-    else: # best effort guess
+    else:  # best effort guess
         EXTRALINK_ARGS.append("{root}/usr/lib/w32api/libws2_32.a".format(root=ROOT))
 else:
     EXTRALINK_ARGS.append("{root}/tmp/nfstream_build/{usr}/lib/libpcap.a".format(root=ROOT, usr=USR_LOCAL))

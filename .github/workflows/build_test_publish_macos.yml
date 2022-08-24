@@ -61,7 +61,6 @@ jobs:
 
     - name: Build
       run: |
-        python setup.py build
         python -m pip install .
         python -m pip wheel --no-deps --wheel-dir=dist .
 

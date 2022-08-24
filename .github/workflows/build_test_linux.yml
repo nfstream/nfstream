@@ -61,7 +61,6 @@ jobs:
 
     - name: Build
       run: |
-        python setup.py build
         python -m pip install .
 
     - name: Test

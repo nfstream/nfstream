@@ -36,7 +36,6 @@ jobs:
         sudo apt-get install libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison
         python3 -m pip install --upgrade pip
         python3 -m pip install -r dev_requirements.txt
-        python3 setup.py build
         python3 -m pip install .
 
     - name: Perform CodeQL Analysis

@@ -55,7 +55,6 @@ jobs:
         MSYSTEM: MINGW64
         MSYS2_PATH: D:/a/_temp/msys64
       run: |
-        python setup.py build
         python -m pip install .
         python -m pip wheel --no-deps --wheel-dir=dist .
 

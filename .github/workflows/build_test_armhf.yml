@@ -34,7 +34,6 @@ jobs:
 
     - name: Build
       run: |
-        ${{ matrix.python-version }} setup.py build
         ${{ matrix.python-version }} -m pip install .
 
     - name: Test and generate coverage report

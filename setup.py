@@ -13,21 +13,13 @@ If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 """
 
-from setuptools.command.build_py import build_py
 from setuptools import setup
-import subprocess
 import platform
 import pathlib
 import sys
 import os
 
 THIS_DIRECTORY = str(pathlib.Path(__file__).parent.resolve())
-
-BUILD_SCRIPT_PATH = str(pathlib.Path(__file__).parent.resolve().joinpath("nfstream").joinpath("engine")
-                        .joinpath("scripts").joinpath("build"))
-
-# Patched path as it is passed to msys2 bash
-ENGINE_PATH = str(pathlib.Path(__file__).parent.resolve().joinpath("nfstream").joinpath("engine")).replace("\\", "/")
 
 if (not sys.version_info[0] == 3) and (not sys.version_info[1] >= 6):
     sys.exit("Sorry, nfstream requires Python3.6+ versions.")
@@ -46,29 +38,7 @@ else:
     INSTALL_REQUIRES.append("pandas>=1.1.5")
 
 
-class BuildPyCommand(build_py):
-    """ Custom build command to compile lib_engine dependencies."""
-    def run(self):
-        if os.name != 'posix':  # Windows case
-            os.environ["MSYSTEM"] = "MINGW64"
-            msys = os.getenv("MSYS2_PATH")
-            if msys is None:
-                os.environ["MSYS2_PATH"] = "C:/msys64"
-            msys = os.getenv("MSYS2_PATH")
-            build_script_command = r"""'{}'""".format(str(BUILD_SCRIPT_PATH) + "_windows.sh")
-            subprocess.check_call(["{msys}/usr/bin/bash".format(msys=msys).replace("/", "\\"),
-                                   "-l",
-                                   build_script_command, ENGINE_PATH],
-                                  shell=True)
-        else:  # Linux, MacOS
-            subprocess.check_call([str(BUILD_SCRIPT_PATH) + ".sh"], shell=True)
-        build_py.run(self)
-
-
 setup(
-    cmdclass={
-        "build_py": BuildPyCommand
-    },
     name="nfstream",
     version='6.5.2',
     url='https://www.nfstream.org/',
