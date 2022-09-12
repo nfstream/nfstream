@@ -8,12 +8,12 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 6,2,576,HTTP.Facebook,SocialNetwork,0,6
 7,3,2311,HTTP,Streaming,0,6
 8,4,2735,HTTP,Streaming,0,6
-9,3,1337,HTTP.QQ,Chat,0,6
+9,3,1337,HTTP_Proxy.QQ,Chat,0,6
 10,65,45902,HTTP,Streaming,0,6
-11,2,641,Tencent.QQ,Chat,0,6
-12,3,983,HTTP.QQ,Chat,0,6
-13,2,877,Tencent.QQ,Chat,0,6
-14,2,943,Tencent.QQ,Chat,0,6
+11,2,641,HTTP_Proxy.QQ,Chat,0,6
+12,3,983,HTTP_Proxy.QQ,Chat,0,6
+13,2,877,HTTP_Proxy.QQ,Chat,0,6
+14,2,943,HTTP_Proxy.QQ,Chat,0,6
 15,2,1469,HTTP.Xiaomi,Web,0,6
 16,8,6032,HTTP,Streaming,0,6
 17,7,5048,HTTP,Streaming,0,6

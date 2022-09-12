@@ -60,7 +60,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 58,1,556,SSDP,System,0,6
 59,10,460,Unknown,Unspecified,0,0
 60,4,1412,SSDP,System,0,6
-61,7,1928,CiscoVPN.HTTP,Web,0,6
+61,7,1928,HTTP,Web,0,6
 62,11,2318,HTTP,Web,0,6
 63,1,556,SSDP,System,0,6
 64,1,556,SSDP,System,0,6

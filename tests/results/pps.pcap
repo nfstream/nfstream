@@ -105,4 +105,4 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 103,3,1632,HTTP.PPStream,Streaming,0,6
 104,542,710385,HTTP.PPStream,Streaming,0,6
 105,1,303,HTTP.PPStream,Streaming,0,6
-106,5,3309,HTTP,Download,0,6
+106,5,3309,HTTP.AVAST,Download,0,6

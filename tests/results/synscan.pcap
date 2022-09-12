@@ -191,7 +191,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 189,1,58,Unknown,Unspecified,0,0
 190,1,58,Unknown,Unspecified,0,0
 191,1,58,Unknown,Unspecified,0,0
-192,1,58,Unknown,Unspecified,0,0
+192,1,58,TiVoConnect,Network,1,1
 193,1,58,Unknown,Unspecified,0,0
 194,1,58,Unknown,Unspecified,0,0
 195,1,58,Unknown,Unspecified,0,0
@@ -220,7 +220,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 218,1,58,Unknown,Unspecified,0,0
 219,1,58,Unknown,Unspecified,0,0
 220,1,58,Unknown,Unspecified,0,0
-221,1,58,Unknown,Unspecified,0,0
+221,1,58,TiVoConnect,Network,1,1
 222,1,58,Unknown,Unspecified,0,0
 223,1,58,Unknown,Unspecified,0,0
 224,1,58,Unknown,Unspecified,0,0

@@ -1082,7 +1082,7 @@ static uint8_t flow_init_bidirectional_dissection(struct ndpi_detection_module_s
   }
   // First packet are dissected.
   flow->detected_protocol = ndpi_detection_process_packet(dissector, flow->ndpi_flow, packet->ip_content,
-                                                          packet->ip_content_len, packet->time);
+                                                          packet->ip_content_len, packet->time, NULL);
   if (sync) flow_bidirectional_dissection_collect_info(dissector, flow); // Then we collect possible infos.
   if ((flow->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) && (n_dissections == 1)) {
     // Not identified and we are limited to 1, we try to guess.
@@ -1105,7 +1105,7 @@ static void flow_update_bidirectional_dissection(struct ndpi_detection_module_st
                                && ndpi_extra_dissection_possible(dissector, flow->ndpi_flow));
     if (still_dissect) { // Go for it.
       flow->detected_protocol = ndpi_detection_process_packet(dissector, flow->ndpi_flow, packet->ip_content,
-                                                              packet->ip_content_len, packet->time);
+                                                              packet->ip_content_len, packet->time, NULL);
       if (sync) flow_bidirectional_dissection_collect_info(dissector, flow); // Collect information to flow structure.
     } else { // We are done -> Known and no extra dissection possible.
       flow->detection_completed = 1; // Detection end. (detection_completed is used to trigger copy on sync mode)
