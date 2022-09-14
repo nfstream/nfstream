@@ -40,7 +40,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.10.0
         env:
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
-          CIBW_BEFORE_ALL_LINUX: yum update -y && apt-get install autoconf automake libtool pkg-config gettext libjson-c-dev libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison
+          CIBW_BEFORE_ALL_LINUX: yum update -y && yum install autoconf automake libtool pkg-config gettext libjson-c-dev libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison
           CIBW_ARCHS_LINUX: auto aarch64 ppc64le s390x
 
       - uses: actions/upload-artifact@v3
