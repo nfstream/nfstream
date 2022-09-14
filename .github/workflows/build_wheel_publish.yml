@@ -15,13 +15,6 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install prerequisites
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install autoconf automake libtool pkg-config gettext libjson-c-dev
-          sudo apt-get install libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison
-
       - name: Set up QEMU
         if: runner.os == 'Linux'
         uses: docker/setup-qemu-action@v2
@@ -46,8 +39,10 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.10.0
         env:
-          # configure cibuildwheel to build native archs ('auto'), and some
-          # emulated ones
+          CIBW_BEFORE_ALL_LINUX: >
+            sudo apt-get update
+            sudo apt-get install autoconf automake libtool pkg-config gettext libjson-c-dev
+            sudo apt-get install libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison
           CIBW_ARCHS_LINUX: auto aarch64 ppc64le s390x
 
       - uses: actions/upload-artifact@v3
