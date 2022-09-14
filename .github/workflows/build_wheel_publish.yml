@@ -21,7 +21,7 @@ jobs:
         with:
           platforms: all
 
-      - name: Setup msys2
+      - name: Setup MSYS2 on Windows
         if: startsWith(runner.os, 'Windows')
         uses: msys2/setup-msys2@v2
         with:
@@ -29,7 +29,7 @@ jobs:
           update: true
           install: git unzip mingw-w64-x86_64-toolchain automake1.16 automake-wrapper autoconf libtool make mingw-w64-x86_64-json-c mingw-w64-x86_64-crt-git
 
-      - name: Install NPCAP OEM
+      - name: Install NPCAP OEM on Windows
         if: startsWith(runner.os, 'Windows')
         run: |
            choco install wget --no-progress
