@@ -41,6 +41,7 @@ jobs:
         env:
           MSYSTEM: MINGW64
           MSYS2_PATH: D:/a/_temp/msys64
+          CIBW_BUILD_FRONTEND: "build"
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
           CIBW_BEFORE_BUILD: python -m pip install --upgrade pip setuptools wheel
           CIBW_BEFORE_ALL_LINUX: yum update -y && yum install autoconf automake libtool pkgconfig gettext json-c-devel libusbx-devel dbus-glib-devel bluez-libs-devel libnl3-devel flex bison
