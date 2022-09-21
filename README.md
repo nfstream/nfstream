@@ -94,8 +94,11 @@ across experiments.
 <tr>
   <td><b>Code Coverage</b></td>
   <td>
+    <a href="https://oss-fuzz-build-logs.storage.googleapis.com/index.html#nfstream">
+    <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnfstream%2Foss-fuzz-status-endpoint%2Fmain%2Fstatus.json" alt="Coverage" />
+    </a>
     <a href="https://codecov.io/gh/nfstream/nfstream/">
-    <img src="https://img.shields.io/codecov/c/github/nfstream/nfstream?color=brightgreen&logo=codecov&style=for-the-badge" alt="Coverage" />
+    <img src="https://img.shields.io/codecov/c/github/nfstream/nfstream?color=brightgreen&logo=codecov&style=for-the-badge" alt="Fuzzing" />
     </a>
   </td>
 </tr>
