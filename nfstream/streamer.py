@@ -360,15 +360,19 @@ class NFStreamer(object):
         conn_cache = {}
         request_cache = {"chrome": RequestCache(timeout=(self.idle_timeout + self.active_timeout) * 1000),
                          "firefox": RequestCache(timeout=(self.idle_timeout + self.active_timeout) * 1000)}
+        # To avoid issues on PyPy on Windows (See https://foss.heptapod.net/pypy/pypy/-/issues/3488), All
+        # multiprocessing Value invocation must be performed before the call to Queue.
+        n_meters = self.n_meters
+        idx_generator = self._mp_context.Value('i', 0)
+        for i in range(n_meters):
+            performances.append([self._mp_context.Value('I', 0),
+                                 self._mp_context.Value('I', 0),
+                                 self._mp_context.Value('I', 0)])
         channel = self._mp_context.Queue(maxsize=32767)  # Backpressure strategy.
         #                                                  We set it to (2^15-1) to cope with OSX max semaphore value.
-        n_meters = self.n_meters
         group_id = os.getpid() + self._idx  # Used for fanout on Linux systems
         try:
             for i in range(n_meters):
-                performances.append([self._mp_context.Value('I', 0),
-                                     self._mp_context.Value('I', 0),
-                                     self._mp_context.Value('I', 0)])
                 meters.append(self._mp_context.Process(target=meter_workflow,
                                                        args=(self.source,
                                                              self.snapshot_length,
@@ -392,7 +396,6 @@ class NFStreamer(object):
                                                              self.system_visibility_mode,)))
                 meters[i].daemon = True  # demonize meter
                 meters[i].start()
-            idx_generator = self._mp_context.Value('i', 0)
             if self._mode == NFMode.INTERFACE and self.performance_report > 0:
                 if platform.system() == "Linux":
                     rt = RepeatedTimer(self.performance_report, update_performances, performances, True, idx_generator)
