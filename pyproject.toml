@@ -1,0 +1,3 @@
+[[tool.cibuildwheel.overrides]]
+select = "*-musllinux*"
+before-all = "apk add autoconf automake libtool pkgconfig gettext json-c-dev libusb-dev dbus-glib-dev bluez-libs bluez-dev libnl3-dev flex bison"
