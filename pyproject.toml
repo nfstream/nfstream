@@ -1,3 +1,5 @@
+[tool.cibuildwheel.linux]
+before-all = "yum -y update && yum -y groupinstall 'Development tools' && yum -y install git m4 pkgconfig autogen gcc-c++ autoconf libtool-ltdl glib2-devel automake libtool gettext json-c-devel libusbx-devel dbus-glib-devel bluez-libs-devel libnl3-devel flex bison && cp /usr/share/aclocal/pkg.m4 /usr/local/share/aclocal-1.16/"
 [[tool.cibuildwheel.overrides]]
 select = "*-musllinux*"
 before-all = "apk add autoconf automake libtool pkgconfig gettext json-c-dev libusb-dev dbus-glib-dev bluez-libs bluez-dev libnl3-dev flex bison"
