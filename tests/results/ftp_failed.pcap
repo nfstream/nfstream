@@ -1,2 +1,2 @@
 id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
-0,18,1700,FTP_CONTROL,Download,0,6
+0,18,1700,FTP_CONTROL,Download,0,210

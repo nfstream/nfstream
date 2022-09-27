@@ -398,7 +398,7 @@ class NFStreamTest(object):
             assert flow.application_name == 'TLS.Facebook'
             assert flow.application_category_name == 'SocialNetwork'
             assert flow.application_is_guessed == 0
-            assert flow.application_confidence == 6
+            assert flow.application_confidence == 210
             requested_server_name = flow.requested_server_name in ['facebook.com', 'www.facebook.com']
             assert int(requested_server_name) == 1
             client_fingerprint = flow.client_fingerprint in ['bfcc1a3891601edb4f137ab7ab25b840',
@@ -563,7 +563,7 @@ class NFStreamTest(object):
             assert flow.application_name == "TLS.Facebook"
             assert flow.application_category_name == "SocialNetwork"
             assert flow.application_is_guessed == 0
-            assert flow.application_confidence == 6
+            assert flow.application_confidence == 210
             assert flow.requested_server_name == "facebook.com"
             assert flow.client_fingerprint == "bfcc1a3891601edb4f137ab7ab25b840"
             assert flow.server_fingerprint == "2d1eb5817ece335c24904f516ad5da12"

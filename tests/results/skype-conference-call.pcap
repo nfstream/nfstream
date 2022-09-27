@@ -1,2 +1,2 @@
 id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
-0,200,39687,STUN.Skype_TeamsCall,VoIP,0,6
+0,200,39687,STUN.Skype_TeamsCall,VoIP,0,210
