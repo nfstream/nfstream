@@ -6,8 +6,6 @@ on:
   pull_request:
     branches:
     - master
-  release: # Trigger CI
-    types: [created]
 jobs:
   build_test_windows:
     name: ${{ matrix.python-version }} on ${{ matrix.os }}
