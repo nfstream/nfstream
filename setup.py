@@ -40,7 +40,7 @@ else:
 
 setup(
     name="nfstream",
-    version='6.5.2',
+    version='6.5.3',
     url='https://www.nfstream.org/',
     license='LGPLv3',
     description="A Flexible Network Data Analysis Framework",
