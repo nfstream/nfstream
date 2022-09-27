@@ -606,6 +606,10 @@ storage.
 ## Publications that use NFStream
 
 * [**A Hierarchical Architecture and Probabilistic Strategy for Collaborative Intrusion Detectionn**](https://ieeexplore.ieee.org/abstract/document/9705027)
+* [**Open-Source Framework for Encrypted Internet and Malicious Traffic Classification**](https://arxiv.org/pdf/2206.10144.pdf)
+* [**ConFlow: Contrast Network Flow Improving Class-Imbalanced Learning in Network Intrusion Detection**](https://www.researchsquare.com/article/rs-1572776/latest.pdf)
+* [**Continual Learning for Anomaly based Network Intrusion Detection**](https://ieeexplore.ieee.org/abstract/document/9668482)
+* [**A self-secure system based on software-defined network**](https://www.spiedigitallibrary.org/conference-proceedings-of-spie/12250/122500Z/A-self-secure-system-based-on-software-defined-network/10.1117/12.2639591.short?SSO=1)
 * [**Robust Variational Autoencoders and Normalizing Flows for Unsupervised Network Anomaly Detection**](https://hal.archives-ouvertes.fr/hal-03542451/document)
 * [**RADON: Robust Autoencoder for Unsupervised Anomaly Detection**](https://ieeexplore.ieee.org/document/9699174)
 * [**A Generic Machine Learning Approach for IoT Device Identification**](https://ieeexplore.ieee.org/document/9702983)
