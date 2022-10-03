@@ -22,7 +22,11 @@ from nfstream import NFPlugin
 
 class WFPlugin(NFPlugin):
     """Wavelet-based Features plugin. This plugin attempts to recreate wavelet-based features from [1].
-    Generated features will have names like these:
+    
+    Features are calculated from `ip_size`, that is binned on packet timestamps into timeseries
+    of len 2**`levels` (spanning `active_timeout`).
+
+    Generated features will have names like:
 
     - For forward traffic: `udps.f_p_k_*`, `udps.f_u_k_*`, `udps.f_sigma_k_*`, `udps.f_S_k_*`
     - For backward traffic: `udps.b_p_k_*`, `udps.b_u_k_*`, `udps.b_sigma_k_*`, `udps.b_S_k_*`
@@ -45,19 +49,29 @@ class WFPlugin(NFPlugin):
         assert hasattr(self, "levels")
         assert hasattr(self, "active_timeout")
 
+        # Pywt requires vector of length 2**level as input 
+        # set nbins to that number:
         self.nbins = 2**self.levels
-        self.bin_size = (
-            self.active_timeout / 2**self.levels * 1000
-        )  # Size of bin in miliseconds
-        flow.udps.forward = np.zeros(
-            self.nbins
-        ).tolist()  # List of length 2**N, where N is levels
+        
+        # Given `active_timeout` as max flow length calculate size of each bin:
+        self.bin_size = (self.active_timeout / 2**self.levels * 1000)
+
+        # Reserve a empty vectors for data i forward and backward direction
+        flow.udps.forward = np.zeros(self.nbins).tolist()  
         flow.udps.backward = np.zeros(self.nbins).tolist()
+        
+        # Save first packet timestamp that will be used to calc index
+        # of time series bin
         flow.udps.first_packet_timestamp = packet.time  # timestamp in ms
 
     def on_update(self, packet, flow):
+        # Calculate time in ms from first packet
         mstime_since_first_packet: int = packet.time - flow.udps.first_packet_timestamp
+        
+        # Calculate index of bin to put data into
         ibin, _ = divmod(mstime_since_first_packet, self.bin_size)
+
+        # Put ip_size into timeseries depending on direction
         if packet.direction == 0:
             # src to dest
             flow.udps.forward[int(ibin)] += packet.ip_size
@@ -84,6 +98,7 @@ class WFPlugin(NFPlugin):
         self.add_attrs_from_list(flow, b_sigma_k, "b_sigma_k")
         self.add_attrs_from_list(flow, b_S_k, "b_S_k")
 
+        # Delete temporary variables
         del flow.udps.forward
         del flow.udps.backward
         del flow.udps.first_packet_timestamp
@@ -118,10 +133,15 @@ class WFPlugin(NFPlugin):
 
         E_k = np.sum(np.power(np.abs(d), 2), axis=0)
         E_total = np.sum(E_k, axis=0)
-        p_k = E_k / (E_total + 1e-7)  # Relarive wavelet energy
+        
+        # Relarive wavelet energy
+        p_k = E_k / (E_total + 1e-7)  
         p_n = np.power(d, 2) / (E_k + 1e-7)
-        S_k = -np.sum(p_n * np.log(p_n + 1e-7), axis=0)  # Shannon entropy
+        # Shannon entropy
+        S_k = -np.sum(p_n * np.log(p_n + 1e-7), axis=0)  
+        # Absolute mean of coefficients
         u_k = np.mean(np.abs(d), axis=0)
+        # Std. deviation of coeficcients
         sigma_k = np.std(d, axis=0)
         return (
             p_k,
