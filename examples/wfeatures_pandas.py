@@ -19,7 +19,7 @@ import sys
 try:
     from nfstream.plugins.wfeatures import WFPlugin
 except ImportError:
-    print("Please install pywt: pip install pywt")
+    print("Please install pywt: pip install PyWavelets")
     sys.exit(1)
 
 
