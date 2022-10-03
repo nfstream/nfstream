@@ -98,7 +98,7 @@ class WFPlugin(NFPlugin):
 
     @staticmethod
     def calculate_wavelet_features(
-        data: npt.NDArray[np.float_], level: int = 12
+        data: npt.NDArray[np.float_], level
     ) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray]:
         """Calculate wavelet features based on [1].
 
@@ -114,7 +114,7 @@ class WFPlugin(NFPlugin):
             - `S_k` (Shannon entropy)
         """
         data = np.pad(data, (0, 2**level - len(data)))
-        d = np.array(pywt.swt(data, "haar", level=12, trim_approx=True)).T
+        d = np.array(pywt.swt(data, "haar", level=level, trim_approx=True)).T
 
         E_k = np.sum(np.power(np.abs(d), 2), axis=0)
         E_total = np.sum(E_k, axis=0)
