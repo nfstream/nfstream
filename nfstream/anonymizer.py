@@ -38,7 +38,7 @@ class NFAnonymizer(object):
 
     def process(self, flow):
         if self._enabled:
-            if self._cols_index is None: # First flow, we extract indexes of cols to anonymize.
+            if self._cols_index is None:  # First flow, we extract indexes of cols to anonymize.
                 self._cols_index = []
                 for col_name in self._cols_names:
                     keys = flow.keys()

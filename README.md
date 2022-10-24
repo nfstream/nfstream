@@ -66,11 +66,11 @@ across experiments.
     <a href="https://github.com/nfstream/nfstream/actions/workflows/build_test_linux.yml">
     <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_linux/master?logo=linux&style=for-the-badge&label=linux" alt="Linux WorkFlows" />
     </a>
-    <a href="https://github.com/nfstream/nfstream/actions/workflows/build_test_publish_macos.yml">
-    <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_publish_macos/master?logo=apple&style=for-the-badge&label=macos" alt="MacOS WorkFlows" />
+    <a href="https://github.com/nfstream/nfstream/actions/workflows/build_test_macos.yml">
+    <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_macos/master?logo=apple&style=for-the-badge&label=macos" alt="MacOS WorkFlows" />
     </a>
-    <a href="https://github.com/nfstream/nfstream/actions/workflows/build_test_publish_windows.yml">
-    <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_publish_windows/master?logo=windows&style=for-the-badge&label=windows" alt="Windows WorkFlows" />
+    <a href="https://github.com/nfstream/nfstream/actions/workflows/build_test_windows.yml">
+    <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_windows/master?logo=windows&style=for-the-badge&label=windows" alt="Windows WorkFlows" />
     </a>
     <a href="https://github.com/nfstream/nfstream/actions/workflows/build_test_aarch64.yml">
     <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_aarch64/master?logo=arm&style=for-the-badge&label=arm64" alt="ARM64 WorkFlows" />
@@ -188,8 +188,7 @@ my_streamer = NFStreamer(source="facebook.pcap", # or network interface
                          n_meters=0,
                          performance_report=0,
                          system_visibility_mode=0,
-                         system_visibility_poll_ms=100,
-                         system_visibility_extension_port=28314)
+                         system_visibility_poll_ms=100)
                          
 for flow in my_streamer:
     print(flow)  # print it.

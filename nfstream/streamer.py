@@ -29,7 +29,10 @@ from .plugin import NFPlugin
 from .utils import csv_converter, open_file, RepeatedTimer, update_performances, set_affinity
 from .utils import validate_flows_per_file, NFMode
 from .utils import create_csv_file_path, NFEvent, process_unify, validate_rotate_files
-from .system import system_socket_worflow, match_flow_conn, system_browser_workflow, RequestCache, browser_processes
+from .system import system_socket_worflow, match_flow_conn
+# Experimental browser feature -----------------------------------------------------------------------------------------
+from .browser import system_browser_workflow, RequestCache, browser_processes
+# ----------------------------------------------------------------------------------------------------------------------
 
 
 class NFStreamer(object):
@@ -66,7 +69,7 @@ class NFStreamer(object):
                  performance_report=0,
                  system_visibility_mode=0,
                  system_visibility_poll_ms=100,
-                 system_visibility_extension_port=28314):
+                 system_visibility_extension_port=28314):  # Experimental browser feature
         with NFStreamer.glock:
             NFStreamer.streamer_id += 1
             self._idx = NFStreamer.streamer_id
@@ -87,7 +90,7 @@ class NFStreamer(object):
         self.performance_report = performance_report
         self.system_visibility_mode = system_visibility_mode
         self.system_visibility_poll_ms = system_visibility_poll_ms
-        self.system_visibility_extension_port = system_visibility_extension_port
+        self.system_visibility_extension_port = system_visibility_extension_port  # Experimental browser feature
         if NFStreamer.is_windows:
             self._mp_context = get_context("spawn")
         else:
@@ -315,7 +318,7 @@ class NFStreamer(object):
             raise ValueError("Please specify a valid system_visibility_mode parameter\n"
                              "0: disable\n"
                              "1: process information\n"
-                             "2: process information with browser extension\n"
+                             "2: process information with browser extension (experimental)\n"
                              "[Available only for live capture on the system generating the traffic]")
         self._system_visibility_mode = value
 
@@ -323,6 +326,7 @@ class NFStreamer(object):
     def system_visibility_poll_ms(self):
         return self._system_visibility_poll_ms
 
+    # Experimental browser feature -------------------------------------------------------------------------------------
     @system_visibility_poll_ms.setter
     def system_visibility_poll_ms(self, value):
         if isinstance(value, int) and value >= 0:
@@ -344,6 +348,7 @@ class NFStreamer(object):
             raise ValueError("Please specify a valid system_visibility_extension_port parameter "
                              "(positive integer in [0:65525]")
         self._system_visibility_extension_port = value
+    # ------------------------------------------------------------------------------------------------------------------
 
     def __iter__(self):
         set_affinity(0)  # we pin streamer to core 0 as it's the less intensive task and several services runs
@@ -358,8 +363,12 @@ class NFStreamer(object):
         socket_listener = None
         browser_listener = None
         conn_cache = {}
+
+        # Experimental browser feature ---------------------------------------------------------------------------------
         request_cache = {"chrome": RequestCache(timeout=(self.idle_timeout + self.active_timeout) * 1000),
                          "firefox": RequestCache(timeout=(self.idle_timeout + self.active_timeout) * 1000)}
+        # --------------------------------------------------------------------------------------------------------------
+
         # To avoid issues on PyPy on Windows (See https://foss.heptapod.net/pypy/pypy/-/issues/3488), All
         # multiprocessing Value invocation must be performed before the call to Queue.
         n_meters = self.n_meters
@@ -408,16 +417,20 @@ class NFStreamer(object):
                                                                  self.system_visibility_poll_ms / 1000,))
                 socket_listener.daemon = True  # demonize socket_listener
                 socket_listener.start()
+                # Experimental browser feature -------------------------------------------------------------------------
                 if self.system_visibility_mode == 2:
                     browser_listener = self._mp_context.Process(target=system_browser_workflow,
                                                                 args=(channel,
                                                                       self.system_visibility_extension_port,))
                     browser_listener.daemon = True  # demonize browser_listener
                     browser_listener.start()
+                # ------------------------------------------------------------------------------------------------------
             while True:
+                # Experimental browser feature -------------------------------------------------------------------------
                 if self._mode == NFMode.INTERFACE and self.system_visibility_mode == 2:
                     for browser in request_cache.keys():
                         request_cache[browser].scan()
+                # ------------------------------------------------------------------------------------------------------
                 try:
                     recv = channel.get()
                     if recv is None:  # termination and stats
@@ -434,6 +447,7 @@ class NFStreamer(object):
                             conn_cache[recv.key] = [recv.process_name, recv.process_pid]
                         elif recv.id == NFEvent.SOCKET_REMOVE:
                             del conn_cache[recv.key]
+                        # Experimental browser feature -----------------------------------------------------------------
                         elif recv.id == NFEvent.BROWSER_REQUEST:
                             try:
                                 requests = request_cache[recv.browser][recv.remote_ip]
@@ -441,14 +455,17 @@ class NFStreamer(object):
                                 request_cache[recv.browser][recv.remote_ip] = requests
                             except KeyError:
                                 request_cache[recv.browser][recv.remote_ip] = [recv]
+                        # ----------------------------------------------------------------------------------------------
                         else:  # NFEvent.FLOW
                             recv.id = idx_generator.value  # Unify ID
                             idx_generator.value = idx_generator.value + 1
                             if self._mode == NFMode.INTERFACE and self.system_visibility_mode > 0:
                                 recv = match_flow_conn(conn_cache, recv)
+                                # Experimental browser feature ---------------------------------------------------------
                                 if self.system_visibility_mode == 2:
                                     if recv.system_process_name in browser_processes:
                                         recv = request_cache[process_unify(recv.system_process_name)].match_flow(recv)
+                                # --------------------------------------------------------------------------------------
                             yield recv
                 except KeyboardInterrupt:
                     for i in range(n_meters):  # We break workflow loop
@@ -461,8 +478,10 @@ class NFStreamer(object):
                 rt.stop()
             if self._mode == NFMode.INTERFACE and self.system_visibility_mode > 0:
                 socket_listener.terminate()
+                # Experimental browser feature -------------------------------------------------------------------------
                 if self.system_visibility_mode == 2:
                     browser_listener.terminate()
+                # ------------------------------------------------------------------------------------------------------
             channel.close()  # We close the queue
             channel.join_thread()  # and we join its thread
             if child_error is not None:
