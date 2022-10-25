@@ -17,7 +17,8 @@ jobs:
         python-version: ["pypy-3.9",
                          "pypy-3.8",
                          "pypy-3.7",
-                         "3.11",
+                         # "3.11",
+                         # Not available yet.
                          "3.10",
                          "3.9",
                          "3.8",
