@@ -39,7 +39,7 @@ jobs:
            Start-Process npcap-1.60-oem.exe -ArgumentList "/loopback_support=yes /winpcap_mode=yes /dot11_support=yes /S" -wait
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.10.1
+        uses: pypa/cibuildwheel@v2.11.1
         env:
           MSYSTEM: MINGW64
           MSYS2_PATH: D:/a/_temp/msys64
