@@ -243,6 +243,20 @@ class NFStreamTest(object):
         print("{}\t: {}".format(".test_n_meters_parameter".ljust(60, ' '), colored('OK', 'green')))
 
     @staticmethod
+    def test_max_nflows_parameter():
+        print("\n----------------------------------------------------------------------")
+        n_exceptions = 0
+        max_nflows = ["yes", -1]
+        for x in max_nflows:
+            try:
+                NFStreamer(source=os.path.join("tests", "pcaps", "google_ssl.pcap"),
+                           max_nflows=x)
+            except ValueError:
+                n_exceptions += 1
+        assert n_exceptions == 2
+        print("{}\t: {}".format(".test_max_nflows_parameter".ljust(60, ' '), colored('OK', 'green')))
+
+    @staticmethod
     def test_performance_report_parameter():
         print("\n----------------------------------------------------------------------")
         n_exceptions = 0
@@ -571,6 +585,17 @@ class NFStreamTest(object):
             assert flow.content_type == ""
         print("{}\t: {}".format(".test_multi_files".ljust(60, ' '), colored('OK', 'green')))
 
+    @staticmethod
+    def test_max_nflows():
+        print("\n----------------------------------------------------------------------")
+        df = NFStreamer(source=os.path.join("tests", "pcaps", "skype.pcap")).to_pandas()
+        assert df.shape[0] == 294
+        df = NFStreamer(source=os.path.join("tests", "pcaps", "skype.pcap"), max_nflows=100).to_pandas()
+        assert df.shape[0] == 100
+        df = NFStreamer(source=os.path.join("tests", "pcaps", "skype.pcap"), max_nflows=0).to_pandas()
+        assert df.shape[0] == 294
+        print("{}\t: {}".format(".test_max_nflows".ljust(60, ' '), colored('OK', 'green')))
+
 
 if __name__ == '__main__':
     NFStreamTest.test_source_parameter()
@@ -589,6 +614,7 @@ if __name__ == '__main__':
     NFStreamTest.test_statistical_analysis_parameter()
     NFStreamTest.test_splt_analysis_parameter()
     NFStreamTest.test_n_meters_parameter()
+    NFStreamTest.test_max_nflows_parameter()
     NFStreamTest.test_performance_report_parameter()
     NFStreamTest.test_expiration_management()
     NFStreamTest.test_tunnel_decoding()
@@ -601,3 +627,4 @@ if __name__ == '__main__':
     NFStreamTest.test_dhcp()
     NFStreamTest.test_mdns()
     NFStreamTest.test_multi_files()
+    NFStreamTest.test_max_nflows()

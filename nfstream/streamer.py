@@ -66,6 +66,7 @@ class NFStreamer(object):
                  statistical_analysis=False,
                  splt_analysis=0,
                  n_meters=0,
+                 max_nflows=0,
                  performance_report=0,
                  system_visibility_mode=0,
                  system_visibility_poll_ms=100,
@@ -87,6 +88,7 @@ class NFStreamer(object):
         self.statistical_analysis = statistical_analysis
         self.splt_analysis = splt_analysis
         self.n_meters = n_meters
+        self.max_nflows = max_nflows
         self.performance_report = performance_report
         self.system_visibility_mode = system_visibility_mode
         self.system_visibility_poll_ms = system_visibility_poll_ms
@@ -289,6 +291,17 @@ class NFStreamer(object):
             self._n_meters = 1
 
     @property
+    def max_nflows(self):
+        return self._max_nflows
+
+    @max_nflows.setter
+    def max_nflows(self, value):
+        if isinstance(value, int) and value >= 0:
+            self._max_nflows = value - 1
+        else:
+            raise ValueError("Please specify a valid max_nflows parameter (>=0).")
+
+    @property
     def performance_report(self):
         return self._performance_report
 
@@ -467,6 +480,8 @@ class NFStreamer(object):
                                         recv = request_cache[process_unify(recv.system_process_name)].match_flow(recv)
                                 # --------------------------------------------------------------------------------------
                             yield recv
+                            if recv.id == self.max_nflows:
+                                raise KeyboardInterrupt  # We reached the maximum flows count defined by the user.
                 except KeyboardInterrupt:
                     for i in range(n_meters):  # We break workflow loop
                         meters[i].terminate()

@@ -186,6 +186,7 @@ my_streamer = NFStreamer(source="facebook.pcap", # or network interface
                          statistical_analysis=False,
                          splt_analysis=0,
                          n_meters=0,
+                         max_nflows=0,
                          performance_report=0,
                          system_visibility_mode=0,
                          system_visibility_poll_ms=100)
