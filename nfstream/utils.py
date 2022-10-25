@@ -153,4 +153,4 @@ def set_affinity(idx):
         c_cpus = psutil.cpu_count(logical=True)
         temp = list(chunks(range(c_cpus), 2))
         x = len(temp)
-        psutil.Process().cpu_affinity(list(temp[idx%x]))
+        psutil.Process().cpu_affinity(list(temp[idx % x]))
