@@ -1,6 +1,6 @@
 id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
-0,21,4828,TLS.FortiClient,VPN,0,210
-1,25,8421,TLS.FortiClient,VPN,0,200
-2,24,5457,TLS.FortiClient,VPN,0,200
-3,29,9234,TLS.FortiClient,VPN,0,200
-4,1901,402991,TLS.FortiClient,VPN,0,200
+0,21,4828,TLS.FortiClient,VPN,0,6
+1,25,8421,TLS.FortiClient,VPN,0,5
+2,24,5457,TLS.FortiClient,VPN,0,5
+3,29,9234,TLS.FortiClient,VPN,0,5
+4,1901,402991,TLS.FortiClient,VPN,0,5

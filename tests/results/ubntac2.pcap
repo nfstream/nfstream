@@ -1,9 +1,9 @@
 id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
-0,1,217,UBNTAC2,Network,0,210
-1,1,217,UBNTAC2,Network,0,210
-2,1,217,UBNTAC2,Network,0,210
-3,1,217,UBNTAC2,Network,0,210
-4,1,217,UBNTAC2,Network,0,210
-5,1,217,UBNTAC2,Network,0,210
-6,1,217,UBNTAC2,Network,0,210
-7,1,217,UBNTAC2,Network,0,210
+0,1,217,UBNTAC2,Network,0,6
+1,1,217,UBNTAC2,Network,0,6
+2,1,217,UBNTAC2,Network,0,6
+3,1,217,UBNTAC2,Network,0,6
+4,1,217,UBNTAC2,Network,0,6
+5,1,217,UBNTAC2,Network,0,6
+6,1,217,UBNTAC2,Network,0,6
+7,1,217,UBNTAC2,Network,0,6

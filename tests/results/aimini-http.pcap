@@ -1,5 +1,5 @@
 id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
-0,72,64766,HTTP.Aimini,Download,0,210
-1,18,4234,HTTP.Aimini,Download,0,210
-2,30,15304,HTTP.Aimini,Download,0,210
-3,13,2418,HTTP.Aimini,Download,0,210
+0,72,64766,HTTP.Aimini,Download,0,6
+1,18,4234,HTTP.Aimini,Download,0,6
+2,30,15304,HTTP.Aimini,Download,0,6
+3,13,2418,HTTP.Aimini,Download,0,6

@@ -1,5 +1,5 @@
 id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
-0,6,3706,RPC,RPC,0,210
-1,6,2464,RPC,RPC,0,210
-2,2,348,RPC,RPC,0,210
-3,2,348,RPC,RPC,0,210
+0,6,3706,RPC,RPC,0,6
+1,6,2464,RPC,RPC,0,6
+2,2,348,RPC,RPC,0,6
+3,2,348,RPC,RPC,0,6
