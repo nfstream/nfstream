@@ -1732,7 +1732,7 @@ void meter_free_flow(struct nf_flow *flow, uint8_t n_dissections, uint8_t splt, 
  * engine_version: return engine library version.
  */
 const char *engine_lib_version(void) {
-  return "6.5.3";
+  return "6.5.4";
 }
 
 /**
