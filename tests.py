@@ -177,19 +177,6 @@ class NFStreamTest(object):
         print("{}\t: {}".format(".test_system_visibility_mode_parameter".ljust(60, ' '), colored('OK', 'green')))
 
     @staticmethod
-    def test_system_visibility_extension_port():
-        print("\n----------------------------------------------------------------------")
-        n_exceptions = 0
-        system_visibility_mode = ["yes", -1, 88888]
-        for x in system_visibility_mode:
-            try:
-                NFStreamer(source=os.path.join("tests", "pcaps", "google_ssl.pcap"), system_visibility_extension_port=x)
-            except ValueError:
-                n_exceptions += 1
-        assert n_exceptions == 3
-        print("{}\t: {}".format(".test_system_visibility_extension_port".ljust(60, ' '), colored('OK', 'green')))
-
-    @staticmethod
     def test_system_visibility_poll_ms():
         print("\n----------------------------------------------------------------------")
         n_exceptions = 0
@@ -609,7 +596,6 @@ if __name__ == '__main__':
     NFStreamTest.test_udps_parameter()
     NFStreamTest.test_n_dissections_parameter()
     NFStreamTest.test_system_visibility_mode_parameter()
-    NFStreamTest.test_system_visibility_extension_port()
     NFStreamTest.test_system_visibility_poll_ms()
     NFStreamTest.test_statistical_analysis_parameter()
     NFStreamTest.test_splt_analysis_parameter()
