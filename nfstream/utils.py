@@ -39,7 +39,7 @@ InternalError = namedtuple('InternalError', ['id', 'message'])
 
 
 def process_unify(proc_name):
-    """ unify browser process names across platforms """
+    """ Unify browser process names across platforms """
     proc_name = proc_name.lower()
     if proc_name == "chrome":
         proc_name = "chrome"
@@ -50,19 +50,19 @@ def process_unify(proc_name):
 
 
 def validate_flows_per_file(n):
-    """ simple parameter validator """
+    """ Simple parameter validator """
     if not isinstance(n, int) or isinstance(n, int) and n < 0:
         raise ValueError("Please specify a valid flows_per_file parameter (>= 0).")
 
 
 def validate_rotate_files(n):
-    """ simple parameter validator """
+    """ Simple parameter validator """
     if not isinstance(n, int) or isinstance(n, int) and n < 0:
         raise ValueError("Please specify a valid rotate_files parameter (>= 0).")
 
 
 def create_csv_file_path(path, source):
-    """ file path creator """
+    """ File path creator """
     if path is None:
         if type(source) == list:
             return str(source[0]) + '.csv'
@@ -71,7 +71,7 @@ def create_csv_file_path(path, source):
 
 
 def csv_converter(values):
-    """ convert non numeric values to using their __str__ method and ensure quoting """
+    """ Convert non numeric values to string using their __str__ method and ensure proper quoting """
     for idx, value in enumerate(values):
         if not isinstance(value, float) and not isinstance(value, int):
             if value is None:
@@ -83,7 +83,7 @@ def csv_converter(values):
 
 
 def open_file(path, chunked, chunk_idx, rotate_files):
-    """ File opener taking ckunk mode into consideration"""
+    """ File opener taking chunk mode into consideration """
     if not chunked:
         return open(path, 'wb')
     else:
@@ -141,10 +141,10 @@ class RepeatedTimer(object):
         self.is_running = False
 
 
-def chunks(l, n):
-    """ create list of chunks of size n from range l"""
+def chunks(m, n):
+    """ create list of chunks of size n from range m"""
     n = max(1, n)
-    return (l[i:i+n] for i in range(0, len(l), n))
+    return (m[i:i+n] for i in range(0, len(m), n))
 
 
 def set_affinity(idx):

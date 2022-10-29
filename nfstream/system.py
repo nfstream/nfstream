@@ -28,6 +28,12 @@ NFSocket = namedtuple('NFSocket', ['id',
 
 
 class ConnCache(OrderedDict):
+    """ LRU Connections Cache
+    The ConnCache object is used to cache connections entries such as MRU entries are kept on the end and LRU entries
+    will be at the start. Note that we use OrderedDict which leverages classical python dict combined with a doubly
+    linked list with sentinel nodes to track order.
+    By doing so, we can access in an efficient way idle connections entries that need to expired based on a timeout.
+    """
     def __init__(self, channel, timeout, *args, **kwds):
         self.channel = channel
         self.timeout = timeout + 5000
@@ -68,6 +74,7 @@ class ConnCache(OrderedDict):
 
 
 def simplify_protocol(protocol):
+    """ Transform protocol IDs to 3 unique values: 6 for TCP, 17 for UDP and 0 for others """
     if protocol == 6:
         return protocol
     if protocol == 17:
@@ -76,7 +83,7 @@ def simplify_protocol(protocol):
 
 
 def get_conn_key_from_flow(f):
-    """ compute a conn key from NFlow object attributes """
+    """ Compute a conn key from NFlow object attributes """
     return get_flow_key(f.src_ip,
                         f.src_port,
                         f.dst_ip,
@@ -86,7 +93,7 @@ def get_conn_key_from_flow(f):
 
 
 def match_flow_conn(conn_cache, flow):
-    """ match a flow with a connection entry based on a shared key"""
+    """ Match a flow with a connection entry based on a shared key"""
     if len(conn_cache) > 0:
         flow_key = get_conn_key_from_flow(flow)
         try:
@@ -116,6 +123,18 @@ def system_socket_worflow(channel, idle_timeout, poll_period):
         while True:
             current_time = time.time() * 1000
             for conn in net_connections(kind='inet'):
+                # IMPORTANT: Rationale behind the usage of an active polling approach(net_connections call):
+                # System process visibility is intended to generate the most accurate ground truth for traffic
+                # classification research experiments, as reported in the literature[1].Thus, it must be a
+                # cross-platform approach that works the same on Linux, macOS, and Windows (Gaming traffic
+                # classification challenges).
+                # On Linux, things can be done more elegantly using eBPF tracing exec calls or NetLink monitoring.
+                # However, this will requires specific implementation for Linux versus Windows and proper handling of
+                # old kernel versions. We prefer to keep it out of the nfstream codebase.
+                # As we use net_connections from psutil (https://github.com/giampaolo/psutil) Python package, we should
+                # think about improving how it is handled within psutil package and share such an improvement with all
+                # the community.
+                # [1]: http://tomasz.bujlow.com/publications/2012_journal_TELFOR.pdf
                 key = get_conn_key(conn)
                 if key is not None:  # We succeeded to obtain a key.
                     if key not in conn_cache:  # Create and send
@@ -125,6 +144,9 @@ def system_socket_worflow(channel, idle_timeout, poll_period):
                     else:  # update time
                         conn_cache[key] = current_time
             conn_cache.scan(current_time)
+
             time.sleep(poll_period)  # Sleep with configured poll period
+            # 0 will ensure the maximum active polling capacity and accuracy while relaxing it will results is less
+            # intensive CPU Core usage and less accuracy. A tradeoff as always must be decided.
     except KeyboardInterrupt:
         return

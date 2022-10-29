@@ -585,6 +585,12 @@ class NFStreamTest(object):
 
 
 if __name__ == '__main__':
+
+    # IMPORTANT: As NFStream input is network bytes, we rely on fuzzing techniques to ensure robustness.
+    # Fuzzing testing is part of Google OSS-Fuzz project.
+    # Github: https://github.com/google/oss-fuzz/tree/master/projects/nfstream
+    # Build status: https://oss-fuzz-build-logs.storage.googleapis.com/index.html#nfstream
+
     NFStreamTest.test_source_parameter()
     NFStreamTest.test_decode_tunnels_parameter()
     NFStreamTest.test_bpf_filter_parameter()

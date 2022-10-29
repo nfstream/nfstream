@@ -104,7 +104,7 @@ class NFlow(object):
         It is a slotted class for performances reasons, and slots are initiated according to NFStream detected mode.
         If nfstream is used with extension, we refer to it as sync mode, and we need to update slots from C structure.
         If not, nfstream will compute all configured metrics within C structure and update it only at init and expire.
-        Such logic allows us to provide maximum performances when running withour extensions. When set with extension
+        Such logic allows us to provide maximum performances when running without extensions. When set with extension
         we pay the cost of flexibility with attributes access/update.
 
     """

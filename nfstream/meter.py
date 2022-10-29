@@ -31,14 +31,11 @@ FLOW_KEY = "{}:{}:{}:{}:{}:{}:{}:{}:{}"
 
 
 class NFCache(OrderedDict):
-    """ Least recently updated dictionary
-
-    A Cache provides fast and efficient way of retrieving data.
-    The NFCache object is used to cache flow records such that least
-    recently accessed flow entries are kept on the top(end) and and least
-    used will be at the bottom. This way, it will be faster and efficient
-    to update flow records.
-
+    """ LRU Flow Cache
+    The NFCache object is used to cache flows entries such as MRU entries are kept on the end and LRU entries
+    will be at the start. Note that we use OrderedDict which leverages classical python dict combined with a doubly
+    linked list with sentinel nodes to track order.
+    By doing so, we can access in an efficient way idle connections entries that need to expired based on a timeout.
     """
     def __init__(self, *args, **kwds):
         super().__init__(*args, **kwds)
