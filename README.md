@@ -600,10 +600,10 @@ The following organizations supported NFStream:
 storage.
 * [**ntop**](https://www.ntop.org/): Technical support of [**nDPI**][ndpi] integration.
 * [**The Nmap Project**](https://nmap.org): Technical support of [**Npcap**][npcap] integration (Windows CI).
-* [**Google OSS Fuzz**](https://google.github.io/oss-fuzz/getting-started/accepting-new-projects/): Continious fuzzing 
+* [**Google OSS Fuzz**](https://google.github.io/oss-fuzz/): Continious fuzzing 
 testing support of NFStream project.
 
-[![sah]](https://www.softathome.com/) [![tuke]](https://www.tuke.sk/) [![ntop]](https://www.ntop.org/) [![nmap]](https://nmap.org/)
+[![sah]](https://www.softathome.com/) [![tuke]](https://www.tuke.sk/) [![ntop]](https://www.ntop.org/) [![nmap]](https://nmap.org/) [![google]](https://google.github.io/oss-fuzz/)
 
 ## Publications that use NFStream
 
