@@ -146,7 +146,7 @@ feature within a few lines of Python.
 * **Machine Learning oriented:** NFStream aims to make Machine Learning Approaches for network traffic management 
 reproducible and deployable. By using NFStream as a common framework, researchers ensure that models are trained using 
 the same feature computation logic, and thus, a fair comparison is possible. Moreover, trained models can be deployed 
-and evaluated on live networks using[**NFPlugins**][nfplugin]. 
+and evaluated on live networks using [**NFPlugins**][nfplugin]. 
 
 ## How to get it?
 
