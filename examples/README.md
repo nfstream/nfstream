@@ -2,6 +2,15 @@
 
 We provide some simple examples to demonstrate how **NFStream** can be integrated within your Python application.
 
+## Setup your environment
+
+``` bash
+python3 -m pip install --upgrade pip
+virtualenv venv-py -p /usr/bin/python3
+source venv-py/bin/activate
+pip install --upgrade nfstream
+```
+
 ## flow_printer
 
 ```

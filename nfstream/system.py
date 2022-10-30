@@ -123,17 +123,17 @@ def system_socket_worflow(channel, idle_timeout, poll_period):
         while True:
             current_time = time.time() * 1000
             for conn in net_connections(kind='inet'):
-                # IMPORTANT: Rationale behind the usage of an active polling approach(net_connections call):
+                # IMPORTANT: The rationale behind the usage of an active polling approach (net_connections call):
                 # System process visibility is intended to generate the most accurate ground truth for traffic
-                # classification research experiments, as reported in the literature[1].Thus, it must be a
-                # cross-platform approach that works the same on Linux, macOS, and Windows (Gaming traffic
-                # classification challenges).
-                # On Linux, things can be done more elegantly using eBPF tracing exec calls or NetLink monitoring.
-                # However, this will requires specific implementation for Linux versus Windows and proper handling of
-                # old kernel versions. We prefer to keep it out of the nfstream codebase.
-                # As we use net_connections from psutil (https://github.com/giampaolo/psutil) Python package, such an
-                # improvement approach we should can be proposed in psutil project ans thus, a wider community can
-                # benefit from it.
+                # classification end-host-based research experiments, as reported in the literature [1].
+                # Thus, it must be a cross-platform approach that works the same on Linux, macOS, and
+                # Windows (Gaming traffic classification challenges). On Linux, things can be done more elegantly
+                # using eBPF tracing exec calls or NetLink monitoring. However, this will requires specific
+                # implementation for Linux versus Windows and proper handling of old kernel versions.
+                # We prefer to keep it out of the nfstream codebase. As we use net_connections from psutil
+                # (https://github.com/giampaolo/psutil) (https://github.com/giampaolo/psutil) Python package,
+                # future work may include providing such enhancements to psutil project, and thus, a broader
+                # community can benefit from it.
                 # [1]: http://tomasz.bujlow.com/publications/2012_journal_TELFOR.pdf
                 key = get_conn_key(conn)
                 if key is not None:  # We succeeded to obtain a key.
