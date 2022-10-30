@@ -1,0 +1,33 @@
+<!---
+------------------------------------------------------------------------------------------------------------------------
+options.html
+Copyright (C) 2019-22 - NFStream Developers
+This file is part of NFStream, a Flexible Network Data Analysis Framework (https://www.nfstream.org/).
+NFStream is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+version.
+NFStream is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
+You should have received a copy of the GNU Lesser General Public License along with NFStream.
+If not, see <http://www.gnu.org/licenses/>.
+------------------------------------------------------------------------------------------------------------------------
+--->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFStream for Chrome</title>
+</head>
+<hr />
+<label>
+    &nbsp;&nbsp;&nbsp;NFStream listening port number:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</label>
+<input type="number" id="export_port" min="0" max="65525">
+<br><br>
+<a class="custom_button" style="background-color:#f14e4e" id="update">Update</a>
+<script src="options.js"></script>

@@ -1,0 +1,28 @@
+{
+  "manifest_version": 2,
+  "version": "1.0",
+  "name": "NFStream for Chrome",
+  "description": "NFStream Chrome extension for system visibility.",
+  "author": "NFStream Developers",
+  "homepage_url" : "https://www.nfstream.org/",
+  "icons": {
+    "16": "images/nfstream_icon_16.png",
+    "32": "images/nfstream_icon_32.png",
+    "48": "images/nfstream_icon_48.png",
+    "128": "images/nfstream_icon_128.png"
+  },
+  "background" : {
+    "scripts": ["background.js"]
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["nfstream.js"]
+    }
+  ],
+  "permissions": ["webRequest", "storage", "tabs", "<all_urls>"]
+}
