@@ -31,4 +31,11 @@ positional arguments:
 Generated CSV will be stored in the same directory and named input.csv.
 ```
 
+> **Live Capture Notes**: For live interface capture, root privileges.
+> Example:
+> 
+> sudo venv-py/bin/python3 flow_printer.py eth0
+>
+> sudo venv-py/bin/python3 csv_generator.py eth0
+
 [csv_generator]: https://github.com/nfstream/nfstream/blob/master/examples/csv_generator.py

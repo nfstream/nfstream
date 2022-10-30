@@ -16,7 +16,7 @@ NFStream browser extension is simply a listener on `onResponseStarted` of [**web
 perform the following actions:
 
 * extract features such as timestamp, tab identifier, request identifier, tab is active, server IP address and URL.
-* export it as HTTP POST it a JSON format to **localhost:export_port**.
+* export it as HTTP POST in JSON format to **localhost:export_port**.
 
 `export_port` is configurable by the user in the nfstream extension options menu and is set by default to `28314`.
 
