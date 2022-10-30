@@ -27,8 +27,7 @@ from .anonymizer import NFAnonymizer
 from .engine import is_interface
 from .plugin import NFPlugin
 from .utils import csv_converter, open_file, RepeatedTimer, update_performances, set_affinity
-from .utils import validate_flows_per_file, NFMode
-from .utils import create_csv_file_path, NFEvent, process_unify, validate_rotate_files
+from .utils import validate_flows_per_file, NFMode, create_csv_file_path, NFEvent, validate_rotate_files
 from .system import system_socket_worflow, match_flow_conn
 
 

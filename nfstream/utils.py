@@ -38,17 +38,6 @@ class NFMode(IntEnum):
 InternalError = namedtuple('InternalError', ['id', 'message'])
 
 
-def process_unify(proc_name):
-    """ Unify browser process names across platforms """
-    proc_name = proc_name.lower()
-    if proc_name == "chrome":
-        proc_name = "chrome"
-    else:
-        if proc_name == "geckomain":
-            proc_name = "firefox"
-    return proc_name
-
-
 def validate_flows_per_file(n):
     """ Simple parameter validator """
     if not isinstance(n, int) or isinstance(n, int) and n < 0:
