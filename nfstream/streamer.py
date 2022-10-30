@@ -267,8 +267,9 @@ class NFStreamer(object):
             c_cores = c_cpus
         if value == 0:
             if platform.system() == "Linux" and self._mode == NFMode.INTERFACE:
-                self._n_meters = c_cpus - 1
-            else:
+                self._n_meters = c_cpus - 1  # We are in live capture mode and kernel fanout will be available
+                #                              only on Linux, we set the n_meters to detected logical CPUs -1
+            else:  # Windows, MacOS, offline capture
                 if c_cpus >= c_cores:
                     if c_cpus == 2 * c_cores or c_cpus == c_cores:  # multi-thread or single threaded
                         self._n_meters = c_cores - 1

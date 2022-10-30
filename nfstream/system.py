@@ -131,9 +131,9 @@ def system_socket_worflow(channel, idle_timeout, poll_period):
                 # On Linux, things can be done more elegantly using eBPF tracing exec calls or NetLink monitoring.
                 # However, this will requires specific implementation for Linux versus Windows and proper handling of
                 # old kernel versions. We prefer to keep it out of the nfstream codebase.
-                # As we use net_connections from psutil (https://github.com/giampaolo/psutil) Python package, we should
-                # think about improving how it is handled within psutil package and share such an improvement with all
-                # the community.
+                # As we use net_connections from psutil (https://github.com/giampaolo/psutil) Python package, such an
+                # improvement approach we should can be proposed in psutil project ans thus, a wider community can
+                # benefit from it.
                 # [1]: http://tomasz.bujlow.com/publications/2012_journal_TELFOR.pdf
                 key = get_conn_key(conn)
                 if key is not None:  # We succeeded to obtain a key.
@@ -146,7 +146,11 @@ def system_socket_worflow(channel, idle_timeout, poll_period):
             conn_cache.scan(current_time)
 
             time.sleep(poll_period)  # Sleep with configured poll period
-            # 0 will ensure the maximum active polling capacity and accuracy while relaxing it will results is less
-            # intensive CPU Core usage and less accuracy. A tradeoff as always must be decided.
+            #                          0 will ensure the maximum active polling capacity and accuracy.
+            #                          Greater values will results is less intensive CPU load and less accuracy.
+            #                          A tradeoff must be decided (as always).
+            #                          Completeness versus Polling frequency study (per protocol, per platform)
+            #                          are provided in [1]
+            #                          [2]: https://dl.acm.org/doi/abs/10.1145/1629607.1629610
     except KeyboardInterrupt:
         return

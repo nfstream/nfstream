@@ -4,7 +4,7 @@ We provide some simple examples to demonstrate how **NFStream** can be integrate
 
 ## flow_printer
 
-``` bash
+```
 usage: python3 flow_printer.py input
 
 positional arguments:
@@ -13,7 +13,7 @@ positional arguments:
 
 ## csv_generator
 
-``` bash
+```
 usage: python3 csv_generator.py input
 
 positional arguments:
