@@ -599,7 +599,8 @@ The following organizations supported NFStream:
 * [**Technical University of Košice**](https://www.tuke.sk/): Hardware and infrastructure for datasets generation and 
 storage.
 * [**ntop**](https://www.ntop.org/): Technical support of [**nDPI**][ndpi] integration.
-* [**The Nmap Project**](https://nmap.org): Technical support of [**Npcap**][npcap] integration (Windows CI).
+* [**The Nmap Project**](https://nmap.org): Technical support of [**Npcap**][npcap] integration 
+(NPCAP OEM installer on Windows CI).
 * [**Google OSS Fuzz**](https://google.github.io/oss-fuzz/): Continious fuzzing 
 testing support of NFStream project.
 

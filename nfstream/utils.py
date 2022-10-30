@@ -26,7 +26,6 @@ class NFEvent(Enum):
     ERROR = -2
     SOCKET_CREATE = -3
     SOCKET_REMOVE = -4
-    BROWSER_REQUEST = -5
 
 
 class NFMode(IntEnum):
