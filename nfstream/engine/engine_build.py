@@ -29,6 +29,7 @@ def cdef_to_replace(cdef):
             to_rep.append(sub_def[:end+1])
     to_rep.append("typedef __builtin_va_list __darwin_va_list;")
     to_rep.append("typedef __signed char int8_t;")
+    to_rep.append(" __attribute__((__packed__))")
     return to_rep
 
 
@@ -111,6 +112,8 @@ with open(convert_path("{root}/tmp/nfstream_build/ndpi_cdefinitions.h".format(ro
 
 with open(convert_path("{root}/tmp/nfstream_build/ndpi_cdefinitions_packed.h".format(root=ROOT))) as ndpi_cdefs_pack:
     NDPI_PACKED = ndpi_cdefs_pack.read()
+    for to_replace in cdef_to_replace(NDPI_PACKED):
+        NDPI_CDEF = NDPI_CDEF.replace(to_replace, "")
 
 NDPI_PACKED_STRUCTURES = NDPI_PACKED.split("//CFFI.NDPI_PACKED_STRUCTURES")[1]
 

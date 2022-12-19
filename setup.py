@@ -27,7 +27,7 @@ if (not sys.version_info[0] == 3) and (not sys.version_info[1] >= 6):
 with open(os.path.join(THIS_DIRECTORY, 'README.md'), encoding='utf-8') as f:
     LONG_DESCRIPTION = f.read()
 
-INSTALL_REQUIRES = ['cffi>=1.15.0',
+INSTALL_REQUIRES = ['cffi>=1.15.1',
                     'psutil>=5.8.0',
                     'dpkt>=1.9.7',
                     'numpy>=1.19.5']

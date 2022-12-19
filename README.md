@@ -64,41 +64,33 @@ across experiments.
   <td><b>Continuous Integration</b></td>
   <td>
     <a href="https://github.com/nfstream/nfstream/actions/workflows/build_test_linux.yml">
-    <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_linux/master?logo=linux&style=for-the-badge&label=linux" alt="Linux WorkFlows" />
+    <img src="https://img.shields.io/github/actions/workflow/status/nfstream/nfstream/build_test_linux.yml?branch=master&logo=linux&style=for-the-badge&label=linux" alt="Linux WorkFlows" />
     </a>
     <a href="https://github.com/nfstream/nfstream/actions/workflows/build_test_macos.yml">
-    <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_macos/master?logo=apple&style=for-the-badge&label=macos" alt="MacOS WorkFlows" />
+    <img src="https://img.shields.io/github/actions/workflow/status/nfstream/nfstream/build_test_macos.yml?branch=master&logo=apple&style=for-the-badge&label=macos" alt="MacOS WorkFlows" />
     </a>
     <a href="https://github.com/nfstream/nfstream/actions/workflows/build_test_windows.yml">
-    <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_windows/master?logo=windows&style=for-the-badge&label=windows" alt="Windows WorkFlows" />
+    <img src="https://img.shields.io/github/actions/workflow/status/nfstream/nfstream/build_test_windows.yml?branch=master&logo=windows&style=for-the-badge&label=windows" alt="Windows WorkFlows" />
     </a>
     <a href="https://github.com/nfstream/nfstream/actions/workflows/build_test_aarch64.yml">
-    <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_aarch64/master?logo=arm&style=for-the-badge&label=arm64" alt="ARM64 WorkFlows" />
+    <img src="https://img.shields.io/github/actions/workflow/status/nfstream/nfstream/build_test_aarch64.yml?branch=master&logo=arm&style=for-the-badge&label=arm64" alt="ARM64 WorkFlows" />
     </a>
     <a href="https://github.com/nfstream/nfstream/actions/workflows/build_test_armhf.yml">
-    <img src="https://img.shields.io/github/workflow/status/nfstream/nfstream/build_test_armhf/master?logo=arm&style=for-the-badge&label=arm32" alt="ARM32 WorkFlows" />
+    <img src="https://img.shields.io/github/actions/workflow/status/nfstream/nfstream/build_test_armhf.yml?branch=master&logo=arm&style=for-the-badge&label=arm32" alt="ARM32 WorkFlows" />
     </a>
   </td>
 </tr>
 <tr>
   <td><b>Code Quality</b></td>
   <td>
-    <a href="https://lgtm.com/projects/g/nfstream/nfstream/context:python">
-    <img src="https://img.shields.io/lgtm/grade/python/github/nfstream/nfstream?label=LGTM%3A%20Python&logo=lgtm&style=for-the-badge&logoWidth=18)" alt="Quality" />
-    </a>
-    <a href="https://www.codefactor.io/repository/github/nfstream/nfstream">
-    <img src="https://img.shields.io/codefactor/grade/github/nfstream/nfstream?label=codefactor%3A%20Python%2C%20C&logo=codefactor&style=for-the-badge&logoWidth=18)" alt="Quality" />
-    </a>
-  </td>
-</tr>
-<tr>
-  <td><b>Code Coverage</b></td>
-  <td>
     <a href="https://oss-fuzz-build-logs.storage.googleapis.com/index.html#nfstream">
     <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnfstream%2Foss-fuzz-status-endpoint%2Fmain%2Fstatus.json" alt="Coverage" />
     </a>
     <a href="https://codecov.io/gh/nfstream/nfstream/">
     <img src="https://img.shields.io/codecov/c/github/nfstream/nfstream?color=brightgreen&logo=codecov&style=for-the-badge" alt="Fuzzing" />
+    </a>
+    <a href="https://www.codefactor.io/repository/github/nfstream/nfstream">
+    <img src="https://img.shields.io/codefactor/grade/github/nfstream/nfstream?label=codefactor%3A%20Python%2C%20C&logo=codefactor&style=for-the-badge&logoWidth=18)" alt="Quality" />
     </a>
   </td>
 </tr>

@@ -1,4 +1,0 @@
-# flow.id is detected as sensitive data and generate a false positive alert (rename it to idx?)
-queries:
-  - exclude: py/clear-text-logging-sensitive-data
-  - exclude: py/clear-text-storage-sensitive-data
