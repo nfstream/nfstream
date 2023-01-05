@@ -170,6 +170,11 @@ typedef struct nf_flow {
   ndpi_protocol detected_protocol;
   uint8_t detection_completed;
   ndpi_confidence_t confidence;
+  char risk[256];
+  char risk_severity[256];
+  uint16_t risk_score_total;
+  uint16_t risk_score_client;
+  uint16_t risk_score_server;
 } nf_flow_t;
 
 // Main structure for packet information.
@@ -877,6 +882,21 @@ static void flow_bidirectional_dissection_collect_info(struct ndpi_detection_mod
   // We copy useful information to fileds in our flow structure in order to release dissector references at early stage.
   if (!flow->ndpi_flow) return;
   flow->confidence = flow->ndpi_flow->confidence;
+
+  // Flow Risk
+  ndpi_risk_enum r = flow->ndpi_flow->risk_infos->id;
+  ndpi_risk risk = flow->ndpi_flow->risk;
+  ndpi_risk_info *info = ndpi_risk2severity(r);
+  ndpi_risk_severity s = info->severity;
+  u_int16_t client_score, server_score;
+  u_int16_t score = ndpi_risk2score(risk, &client_score, &server_score);
+
+  ndpi_snprintf(flow->risk, sizeof(flow->risk), "%s", (ndpi_risk2str(r) ? ndpi_risk2str(r) : ""));
+  ndpi_snprintf(flow->risk_severity, sizeof(flow->risk_severity), "%s", (ndpi_severity2str(s) ? ndpi_severity2str(s) : ""));
+  flow->risk_score_total = score;
+  flow->risk_score_client = client_score;
+  flow->risk_score_server = server_score;
+
   // Application name (STUN.WhatsApp, TLS.Netflix, etc.).
   ndpi_protocol2name(dissector, flow->detected_protocol, flow->application_name, sizeof(flow->application_name));
   // Application category name (Streaming, SocialNetwork, etc.).
