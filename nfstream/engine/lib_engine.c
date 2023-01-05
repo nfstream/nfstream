@@ -58,6 +58,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define MODE_SINGLE_FILE 0
 #define MODE_INTERFACE 1
 #define MODE_MULTIPLE_FILES 2
+#define MAX_NUM_RISK_INFOS    8
 
 //CFFI_SHARED_STRUCTURES
 typedef struct dissector_checker {
@@ -72,6 +73,14 @@ typedef struct nf_stat {
   unsigned dropped;
   unsigned dropped_by_interface;
 } nf_stat_t;
+
+typedef struct risk {
+  char risk[256];
+  char risk_severity[256];
+  uint16_t risk_score_total;
+  uint16_t risk_score_client;
+  uint16_t risk_score_server;
+} nf_risk;
 
 // Flow main structure.
 typedef struct nf_flow {
@@ -170,11 +179,7 @@ typedef struct nf_flow {
   ndpi_protocol detected_protocol;
   uint8_t detection_completed;
   ndpi_confidence_t confidence;
-  char risk[256];
-  char risk_severity[256];
-  uint16_t risk_score_total;
-  uint16_t risk_score_client;
-  uint16_t risk_score_server;
+  nf_risk nf_risk_t[MAX_NUM_RISK_INFOS];
 } nf_flow_t;
 
 // Main structure for packet information.
@@ -883,20 +888,35 @@ static void flow_bidirectional_dissection_collect_info(struct ndpi_detection_mod
   if (!flow->ndpi_flow) return;
   flow->confidence = flow->ndpi_flow->confidence;
 
-  // Flow Risk
-  ndpi_risk_enum r = flow->ndpi_flow->risk_infos->id;
-  ndpi_risk risk = flow->ndpi_flow->risk;
-  ndpi_risk_info *info = ndpi_risk2severity(r);
-  ndpi_risk_severity s = info->severity;
-  u_int16_t client_score, server_score;
-  u_int16_t score = ndpi_risk2score(risk, &client_score, &server_score);
+  // nf_risk
+  u_int32_t i;
+  u_int32_t j = 0;
 
-  ndpi_snprintf(flow->risk, sizeof(flow->risk), "%s", (ndpi_risk2str(r) ? ndpi_risk2str(r) : ""));
-  ndpi_snprintf(flow->risk_severity, sizeof(flow->risk_severity), "%s", (ndpi_severity2str(s) ? ndpi_severity2str(s) : ""));
-  flow->risk_score_total = score;
-  flow->risk_score_client = client_score;
-  flow->risk_score_server = server_score;
+  if(flow->ndpi_flow->risk == 0) {
+    return;
+  }
 
+  for(i = 0; i < NDPI_MAX_RISK; i++) {
+    ndpi_risk_enum r = (ndpi_risk_enum)i;
+
+    if(NDPI_ISSET_BIT(flow->ndpi_flow->risk, r)) {
+      ndpi_risk_info const * const risk_info = ndpi_risk2severity(r);
+      if(risk_info == NULL)
+        continue;
+      
+      u_int16_t client_score, server_score;
+      u_int16_t score = ndpi_risk2score(r, &client_score, &server_score);
+
+      ndpi_snprintf(flow->nf_risk_t[j].risk, sizeof(flow->nf_risk_t[j].risk), "%s", (ndpi_risk2str(risk_info->risk) ? ndpi_risk2str(risk_info->risk) : ""));
+      ndpi_snprintf(flow->nf_risk_t[j].risk_severity, sizeof(flow->nf_risk_t[j].risk_severity), "%s", (ndpi_severity2str(risk_info->severity) ? ndpi_severity2str(risk_info->severity) : ""));
+      flow->nf_risk_t[j].risk_score_total = score;
+      flow->nf_risk_t[j].risk_score_client = client_score;
+      flow->nf_risk_t[j].risk_score_server = server_score;
+
+      j++;
+    }
+  }
+  
   // Application name (STUN.WhatsApp, TLS.Netflix, etc.).
   ndpi_protocol2name(dissector, flow->detected_protocol, flow->application_name, sizeof(flow->application_name));
   // Application category name (Streaming, SocialNetwork, etc.).
