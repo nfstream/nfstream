@@ -889,31 +889,29 @@ static void flow_bidirectional_dissection_collect_info(struct ndpi_detection_mod
   flow->confidence = flow->ndpi_flow->confidence;
 
   // nf_risk
-  u_int32_t i;
-  u_int32_t j = 0;
+  if(flow->ndpi_flow->risk != 0) {
+    uint32_t i;
+    uint32_t j = 0;
 
-  if(flow->ndpi_flow->risk == 0) {
-    return;
-  }
+    for(i = 0; i < NDPI_MAX_RISK; i++) {
+      ndpi_risk_enum r = (ndpi_risk_enum)i;
 
-  for(i = 0; i < NDPI_MAX_RISK; i++) {
-    ndpi_risk_enum r = (ndpi_risk_enum)i;
+      if(NDPI_ISSET_BIT(flow->ndpi_flow->risk, r)) {
+        ndpi_risk_info const * const risk_info = ndpi_risk2severity(r);
+        if(risk_info == NULL)
+          continue;
+        
+        uint16_t client_score, server_score;
+        uint16_t score = ndpi_risk2score(r, &client_score, &server_score);
 
-    if(NDPI_ISSET_BIT(flow->ndpi_flow->risk, r)) {
-      ndpi_risk_info const * const risk_info = ndpi_risk2severity(r);
-      if(risk_info == NULL)
-        continue;
-      
-      u_int16_t client_score, server_score;
-      u_int16_t score = ndpi_risk2score(r, &client_score, &server_score);
+        memcpy(flow->nf_risk_t[j].risk, ndpi_risk2str(risk_info->risk), sizeof(flow->nf_risk_t[j].risk));
+        memcpy(flow->nf_risk_t[j].risk_severity, ndpi_severity2str(risk_info->severity), sizeof(flow->nf_risk_t[j].risk_severity));
+        flow->nf_risk_t[j].risk_score_total = score;
+        flow->nf_risk_t[j].risk_score_client = client_score;
+        flow->nf_risk_t[j].risk_score_server = server_score;
 
-      ndpi_snprintf(flow->nf_risk_t[j].risk, sizeof(flow->nf_risk_t[j].risk), "%s", (ndpi_risk2str(risk_info->risk) ? ndpi_risk2str(risk_info->risk) : ""));
-      ndpi_snprintf(flow->nf_risk_t[j].risk_severity, sizeof(flow->nf_risk_t[j].risk_severity), "%s", (ndpi_severity2str(risk_info->severity) ? ndpi_severity2str(risk_info->severity) : ""));
-      flow->nf_risk_t[j].risk_score_total = score;
-      flow->nf_risk_t[j].risk_score_client = client_score;
-      flow->nf_risk_t[j].risk_score_server = server_score;
-
-      j++;
+        j++;
+      }
     }
   }
   
