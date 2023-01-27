@@ -794,7 +794,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 792,1,58,Unknown,Unspecified,0,0
 793,1,58,Unknown,Unspecified,0,0
 794,1,58,Unknown,Unspecified,0,0
-795,1,58,Unknown,Unspecified,0,0
+795,1,58,TPLINK_SHP,IoT-Scada,1,1
 796,1,58,Unknown,Unspecified,0,0
 797,1,58,Unknown,Unspecified,0,0
 798,1,58,Unknown,Unspecified,0,0
@@ -857,7 +857,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 855,1,58,Unknown,Unspecified,0,0
 856,1,58,Unknown,Unspecified,0,0
 857,1,58,Unknown,Unspecified,0,0
-858,1,58,Unknown,Unspecified,0,0
+858,1,58,TPLINK_SHP,IoT-Scada,1,1
 859,1,58,Unknown,Unspecified,0,0
 860,1,58,Unknown,Unspecified,0,0
 861,1,58,Unknown,Unspecified,0,0

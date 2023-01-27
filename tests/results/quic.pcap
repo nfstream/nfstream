@@ -2,7 +2,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 0,413,254874,QUIC.GMail,Email,0,6
 1,6,7072,QUIC,Web,0,6
 2,5,4334,QUIC.Google,Web,0,6
-3,3,364,Unknown,Unspecified,0,0
+3,3,364,QUIC,Web,1,1
 4,7,6545,QUIC.YouTube,Media,0,6
 5,3,2863,QUIC.YouTube,Media,0,6
 6,6,5729,QUIC.Google,Web,0,6

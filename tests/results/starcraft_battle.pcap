@@ -4,7 +4,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 2,1,60,TLS,Web,1,1
 3,4,417,DNS,Network,0,6
 4,1,60,TLS,Web,1,1
-5,6,475,Unknown,Unspecified,0,0
+5,6,475,QUIC,Web,1,1
 6,2,210,DNS,Network,0,6
 7,2,121,TLS,Web,1,1
 8,4,455,DNS,Network,0,6

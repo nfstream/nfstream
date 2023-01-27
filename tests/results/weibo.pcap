@@ -1,8 +1,8 @@
 id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
-0,9,1944,Unknown,Unspecified,0,0
+0,9,1944,QUIC,Web,1,1
 1,2,132,TLS,Web,1,1
 2,2,132,TLS,Web,1,1
-3,14,2174,Unknown,Unspecified,0,0
+3,14,2174,QUIC,Web,1,1
 4,2,154,DNS,Network,0,6
 5,9,1599,HTTP,Web,0,6
 6,3,194,HTTP,Web,1,1

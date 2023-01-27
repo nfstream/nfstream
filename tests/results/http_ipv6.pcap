@@ -3,7 +3,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 1,14,2213,TLS,Web,0,6
 2,62,15977,QUIC.Google,Web,0,6
 3,2,172,TLS,Web,1,1
-4,3,502,Unknown,Unspecified,0,0
+4,3,502,QUIC,Web,1,1
 5,19,7014,TLS.ntop,Network,0,6
 6,17,6842,TLS.ntop,Network,0,6
 7,18,6928,TLS.ntop,Network,0,6

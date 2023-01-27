@@ -10,9 +10,9 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 8,2,205,DNS,Network,0,6
 9,1,70,ICMP,Network,0,6
 10,2,114,TLS,Web,1,1
-11,6,480,STUN,Network,0,6
-12,6,480,STUN,Network,0,6
-13,6,480,STUN,Network,0,6
+11,6,480,STUN.Zoom,Video,0,6
+12,6,480,STUN.Zoom,Video,0,6
+13,6,480,STUN.Zoom,Video,0,6
 14,6,952,HTTP,Web,1,1
 15,16,6839,TLS,Web,0,6
 16,2,140,ICMP,Network,0,6

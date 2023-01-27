@@ -9,7 +9,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 7,24,11165,TLS.Viber,Chat,0,6
 8,2,263,DNS.Viber,Network,0,6
 9,89,64658,TLS.Viber,Chat,0,6
-10,3,194,Unknown,Unspecified,0,0
+10,3,194,QUIC,Web,1,1
 11,2,174,DNS.Google,Network,0,6
 12,27,8775,TLS.Google,Web,0,6
 13,4,412,MDNS,Network,0,6

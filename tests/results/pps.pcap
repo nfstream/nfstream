@@ -9,7 +9,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 7,3,257,Unknown,Unspecified,0,0
 8,2,108,HTTP,Web,1,1
 9,1,66,HTTP,Web,1,1
-10,2,300,Unknown,Unspecified,0,0
+10,2,300,PPStream,Streaming,0,6
 11,2,132,Unknown,Unspecified,0,0
 12,2,132,Unknown,Unspecified,0,0
 13,2,132,Unknown,Unspecified,0,0
@@ -27,14 +27,14 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 25,2,132,Unknown,Unspecified,0,0
 26,4,512,Unknown,Unspecified,0,0
 27,4,512,Unknown,Unspecified,0,0
-28,2,188,Unknown,Unspecified,0,0
+28,2,188,PPStream,Streaming,0,6
 29,2,132,Unknown,Unspecified,0,0
 30,2,132,Unknown,Unspecified,0,0
 31,2,132,Unknown,Unspecified,0,0
 32,2,174,Unknown,Unspecified,0,0
-33,2,260,Unknown,Unspecified,0,0
-34,2,260,Unknown,Unspecified,0,0
-35,2,260,Unknown,Unspecified,0,0
+33,2,260,PPStream,Streaming,0,6
+34,2,260,PPStream,Streaming,0,6
+35,2,260,PPStream,Streaming,0,6
 36,3,1861,HTTP.PPStream,Streaming,0,6
 37,2,1451,HTTP,Web,0,6
 38,2,1093,HTTP.Google,Web,0,6

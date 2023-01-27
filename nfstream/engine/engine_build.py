@@ -72,7 +72,7 @@ else:  # Linux, MacOS
 
 INCLUDE_DIRS = ["{root}/tmp/nfstream_build/{usr}/include/ndpi".format(root=ROOT, usr=USR),
                 "{root}/tmp/nfstream_build/{usr}/include".format(root=ROOT, usr=USR_LOCAL)]
-EXTRALINK_ARGS = ["{root}/tmp/nfstream_build/lib/libndpi.a".format(root=ROOT)]
+EXTRALINK_ARGS = ["{root}/tmp/nfstream_build/{usr}/lib/libndpi.a".format(root=ROOT, usr=USR)]
 
 if os.name != 'posix':  # Windows
     INCLUDE_DIRS.append("{root}/tmp/nfstream_build/npcap/Include".format(root=ROOT))
