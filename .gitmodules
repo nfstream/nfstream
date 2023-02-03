@@ -4,5 +4,5 @@
 	branch = dev
 [submodule "nfstream/engine/dependencies/libpcap"]
 	path = nfstream/engine/dependencies/libpcap
-	url = https://github.com/tsnoam/libpcap
-	branch = fanout
+	url = https://github.com/nfstream/libpcap
+	branch = fanout-1.10.3
