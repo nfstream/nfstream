@@ -141,4 +141,7 @@ def set_affinity(idx):
         c_cpus = psutil.cpu_count(logical=True)
         temp = list(chunks(range(c_cpus), 2))
         x = len(temp)
-        psutil.Process().cpu_affinity(list(temp[idx % x]))
+        try:
+            psutil.Process().cpu_affinity(list(temp[idx % x]))
+        except OSError as err:
+            print(f"WARNING: failed to set CPU affinity: {err}")
