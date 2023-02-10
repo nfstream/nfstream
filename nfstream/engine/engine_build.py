@@ -30,6 +30,8 @@ def cdef_to_replace(cdef):
     to_rep.append("typedef __builtin_va_list __darwin_va_list;")
     to_rep.append("typedef __signed char int8_t;")
     to_rep.append(" __attribute__((__packed__))")
+    to_rep.append("static inline")
+    to_rep.append("volatile ")
     return to_rep
 
 
@@ -56,6 +58,8 @@ if os.name != 'posix':  # Windows case, we must take into account msys2 path tre
 BUILD_SCRIPT_PATH = str(pathlib.Path(__file__).parent.resolve().joinpath("scripts").joinpath("build"))
 # Patched path as it is passed to msys2 bash
 ENGINE_PATH = str(pathlib.Path(__file__).parent.resolve()).replace("\\", "/")
+
+APPLE_M1_DEFS = "" # Used for Apple M1 platforms patch
 
 
 if os.name != 'posix':  # Windows case
@@ -103,17 +107,28 @@ else:
 
 with open(convert_path("{root}/tmp/nfstream_build/lib_engine_cdefinitions.c".format(root=ROOT))) as engine_cdef:
     ENGINE_CDEF = engine_cdef.read()
+    for to_replace in cdef_to_replace(ENGINE_CDEF):
+        ENGINE_CDEF = ENGINE_CDEF.replace(to_replace, "")
 
 with open(convert_path("{root}/tmp/nfstream_build/ndpi_cdefinitions.h".format(root=ROOT))) as ndpi_cdefs:
     NDPI_CDEF = ndpi_cdefs.read()
     for to_replace in cdef_to_replace(NDPI_CDEF):
         NDPI_CDEF = NDPI_CDEF.replace(to_replace, "")
+    # A monkey patch to make it work on Apple M1.
+    # Issue: https://github.com/ziglang/zig/issues/12733 refers to these structs that are included only in apple m1 stdlib.h
+    # These structs are packed, we axtract it and we declare properly using ffi_builder.cdef() call.
+    try:
+        APPLE_M1_DEFS = NDPI_CDEF.split("/* Functions for byte reversed loads. */")[1].\
+            split("/* Functions for byte reversed stores. */")[0]
+    except IndexError:
+        pass
+    NDPI_CDEF = NDPI_CDEF.replace(APPLE_M1_DEFS, "")
     NDPI_MODULE_STRUCT_CDEF = NDPI_CDEF.split("//CFFI.NDPI_MODULE_STRUCT")[1]
 
 with open(convert_path("{root}/tmp/nfstream_build/ndpi_cdefinitions_packed.h".format(root=ROOT))) as ndpi_cdefs_pack:
     NDPI_PACKED = ndpi_cdefs_pack.read()
     for to_replace in cdef_to_replace(NDPI_PACKED):
-        NDPI_CDEF = NDPI_CDEF.replace(to_replace, "")
+        NDPI_PACKED = NDPI_PACKED.replace(to_replace, "")
 
 NDPI_PACKED_STRUCTURES = NDPI_PACKED.split("//CFFI.NDPI_PACKED_STRUCTURES")[1]
 
@@ -172,6 +187,8 @@ ffi_builder.set_source("_lib_engine",
                        ENGINE_SOURCE,
                        include_dirs=[convert_path(d) for d in INCLUDE_DIRS],
                        extra_link_args=[convert_path(a) for a in EXTRALINK_ARGS])
+if APPLE_M1_DEFS != "":
+    ffi_builder.cdef(APPLE_M1_DEFS, packed=True)
 ffi_builder.cdef("""
 typedef uint64_t u_int64_t;
 typedef uint32_t u_int32_t;

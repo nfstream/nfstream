@@ -144,4 +144,4 @@ def set_affinity(idx):
         try:
             psutil.Process().cpu_affinity(list(temp[idx % x]))
         except OSError as err:
-            print(f"WARNING: failed to set CPU affinity: {err}")
+            print("WARNING: failed to set CPU affinity ({err})".format(err))
