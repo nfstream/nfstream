@@ -122,7 +122,7 @@ with open(convert_path("{root}/tmp/nfstream_build/ndpi_cdefinitions.h".format(ro
             split("/* Functions for byte reversed stores. */")[0]
     except IndexError:
         pass
-    NDPI_CDEF = NDPI_CDEF.replace(APPLE_M1_DEFS, "")
+    #NDPI_CDEF = NDPI_CDEF.replace(APPLE_M1_DEFS, "")
     NDPI_MODULE_STRUCT_CDEF = NDPI_CDEF.split("//CFFI.NDPI_MODULE_STRUCT")[1]
 
 with open(convert_path("{root}/tmp/nfstream_build/ndpi_cdefinitions_packed.h".format(root=ROOT))) as ndpi_cdefs_pack:
@@ -188,7 +188,7 @@ ffi_builder.set_source("_lib_engine",
                        include_dirs=[convert_path(d) for d in INCLUDE_DIRS],
                        extra_link_args=[convert_path(a) for a in EXTRALINK_ARGS])
 if APPLE_M1_DEFS != "":
-    ffi_builder.cdef(APPLE_M1_DEFS, packed=True)
+    ffi_builder.cdef(APPLE_M1_DEFS, packed=True, override=True)
 ffi_builder.cdef("""
 typedef uint64_t u_int64_t;
 typedef uint32_t u_int32_t;
