@@ -109,6 +109,12 @@ with open(convert_path("{root}/tmp/nfstream_build/lib_engine_cdefinitions.c".for
     ENGINE_CDEF = engine_cdef.read()
     for to_replace in cdef_to_replace(ENGINE_CDEF):
         ENGINE_CDEF = ENGINE_CDEF.replace(to_replace, "")
+    try:
+        APPLE_M1_DEFS = ENGINE_CDEF.split("/* Functions for byte reversed loads. */")[1].\
+            split("/* Functions for byte reversed stores. */")[0]
+    except IndexError:
+        pass
+    ENGINE_CDEF = ENGINE_CDEF.replace(APPLE_M1_DEFS, "")
 
 with open(convert_path("{root}/tmp/nfstream_build/ndpi_cdefinitions.h".format(root=ROOT))) as ndpi_cdefs:
     NDPI_CDEF = ndpi_cdefs.read()
@@ -122,7 +128,7 @@ with open(convert_path("{root}/tmp/nfstream_build/ndpi_cdefinitions.h".format(ro
             split("/* Functions for byte reversed stores. */")[0]
     except IndexError:
         pass
-    #NDPI_CDEF = NDPI_CDEF.replace(APPLE_M1_DEFS, "")
+    NDPI_CDEF = NDPI_CDEF.replace(APPLE_M1_DEFS, "")
     NDPI_MODULE_STRUCT_CDEF = NDPI_CDEF.split("//CFFI.NDPI_MODULE_STRUCT")[1]
 
 with open(convert_path("{root}/tmp/nfstream_build/ndpi_cdefinitions_packed.h".format(root=ROOT))) as ndpi_cdefs_pack:
@@ -183,10 +189,14 @@ const char *engine_lib_ndpi_version(void);
 const char *engine_lib_pcap_version(void);
 """
 ffi_builder = FFI()
+
+
+
 ffi_builder.set_source("_lib_engine",
                        ENGINE_SOURCE,
                        include_dirs=[convert_path(d) for d in INCLUDE_DIRS],
                        extra_link_args=[convert_path(a) for a in EXTRALINK_ARGS])
+
 if APPLE_M1_DEFS != "":
     ffi_builder.cdef(APPLE_M1_DEFS, packed=True, override=True)
 ffi_builder.cdef("""
