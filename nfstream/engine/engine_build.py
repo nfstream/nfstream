@@ -120,9 +120,11 @@ with open(convert_path("{root}/tmp/nfstream_build/ndpi_cdefinitions.h".format(ro
     NDPI_CDEF = ndpi_cdefs.read()
     for to_replace in cdef_to_replace(NDPI_CDEF):
         NDPI_CDEF = NDPI_CDEF.replace(to_replace, "")
-    # A monkey patch to make it work on Apple M1.
+
+    # A WIP patch to make it work on Apple M1.
     # Issue: https://github.com/ziglang/zig/issues/12733 refers to these structs that are included only in apple m1 stdlib.h
     # These structs are packed, we axtract it and we declare properly using ffi_builder.cdef() call.
+    
     try:
         APPLE_M1_DEFS = NDPI_CDEF.split("/* Functions for byte reversed loads. */")[1].\
             split("/* Functions for byte reversed stores. */")[0]
@@ -157,7 +159,10 @@ ENGINE_INCLUDES = """
 #include <ndpi_api.h>
 #include <pcap.h>
 """
-ENGINE_SOURCE = ENGINE_INCLUDES + NDPI_MODULE_STRUCT_CDEF + ENGINE_CDEF
+if APPLE_M1_DEFS != "":
+    ENGINE_SOURCE = ENGINE_INCLUDES + APPLE_M1_DEFS + NDPI_MODULE_STRUCT_CDEF + ENGINE_CDEF
+else:
+    ENGINE_SOURCE = ENGINE_INCLUDES + NDPI_MODULE_STRUCT_CDEF + ENGINE_CDEF
 ENGINE_APIS = """
 char * capture_get_interface(char * intf_name);
 pcap_t * capture_open(const uint8_t * pcap_file, int mode, char * child_error);
@@ -189,7 +194,6 @@ const char *engine_lib_ndpi_version(void);
 const char *engine_lib_pcap_version(void);
 """
 ffi_builder = FFI()
-
 
 
 ffi_builder.set_source("_lib_engine",
