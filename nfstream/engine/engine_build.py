@@ -59,8 +59,6 @@ BUILD_SCRIPT_PATH = str(pathlib.Path(__file__).parent.resolve().joinpath("script
 # Patched path as it is passed to msys2 bash
 ENGINE_PATH = str(pathlib.Path(__file__).parent.resolve()).replace("\\", "/")
 
-APPLE_M1_DEFS = "" # Used for Apple M1 platforms patch
-
 
 if os.name != 'posix':  # Windows case
     os.environ["MSYSTEM"] = "MINGW64"
@@ -109,28 +107,18 @@ with open(convert_path("{root}/tmp/nfstream_build/lib_engine_cdefinitions.c".for
     ENGINE_CDEF = engine_cdef.read()
     for to_replace in cdef_to_replace(ENGINE_CDEF):
         ENGINE_CDEF = ENGINE_CDEF.replace(to_replace, "")
-    try:
-        APPLE_M1_DEFS = ENGINE_CDEF.split("/* Functions for byte reversed loads. */")[1].\
-            split("/* Functions for byte reversed stores. */")[0]
-    except IndexError:
-        pass
-    ENGINE_CDEF = ENGINE_CDEF.replace(APPLE_M1_DEFS, "")
 
 with open(convert_path("{root}/tmp/nfstream_build/ndpi_cdefinitions.h".format(root=ROOT))) as ndpi_cdefs:
     NDPI_CDEF = ndpi_cdefs.read()
+    try:
+        APPLE_SILICON_DEFS = NDPI_CDEF.split("/* Generic byte swapping functions. */")[1].\
+            split("/* Generic little endian to host endianess byte swapping functions. */")[0]
+        NDPI_CDEF = NDPI_CDEF.replace(APPLE_SILICON_DEFS, "")
+    except IndexError:
+        pass
     for to_replace in cdef_to_replace(NDPI_CDEF):
         NDPI_CDEF = NDPI_CDEF.replace(to_replace, "")
 
-    # A WIP patch to make it work on Apple M1.
-    # Issue: https://github.com/ziglang/zig/issues/12733 refers to these structs that are included only in apple m1 stdlib.h
-    # These structs are packed, we axtract it and we declare properly using ffi_builder.cdef() call.
-    
-    try:
-        APPLE_M1_DEFS = NDPI_CDEF.split("/* Functions for byte reversed loads. */")[1].\
-            split("/* Functions for byte reversed stores. */")[0]
-    except IndexError:
-        pass
-    NDPI_CDEF = NDPI_CDEF.replace(APPLE_M1_DEFS, "")
     NDPI_MODULE_STRUCT_CDEF = NDPI_CDEF.split("//CFFI.NDPI_MODULE_STRUCT")[1]
 
 with open(convert_path("{root}/tmp/nfstream_build/ndpi_cdefinitions_packed.h".format(root=ROOT))) as ndpi_cdefs_pack:
@@ -159,10 +147,7 @@ ENGINE_INCLUDES = """
 #include <ndpi_api.h>
 #include <pcap.h>
 """
-if APPLE_M1_DEFS != "":
-    ENGINE_SOURCE = ENGINE_INCLUDES + APPLE_M1_DEFS + NDPI_MODULE_STRUCT_CDEF + ENGINE_CDEF
-else:
-    ENGINE_SOURCE = ENGINE_INCLUDES + NDPI_MODULE_STRUCT_CDEF + ENGINE_CDEF
+ENGINE_SOURCE = ENGINE_INCLUDES + NDPI_MODULE_STRUCT_CDEF + ENGINE_CDEF
 ENGINE_APIS = """
 char * capture_get_interface(char * intf_name);
 pcap_t * capture_open(const uint8_t * pcap_file, int mode, char * child_error);
@@ -201,8 +186,6 @@ ffi_builder.set_source("_lib_engine",
                        include_dirs=[convert_path(d) for d in INCLUDE_DIRS],
                        extra_link_args=[convert_path(a) for a in EXTRALINK_ARGS])
 
-if APPLE_M1_DEFS != "":
-    ffi_builder.cdef(APPLE_M1_DEFS, packed=True, override=True)
 ffi_builder.cdef("""
 typedef uint64_t u_int64_t;
 typedef uint32_t u_int32_t;
