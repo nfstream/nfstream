@@ -65,7 +65,8 @@ class NFStreamer(object):
                  max_nflows=0,
                  performance_report=0,
                  system_visibility_mode=0,
-                 system_visibility_poll_ms=100):
+                 system_visibility_poll_ms=100,
+                 socket_buffer_size=0):
         with NFStreamer.glock:
             NFStreamer.streamer_id += 1
             self._idx = NFStreamer.streamer_id
@@ -87,6 +88,12 @@ class NFStreamer(object):
         self.performance_report = performance_report
         self.system_visibility_mode = system_visibility_mode
         self.system_visibility_poll_ms = system_visibility_poll_ms
+
+        # NIC socket buffer size. Default is 0, which means that the pcap default value is used.
+        # The default values may vary depending on the OS and CPU architecture.
+        # Range: 0 - 2^31-1
+        self.socket_buffer_size = socket_buffer_size
+
         if NFStreamer.is_windows:
             self._mp_context = get_context("spawn")
         else:
@@ -389,7 +396,8 @@ class NFStreamer(object):
                                                              performances[i],
                                                              lock,
                                                              group_id,
-                                                             self.system_visibility_mode,)))
+                                                             self.system_visibility_mode,
+                                                             self.socket_buffer_size,)))
                 meters[i].daemon = True  # demonize meter
                 meters[i].start()
             if self._mode == NFMode.INTERFACE and self.performance_report > 0:

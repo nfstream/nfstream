@@ -1433,14 +1433,23 @@ char * capture_get_interface(char * intf_name) {
 /**
  * capture_open: Open a pcap file or a specified device.
  */
-pcap_t * capture_open(const uint8_t * pcap_file, int mode, char * child_error) {
+pcap_t * capture_open(const char * pcap_file, int mode, char * child_error, int socket_buffer_size) {
   pcap_t * pcap_handle = NULL;
+  int status; // pcap_set_buffer_size return status
   char pcap_error_buffer[PCAP_ERRBUF_SIZE];
   if (mode == MODE_SINGLE_FILE || mode == MODE_MULTIPLE_FILES) {
-    pcap_handle = pcap_open_offline((char*)pcap_file, pcap_error_buffer);
+    pcap_handle = pcap_open_offline(pcap_file, pcap_error_buffer);
   }
-  if (mode == 1) {
-    pcap_handle = pcap_create((char*)pcap_file, pcap_error_buffer);
+  if (mode == MODE_INTERFACE) {
+    pcap_handle = pcap_create(pcap_file, pcap_error_buffer);
+    // If the pcap_handle is created successfully and the socket buffer size is greater than 0, set the buffer size.
+    if (pcap_handle != NULL && socket_buffer_size > 0){
+      status = pcap_set_buffer_size(pcap_handle, socket_buffer_size);
+      if (status != 0) {
+        ndpi_snprintf(child_error, 256, "%s: Can't set buffer size: %s", pcap_file, pcap_statustostr(status));
+        return NULL;
+      }
+    }
   }
   if (pcap_handle != NULL) {
     return pcap_handle;
