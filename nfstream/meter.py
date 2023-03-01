@@ -190,7 +190,7 @@ def send_error(root_idx, channel, msg):
 
 def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots, root_idx, mode,
                    idle_timeout, active_timeout, accounting_mode, udps, n_dissections, statistics, splt,
-                   channel, tracker, lock, group_id, system_visibility_mode):
+                   channel, tracker, lock, group_id, system_visibility_mode, socket_buffer_size):
     """ Metering workflow """
     set_affinity(root_idx+1)
     ffi, lib = create_engine()
@@ -223,7 +223,7 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
 
     for source_idx, source in enumerate(sources):
         error_child = ffi.new("char[256]")
-        capture = setup_capture(ffi, lib, source, snaplen, promisc, mode, error_child, group_id)
+        capture = setup_capture(ffi, lib, source, snaplen, promisc, mode, error_child, group_id, socket_buffer_size)
         if capture is None:
             send_error(root_idx, channel, ffi.string(error_child).decode('utf-8', errors='ignore'))
             return

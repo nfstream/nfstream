@@ -16,8 +16,8 @@ If not, see <http://www.gnu.org/licenses/>.
 from _lib_engine import ffi, lib
 
 
-def setup_capture(ffi, lib, source, snaplen, promisc, mode, error_child, group_id):
-    capture = lib.capture_open(bytes(source, 'utf-8'), int(mode), error_child)
+def setup_capture(ffi, lib, source, snaplen, promisc, mode, error_child, group_id, socket_buffer_size):
+    capture = lib.capture_open(bytes(source, 'utf-8'), int(mode), error_child, socket_buffer_size)
     if capture == ffi.NULL:
         return
     fanout_set_failed = lib.capture_set_fanout(capture, int(mode), error_child, group_id)
