@@ -14,7 +14,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from .engine import create_engine, setup_capture, setup_dissector, activate_capture
-from .utils import set_affinity, InternalError, NFEvent, NFMode
+from .utils import set_affinity, InternalError, InternalState, NFEvent, NFMode
 from collections import OrderedDict
 from .flow import NFlow
 
@@ -212,6 +212,7 @@ def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots
     # We ensure that processes start at the same time
     if root_idx == n_roots - 1:
         lock.release()
+        channel.put(InternalState(NFEvent.ALL_AFFINITY_SET))
     else:
         lock.acquire()
         lock.release()

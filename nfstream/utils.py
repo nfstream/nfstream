@@ -26,6 +26,7 @@ class NFEvent(Enum):
     ERROR = -2
     SOCKET_CREATE = -3
     SOCKET_REMOVE = -4
+    ALL_AFFINITY_SET = -5
 
 
 class NFMode(IntEnum):
@@ -35,6 +36,8 @@ class NFMode(IntEnum):
 
 
 InternalError = namedtuple('InternalError', ['id', 'message'])
+
+InternalState = namedtuple('InternalState', ['id'])
 
 
 def validate_flows_per_file(n):
@@ -128,20 +131,25 @@ class RepeatedTimer(object):
         self._timer.cancel()
         self.is_running = False
 
-
-def chunks(m, n):
-    """ create list of chunks of size n from range m"""
-    n = max(1, n)
-    return (m[i:i+n] for i in range(0, len(m), n))
-
+            
+def chunks_of_list(lst, n):
+    """ create list of chunks of size n from a list"""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
 
 def set_affinity(idx):
     """ CPU affinity setter """
     if platform.system() == "Linux":
-        c_cpus = psutil.cpu_count(logical=True)
-        temp = list(chunks(range(c_cpus), 2))
+        c_cpus = psutil.Process().cpu_affinity()
+        temp = list(chunks_of_list(c_cpus, 2))
         x = len(temp)
         try:
             psutil.Process().cpu_affinity(list(temp[idx % x]))
         except OSError as err:
             print("WARNING: failed to set CPU affinity ({err})".format(err))
+
+
+def available_cpus_count():
+    if platform.system() == "Linux":
+        return len(psutil.Process().cpu_affinity())
+    return psutil.cpu_count(logical=True)

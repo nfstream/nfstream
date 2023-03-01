@@ -19,14 +19,14 @@ import pandas as pd
 import time as tm
 import os
 import platform
+import psutil
 from collections.abc import Iterable
-from psutil import cpu_count
 from os.path import isfile
 from .meter import meter_workflow
 from .anonymizer import NFAnonymizer
 from .engine import is_interface
 from .plugin import NFPlugin
-from .utils import csv_converter, open_file, RepeatedTimer, update_performances, set_affinity
+from .utils import csv_converter, open_file, RepeatedTimer, update_performances, set_affinity, available_cpus_count
 from .utils import validate_flows_per_file, NFMode, create_csv_file_path, NFEvent, validate_rotate_files
 from .system import system_socket_worflow, match_flow_conn
 
@@ -278,7 +278,7 @@ class NFStreamer(object):
             pass
         else:
             raise ValueError("Please specify a valid n_meters parameter (>=1 or 0 for auto scaling).")
-        c_cpus, c_cores = cpu_count(logical=True), cpu_count(logical=False)
+        c_cpus, c_cores = available_cpus_count(), psutil.cpu_count(logical=False)
         if c_cores is None:  # Patch for platforms returning None (https://github.com/giampaolo/psutil/issues/1078)
             c_cores = c_cpus
         if value == 0:
@@ -360,8 +360,6 @@ class NFStreamer(object):
         self._system_visibility_poll_ms = value
 
     def __iter__(self):
-        set_affinity(0)  # we pin streamer to core 0 as it's the less intensive task and several services runs
-        #                  by default on this core.
         lock = self._mp_context.Lock()
         lock.acquire()
         meters = []
@@ -436,6 +434,9 @@ class NFStreamer(object):
                                 meters[i].terminate()
                             child_error = recv.message
                             break
+                        elif recv.id == NFEvent.ALL_AFFINITY_SET:
+                            set_affinity(0)  # we pin streamer to core 0 as it's the less intensive task and several services runs
+                            #                  by default on this core.
                         elif recv.id == NFEvent.SOCKET_CREATE:
                             conn_cache[recv.key] = [recv.process_name, recv.process_pid]
                         elif recv.id == NFEvent.SOCKET_REMOVE:
