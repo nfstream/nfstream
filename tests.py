@@ -99,6 +99,19 @@ class NFStreamTest(object):
         print("{}\t: {}".format(".test_snapshot_length_parameter".ljust(60, ' '), colored('OK', 'green')))
 
     @staticmethod
+    def test_socket_buffer_size_parameter():
+        print("\n----------------------------------------------------------------------")
+        n_exceptions = 0
+        socket_buffer_size = ["largest", -1, 2^31]
+        for x in socket_buffer_size:
+            try:
+                NFStreamer(source=os.path.join("tests", "pcaps", "google_ssl.pcap"), socket_buffer_size=x)
+            except ValueError:
+                n_exceptions += 1
+        assert n_exceptions == 3
+        print("{}\t: {}".format(".test_socket_buffer_size_parameter".ljust(60, ' '), colored('OK', 'green')))
+
+    @staticmethod
     def test_idle_timeout_parameter():
         print("\n----------------------------------------------------------------------")
         n_exceptions = 0
@@ -596,6 +609,7 @@ if __name__ == '__main__':
     NFStreamTest.test_bpf_filter_parameter()
     NFStreamTest.test_promiscuous_mode_parameter()
     NFStreamTest.test_snapshot_length_parameter()
+    NFStreamTest.test_socket_buffer_size_parameter()
     NFStreamTest.test_idle_timeout_parameter()
     NFStreamTest.test_active_timeout_parameter()
     NFStreamTest.test_accounting_mode_parameter()

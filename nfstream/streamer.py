@@ -54,6 +54,7 @@ class NFStreamer(object):
                  bpf_filter=None,
                  promiscuous_mode=True,
                  snapshot_length=1536,
+                 socket_buffer_size=0,
                  idle_timeout=120,  # https://www.kernel.org/doc/Documentation/networking/nf_conntrack-sysctl.txt
                  active_timeout=1800,
                  accounting_mode=0,
@@ -65,8 +66,7 @@ class NFStreamer(object):
                  max_nflows=0,
                  performance_report=0,
                  system_visibility_mode=0,
-                 system_visibility_poll_ms=100,
-                 socket_buffer_size=0):
+                 system_visibility_poll_ms=100):
         with NFStreamer.glock:
             NFStreamer.streamer_id += 1
             self._idx = NFStreamer.streamer_id
@@ -172,6 +172,16 @@ class NFStreamer(object):
         if not isinstance(value, int) or (isinstance(value, int) and value <= 0):
             raise ValueError("Please specify a valid snapshot_length parameter (positive integer).")
         self._snapshot_length = value
+
+    @property
+    def socket_buffer_size(self):
+        return self._socket_buffer_size
+
+    @socket_buffer_size.setter
+    def socket_buffer_size(self, value):
+        if not isinstance(value, int) or (isinstance(value, int) and (value < 0 or value > 2^31-1)):
+            raise ValueError("Please specify a valid socket_buffer_size parameter (positive integer <= 2^31-1).")
+        self._socket_buffer_size = value
 
     @property
     def idle_timeout(self):

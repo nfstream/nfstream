@@ -1446,7 +1446,7 @@ pcap_t * capture_open(const char * pcap_file, int mode, char * child_error, int 
     if (pcap_handle != NULL && socket_buffer_size > 0){
       status = pcap_set_buffer_size(pcap_handle, socket_buffer_size);
       if (status != 0) {
-        ndpi_snprintf(child_error, 256, "%s: Can't set buffer size: %s", pcap_file, pcap_statustostr(status));
+        ndpi_snprintf(child_error, 256, "%s: %s", pcap_file, pcap_statustostr(status));
         return NULL;
       }
     }
