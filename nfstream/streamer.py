@@ -169,7 +169,7 @@ class NFStreamer(object):
 
     @snapshot_length.setter
     def snapshot_length(self, value):
-        if not isinstance(value, int) or (isinstance(value, int) and value <= 0):
+        if not isinstance(value, int) or value <= 0:
             raise ValueError("Please specify a valid snapshot_length parameter (positive integer).")
         self._snapshot_length = value
 
@@ -179,7 +179,7 @@ class NFStreamer(object):
 
     @socket_buffer_size.setter
     def socket_buffer_size(self, value):
-        if not isinstance(value, int) or (isinstance(value, int) and (value < 0 or value > 2**31-1)):
+        if not isinstance(value, int) or (value < 0 or value > 2**31-1):
             raise ValueError("Please specify a valid socket_buffer_size parameter (positive integer <= 2^31-1).")
         self._socket_buffer_size = value
 
@@ -189,8 +189,7 @@ class NFStreamer(object):
 
     @idle_timeout.setter
     def idle_timeout(self, value):
-        if not isinstance(value, int) or (isinstance(value, int) and
-                                          ((value < 0) or (value * 1000) > 18446744073709551615)):  # max uint64_t
+        if not isinstance(value, int) or ((value < 0) or (value * 1000) > 18446744073709551615):  # max uint64_t
             raise ValueError("Please specify a valid idle_timeout parameter (positive integer in seconds).")
         self._idle_timeout = value
 
@@ -200,8 +199,7 @@ class NFStreamer(object):
 
     @active_timeout.setter
     def active_timeout(self, value):
-        if not isinstance(value, int) or (isinstance(value, int) and
-                                          ((value < 0) or (value * 1000) > 18446744073709551615)):  # max uint64_t
+        if not isinstance(value, int) or ((value < 0) or (value * 1000) > 18446744073709551615):  # max uint64_t
             raise ValueError("Please specify a valid active_timeout parameter (positive integer in seconds).")
         self._active_timeout = value
 
@@ -211,7 +209,7 @@ class NFStreamer(object):
 
     @accounting_mode.setter
     def accounting_mode(self, value):
-        if not isinstance(value, int) or (isinstance(value, int) and value not in [0, 1, 2, 3]):
+        if not isinstance(value, int) or (value not in [0, 1, 2, 3]):
             raise ValueError("Please specify a valid accounting_mode parameter (possible values: 0, 1, 2, 3).")
         self._accounting_mode = value
 
@@ -244,7 +242,7 @@ class NFStreamer(object):
 
     @n_dissections.setter
     def n_dissections(self, value):
-        if not isinstance(value, int) or (isinstance(value, int) and (value < 0 or value > 255)):
+        if not isinstance(value, int) or (value < 0 or value > 255):
             raise ValueError("Please specify a valid n_dissections parameter (possible values in : [0,...,255]).")
         self._n_dissections = value
 
@@ -264,7 +262,7 @@ class NFStreamer(object):
 
     @splt_analysis.setter
     def splt_analysis(self, value):
-        if not isinstance(value, int) or (isinstance(value, int) and (value < 0 or value > 255)):
+        if not isinstance(value, int) or (value < 0 or value > 255):
             raise ValueError("Please specify a valid splt_analysis parameter (possible values in : [0,...,255])")
         self._splt_analysis = value
 
