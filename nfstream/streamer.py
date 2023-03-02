@@ -179,7 +179,7 @@ class NFStreamer(object):
 
     @socket_buffer_size.setter
     def socket_buffer_size(self, value):
-        if not isinstance(value, int) or (isinstance(value, int) and (value < 0 or value > 2^31-1)):
+        if not isinstance(value, int) or (isinstance(value, int) and (value < 0 or value > 2**31-1)):
             raise ValueError("Please specify a valid socket_buffer_size parameter (positive integer <= 2^31-1).")
         self._socket_buffer_size = value
 

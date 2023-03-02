@@ -102,7 +102,7 @@ class NFStreamTest(object):
     def test_socket_buffer_size_parameter():
         print("\n----------------------------------------------------------------------")
         n_exceptions = 0
-        socket_buffer_size = ["largest", -1, 2^31]
+        socket_buffer_size = ["largest", -1, 2**31]
         for x in socket_buffer_size:
             try:
                 NFStreamer(source=os.path.join("tests", "pcaps", "google_ssl.pcap"), socket_buffer_size=x)
