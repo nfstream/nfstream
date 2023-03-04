@@ -20,7 +20,6 @@ from socket import SocketKind
 from .utils import NFEvent
 import time
 
-
 # yapf: disable
 NFSocket = namedtuple('NFSocket', ['id',
                                    'key',
@@ -36,6 +35,7 @@ class ConnCache(OrderedDict):
     linked list with sentinel nodes to track order.
     By doing so, we can access in an efficient way idle connections entries that need to expired based on a timeout.
     """
+
     def __init__(self, channel, timeout, *args, **kwds):
         self.channel = channel
         self.timeout = timeout + 5000
@@ -86,12 +86,7 @@ def simplify_protocol(protocol):
 
 def get_conn_key_from_flow(f):
     """ Compute a conn key from NFlow object attributes """
-    return get_flow_key(f.src_ip,
-                        f.src_port,
-                        f.dst_ip,
-                        f.dst_port,
-                        simplify_protocol(f.protocol),
-                        0, 0)
+    return get_flow_key(f.src_ip, f.src_port, f.dst_ip, f.dst_port, simplify_protocol(f.protocol), 0, 0)
 
 
 def match_flow_conn(conn_cache, flow):

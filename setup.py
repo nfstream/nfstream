@@ -27,53 +27,39 @@ if (not sys.version_info[0] == 3) and (not sys.version_info[1] >= 6):
 with open(os.path.join(THIS_DIRECTORY, 'README.md'), encoding='utf-8') as f:
     LONG_DESCRIPTION = f.read()
 
-INSTALL_REQUIRES = ['cffi>=1.15.0',
-                    'psutil>=5.8.0',
-                    'dpkt>=1.9.7',
-                    'numpy>=1.19.5']
+INSTALL_REQUIRES = ['cffi>=1.15.0', 'psutil>=5.8.0', 'dpkt>=1.9.7', 'numpy>=1.19.5']
 
 if platform.python_implementation() == 'PyPy':  # This is mandatory to fix pandas issues with PyPy
     INSTALL_REQUIRES.append("pandas<=1.2.5")
 else:
     INSTALL_REQUIRES.append("pandas>=1.1.5")
 
-
-setup(
-    name="nfstream",
-    version='6.5.4',
-    url='https://www.nfstream.org/',
-    license='LGPLv3',
-    description="A Flexible Network Data Analysis Framework",
-    long_description=LONG_DESCRIPTION,
-    long_description_content_type='text/markdown',
-    author='Zied Aouini',
-    author_email='aouinizied@gmail.com',
-    packages=['nfstream', 'nfstream.plugins', 'nfstream.engine'],
-    setup_requires=["cffi>=1.15.0"],
-    cffi_modules=["nfstream/engine/engine_build.py:ffi_builder"],
-    install_requires=INSTALL_REQUIRES,
-    include_package_data=True,
-    platforms=["Linux", "Mac OS-X", "Windows", "Unix"],
-    classifiers=[
-        'Development Status :: 5 - Production/Stable',
-        'License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)',
-        'Intended Audience :: Telecommunications Industry',
-        'Intended Audience :: Information Technology',
-        'Intended Audience :: System Administrators',
-        'Intended Audience :: Science/Research',
-        'Intended Audience :: Developers',
-        'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
-        'Programming Language :: Python :: 3.10',
-        'Programming Language :: Python :: 3.11',
-        'Topic :: Security',
-        'Topic :: Internet :: Log Analysis',
-        'Topic :: System :: Networking :: Monitoring',
-        'Topic :: Scientific/Engineering :: Artificial Intelligence'
-    ],
-    project_urls={
-        'GitHub': 'https://github.com/nfstream/nfstream',
-    }
-)
+setup(name="nfstream",
+      version='6.5.4',
+      url='https://www.nfstream.org/',
+      license='LGPLv3',
+      description="A Flexible Network Data Analysis Framework",
+      long_description=LONG_DESCRIPTION,
+      long_description_content_type='text/markdown',
+      author='Zied Aouini',
+      author_email='aouinizied@gmail.com',
+      packages=['nfstream', 'nfstream.plugins', 'nfstream.engine'],
+      setup_requires=["cffi>=1.15.0"],
+      cffi_modules=["nfstream/engine/engine_build.py:ffi_builder"],
+      install_requires=INSTALL_REQUIRES,
+      include_package_data=True,
+      platforms=["Linux", "Mac OS-X", "Windows", "Unix"],
+      classifiers=[
+          'Development Status :: 5 - Production/Stable',
+          'License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)',
+          'Intended Audience :: Telecommunications Industry', 'Intended Audience :: Information Technology',
+          'Intended Audience :: System Administrators', 'Intended Audience :: Science/Research',
+          'Intended Audience :: Developers', 'Programming Language :: Python :: 3 :: Only',
+          'Programming Language :: Python :: 3.7', 'Programming Language :: Python :: 3.8',
+          'Programming Language :: Python :: 3.9', 'Programming Language :: Python :: 3.10',
+          'Programming Language :: Python :: 3.11', 'Topic :: Security', 'Topic :: Internet :: Log Analysis',
+          'Topic :: System :: Networking :: Monitoring', 'Topic :: Scientific/Engineering :: Artificial Intelligence'
+      ],
+      project_urls={
+          'GitHub': 'https://github.com/nfstream/nfstream',
+      })

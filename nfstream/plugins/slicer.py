@@ -21,6 +21,7 @@ class FlowSlicer(NFPlugin):
 
     This plugin implements a custom flow expiration logic based on a packets count limit.
     """
+
     def on_init(self, packet, flow):
         if self.limit == 1:
             flow.expiration_id = -1

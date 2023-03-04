@@ -51,8 +51,7 @@ class NFAnonymizer(object):
             values = flow.values()
             for col_idx in self._cols_index:
                 if values[col_idx] is not None:
-                    values[col_idx] = blake2b(str(values[col_idx]).encode(),
-                                              digest_size=64,
+                    values[col_idx] = blake2b(str(values[col_idx]).encode(), digest_size=64,
                                               key=self._secret).hexdigest()
             return values
         return flow.values()

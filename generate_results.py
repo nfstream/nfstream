@@ -42,6 +42,4 @@ if __name__ == '__main__':  # Mandatory if you are running on Windows Platform
                                                                                      "application_is_guessed",
                                                                                      "application_confidence"]]
         # yapf: enable
-        df.to_csv(pcap_file.replace("pcaps",
-                                    "results"),
-                  index=False)
+        df.to_csv(pcap_file.replace("pcaps", "results"), index=False)

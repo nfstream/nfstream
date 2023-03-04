@@ -32,6 +32,7 @@ class SPLT(NFPlugin):
     - splt_ipt: Array with inter packet arrival time in milliseconds.
     Note: Tail will be set with default value -1.
     """
+
     @staticmethod
     def _get_packet_size(packet, accounting_mode):
         if accounting_mode == 0:

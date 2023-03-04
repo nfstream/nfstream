@@ -48,6 +48,7 @@ class DHCP(NFPlugin):
     - dhcp_addr: The IP address allocated to the client
 
     """
+
     def on_init(self, packet, flow):
         flow.udps.dhcp_12 = None  # Sometimes hostname is missing from ndpi
         flow.udps.dhcp_50 = None  # must be anonymized on export
@@ -110,7 +111,8 @@ class DHCP(NFPlugin):
                 if ciaddr != ipaddress.ip_address(0):
                     flow.udps.dhcp_addr = str(ciaddr)
 
-            if msg_type in [MsgType.ACK, MsgType.NACK, MsgType.INFORM, MsgType.DECLINE] or flow.src_ip == str(ipaddress.ip_address(0)):
+            if msg_type in [MsgType.ACK, MsgType.NACK, MsgType.INFORM, MsgType.DECLINE] or flow.src_ip == str(
+                    ipaddress.ip_address(0)):
                 flow.expiration_id = -1
 
             if flow.udps.dhcp_msg_type is None:

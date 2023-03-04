@@ -98,15 +98,19 @@ def update_performances(performances, is_linux, flows_count):
             ignored = max(meter[2].value, ignored)
         processed += meter[1].value
         load.append(meter[1].value)
-    print(json.dumps({"flows_expired": flows_count.value,
-                      "packets_processed": processed,
-                      "packets_ignored": ignored,
-                      "packets_dropped_filtered_by_kernel": drops,
-                      "meters_packets_processing_balance": load}))
+    print(
+        json.dumps({
+            "flows_expired": flows_count.value,
+            "packets_processed": processed,
+            "packets_ignored": ignored,
+            "packets_dropped_filtered_by_kernel": drops,
+            "meters_packets_processing_balance": load
+        }))
 
 
 class RepeatedTimer(object):
     """ Repeated timer thread """
+
     def __init__(self, interval, function, *args, **kwargs):
         self._timer = None
         self.interval = interval
@@ -131,11 +135,12 @@ class RepeatedTimer(object):
         self._timer.cancel()
         self.is_running = False
 
-            
+
 def chunks_of_list(lst, n):
     """ create list of chunks of size n from a list"""
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
+
 
 def set_affinity(idx):
     """ CPU affinity setter """

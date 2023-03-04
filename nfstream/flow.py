@@ -328,8 +328,8 @@ class NFlow(object):
             if system_visibility_mode == 2:
                 self.system_browser_tab = ""
 
-    def update(self, packet, idle_timeout, active_timeout, ffi, lib, udps, sync, accounting_mode,
-               n_dissections, statistics, splt, dissector):
+    def update(self, packet, idle_timeout, active_timeout, ffi, lib, udps, sync, accounting_mode, n_dissections,
+               statistics, splt, dissector):
         """ NFlow update method """
         # First, we update internal C structure.
         ret = lib.meter_update_flow(self._C, packet, idle_timeout, active_timeout, accounting_mode, statistics, splt,
@@ -342,7 +342,7 @@ class NFlow(object):
             # We need to copy computed values on C struct.
             for udp in udps:  # Then call each plugin on_update entrypoint.
                 udp.on_update(pythonize_packet(packet, ffi, self), self)
-            if self.expiration_id == -1: # One of the plugins set expiration to custom value (-1)
+            if self.expiration_id == -1:  # One of the plugins set expiration to custom value (-1)
                 return self.expire(udps, sync, n_dissections, statistics, splt, ffi, lib, dissector)  # Expire it.
 
     def expire(self, udps, sync, n_dissections, statistics, splt, ffi, lib, dissector):
@@ -383,13 +383,13 @@ class NFlow(object):
             bidirectional_packets = self.bidirectional_packets
             # NOTE: We need the root square of the variance to provide sample stddev (Var**0.5)/(n-1)
             if bidirectional_packets > 1:
-                self.bidirectional_stddev_ps = sqrt(self._C.bidirectional_stddev_ps/(bidirectional_packets - 1))
+                self.bidirectional_stddev_ps = sqrt(self._C.bidirectional_stddev_ps / (bidirectional_packets - 1))
             self.bidirectional_max_ps = self._C.bidirectional_max_ps
             self.src2dst_min_ps = self._C.src2dst_min_ps
             self.src2dst_mean_ps = self._C.src2dst_mean_ps
             src2dst_packets = self.src2dst_packets
             if src2dst_packets > 1:
-                self.src2dst_stddev_ps = sqrt(self._C.src2dst_stddev_ps/(src2dst_packets - 1))
+                self.src2dst_stddev_ps = sqrt(self._C.src2dst_stddev_ps / (src2dst_packets - 1))
             self.src2dst_max_ps = self._C.src2dst_max_ps
             self.dst2src_min_ps = self._C.dst2src_min_ps
             self.dst2src_mean_ps = self._C.dst2src_mean_ps
@@ -400,17 +400,18 @@ class NFlow(object):
             self.bidirectional_min_piat_ms = self._C.bidirectional_min_piat_ms
             self.bidirectional_mean_piat_ms = self._C.bidirectional_mean_piat_ms
             if bidirectional_packets > 2:
-                self.bidirectional_stddev_piat_ms = sqrt(self._C.bidirectional_stddev_piat_ms/(bidirectional_packets-2))
+                self.bidirectional_stddev_piat_ms = sqrt(self._C.bidirectional_stddev_piat_ms /
+                                                         (bidirectional_packets - 2))
             self.bidirectional_max_piat_ms = self._C.bidirectional_max_piat_ms
             self.src2dst_min_piat_ms = self._C.src2dst_min_piat_ms
             self.src2dst_mean_piat_ms = self._C.src2dst_mean_piat_ms
             if src2dst_packets > 2:
-                self.src2dst_stddev_piat_ms = sqrt(self._C.src2dst_stddev_piat_ms/(src2dst_packets - 2))
+                self.src2dst_stddev_piat_ms = sqrt(self._C.src2dst_stddev_piat_ms / (src2dst_packets - 2))
             self.src2dst_max_piat_ms = self._C.src2dst_max_piat_ms
             self.dst2src_min_piat_ms = self._C.dst2src_min_piat_ms
             self.dst2src_mean_piat_ms = self._C.dst2src_mean_piat_ms
             if dst2src_packets > 2:
-                self.dst2src_stddev_piat_ms = sqrt(self._C.dst2src_stddev_piat_ms/(dst2src_packets - 2))
+                self.dst2src_stddev_piat_ms = sqrt(self._C.dst2src_stddev_piat_ms / (dst2src_packets - 2))
             self.dst2src_max_piat_ms = self._C.dst2src_max_piat_ms
             self.bidirectional_syn_packets = self._C.bidirectional_syn_packets
             self.bidirectional_cwr_packets = self._C.bidirectional_cwr_packets
@@ -479,8 +480,8 @@ class NFlow(object):
                 else:
                     if attr_name == 'udps':
                         for udp_name in self.udps.__dict__.keys():
-                            printable += ',\n      ' + attr_name + '.' + udp_name + "=" + str(getattr(self.udps,
-                                                                                                        udp_name))
+                            printable += ',\n      ' + attr_name + '.' + udp_name + "=" + str(
+                                getattr(self.udps, udp_name))
                     else:
                         printable += ',\n      ' + attr_name + "=" + str(getattr(self, attr_name))
             except AttributeError:

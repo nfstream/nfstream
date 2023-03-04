@@ -26,7 +26,7 @@ def cdef_to_replace(cdef):
     for idx, sub_def in enumerate(cdef_list):
         end = sub_def.find("}")
         if end and idx:
-            to_rep.append(sub_def[:end+1])
+            to_rep.append(sub_def[:end + 1])
     to_rep.append("typedef __builtin_va_list __darwin_va_list;")
     to_rep.append("typedef __signed char int8_t;")
     to_rep.append(" __attribute__((__packed__))")
@@ -54,26 +54,22 @@ if os.name != 'posix':  # Windows case, we must take into account msys2 path tre
     USR = "mingw64"
     USR_LOCAL = "mingw64"
 
-
 BUILD_SCRIPT_PATH = str(pathlib.Path(__file__).parent.resolve().joinpath("scripts").joinpath("build"))
 # Patched path as it is passed to msys2 bash
 ENGINE_PATH = str(pathlib.Path(__file__).parent.resolve()).replace("\\", "/")
 
-
 if os.name != 'posix':  # Windows case
     os.environ["MSYSTEM"] = "MINGW64"
     BUILD_CMD = r"""'{}'""".format(str(BUILD_SCRIPT_PATH) + "_windows.sh")
-    subprocess.check_call(["{msys}/usr/bin/bash".format(msys=ROOT).replace("/", "\\"),
-                           "-l",
-                           BUILD_CMD,
-                           ENGINE_PATH],
+    subprocess.check_call(["{msys}/usr/bin/bash".format(msys=ROOT).replace("/", "\\"), "-l", BUILD_CMD, ENGINE_PATH],
                           shell=True)
 else:  # Linux, MacOS
     subprocess.check_call([str(BUILD_SCRIPT_PATH) + ".sh"], shell=True)
 
-
-INCLUDE_DIRS = ["{root}/tmp/nfstream_build/{usr}/include/ndpi".format(root=ROOT, usr=USR),
-                "{root}/tmp/nfstream_build/{usr}/include".format(root=ROOT, usr=USR_LOCAL)]
+INCLUDE_DIRS = [
+    "{root}/tmp/nfstream_build/{usr}/include/ndpi".format(root=ROOT, usr=USR),
+    "{root}/tmp/nfstream_build/{usr}/include".format(root=ROOT, usr=USR_LOCAL)
+]
 EXTRALINK_ARGS = ["{root}/tmp/nfstream_build/{usr}/lib/libndpi.a".format(root=ROOT, usr=USR)]
 
 if os.name != 'posix':  # Windows
@@ -81,11 +77,11 @@ if os.name != 'posix':  # Windows
     if os.path.exists(convert_path("{root}/{usr}/lib/libmingwex.a".format(root=ROOT, usr=USR))):
         EXTRALINK_ARGS.append("{root}/{usr}/lib/libmingwex.a".format(root=ROOT, usr=USR))
     else:  # best effort guess
-        EXTRALINK_ARGS.append("{root}/{usr}/lib/libmingwex.a".format(root=ROOT, usr=USR+"/x86_64-w64-mingw32"))
+        EXTRALINK_ARGS.append("{root}/{usr}/lib/libmingwex.a".format(root=ROOT, usr=USR + "/x86_64-w64-mingw32"))
     if os.path.exists(convert_path("{root}/{usr}/lib/libmsvcrt.a".format(root=ROOT, usr=USR))):
         EXTRALINK_ARGS.append("{root}/{usr}/lib/libmsvcrt.a".format(root=ROOT, usr=USR))
     else:  # best effort guess
-        EXTRALINK_ARGS.append("{root}/{usr}/lib/libmsvcrt.a".format(root=ROOT, usr=USR+"/x86_64-w64-mingw32"))
+        EXTRALINK_ARGS.append("{root}/{usr}/lib/libmsvcrt.a".format(root=ROOT, usr=USR + "/x86_64-w64-mingw32"))
     with open(convert_path("{root}/tmp/nfstream_build/gcc_version.in".format(root=ROOT))) as gcc_version_in:
         GCC_VERSION = gcc_version_in.read().split("\n")[0].split(")")[-1].strip()
     EXTRALINK_ARGS.append("{root}/{usr}/lib/gcc/x86_64-w64-mingw32/{version}/libgcc.a".format(root=ROOT,
@@ -128,9 +124,7 @@ with open(convert_path("{root}/tmp/nfstream_build/ndpi_cdefinitions_packed.h".fo
 
 NDPI_PACKED_STRUCTURES = NDPI_PACKED.split("//CFFI.NDPI_PACKED_STRUCTURES")[1]
 
-
 # --------------------------------Engine Library Magic Code Generator --------------------------------------------------
-
 
 # As cdef do not support if-def, yet we fix it by simple string replacement
 SOCK_INCLUDES = """#include <unistd.h>\n#include <netinet/in.h>\n#include <sys/time.h>"""
@@ -180,7 +174,6 @@ const char *engine_lib_pcap_version(void);
 """
 ffi_builder = FFI()
 
-
 ffi_builder.set_source("_lib_engine",
                        ENGINE_SOURCE,
                        include_dirs=[convert_path(d) for d in INCLUDE_DIRS],
@@ -206,7 +199,6 @@ ffi_builder.cdef(NDPI_PACKED_STRUCTURES, packed=True)
 ffi_builder.cdef(NDPI_CDEF, override=True)
 ffi_builder.cdef(ENGINE_CDEF.split("//CFFI_SHARED_STRUCTURES")[1])
 ffi_builder.cdef(ENGINE_APIS)
-
 
 if __name__ == "__main__":
     ffi_builder.compile(verbose=True)

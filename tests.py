@@ -32,6 +32,7 @@ def get_files_list(path):
 
 
 class NFStreamTest(object):
+
     @staticmethod
     def test_source_parameter():
         print("\n----------------------------------------------------------------------")
@@ -52,8 +53,7 @@ class NFStreamTest(object):
         decode_tunnels = [33, "True"]
         for x in decode_tunnels:
             try:
-                NFStreamer(source=os.path.join("tests", "pcaps", "google_ssl.pcap"),
-                           decode_tunnels=x)
+                NFStreamer(source=os.path.join("tests", "pcaps", "google_ssl.pcap"), decode_tunnels=x)
             except ValueError:
                 n_exceptions += 1
         assert n_exceptions == 2
@@ -235,8 +235,7 @@ class NFStreamTest(object):
         n_meters = ["yes", -1]
         for x in n_meters:
             try:
-                NFStreamer(source=os.path.join("tests", "pcaps", "google_ssl.pcap"),
-                           n_meters=x)
+                NFStreamer(source=os.path.join("tests", "pcaps", "google_ssl.pcap"), n_meters=x)
             except ValueError:
                 n_exceptions += 1
         assert n_exceptions == 2
@@ -249,8 +248,7 @@ class NFStreamTest(object):
         max_nflows = ["yes", -1]
         for x in max_nflows:
             try:
-                NFStreamer(source=os.path.join("tests", "pcaps", "google_ssl.pcap"),
-                           max_nflows=x)
+                NFStreamer(source=os.path.join("tests", "pcaps", "google_ssl.pcap"), max_nflows=x)
             except ValueError:
                 n_exceptions += 1
         assert n_exceptions == 2
@@ -304,7 +302,8 @@ class NFStreamTest(object):
         print("\n----------------------------------------------------------------------")
         n_exceptions = 0
         decode_streamer = NFStreamer(source=os.path.join("tests", "pcaps", "gtp-u.pcap"),
-                                     statistical_analysis=True, decode_tunnels=True)
+                                     statistical_analysis=True,
+                                     decode_tunnels=True)
         for flow in decode_streamer:
             assert flow.tunnel_id == 1
         decode_streamer.decode_tunnels = False
@@ -321,7 +320,8 @@ class NFStreamTest(object):
     def test_statistical():
         print("\n----------------------------------------------------------------------")
         statistical_streamer = NFStreamer(source=os.path.join("tests", "pcaps", "google_ssl.pcap"),
-                                          statistical_analysis=True, accounting_mode=1)
+                                          statistical_analysis=True,
+                                          accounting_mode=1)
         for flow in statistical_streamer:
             assert flow.id == 0
             assert flow.expiration_id == 0
@@ -407,7 +407,8 @@ class NFStreamTest(object):
     def test_fingerprint_extraction():
         print("\n----------------------------------------------------------------------")
         fingerprint_streamer = NFStreamer(source=os.path.join("tests", "pcaps", "facebook.pcap"),
-                                          statistical_analysis=True, accounting_mode=1)
+                                          statistical_analysis=True,
+                                          accounting_mode=1)
         for flow in fingerprint_streamer:
             assert flow.application_name == 'TLS.Facebook'
             assert flow.application_category_name == 'SocialNetwork'
@@ -415,11 +416,13 @@ class NFStreamTest(object):
             assert flow.application_confidence == 6
             requested_server_name = flow.requested_server_name in ['facebook.com', 'www.facebook.com']
             assert int(requested_server_name) == 1
-            client_fingerprint = flow.client_fingerprint in ['bfcc1a3891601edb4f137ab7ab25b840',
-                                                             '5c60e71f1b8cd40e4d40ed5b6d666e3f']
+            client_fingerprint = flow.client_fingerprint in [
+                'bfcc1a3891601edb4f137ab7ab25b840', '5c60e71f1b8cd40e4d40ed5b6d666e3f'
+            ]
             assert int(client_fingerprint) == 1
-            server_fingerprint = flow.server_fingerprint in ['2d1eb5817ece335c24904f516ad5da12',
-                                                             '96681175a9547081bf3d417f1a572091']
+            server_fingerprint = flow.server_fingerprint in [
+                '2d1eb5817ece335c24904f516ad5da12', '96681175a9547081bf3d417f1a572091'
+            ]
             assert int(server_fingerprint) == 1
         del fingerprint_streamer
         print("{}\t: {}".format(".test_fingerprint_extraction".ljust(60, ' '), colored('OK', 'green')))
@@ -428,7 +431,8 @@ class NFStreamTest(object):
     def test_export():
         print("\n----------------------------------------------------------------------")
         df = NFStreamer(source=os.path.join("tests", "pcaps", "steam.pcap"),
-                        statistical_analysis=True, n_dissections=20).to_pandas()
+                        statistical_analysis=True,
+                        n_dissections=20).to_pandas()
         df_anon = NFStreamer(source=os.path.join("tests", "pcaps", "steam.pcap"),
                              statistical_analysis=True,
                              n_dissections=20).to_pandas(columns_to_anonymize=["src_ip", "dst_ip"])
@@ -437,10 +441,12 @@ class NFStreamTest(object):
         assert df_anon['src_ip'].nunique() == df['src_ip'].nunique()
         assert df_anon['dst_ip'].nunique() == df['dst_ip'].nunique()
         total_flows = NFStreamer(source=os.path.join("tests", "pcaps", "steam.pcap"),
-                                 statistical_analysis=True, n_dissections=20).to_csv()
+                                 statistical_analysis=True,
+                                 n_dissections=20).to_csv()
         df_from_csv = pd.read_csv(os.path.join("tests", "pcaps", "steam.pcap.csv"))
         total_flows_anon = NFStreamer(source=os.path.join("tests", "pcaps", "steam.pcap"),
-                                      statistical_analysis=True, n_dissections=20).to_csv()
+                                      statistical_analysis=True,
+                                      n_dissections=20).to_csv()
         df_anon_from_csv = pd.read_csv(os.path.join("tests", "pcaps", "steam.pcap.csv"))
         os.remove(os.path.join("tests", "pcaps", "steam.pcap.csv"))
         assert total_flows == total_flows_anon
@@ -462,7 +468,6 @@ class NFStreamTest(object):
         assert last_id == 0
         print("{}\t: {}".format(".test_bpf".ljust(60, ' '), colored('OK', 'green')))
 
-
     @staticmethod
     def test_ndpi_integration():
         print("\n----------------------------------------------------------------------")
@@ -473,15 +478,10 @@ class NFStreamTest(object):
         for file_idx, test_file in enumerate(pcap_files):
             test_case_name = os.path.basename(test_file)
             try:
-                test = NFStreamer(source=test_file,
-                                  n_dissections=20,
-                                  n_meters=1).to_pandas()[["id",
-                                                           "bidirectional_packets",
-                                                           "bidirectional_bytes",
-                                                           "application_name",
-                                                           "application_category_name",
-                                                           "application_is_guessed",
-                                                           "application_confidence"]].to_dict()
+                test = NFStreamer(source=test_file, n_dissections=20, n_meters=1).to_pandas()[[
+                    "id", "bidirectional_packets", "bidirectional_bytes", "application_name",
+                    "application_category_name", "application_is_guessed", "application_confidence"
+                ]].to_dict()
 
                 true = pd.read_csv(result_files[file_idx]).to_dict()
                 assert test == true
@@ -495,7 +495,8 @@ class NFStreamTest(object):
     @staticmethod
     def test_splt():
         print("\n----------------------------------------------------------------------")
-        splt_df = NFStreamer(source=os.path.join("tests", "pcaps", "google_ssl.pcap"), splt_analysis=5,
+        splt_df = NFStreamer(source=os.path.join("tests", "pcaps", "google_ssl.pcap"),
+                             splt_analysis=5,
                              udps=SPLT(sequence_length=5, accounting_mode=0)).to_pandas()
         direction = json.loads(splt_df["udps.splt_direction"][0])
         ps = json.loads(splt_df["udps.splt_ps"][0])
@@ -540,10 +541,12 @@ class NFStreamTest(object):
     @staticmethod
     def test_multi_files():
         print("\n----------------------------------------------------------------------")
-        multi_files = [os.path.join("tests", "pcaps", "one_flow_1_5.pcap"),
-                       os.path.join("tests", "pcaps", "one_flow_6_10.pcap"),
-                       os.path.join("tests", "pcaps", "one_flow_11_15.pcap"),
-                       os.path.join("tests", "pcaps", "one_flow_16_19.pcap")]
+        multi_files = [
+            os.path.join("tests", "pcaps", "one_flow_1_5.pcap"),
+            os.path.join("tests", "pcaps", "one_flow_6_10.pcap"),
+            os.path.join("tests", "pcaps", "one_flow_11_15.pcap"),
+            os.path.join("tests", "pcaps", "one_flow_16_19.pcap")
+        ]
         for flow in NFStreamer(source=multi_files):
             assert flow.id == 0
             assert flow.expiration_id == 0
