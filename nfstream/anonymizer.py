@@ -23,10 +23,12 @@ class NFAnonymizer(object):
         Anonymizer is initiated at each time to_csv or to_pandas is called with a random secret key (64 bytes).
         Each specified column is anonymized using blake2b algorithm (digest_size: 64 bytes).
     """
+    # yapf: disable
     __slots__ = ('_secret',
                  '_cols_names',
                  '_cols_index',
                  "_enabled")
+    # yapf: enable
 
     def __init__(self, cols_names):
         self._secret = secrets.token_bytes(64)

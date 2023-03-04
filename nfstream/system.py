@@ -21,10 +21,12 @@ from .utils import NFEvent
 import time
 
 
+# yapf: disable
 NFSocket = namedtuple('NFSocket', ['id',
                                    'key',
                                    'process_pid',
                                    'process_name'])
+# yapf: enable
 
 
 class ConnCache(OrderedDict):

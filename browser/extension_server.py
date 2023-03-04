@@ -18,7 +18,7 @@ from collections import namedtuple
 import json
 import sys
 
-
+# yapf: disable
 NFRequest = namedtuple('NFRequest', ['browser',
                                      'timestamp',
                                      'remote_ip',
@@ -26,6 +26,7 @@ NFRequest = namedtuple('NFRequest', ['browser',
                                      'request_id',
                                      'tab_is_active',
                                      'tab_url'])
+# yapf: enable
 
 
 class NFRequestHandler(BaseHTTPRequestHandler):

@@ -17,6 +17,7 @@ from collections import namedtuple
 from math import sqrt
 from .utils import NFEvent
 
+# yapf: disable
 # When NFStream is extended with plugins, packer C structure is pythonized using the following namedtuple.
 nf_packet = namedtuple('NFPacket', ['time',
                                     'delta_time',
@@ -46,6 +47,7 @@ nf_packet = namedtuple('NFPacket', ['time',
                                     'rst',
                                     'fin',
                                     'tunnel_id'])
+# yapf: enable
 
 
 class UDPS(object):
@@ -108,6 +110,7 @@ class NFlow(object):
         we pay the cost of flexibility with attributes access/update.
 
     """
+    # yapf: disable
     __slots__ = ('id',
                  'expiration_id',
                  'src_ip',
@@ -202,6 +205,7 @@ class NFlow(object):
                  'system_process_pid',
                  'system_process_name',
                  'system_browser_tab')
+    # yapf: enable
 
     def __init__(self, packet, ffi, lib, udps, sync, accounting_mode, n_dissections, statistics, splt, dissector,
                  decode_tunnels, system_visibility_mode):
