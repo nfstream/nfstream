@@ -108,7 +108,7 @@ class PerformanceStats:
         return self.performances[idx]
 
     def update_performances(self):
-        """ Update performance report and check platform for consistency """
+        """ Update performance report """
         received = 0
         drops = 0
         drops_if = 0
