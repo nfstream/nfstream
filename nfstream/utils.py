@@ -83,25 +83,53 @@ def open_file(path, chunked, chunk_idx, rotate_files):
         return open(path.replace("csv", "{}.csv".format(chunk_idx)), 'wb')
 
 
+class PerformanceStats:
+    """ Store all meter performance stats """
+
+    def __init__(self, n_meters, context):
+        self.performances = []
+        for _ in range(n_meters):
+            self.performances.append(
+                {
+                    "received": context.Value("I", 0),
+                    "dropped": context.Value("I", 0),
+                    "dropped_if": context.Value("I", 0),
+                    "processed": context.Value("I", 0),
+                    "ignored": context.Value("I", 0),
+                }
+            )
+
+    def __getitem__(self, idx):
+        return self.performances[idx]
+
+
 def update_performances(performances, is_linux, flows_count):
     """ Update performance report and check platform for consistency """
+    received = 0
     drops = 0
+    drops_if = 0
     processed = 0
     ignored = 0
     load = []
     for meter in performances:
         if is_linux:
-            drops += meter[0].value
-            ignored += meter[2].value
+            received += meter["received"].value
+            drops += meter["dropped"].value
+            drops_if += meter["dropped_if"].value
+            ignored += meter["ignored"].value
         else:
-            drops = max(meter[0].value, drops)
-            ignored = max(meter[2].value, ignored)
-        processed += meter[1].value
-        load.append(meter[1].value)
+            received = max(meter["received"].value, received)
+            drops = max(meter["dropped"].value, drops)
+            drops_if = max(meter["dropped_if"].value, drops_if)
+            ignored = max(meter["ignored"].value, ignored)
+        processed += meter["processed"].value
+        load.append(meter["processed"].value)
     print(json.dumps({"flows_expired": flows_count.value,
+                      "packets_received": received,
                       "packets_processed": processed,
                       "packets_ignored": ignored,
                       "packets_dropped_filtered_by_kernel": drops,
+                      "packets_dropped_filtered_by_interface": drops_if,
                       "meters_packets_processing_balance": load}))
 
 

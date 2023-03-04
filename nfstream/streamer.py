@@ -26,7 +26,7 @@ from .meter import meter_workflow
 from .anonymizer import NFAnonymizer
 from .engine import is_interface
 from .plugin import NFPlugin
-from .utils import csv_converter, open_file, RepeatedTimer, update_performances, set_affinity, available_cpus_count
+from .utils import csv_converter, open_file, RepeatedTimer, PerformanceStats, update_performances, set_affinity, available_cpus_count
 from .utils import validate_flows_per_file, NFMode, create_csv_file_path, NFEvent, validate_rotate_files
 from .system import system_socket_worflow, match_flow_conn
 
@@ -361,7 +361,6 @@ class NFStreamer(object):
         lock = self._mp_context.Lock()
         lock.acquire()
         meters = []
-        performances = []
         n_terminated = 0
         child_error = None
         rt = None
@@ -373,10 +372,7 @@ class NFStreamer(object):
         # multiprocessing Value invocation must be performed before the call to Queue.
         n_meters = self.n_meters
         idx_generator = self._mp_context.Value('i', 0)
-        for i in range(n_meters):
-            performances.append([self._mp_context.Value('I', 0),
-                                 self._mp_context.Value('I', 0),
-                                 self._mp_context.Value('I', 0)])
+        performances = PerformanceStats(n_meters, self._mp_context)
         channel = self._mp_context.Queue(maxsize=32767)  # Backpressure strategy.
         #                                                  We set it to (2^15-1) to cope with OSX max semaphore value.
         group_id = os.getpid() + self._idx  # Used for fanout on Linux systems

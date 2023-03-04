@@ -178,9 +178,11 @@ def meter_cleanup(cache, channel, udps, sync, n_dissections, statistics, splt, f
 def capture_track(lib, capture, mode, interface_stats, tracker, processed, ignored):
     """ Update shared performance values """
     lib.capture_stats(capture, interface_stats, mode)
-    tracker[0].value = interface_stats.dropped
-    tracker[1].value = processed
-    tracker[2].value = ignored
+    tracker["received"].value = interface_stats.received
+    tracker["dropped"].value = interface_stats.dropped
+    tracker["dropped_if"].value = interface_stats.dropped_by_interface
+    tracker["processed"].value = processed
+    tracker["ignored"].value = ignored
 
 
 def send_error(root_idx, channel, msg):
