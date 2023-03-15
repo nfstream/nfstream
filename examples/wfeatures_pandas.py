@@ -22,8 +22,6 @@ except ImportError:
     print("Please install pywt: pip install PyWavelets")
     sys.exit(1)
 
-
-
 if __name__ == '__main__':  # Mandatory if you are running on Windows Platform
     path = sys.argv[1]
     print("nfstream processing started. Use Ctrl+C to interrupt and save.")

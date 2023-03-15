@@ -16,6 +16,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 class NFPlugin(object):
     """ NFPlugin class: Main entry point to extend NFStream """
+
     def __init__(self, **kwargs):
         """
         NFPlugin Parameters:
