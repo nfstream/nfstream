@@ -106,19 +106,40 @@ def pythonize_packet(packet, ffi, flow):
         tunnel_id=packet.tunnel_id,
     )
 
+def convert_struct_field(s, fields, ffi):
+    for field, fieldtype in fields:
+        if fieldtype.type.kind == 'primitive':
+            yield (field, getattr(s, field))
+        else:
+            yield (field, convert_to_python(getattr(s, field), ffi))
 
-def cdata_dict(cd, ffi):
-    """ convert a cdata struct into a dict """
-    if isinstance(cd, ffi.CData):
-        try:
-            return ffi.string(cd).decode('utf-8', errors='ignore')
-        except TypeError:
-            try:
-                return [cdata_dict(x, ffi) for x in cd]
-            except TypeError:
-                return {k: cdata_dict(v, ffi) for k, v in getmembers(cd)}
-    else:
-        return cd
+def convert_to_python(s, ffi):
+    type = ffi.typeof(s)
+    if type.kind == 'struct':
+        return dict(convert_struct_field(s, type.fields, ffi))
+    elif type.kind == 'array':
+        if type.item.kind == 'primitive':
+            if type.item.cname == 'char':
+                return ffi.string(s).decode('utf-8', errors='ignore')
+            else:
+                return [s[i] for i in range(type.length)]
+        else:
+            return [ convert_to_python(s[i], ffi) for i in range(type.length) ]
+    elif type.kind == 'primitive':
+        return int(s)
+
+def convert_risks(s, ffi):
+    risks = {}
+    type = ffi.typeof(s)
+    if type.kind == 'array':
+        for i in range(type.length):
+            risk = convert_to_python(s[i], ffi)
+            risk_type = risk['risk']
+            if risk_type != '':
+                del risk['risk'] 
+                risks[risk_type] = risk
+    return risks
+
 
 class NFlow(object):
     """
@@ -441,7 +462,7 @@ class NFlow(object):
                 ).decode("utf-8", errors="ignore")
                 self.application_is_guessed = self._C.guessed
                 self.application_confidence = self._C.confidence
-                self.flow_risk = [d for d in cdata_dict(self._C.nf_risk_t, ffi) if d['risk'] != '']
+                convert_risks(self._C.nf_risk_t, ffi)
                 self.requested_server_name = ffi.string(self._C.requested_server_name).decode('utf-8', errors='ignore')
                 self.client_fingerprint = ffi.string(self._C.c_hash).decode('utf-8', errors='ignore')
                 self.server_fingerprint = ffi.string(self._C.s_hash).decode('utf-8', errors='ignore')
@@ -452,7 +473,7 @@ class NFlow(object):
                 self.application_category_name = None
                 self.application_is_guessed = None
                 self.application_confidence = None
-                self.flow_risk = []
+                self.flow_risk = {}
                 self.requested_server_name = None
                 self.client_fingerprint = None
                 self.server_fingerprint = None
@@ -649,7 +670,8 @@ class NFlow(object):
                 )
                 self.application_is_guessed = self._C.guessed
                 self.application_confidence = self._C.confidence
-                self.flow_risk = [d for d in cdata_dict(self._C.nf_risk_t, ffi) if d['risk'] != '']
+                self.flow_risk = convert_risks(self._C.nf_risk_t, ffi)
+                
 
         if splt:
             if (
