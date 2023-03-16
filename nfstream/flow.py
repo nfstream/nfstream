@@ -16,7 +16,6 @@ If not, see <http://www.gnu.org/licenses/>.
 from collections import namedtuple
 from math import sqrt
 from .utils import NFEvent
-from inspect import getmembers
 
 
 # When NFStream is extended with plugins, packer C structure is pythonized using the following namedtuple.
