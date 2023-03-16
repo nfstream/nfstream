@@ -461,7 +461,7 @@ class NFlow(object):
                 ).decode("utf-8", errors="ignore")
                 self.application_is_guessed = self._C.guessed
                 self.application_confidence = self._C.confidence
-                convert_risks(self._C.nf_risk_t, ffi)
+                self.flow_risk = convert_risks(self._C.nf_risk_t, ffi)
                 self.requested_server_name = ffi.string(self._C.requested_server_name).decode('utf-8', errors='ignore')
                 self.client_fingerprint = ffi.string(self._C.c_hash).decode('utf-8', errors='ignore')
                 self.server_fingerprint = ffi.string(self._C.s_hash).decode('utf-8', errors='ignore')
