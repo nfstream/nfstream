@@ -262,8 +262,10 @@ class NFStreamer(object):
 
     @splt_analysis.setter
     def splt_analysis(self, value):
-        if not isinstance(value, int) or (value < 0 or value > 255):
-            raise ValueError("Please specify a valid splt_analysis parameter (possible values in : [0,...,255])")
+        if not isinstance(value, int) or (value < 0 or value > 65535):
+            raise ValueError("Please specify a valid splt_analysis parameter (possible values in : [0,...,65535])")
+        if value > 255:
+            print("[WARNING]: The specified splt_analysis parameter is higher than 255. High values can impact the performance of the tool.")
         self._splt_analysis = value
 
     @property
