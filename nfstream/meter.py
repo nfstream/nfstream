@@ -138,6 +138,11 @@ def consume(packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps
                 try:
                     cache[flow_key] = NFlow(packet, ffi, lib, udps, sync, accounting_mode, n_dissections,
                                             statistics, splt, dissector, decode_tunnels, system_visibility_mode)
+                    if cache[flow_key].expiration_id == -1:  # A user Plugin forced expiration on the first packet
+                        channel.put(
+                            cache[flow_key].expire(udps, sync, n_dissections, statistics, splt, ffi, lib, dissector))
+                        del cache[flow_key]
+                        state = 0
                 except OSError:
                     print("WARNING: Failed to allocate memory space for flow creation. Flow creation aborted.")
                 state = 0
