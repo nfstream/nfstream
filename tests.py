@@ -219,7 +219,7 @@ class NFStreamTest(object):
     def test_splt_analysis_parameter():
         print("\n----------------------------------------------------------------------")
         n_exceptions = 0
-        splt_analysis = [-1, 256, "yes"]
+        splt_analysis = [-1, 70000, "yes"]
         for x in splt_analysis:
             try:
                 NFStreamer(source=os.path.join("tests", "pcaps", "google_ssl.pcap"), splt_analysis=x)
