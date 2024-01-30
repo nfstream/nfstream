@@ -3,8 +3,6 @@ from scapy.all import IP, TCP, UDP
 import hashlib
 
 # JA4 construction functions
-
-
 def get_protocol(packet):
     """Protocol detection function, also returns packet payload (TCP or UDP)
         (protocol detection will be used in the future, but for the moment
