@@ -1,0 +1,5 @@
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
+0,39,16368,TLS.DNScrypt,Network,0,6
+1,18,8515,TLS.DNScrypt,Network,0,5
+2,18,8515,TLS.DNScrypt,Network,0,5
+3,36,11278,TLS.DNScrypt,Network,0,5

@@ -1,0 +1,9 @@
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
+0,4,547,MongoDB,Database,0,6
+1,2,152,MongoDB,Database,1,1
+2,4,359,MongoDB,Database,0,6
+3,2,152,MongoDB,Database,1,1
+4,4,358,MongoDB,Database,0,6
+5,4,569,MongoDB,Database,0,6
+6,4,373,MongoDB,Database,0,6
+7,3,230,Unknown,Unspecified,0,0

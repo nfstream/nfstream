@@ -1,0 +1,4 @@
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
+0,22,2879,TLS,Web,0,6
+1,17,3377,TLS.Snapchat,SocialNetwork,0,6
+2,17,3943,TLS.Snapchat,SocialNetwork,0,6
