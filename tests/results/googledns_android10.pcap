@@ -1,9 +1,0 @@
-id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
-0,6,384,DoH_DoT,Network,1,1
-1,21,5245,TLS.DoH_DoT,Network,0,6
-2,21,5245,TLS.DoH_DoT,Network,0,6
-3,104,28095,TLS.DoH_DoT,Network,0,6
-4,4,392,ICMP,Network,0,6
-5,2,120,DoH_DoT,Network,1,1
-6,133,28622,TLS.DoH_DoT,Network,0,6
-7,241,64791,TLS.DoH_DoT,Network,0,6
