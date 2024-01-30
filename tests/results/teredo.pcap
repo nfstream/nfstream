@@ -1,6 +1,0 @@
-id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
-0,4,508,Teredo,Network,0,6
-1,2,254,Teredo,Network,0,6
-2,2,254,Teredo,Network,0,6
-3,2,254,Teredo,Network,0,6
-4,14,1304,Teredo,Network,0,6

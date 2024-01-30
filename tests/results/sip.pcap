@@ -1,7 +1,0 @@
-id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
-0,9,4787,SIP,VoIP,0,6
-1,41,15805,SIP,VoIP,0,6
-2,18,9512,SIP,VoIP,0,6
-3,34,16983,SIP,VoIP,0,6
-4,9,1926,RTP,Media,0,6
-5,1,146,RTCP,VoIP,0,6

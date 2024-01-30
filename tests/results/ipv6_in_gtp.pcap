@@ -1,3 +1,0 @@
-id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
-0,1,150,RTP,Media,0,6
-1,1,166,IPSec,VPN,0,6

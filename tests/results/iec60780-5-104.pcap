@@ -1,7 +1,0 @@
-id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
-0,29,1714,IEC60870,IoT-Scada,0,6
-1,16,968,IEC60870,IoT-Scada,0,6
-2,17,1007,IEC60870,IoT-Scada,0,6
-3,25,1512,IEC60870,IoT-Scada,0,6
-4,13,777,IEC60870,IoT-Scada,0,6
-5,47,3055,IEC60870,IoT-Scada,0,6

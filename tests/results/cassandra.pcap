@@ -1,3 +1,0 @@
-id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
-0,144,87744,Cassandra,Database,0,6
-1,142,38272,Cassandra,Database,0,6
