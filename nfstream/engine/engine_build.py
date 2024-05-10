@@ -167,13 +167,13 @@ void dissector_configure(struct ndpi_detection_module_struct *dissector);
 void dissector_cleanup(struct ndpi_detection_module_struct *dissector);
 
 struct nf_flow *meter_initialize_flow(struct nf_packet *packet, uint8_t accounting_mode, uint8_t statistics,
-                                      uint8_t splt, uint8_t n_dissections,
+                                      uint16_t splt, uint8_t n_dissections,
                                       struct ndpi_detection_module_struct *dissector, uint8_t sync);
 uint8_t meter_update_flow(struct nf_flow *flow, struct nf_packet *packet, uint64_t idle_timeout, uint64_t active_timeout,
-                          uint8_t accounting_mode, uint8_t statistics, uint8_t splt, uint8_t n_dissections,
+                          uint8_t accounting_mode, uint8_t statistics, uint16_t splt, uint8_t n_dissections,
                           struct ndpi_detection_module_struct *dissector, uint8_t sync);
 void meter_expire_flow(struct nf_flow *flow, uint8_t n_dissections, struct ndpi_detection_module_struct *dissector);
-void meter_free_flow(struct nf_flow *flow, uint8_t n_dissections, uint8_t splt, uint8_t full);
+void meter_free_flow(struct nf_flow *flow, uint8_t n_dissections, uint16_t splt, uint8_t full);
 const char *engine_lib_version(void);
 const char *engine_lib_ndpi_version(void);
 const char *engine_lib_pcap_version(void);
