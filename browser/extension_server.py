@@ -18,7 +18,7 @@ from collections import namedtuple
 import json
 import sys
 
-
+# yapf: disable
 NFRequest = namedtuple('NFRequest', ['browser',
                                      'timestamp',
                                      'remote_ip',
@@ -26,10 +26,12 @@ NFRequest = namedtuple('NFRequest', ['browser',
                                      'request_id',
                                      'tab_is_active',
                                      'tab_url'])
+# yapf: enable
 
 
 class NFRequestHandler(BaseHTTPRequestHandler):
     """ Handler for HTTP request from browser extension """
+
     def _set_headers(self):
         """ headers setter """
         self.send_header('Access-Control-Allow-Origin', '*')
@@ -51,13 +53,8 @@ class NFRequestHandler(BaseHTTPRequestHandler):
             data = json.loads(self.rfile.read(int(length)))
             self.send_response(200)
             self._set_headers()
-            request = NFRequest(data["browser"],
-                                float(data["timestamp"]),
-                                data["ip_address"],
-                                data["tab_id"],
-                                data["req_id"],
-                                data["tab_is_active"],
-                                data["tab_url"])
+            request = NFRequest(data["browser"], float(data["timestamp"]), data["ip_address"], data["tab_id"],
+                                data["req_id"], data["tab_is_active"], data["tab_url"])
 
             # For sake of brevity, we print it only
             print(request)
@@ -73,6 +70,7 @@ class NFRequestHandler(BaseHTTPRequestHandler):
 
 class NFRequestServer(HTTPServer):
     """ NFRequest HTTP server"""
+
     def __init__(self, *args):
         HTTPServer.__init__(self, *args)
         self.stopped = False
@@ -84,7 +82,7 @@ if __name__ == '__main__':  # Mandatory if you are running on Windows Platform
         port = int(sys.argv[1])
     except IndexError:  # not specified
         port = 28314
-    server_address = ('', port)   # localhost with configurable port
+    server_address = ('', port)  # localhost with configurable port
     server = NFRequestServer(server_address, NFRequestHandler)
     try:
         while not server.stopped:

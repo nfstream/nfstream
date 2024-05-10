@@ -3,3 +3,11 @@ before-all = "yum -y update && yum -y groupinstall 'Development tools' && yum -y
 [[tool.cibuildwheel.overrides]]
 select = "*-musllinux*"
 before-all = "apk add autoconf automake libtool pkgconfig gettext json-c-dev libusb-dev dbus-glib-dev bluez-libs bluez-dev libnl3-dev flex bison && cp /usr/share/aclocal/pkg.m4 /usr/local/share/aclocal-1.16/"
+
+[tool.yapf]
+based_on_style = "google"
+column_limit = 120
+coalesce_brackets = true
+allow_split_before_dict_value = false
+split_before_first_argument = false
+split_all_comma_separated_values = false

@@ -18,7 +18,6 @@ from .utils import set_affinity, InternalError, InternalState, NFEvent, NFMode
 from collections import OrderedDict
 from .flow import NFlow
 
-
 ENGINE_LOAD_ERR = "Error when loading engine library. This means that you are probably building nfstream from source \
 and something went wrong during the engine compilation step. Please see: \
 https://www.nfstream.org/docs/#building-nfstream-from-sourcesfor more information"
@@ -37,6 +36,7 @@ class NFCache(OrderedDict):
     linked list with sentinel nodes to track order.
     By doing so, we can access in an efficient way idle connections entries that need to expired based on a timeout.
     """
+
     def __init__(self, *args, **kwds):
         super().__init__(*args, **kwds)
 
@@ -81,23 +81,15 @@ def meter_scan(meter_tick, cache, idle_timeout, channel, udps, sync, n_dissectio
 def get_flow_key(src_ip, src_port, dst_ip, dst_port, protocol, vlan_id, tunnel_id):
     """ Create a consistent direction agnostic flow key """
     if src_ip[1] < dst_ip[1] or ((src_ip[1] == dst_ip[1]) and (src_ip[0] < dst_ip[0])):
-        key = (src_ip[0], src_ip[1], src_port,
-               dst_ip[0], dst_ip[1], dst_port,
-               protocol, vlan_id, tunnel_id)
+        key = (src_ip[0], src_ip[1], src_port, dst_ip[0], dst_ip[1], dst_port, protocol, vlan_id, tunnel_id)
     else:
         if src_ip[0] == dst_ip[0] and src_ip[1] == dst_ip[1]:
             if src_port <= dst_port:
-                key = (src_ip[0], src_ip[1], src_port,
-                       dst_ip[0], dst_ip[1], dst_port,
-                       protocol, vlan_id, tunnel_id)
+                key = (src_ip[0], src_ip[1], src_port, dst_ip[0], dst_ip[1], dst_port, protocol, vlan_id, tunnel_id)
             else:
-                key = (dst_ip[0], dst_ip[1], dst_port,
-                       src_ip[0], src_ip[1], src_port,
-                       protocol, vlan_id, tunnel_id)
+                key = (dst_ip[0], dst_ip[1], dst_port, src_ip[0], src_ip[1], src_port, protocol, vlan_id, tunnel_id)
         else:
-            key = (dst_ip[0], dst_ip[1], dst_port,
-                   src_ip[0], src_ip[1], src_port,
-                   protocol, vlan_id, tunnel_id)
+            key = (dst_ip[0], dst_ip[1], dst_port, src_ip[0], src_ip[1], src_port, protocol, vlan_id, tunnel_id)
     return key
 
 
@@ -108,12 +100,7 @@ def get_flow_key_from_pkt(packet):
     destination ip, source port, destination port, TCP/UDP protocol, VLAN ID
     and tunnel ID of the packets.
     """
-    return get_flow_key(packet.src_ip,
-                        packet.src_port,
-                        packet.dst_ip,
-                        packet.dst_port,
-                        packet.protocol,
-                        packet.vlan_id,
+    return get_flow_key(packet.src_ip, packet.src_port, packet.dst_ip, packet.dst_port, packet.protocol, packet.vlan_id,
                         packet.tunnel_id)
 
 
@@ -136,8 +123,8 @@ def consume(packet, cache, active_timeout, idle_timeout, channel, ffi, lib, udps
                 del cache[flow_key]
                 del flow
                 try:
-                    cache[flow_key] = NFlow(packet, ffi, lib, udps, sync, accounting_mode, n_dissections,
-                                            statistics, splt, dissector, decode_tunnels, system_visibility_mode)
+                    cache[flow_key] = NFlow(packet, ffi, lib, udps, sync, accounting_mode, n_dissections, statistics,
+                                            splt, dissector, decode_tunnels, system_visibility_mode)
                 except OSError:
                     print("WARNING: Failed to allocate memory space for flow creation. Flow creation aborted.")
                 state = 0
@@ -188,11 +175,11 @@ def send_error(root_idx, channel, msg):
         channel.put(InternalError(NFEvent.ERROR, msg))
 
 
-def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots, root_idx, mode,
-                   idle_timeout, active_timeout, accounting_mode, udps, n_dissections, statistics, splt,
-                   channel, tracker, lock, group_id, system_visibility_mode, socket_buffer_size):
+def meter_workflow(source, snaplen, decode_tunnels, bpf_filter, promisc, n_roots, root_idx, mode, idle_timeout,
+                   active_timeout, accounting_mode, udps, n_dissections, statistics, splt, channel, tracker, lock,
+                   group_id, system_visibility_mode, socket_buffer_size):
     """ Metering workflow """
-    set_affinity(root_idx+1)
+    set_affinity(root_idx + 1)
     ffi, lib = create_engine()
     if lib is None:
         send_error(root_idx, channel, ENGINE_LOAD_ERR)

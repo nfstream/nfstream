@@ -35,7 +35,6 @@ class NFStreamer(object):
     streamer_id = 0  # class id generator
     glock = threading.Lock()
     is_windows = "windows" in platform.system().lower()
-
     """ Network Flow Streamer
 
     Examples:
@@ -48,25 +47,26 @@ class NFStreamer(object):
 
     """
 
-    def __init__(self,
-                 source=None,
-                 decode_tunnels=True,
-                 bpf_filter=None,
-                 promiscuous_mode=True,
-                 snapshot_length=1536,
-                 socket_buffer_size=0,
-                 idle_timeout=120,  # https://www.kernel.org/doc/Documentation/networking/nf_conntrack-sysctl.txt
-                 active_timeout=1800,
-                 accounting_mode=0,
-                 udps=None,
-                 n_dissections=20,
-                 statistical_analysis=False,
-                 splt_analysis=0,
-                 n_meters=0,
-                 max_nflows=0,
-                 performance_report=0,
-                 system_visibility_mode=0,
-                 system_visibility_poll_ms=100):
+    def __init__(
+            self,
+            source=None,
+            decode_tunnels=True,
+            bpf_filter=None,
+            promiscuous_mode=True,
+            snapshot_length=1536,
+            socket_buffer_size=0,
+            idle_timeout=120,  # https://www.kernel.org/doc/Documentation/networking/nf_conntrack-sysctl.txt
+            active_timeout=1800,
+            accounting_mode=0,
+            udps=None,
+            n_dissections=20,
+            statistical_analysis=False,
+            splt_analysis=0,
+            n_meters=0,
+            max_nflows=0,
+            performance_report=0,
+            system_visibility_mode=0,
+            system_visibility_poll_ms=100):
         with NFStreamer.glock:
             NFStreamer.streamer_id += 1
             self._idx = NFStreamer.streamer_id
@@ -179,7 +179,7 @@ class NFStreamer(object):
 
     @socket_buffer_size.setter
     def socket_buffer_size(self, value):
-        if not isinstance(value, int) or (value < 0 or value > 2**31-1):
+        if not isinstance(value, int) or (value < 0 or value > 2**31 - 1):
             raise ValueError("Please specify a valid socket_buffer_size parameter (positive integer <= 2^31-1).")
         self._socket_buffer_size = value
 
@@ -374,36 +374,40 @@ class NFStreamer(object):
         n_meters = self.n_meters
         idx_generator = self._mp_context.Value('i', 0)
         for i in range(n_meters):
-            performances.append([self._mp_context.Value('I', 0),
-                                 self._mp_context.Value('I', 0),
-                                 self._mp_context.Value('I', 0)])
+            performances.append(
+                [self._mp_context.Value('I', 0),
+                 self._mp_context.Value('I', 0),
+                 self._mp_context.Value('I', 0)])
         channel = self._mp_context.Queue(maxsize=32767)  # Backpressure strategy.
         #                                                  We set it to (2^15-1) to cope with OSX max semaphore value.
         group_id = os.getpid() + self._idx  # Used for fanout on Linux systems
         try:
             for i in range(n_meters):
-                meters.append(self._mp_context.Process(target=meter_workflow,
-                                                       args=(self.source,
-                                                             self.snapshot_length,
-                                                             self.decode_tunnels,
-                                                             self.bpf_filter,
-                                                             self.promiscuous_mode,
-                                                             n_meters,
-                                                             i,
-                                                             self._mode,
-                                                             self.idle_timeout * 1000,
-                                                             self.active_timeout * 1000,
-                                                             self.accounting_mode,
-                                                             self.udps,
-                                                             self.n_dissections,
-                                                             self.statistical_analysis,
-                                                             self.splt_analysis,
-                                                             channel,
-                                                             performances[i],
-                                                             lock,
-                                                             group_id,
-                                                             self.system_visibility_mode,
-                                                             self.socket_buffer_size,)))
+                meters.append(
+                    self._mp_context.Process(target=meter_workflow,
+                                             args=(
+                                                 self.source,
+                                                 self.snapshot_length,
+                                                 self.decode_tunnels,
+                                                 self.bpf_filter,
+                                                 self.promiscuous_mode,
+                                                 n_meters,
+                                                 i,
+                                                 self._mode,
+                                                 self.idle_timeout * 1000,
+                                                 self.active_timeout * 1000,
+                                                 self.accounting_mode,
+                                                 self.udps,
+                                                 self.n_dissections,
+                                                 self.statistical_analysis,
+                                                 self.splt_analysis,
+                                                 channel,
+                                                 performances[i],
+                                                 lock,
+                                                 group_id,
+                                                 self.system_visibility_mode,
+                                                 self.socket_buffer_size,
+                                             )))
                 meters[i].daemon = True  # demonize meter
                 meters[i].start()
             if self._mode == NFMode.INTERFACE and self.performance_report > 0:
@@ -413,9 +417,11 @@ class NFStreamer(object):
                     rt = RepeatedTimer(self.performance_report, update_performances, performances, False, idx_generator)
             if self._mode == NFMode.INTERFACE and self.system_visibility_mode:
                 socket_listener = self._mp_context.Process(target=system_socket_worflow,
-                                                           args=(channel,
-                                                                 self.idle_timeout * 1000,
-                                                                 self.system_visibility_poll_ms / 1000,))
+                                                           args=(
+                                                               channel,
+                                                               self.idle_timeout * 1000,
+                                                               self.system_visibility_poll_ms / 1000,
+                                                           ))
                 socket_listener.daemon = True  # demonize socket_listener
                 socket_listener.start()
 
@@ -433,7 +439,9 @@ class NFStreamer(object):
                             child_error = recv.message
                             break
                         elif recv.id == NFEvent.ALL_AFFINITY_SET:
-                            set_affinity(0)  # we pin streamer to core 0 as it's the less intensive task and several services runs
+                            set_affinity(
+                                0
+                            )  # we pin streamer to core 0 as it's the less intensive task and several services runs
                             #                  by default on this core.
                         elif recv.id == NFEvent.SOCKET_CREATE:
                             conn_cache[recv.key] = [recv.process_name, recv.process_pid]

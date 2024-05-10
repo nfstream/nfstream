@@ -25,6 +25,7 @@ class MDNS(NFPlugin):
     - mdns_ptr: An ordered list of PTR answsers.
 
     """
+
     def on_init(self, packet, flow):
         flow.udps.mdns_ptr = []
         self.on_update(packet, flow)

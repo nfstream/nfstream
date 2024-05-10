@@ -13,10 +13,8 @@ If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 """
 
-
 from .streamer import NFStreamer
 from .plugin import NFPlugin
-
 
 # streamer module is the core module of nfstream package.
 __author__ = """Zied Aouini"""
