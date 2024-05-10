@@ -48,7 +48,7 @@ across experiments.
     <img src="https://img.shields.io/pypi/pyversions/nfstream?logo=python&style=for-the-badge" alt="python3" />
     </a>
     <a href="https://pypi.org/project/nfstream/">
-    <img src="https://img.shields.io/badge/pypy-3.7%20%7C%203.8%20%7C%203.9-blue?logo=pypy&style=for-the-badge" alt="pypy3" />
+    <img src="https://img.shields.io/badge/pypy-3.7%20%7C%203.8%20%7C%203.9%20%7C%203.10-blue?logo=pypy&style=for-the-badge" alt="pypy3" />
     </a>
   </td>
 </tr>
