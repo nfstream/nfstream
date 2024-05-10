@@ -2,81 +2,84 @@ name: build_test_linux
 on:
   push:
     branches:
-    - master
+      - master
   pull_request:
     branches:
-    - master
+      - master
 jobs:
   build_test_linux:
     name: ${{ matrix.python-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["pypy-3.9",
-                         "pypy-3.8",
-                         "pypy-3.7",
-                         "3.11",
-                         "3.10",
-                         "3.9",
-                         "3.8",
-                         "3.7"]
+        python-version:
+          [
+            "pypy-3.9",
+            "pypy-3.8",
+            "pypy-3.7",
+            "3.11",
+            "3.10",
+            "3.9",
+            "3.8",
+            "3.7",
+          ]
 
     steps:
-    - uses: actions/checkout@v3
-      with:
-        submodules: recursive
-    - name: Setup py-${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-      # Caching improves build time, we use pythonLocation to cache everything including wheels to avoid building
-      # wheels at each build (pandas/Pypy is extremely time consuming)
-      # sed replacement is performed to rectify PyPy path which ends with /bin
-      # cache key takes into account the Python version of the runner to avoid version mismatch on updates.
-    - name: Get pip cache path
-      id: get-pip-path
-      run: |
-        id=$(echo ${{ env.pythonLocation }} | sed 's/\/bin//g')
-        echo "::set-output name=id::$id"
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Setup py-${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+        # Caching improves build time, we use pythonLocation to cache everything including wheels to avoid building
+        # wheels at each build (pandas/Pypy is extremely time consuming)
+        # sed replacement is performed to rectify PyPy path which ends with /bin
+        # cache key takes into account the Python version of the runner to avoid version mismatch on updates.
+      - name: Get pip cache path
+        id: get-pip-path
+        run: |
+          id=$(echo ${{ env.pythonLocation }} | sed 's/\/bin//g')
+          echo "::set-output name=id::$id"
 
-    - name: Pip cache
-      uses: actions/cache@v3
-      id: pip-cache
-      with:
-        path: ${{ steps.get-pip-path.outputs.id }}
-        key: ${{ steps.get-pip-path.outputs.id }}-${{ hashFiles('setup.py') }}-${{ hashFiles('dev_requirements.txt') }}
+      - name: Pip cache
+        uses: actions/cache@v3
+        id: pip-cache
+        with:
+          path: ${{ steps.get-pip-path.outputs.id }}
+          key: ${{ steps.get-pip-path.outputs.id }}-${{ hashFiles('setup.py') }}-${{ hashFiles('dev_requirements.txt') }}
 
-    - name: Install prerequisites
-      run: |
-        sudo apt-get update
-        sudo apt-get install autoconf automake libtool pkg-config gettext libjson-c-dev
-        sudo apt-get install libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison
+      - name: Install prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install autoconf automake libtool pkg-config gettext libjson-c-dev
+          sudo apt-get install libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev flex bison
 
-    - name: Install requirements
-      if: steps.pip-cache.outputs.cache-hit != 'true'
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install -r dev_requirements.txt
+      - name: Install requirements
+        if: steps.pip-cache.outputs.cache-hit != 'true'
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r dev_requirements.txt
 
-    - name: Build
-      run: |
-        python -m pip install .
+      - name: Build
+        run: |
+          python -m pip install .
 
-    - name: Test
-      if: startsWith(matrix.os, 'ubuntu') && !startsWith(matrix.python-version, '3.10')
-      run: |
-        python tests.py
+      - name: Test
+        if: startsWith(matrix.os, 'ubuntu') && !startsWith(matrix.python-version, '3.10')
+        run: |
+          python tests.py
 
-    - name: Test and generate coverage report
-      # On version 3.10, we test and generate coverage report.
-      if: startsWith(matrix.python-version, '3.10')
-      run: |
-        python -m pip install coverage
-        python -m coverage run tests.py
-        python -m coverage combine
+      - name: Test and generate coverage report
+        # On version 3.10, we test and generate coverage report.
+        if: startsWith(matrix.python-version, '3.10')
+        run: |
+          python -m pip install coverage
+          python -m coverage run tests.py
+          python -m coverage combine
 
-    - name: Upload coverage to Codecov
-      if: startsWith(matrix.python-version, '3.10')
-      uses: codecov/codecov-action@v1
+      - name: Upload coverage to Codecov
+        if: startsWith(matrix.python-version, '3.10')
+        uses: codecov/codecov-action@v1

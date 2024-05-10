@@ -2,81 +2,83 @@ name: build_test_macos
 on:
   push:
     branches:
-    - master
+      - master
   pull_request:
     branches:
-    - master
+      - master
 jobs:
   build_test_macos:
     name: ${{ matrix.python-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: ["macos-12"]
-        python-version: ["pypy-3.9",
-                         "pypy-3.8",
-                         "pypy-3.7",
-                         # "3.11",
-                         # Not available yet.
-                         "3.10",
-                         "3.9",
-                         "3.8",
-                         "3.7"]
+        python-version: [
+            "pypy-3.9",
+            "pypy-3.8",
+            "pypy-3.7",
+            # "3.11",
+            # Not available yet.
+            "3.10",
+            "3.9",
+            "3.8",
+            "3.7",
+          ]
 
     steps:
-    - uses: actions/checkout@v3
-      with:
-        submodules: recursive
-    - name: Setup py-${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-      # Caching improves build time, we use pythonLocation to cache everything including wheels to avoid building
-      # wheels at each build (pandas/Pypy is extremely time consuming)
-      # sed replacement is performed to rectify PyPy path which ends with /bin
-      # cache key takes into account the Python version of the runner to avoid version mismatch on updates.
-    - name: Get pip cache path
-      id: get-pip-path
-      run: |
-        id=$(echo ${{ env.pythonLocation }} | sed 's/\/bin//g')
-        echo "::set-output name=id::$id"
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Setup py-${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+        # Caching improves build time, we use pythonLocation to cache everything including wheels to avoid building
+        # wheels at each build (pandas/Pypy is extremely time consuming)
+        # sed replacement is performed to rectify PyPy path which ends with /bin
+        # cache key takes into account the Python version of the runner to avoid version mismatch on updates.
+      - name: Get pip cache path
+        id: get-pip-path
+        run: |
+          id=$(echo ${{ env.pythonLocation }} | sed 's/\/bin//g')
+          echo "::set-output name=id::$id"
 
-    - name: Pip cache
-      uses: actions/cache@v3
-      id: pip-cache
-      with:
-        path: ${{ steps.get-pip-path.outputs.id }}
-        key: ${{ steps.get-pip-path.outputs.id }}-${{ hashFiles('setup.py') }}-${{ hashFiles('dev_requirements.txt') }}
+      - name: Pip cache
+        uses: actions/cache@v3
+        id: pip-cache
+        with:
+          path: ${{ steps.get-pip-path.outputs.id }}
+          key: ${{ steps.get-pip-path.outputs.id }}-${{ hashFiles('setup.py') }}-${{ hashFiles('dev_requirements.txt') }}
 
-    - name: Installing prerequisites
-      run: |
-        brew install autoconf automake libtool pkg-config gettext json-c gcc
+      - name: Installing prerequisites
+        run: |
+          brew install autoconf automake libtool pkg-config gettext json-c gcc
 
-    - name: Install requirements
-      if: steps.pip-cache.outputs.cache-hit != 'true'
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install -r dev_requirements.txt
+      - name: Install requirements
+        if: steps.pip-cache.outputs.cache-hit != 'true'
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r dev_requirements.txt
 
-    - name: Build
-      run: |
-        python -m pip install .
+      - name: Build
+        run: |
+          python -m pip install .
 
-    - name: Test
-      # On other versions then 3.9, we test only. (without coverage generation)
-      if: startsWith(matrix.os, 'macos') && !startsWith(matrix.python-version, '3.9') && !startsWith(github.ref, 'refs/tags/')
-      run: |
-        python tests.py
+      - name: Test
+        # On other versions then 3.9, we test only. (without coverage generation)
+        if: startsWith(matrix.os, 'macos') && !startsWith(matrix.python-version, '3.9') && !startsWith(github.ref, 'refs/tags/')
+        run: |
+          python tests.py
 
-    - name: Test and generate coverage report
-      # On version 3.9, we test and generate coverage report.
-      if: startsWith(matrix.python-version, '3.9') && !startsWith(github.ref, 'refs/tags/')
-      run: |
-        python -m pip install coverage
-        python -m coverage run tests.py
-        python -m coverage combine
+      - name: Test and generate coverage report
+        # On version 3.9, we test and generate coverage report.
+        if: startsWith(matrix.python-version, '3.9') && !startsWith(github.ref, 'refs/tags/')
+        run: |
+          python -m pip install coverage
+          python -m coverage run tests.py
+          python -m coverage combine
 
-    - name: Upload coverage to Codecov
-      if: startsWith(matrix.python-version, '3.9') && !startsWith(github.ref, 'refs/tags/')
-      uses: codecov/codecov-action@v1
+      - name: Upload coverage to Codecov
+        if: startsWith(matrix.python-version, '3.9') && !startsWith(github.ref, 'refs/tags/')
+        uses: codecov/codecov-action@v1
