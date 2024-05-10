@@ -507,7 +507,7 @@ class NFStreamer(object):
                                                                 ts=tm.time())
         total_flows = self.to_csv(path=temp_file_path, columns_to_anonymize=columns_to_anonymize, flows_per_file=0)
         if total_flows > 0:  # If there is flows, return Dataframe else return None.
-            df = pd.read_csv(temp_file_path)
+            df = pd.read_csv(temp_file_path, engine="c")  # Use C engine for superior performance (non-experimental)
             if total_flows != df.shape[0]:
                 print("WARNING: {} flows ignored by pandas type conversion. Consider using to_csv() "
                       "method if drops are critical.".format(abs(df.shape[0] - total_flows)))
