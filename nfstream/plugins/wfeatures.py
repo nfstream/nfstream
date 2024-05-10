@@ -22,7 +22,7 @@ from nfstream import NFPlugin
 
 class WFPlugin(NFPlugin):
     """Wavelet-based Features plugin. This plugin attempts to recreate wavelet-based features from [1].
-    
+
     Features are calculated from `ip_size`, that is binned on packet timestamps into timeseries
     of len 2**`levels` (spanning `active_timeout`).
 
@@ -49,17 +49,17 @@ class WFPlugin(NFPlugin):
         assert hasattr(self, "levels")
         assert hasattr(self, "active_timeout")
 
-        # Pywt requires vector of length 2**level as input 
+        # Pywt requires vector of length 2**level as input
         # set nbins to that number:
         self.nbins = 2**self.levels
-        
+
         # Given `active_timeout` as max flow length calculate size of each bin:
-        self.bin_size = (self.active_timeout / 2**self.levels * 1000)
+        self.bin_size = self.active_timeout / 2**self.levels * 1000
 
         # Reserve a empty vectors for data i forward and backward direction
-        flow.udps.forward = np.zeros(self.nbins).tolist()  
+        flow.udps.forward = np.zeros(self.nbins).tolist()
         flow.udps.backward = np.zeros(self.nbins).tolist()
-        
+
         # Save first packet timestamp that will be used to calc index
         # of time series bin
         flow.udps.first_packet_timestamp = packet.time  # timestamp in ms
@@ -67,7 +67,7 @@ class WFPlugin(NFPlugin):
     def on_update(self, packet, flow):
         # Calculate time in ms from first packet
         mstime_since_first_packet: int = packet.time - flow.udps.first_packet_timestamp
-        
+
         # Calculate index of bin to put data into
         ibin, _ = divmod(mstime_since_first_packet, self.bin_size)
 
@@ -133,12 +133,12 @@ class WFPlugin(NFPlugin):
 
         E_k = np.sum(np.power(np.abs(d), 2), axis=0)
         E_total = np.sum(E_k, axis=0)
-        
+
         # Relarive wavelet energy
-        p_k = E_k / (E_total + 1e-7)  
+        p_k = E_k / (E_total + 1e-7)
         p_n = np.power(d, 2) / (E_k + 1e-7)
         # Shannon entropy
-        S_k = -np.sum(p_n * np.log(p_n + 1e-7), axis=0)  
+        S_k = -np.sum(p_n * np.log(p_n + 1e-7), axis=0)
         # Absolute mean of coefficients
         u_k = np.mean(np.abs(d), axis=0)
         # Std. deviation of coeficcients

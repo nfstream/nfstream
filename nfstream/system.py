@@ -21,19 +21,17 @@ from .utils import NFEvent
 import time
 
 
-NFSocket = namedtuple('NFSocket', ['id',
-                                   'key',
-                                   'process_pid',
-                                   'process_name'])
+NFSocket = namedtuple("NFSocket", ["id", "key", "process_pid", "process_name"])
 
 
 class ConnCache(OrderedDict):
-    """ LRU Connections Cache
+    """LRU Connections Cache
     The ConnCache object is used to cache connections entries such as MRU entries are kept on the end and LRU entries
     will be at the start. Note that we use OrderedDict which leverages classical python dict combined with a doubly
     linked list with sentinel nodes to track order.
     By doing so, we can access in an efficient way idle connections entries that need to expired based on a timeout.
     """
+
     def __init__(self, channel, timeout, *args, **kwds):
         self.channel = channel
         self.timeout = timeout + 5000
@@ -54,17 +52,21 @@ class ConnCache(OrderedDict):
         return next(iter(self))
 
     def scan(self, current_time):
-        """ Scan and delete LRU entries based on a defined timeout """
+        """Scan and delete LRU entries based on a defined timeout"""
         if (current_time - self.last_scan_time) > 10:
             remaining = True  # We suppose that there is something to expire
             scanned = 0
-            while remaining and scanned <= 1000:  # Each 10 ms we scan with 1000 entries budget
+            while (
+                remaining and scanned <= 1000
+            ):  # Each 10 ms we scan with 1000 entries budget
                 try:
                     lru_key = self.get_lru_key()  # will return the LRU conn key.
                     lru_last_update_time = self[lru_key]
                     if current_time - lru_last_update_time >= self.timeout:
                         del self[lru_key]
-                        self.channel.put(NFSocket(NFEvent.SOCKET_REMOVE, lru_key, None, None))  # Send to streamer
+                        self.channel.put(
+                            NFSocket(NFEvent.SOCKET_REMOVE, lru_key, None, None)
+                        )  # Send to streamer
                         scanned += 1
                     else:
                         remaining = False  # LRU flow is not yet idle.
@@ -74,7 +76,7 @@ class ConnCache(OrderedDict):
 
 
 def simplify_protocol(protocol):
-    """ Transform protocol IDs to 3 unique values: 6 for TCP, 17 for UDP and 0 for others """
+    """Transform protocol IDs to 3 unique values: 6 for TCP, 17 for UDP and 0 for others"""
     if protocol == 6:
         return protocol
     if protocol == 17:
@@ -83,17 +85,14 @@ def simplify_protocol(protocol):
 
 
 def get_conn_key_from_flow(f):
-    """ Compute a conn key from NFlow object attributes """
-    return get_flow_key(f.src_ip,
-                        f.src_port,
-                        f.dst_ip,
-                        f.dst_port,
-                        simplify_protocol(f.protocol),
-                        0, 0)
+    """Compute a conn key from NFlow object attributes"""
+    return get_flow_key(
+        f.src_ip, f.src_port, f.dst_ip, f.dst_port, simplify_protocol(f.protocol), 0, 0
+    )
 
 
 def match_flow_conn(conn_cache, flow):
-    """ Match a flow with a connection entry based on a shared key"""
+    """Match a flow with a connection entry based on a shared key"""
     if len(conn_cache) > 0:
         flow_key = get_conn_key_from_flow(flow)
         try:
@@ -106,23 +105,27 @@ def match_flow_conn(conn_cache, flow):
 
 
 def get_conn_key(c):
-    """ Create a 5-tuple connection key tuple """
+    """Create a 5-tuple connection key tuple"""
     if c.raddr != () and c.pid is not None:
         if c.type == SocketKind.SOCK_STREAM:  # TCP protocol
-            return get_flow_key(c.laddr.ip, c.laddr.port, c.raddr.ip, c.raddr.port, 6, 0, 0)
+            return get_flow_key(
+                c.laddr.ip, c.laddr.port, c.raddr.ip, c.raddr.port, 6, 0, 0
+            )
         if c.type == SocketKind.SOCK_DGRAM:  # UDP protocol
-            return get_flow_key(c.laddr.ip, c.laddr.port, c.raddr.ip, c.raddr.port, 17, 0, 0)
+            return get_flow_key(
+                c.laddr.ip, c.laddr.port, c.raddr.ip, c.raddr.port, 17, 0, 0
+            )
         return get_flow_key(c.laddr.ip, c.laddr.port, c.raddr.ip, c.raddr.port, 0, 0, 0)
     return None
 
 
 def system_socket_worflow(channel, idle_timeout, poll_period):
-    """ Host ground-truth generation workflow """
+    """Host ground-truth generation workflow"""
     conn_cache = ConnCache(channel=channel, timeout=idle_timeout)
     try:
         while True:
             current_time = time.time() * 1000
-            for conn in net_connections(kind='inet'):
+            for conn in net_connections(kind="inet"):
                 # IMPORTANT: The rationale behind the usage of an active polling approach (net_connections call):
                 # System process visibility is intended to generate the most accurate ground truth for traffic
                 # classification end-host-based research experiments, as reported in the literature [1].
@@ -140,7 +143,9 @@ def system_socket_worflow(channel, idle_timeout, poll_period):
                     if key not in conn_cache:  # Create and send
                         process_name = Process(conn.pid).name()
                         conn_cache[key] = current_time
-                        channel.put(NFSocket(NFEvent.SOCKET_CREATE, key, conn.pid, process_name))  # Send to streamer
+                        channel.put(
+                            NFSocket(NFEvent.SOCKET_CREATE, key, conn.pid, process_name)
+                        )  # Send to streamer
                     else:  # update time
                         conn_cache[key] = current_time
             conn_cache.scan(current_time)

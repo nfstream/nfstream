@@ -17,10 +17,11 @@ from nfstream import NFPlugin
 
 
 class FlowSlicer(NFPlugin):
-    """ FlowSlicer plugin
+    """FlowSlicer plugin
 
     This plugin implements a custom flow expiration logic based on a packets count limit.
     """
+
     def on_init(self, packet, flow):
         if self.limit == 1:
             flow.expiration_id = -1

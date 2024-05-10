@@ -18,13 +18,14 @@ import dpkt
 
 
 class MDNS(NFPlugin):
-    """ MDNS plugin
+    """MDNS plugin
 
     This plugin extracts answer information from MDNS requests. The following information are retrieved:
 
     - mdns_ptr: An ordered list of PTR answsers.
 
     """
+
     def on_init(self, packet, flow):
         flow.udps.mdns_ptr = []
         self.on_update(packet, flow)
@@ -41,6 +42,6 @@ class MDNS(NFPlugin):
             if len(dns.an) > 0:
                 for answer in dns.an:
                     if answer.type == 12:  # PTR
-                        ptr = answer.ptrname.replace(',', ' ')
+                        ptr = answer.ptrname.replace(",", " ")
                         if ptr not in flow.udps.mdns_ptr:
                             flow.udps.mdns_ptr.append(ptr)
