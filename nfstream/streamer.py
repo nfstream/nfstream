@@ -26,7 +26,7 @@ from .meter import meter_workflow
 from .anonymizer import NFAnonymizer
 from .engine import is_interface
 from .plugin import NFPlugin
-from .utils import csv_converter, open_file, RepeatedTimer, update_performances, set_affinity, available_cpus_count
+from .utils import csv_converter, open_file, RepeatedTimer, PerformanceStats, set_affinity, available_cpus_count
 from .utils import validate_flows_per_file, NFMode, create_csv_file_path, NFEvent, validate_rotate_files
 from .system import system_socket_worflow, match_flow_conn
 
@@ -65,6 +65,7 @@ class NFStreamer(object):
                  n_meters=0,
                  max_nflows=0,
                  performance_report=0,
+                 performance_stats=PerformanceStats,
                  system_visibility_mode=0,
                  system_visibility_poll_ms=100):
         with NFStreamer.glock:
@@ -86,6 +87,7 @@ class NFStreamer(object):
         self.n_meters = n_meters
         self.max_nflows = max_nflows
         self.performance_report = performance_report
+        self.performance_stats = performance_stats
         self.system_visibility_mode = system_visibility_mode
         self.system_visibility_poll_ms = system_visibility_poll_ms
 
@@ -363,7 +365,6 @@ class NFStreamer(object):
         lock = self._mp_context.Lock()
         lock.acquire()
         meters = []
-        performances = []
         n_terminated = 0
         child_error = None
         rt = None
@@ -375,10 +376,10 @@ class NFStreamer(object):
         # multiprocessing Value invocation must be performed before the call to Queue.
         n_meters = self.n_meters
         idx_generator = self._mp_context.Value('i', 0)
-        for i in range(n_meters):
-            performances.append([self._mp_context.Value('I', 0),
-                                 self._mp_context.Value('I', 0),
-                                 self._mp_context.Value('I', 0)])
+        performances = self.performance_stats(n_meters,
+                                              self._mp_context,
+                                              True if platform.system() == "Linux" else False,
+                                              idx_generator)
         channel = self._mp_context.Queue(maxsize=32767)  # Backpressure strategy.
         #                                                  We set it to (2^15-1) to cope with OSX max semaphore value.
         group_id = os.getpid() + self._idx  # Used for fanout on Linux systems
@@ -409,10 +410,7 @@ class NFStreamer(object):
                 meters[i].daemon = True  # demonize meter
                 meters[i].start()
             if self._mode == NFMode.INTERFACE and self.performance_report > 0:
-                if platform.system() == "Linux":
-                    rt = RepeatedTimer(self.performance_report, update_performances, performances, True, idx_generator)
-                else:
-                    rt = RepeatedTimer(self.performance_report, update_performances, performances, False, idx_generator)
+                rt = RepeatedTimer(self.performance_report, performances.update_performances)
             if self._mode == NFMode.INTERFACE and self.system_visibility_mode:
                 socket_listener = self._mp_context.Process(target=system_socket_worflow,
                                                            args=(channel,
