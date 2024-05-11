@@ -16,11 +16,9 @@ def get_protocol(packet):
     """
     # TCP detection and TCP payload extraction
     if IP(packet.ip_packet).haslayer(TCP):
-        assert packet.protocol == 6
         return ("t", IP(packet.ip_packet)[TCP])
     # QUIC detection and QUIC payload extraction
     elif IP(packet.ip_packet).haslayer(UDP):
-        assert packet.protocol == 17
         if (
             IP(packet.ip_packet)[UDP].dport == 443
             or IP(packet.ip_packet)[UDP].dport == 80
