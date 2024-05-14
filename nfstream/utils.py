@@ -35,56 +35,58 @@ class NFMode(IntEnum):
     MULTIPLE_FILES = 2
 
 
-InternalError = namedtuple('InternalError', ['id', 'message'])
+InternalError = namedtuple("InternalError", ["id", "message"])
 
-InternalState = namedtuple('InternalState', ['id'])
+InternalState = namedtuple("InternalState", ["id"])
 
 
 def validate_flows_per_file(n):
-    """ Simple parameter validator """
+    """Simple parameter validator"""
     if not isinstance(n, int) or isinstance(n, int) and n < 0:
         raise ValueError("Please specify a valid flows_per_file parameter (>= 0).")
 
 
 def validate_rotate_files(n):
-    """ Simple parameter validator """
+    """Simple parameter validator"""
     if not isinstance(n, int) or isinstance(n, int) and n < 0:
         raise ValueError("Please specify a valid rotate_files parameter (>= 0).")
 
 
 def create_csv_file_path(path, source):
-    """ File path creator """
+    """File path creator"""
     if path is None:
         if type(source) == list:
-            return str(source[0]) + '.csv'
-        return str(source) + '.csv'
+            return str(source[0]) + ".csv"
+        return str(source) + ".csv"
     return path
 
 
 def csv_converter(values):
-    """ Convert non numeric values to string using their __str__ method and ensure proper quoting """
+    """Convert non numeric values to string using their __str__ method and ensure proper quoting"""
     for idx, value in enumerate(values):
         if not isinstance(value, float) and not isinstance(value, int):
             if value is None:
                 values[idx] = ""
             else:
                 values[idx] = str(values[idx])
-                values[idx] = values[idx].replace('\"', '\\"')
-                values[idx] = "\"" + values[idx] + "\""
+                values[idx] = values[idx].replace('"', '\\"')
+                values[idx] = '"' + values[idx] + '"'
 
 
 def open_file(path, chunked, chunk_idx, rotate_files):
-    """ File opener taking chunk mode into consideration """
+    """File opener taking chunk mode into consideration"""
     if not chunked:
-        return open(path, 'wb')
+        return open(path, "wb")
     else:
         if rotate_files:
-            return open(path.replace("csv", "{}.csv".format(chunk_idx % rotate_files)), 'wb')
-        return open(path.replace("csv", "{}.csv".format(chunk_idx)), 'wb')
+            return open(
+                path.replace("csv", "{}.csv".format(chunk_idx % rotate_files)), "wb"
+            )
+        return open(path.replace("csv", "{}.csv".format(chunk_idx)), "wb")
 
 
 def update_performances(performances, is_linux, flows_count):
-    """ Update performance report and check platform for consistency """
+    """Update performance report and check platform for consistency"""
     drops = 0
     processed = 0
     ignored = 0
@@ -98,15 +100,22 @@ def update_performances(performances, is_linux, flows_count):
             ignored = max(meter[2].value, ignored)
         processed += meter[1].value
         load.append(meter[1].value)
-    print(json.dumps({"flows_expired": flows_count.value,
-                      "packets_processed": processed,
-                      "packets_ignored": ignored,
-                      "packets_dropped_filtered_by_kernel": drops,
-                      "meters_packets_processing_balance": load}))
+    print(
+        json.dumps(
+            {
+                "flows_expired": flows_count.value,
+                "packets_processed": processed,
+                "packets_ignored": ignored,
+                "packets_dropped_filtered_by_kernel": drops,
+                "meters_packets_processing_balance": load,
+            }
+        )
+    )
 
 
 class RepeatedTimer(object):
-    """ Repeated timer thread """
+    """Repeated timer thread"""
+
     def __init__(self, interval, function, *args, **kwargs):
         self._timer = None
         self.interval = interval
@@ -131,14 +140,15 @@ class RepeatedTimer(object):
         self._timer.cancel()
         self.is_running = False
 
-            
+
 def chunks_of_list(lst, n):
-    """ create list of chunks of size n from a list"""
+    """create list of chunks of size n from a list"""
     for i in range(0, len(lst), n):
-        yield lst[i:i + n]
+        yield lst[i : i + n]
+
 
 def set_affinity(idx):
-    """ CPU affinity setter """
+    """CPU affinity setter"""
     if platform.system() == "Linux":
         c_cpus = psutil.Process().cpu_affinity()
         temp = list(chunks_of_list(c_cpus, 2))

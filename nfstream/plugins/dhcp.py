@@ -32,10 +32,10 @@ class MsgType(Enum):
 
 
 class DHCP(NFPlugin):
-    """ DHCP plugin
+    """DHCP plugin
 
     This plugin extracts client information from DHCP sessions, and split flow
-    on transaction completion to prevent several sessions to be considered as 
+    on transaction completion to prevent several sessions to be considered as
     the same flow. The following information are retrieved:
 
     - dhcp_12 (Option 12, hostname): hostname is decoded as utf8 with special characters being replaced.
@@ -48,6 +48,7 @@ class DHCP(NFPlugin):
     - dhcp_addr: The IP address allocated to the client
 
     """
+
     def on_init(self, packet, flow):
         flow.udps.dhcp_12 = None  # Sometimes hostname is missing from ndpi
         flow.udps.dhcp_50 = None  # must be anonymized on export
@@ -70,19 +71,19 @@ class DHCP(NFPlugin):
 
         for opt in dhcp.opts:
             if opt[0] == 12:  # Hostname
-                hostname = opt[1].decode('utf-8', errors='replace')
+                hostname = opt[1].decode("utf-8", errors="replace")
                 if len(hostname) > 0:
                     flow.udps.dhcp_12 = hostname
             elif opt[0] == 53:  # Msg type
                 msg_type = MsgType(int.from_bytes(opt[1], "big"))
             elif opt[0] == 60:  # Vendor class identifier
-                flow.udps.dhcp_60 = opt[1].decode('utf-8')
+                flow.udps.dhcp_60 = opt[1].decode("utf-8")
             elif opt[0] == 77:  # User class id
-                flow.udps.dhcp_77 = opt[1].decode('utf-8')
+                flow.udps.dhcp_77 = opt[1].decode("utf-8")
             elif opt[0] == 57:  # Maximum DHCP Message Size
                 flow.udps.dhcp_57 = int.from_bytes(opt[1], "big")
             elif opt[0] == 55:  # parameter request list (aka fingerprint)
-                opt55 = ','.join(str(i) for i in opt[1])
+                opt55 = ",".join(str(i) for i in opt[1])
             elif opt[0] == 50:  # requested ip
                 opt50 = ipaddress.ip_address(int.from_bytes(opt[1], "big"))
             options.append(opt[0])
@@ -101,8 +102,10 @@ class DHCP(NFPlugin):
             msg_type, options, opt50, opt55 = self._process_options(flow, dhcp)
 
             if msg_type == MsgType.REQUEST:
-                mac = struct.unpack('BBBBBB', dhcp.chaddr)
-                flow.udps.dhcp_oui = '{:02x}:{:02x}:{:02x}'.format(mac[0], mac[1], mac[2])
+                mac = struct.unpack("BBBBBB", dhcp.chaddr)
+                flow.udps.dhcp_oui = "{:02x}:{:02x}:{:02x}".format(
+                    mac[0], mac[1], mac[2]
+                )
                 flow.udps.dhcp_options = options
                 flow.udps.dhcp_55 = opt55 if opt55 is not None else None
                 flow.udps.dhcp_50 = str(opt50) if opt50 is not None else None
@@ -110,7 +113,12 @@ class DHCP(NFPlugin):
                 if ciaddr != ipaddress.ip_address(0):
                     flow.udps.dhcp_addr = str(ciaddr)
 
-            if msg_type in [MsgType.ACK, MsgType.NACK, MsgType.INFORM, MsgType.DECLINE] or flow.src_ip == str(ipaddress.ip_address(0)):
+            if msg_type in [
+                MsgType.ACK,
+                MsgType.NACK,
+                MsgType.INFORM,
+                MsgType.DECLINE,
+            ] or flow.src_ip == str(ipaddress.ip_address(0)):
                 flow.expiration_id = -1
 
             if flow.udps.dhcp_msg_type is None:

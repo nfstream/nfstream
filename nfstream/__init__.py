@@ -20,5 +20,5 @@ from .plugin import NFPlugin
 
 # streamer module is the core module of nfstream package.
 __author__ = """Zied Aouini"""
-__email__ = 'aouinizied@gmail.com'
-__version__ = '6.5.4'
+__email__ = "aouinizied@gmail.com"
+__version__ = "6.5.4"

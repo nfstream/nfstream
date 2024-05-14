@@ -23,11 +23,12 @@ except ImportError:
     sys.exit(1)
 
 
-
-if __name__ == '__main__':  # Mandatory if you are running on Windows Platform
+if __name__ == "__main__":  # Mandatory if you are running on Windows Platform
     path = sys.argv[1]
     print("nfstream processing started. Use Ctrl+C to interrupt and save.")
-    streamer = NFStreamer(source=path, active_timeout=41, udps=WFPlugin(active_timeout=41, levels=12))
+    streamer = NFStreamer(
+        source=path, active_timeout=41, udps=WFPlugin(active_timeout=41, levels=12)
+    )
     print("Converting to pandas...")
     df = streamer.to_pandas()
     print("Dataframe: ")

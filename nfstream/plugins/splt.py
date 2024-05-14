@@ -32,6 +32,7 @@ class SPLT(NFPlugin):
     - splt_ipt: Array with inter packet arrival time in milliseconds.
     Note: Tail will be set with default value -1.
     """
+
     @staticmethod
     def _get_packet_size(packet, accounting_mode):
         if accounting_mode == 0:
@@ -54,5 +55,7 @@ class SPLT(NFPlugin):
         if flow.bidirectional_packets <= self.sequence_length:
             packet_index = flow.bidirectional_packets - 1
             flow.udps.splt_direction[packet_index] = packet.direction
-            flow.udps.splt_ps[packet_index] = self._get_packet_size(packet, self.accounting_mode)
+            flow.udps.splt_ps[packet_index] = self._get_packet_size(
+                packet, self.accounting_mode
+            )
             flow.udps.splt_piat_ms[packet_index] = packet.delta_time

@@ -34,12 +34,12 @@ jobs:
       - name: Install NPCAP OEM on Windows
         if: startsWith(runner.os, 'Windows')
         run: |
-           choco install wget --no-progress
-           wget --user ${{ secrets.NPCAP_OEM_USERNAME }} --password ${{ secrets.NPCAP_OEM_PASSWORD }} https://npcap.org/oem/dist/npcap-1.60-oem.exe
-           Start-Process npcap-1.60-oem.exe -ArgumentList "/loopback_support=yes /winpcap_mode=yes /dot11_support=yes /S" -wait
+          choco install wget --no-progress
+          wget --user ${{ secrets.NPCAP_OEM_USERNAME }} --password ${{ secrets.NPCAP_OEM_PASSWORD }} https://npcap.org/oem/dist/npcap-1.60-oem.exe
+          Start-Process npcap-1.60-oem.exe -ArgumentList "/loopback_support=yes /winpcap_mode=yes /dot11_support=yes /S" -wait
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.11.1
+        uses: pypa/cibuildwheel@v2.17.0
         env:
           MSYSTEM: MINGW64
           MSYS2_PATH: D:/a/_temp/msys64
@@ -62,6 +62,6 @@ jobs:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
-           python3 -m pip install --upgrade pip
-           python3 -m pip install twine
-           python3 -m twine upload --skip-existing ./wheelhouse/nfstream-*.whl
+          python3 -m pip install --upgrade pip
+          python3 -m pip install twine
+          python3 -m twine upload --skip-existing ./wheelhouse/nfstream-*.whl

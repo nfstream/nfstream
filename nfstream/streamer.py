@@ -26,8 +26,21 @@ from .meter import meter_workflow
 from .anonymizer import NFAnonymizer
 from .engine import is_interface
 from .plugin import NFPlugin
-from .utils import csv_converter, open_file, RepeatedTimer, update_performances, set_affinity, available_cpus_count
-from .utils import validate_flows_per_file, NFMode, create_csv_file_path, NFEvent, validate_rotate_files
+from .utils import (
+    csv_converter,
+    open_file,
+    RepeatedTimer,
+    update_performances,
+    set_affinity,
+    available_cpus_count,
+)
+from .utils import (
+    validate_flows_per_file,
+    NFMode,
+    create_csv_file_path,
+    NFEvent,
+    validate_rotate_files,
+)
 from .system import system_socket_worflow, match_flow_conn
 
 
@@ -48,25 +61,27 @@ class NFStreamer(object):
 
     """
 
-    def __init__(self,
-                 source=None,
-                 decode_tunnels=True,
-                 bpf_filter=None,
-                 promiscuous_mode=True,
-                 snapshot_length=1536,
-                 socket_buffer_size=0,
-                 idle_timeout=120,  # https://www.kernel.org/doc/Documentation/networking/nf_conntrack-sysctl.txt
-                 active_timeout=1800,
-                 accounting_mode=0,
-                 udps=None,
-                 n_dissections=20,
-                 statistical_analysis=False,
-                 splt_analysis=0,
-                 n_meters=0,
-                 max_nflows=0,
-                 performance_report=0,
-                 system_visibility_mode=0,
-                 system_visibility_poll_ms=100):
+    def __init__(
+        self,
+        source=None,
+        decode_tunnels=True,
+        bpf_filter=None,
+        promiscuous_mode=True,
+        snapshot_length=1536,
+        socket_buffer_size=0,
+        idle_timeout=120,  # https://www.kernel.org/doc/Documentation/networking/nf_conntrack-sysctl.txt
+        active_timeout=1800,
+        accounting_mode=0,
+        udps=None,
+        n_dissections=20,
+        statistical_analysis=False,
+        splt_analysis=0,
+        n_meters=0,
+        max_nflows=0,
+        performance_report=0,
+        system_visibility_mode=0,
+        system_visibility_poll_ms=100,
+    ):
         with NFStreamer.glock:
             NFStreamer.streamer_id += 1
             self._idx = NFStreamer.streamer_id
@@ -115,13 +130,17 @@ class NFStreamer(object):
                         if not isfile(value[i]):
                             raise TypeError
                     except TypeError:
-                        raise ValueError("Invalid pcap file path at index: " + str(i) + ".")
+                        raise ValueError(
+                            "Invalid pcap file path at index: " + str(i) + "."
+                        )
                 self._mode = NFMode.MULTIPLE_FILES
         else:
             try:
                 value = str(os.fspath(value))
             except TypeError:
-                raise ValueError("Please specify a pcap file path or a valid network interface name as source.")
+                raise ValueError(
+                    "Please specify a pcap file path or a valid network interface name as source."
+                )
             if isfile(value):
                 self._mode = NFMode.SINGLE_FILE
             else:
@@ -130,7 +149,9 @@ class NFStreamer(object):
                     self._mode = NFMode.INTERFACE
                     value = interface
                 else:
-                    raise ValueError("Please specify a pcap file path or a valid network interface name as source.")
+                    raise ValueError(
+                        "Please specify a pcap file path or a valid network interface name as source."
+                    )
         self._source = value
 
     @property
@@ -140,7 +161,9 @@ class NFStreamer(object):
     @decode_tunnels.setter
     def decode_tunnels(self, value):
         if not isinstance(value, bool):
-            raise ValueError("Please specify a valid decode_tunnels parameter (possible values: True, False).")
+            raise ValueError(
+                "Please specify a valid decode_tunnels parameter (possible values: True, False)."
+            )
         self._decode_tunnels = value
 
     @property
@@ -160,7 +183,9 @@ class NFStreamer(object):
     @promiscuous_mode.setter
     def promiscuous_mode(self, value):
         if not isinstance(value, bool):
-            raise ValueError("Please specify a valid promiscuous_mode parameter (possible values: True, False).")
+            raise ValueError(
+                "Please specify a valid promiscuous_mode parameter (possible values: True, False)."
+            )
         self._promiscuous_mode = value
 
     @property
@@ -170,7 +195,9 @@ class NFStreamer(object):
     @snapshot_length.setter
     def snapshot_length(self, value):
         if not isinstance(value, int) or value <= 0:
-            raise ValueError("Please specify a valid snapshot_length parameter (positive integer).")
+            raise ValueError(
+                "Please specify a valid snapshot_length parameter (positive integer)."
+            )
         self._snapshot_length = value
 
     @property
@@ -179,8 +206,10 @@ class NFStreamer(object):
 
     @socket_buffer_size.setter
     def socket_buffer_size(self, value):
-        if not isinstance(value, int) or (value < 0 or value > 2**31-1):
-            raise ValueError("Please specify a valid socket_buffer_size parameter (positive integer <= 2^31-1).")
+        if not isinstance(value, int) or (value < 0 or value > 2**31 - 1):
+            raise ValueError(
+                "Please specify a valid socket_buffer_size parameter (positive integer <= 2^31-1)."
+            )
         self._socket_buffer_size = value
 
     @property
@@ -189,8 +218,12 @@ class NFStreamer(object):
 
     @idle_timeout.setter
     def idle_timeout(self, value):
-        if not isinstance(value, int) or ((value < 0) or (value * 1000) > 18446744073709551615):  # max uint64_t
-            raise ValueError("Please specify a valid idle_timeout parameter (positive integer in seconds).")
+        if not isinstance(value, int) or (
+            (value < 0) or (value * 1000) > 18446744073709551615
+        ):  # max uint64_t
+            raise ValueError(
+                "Please specify a valid idle_timeout parameter (positive integer in seconds)."
+            )
         self._idle_timeout = value
 
     @property
@@ -199,8 +232,12 @@ class NFStreamer(object):
 
     @active_timeout.setter
     def active_timeout(self, value):
-        if not isinstance(value, int) or ((value < 0) or (value * 1000) > 18446744073709551615):  # max uint64_t
-            raise ValueError("Please specify a valid active_timeout parameter (positive integer in seconds).")
+        if not isinstance(value, int) or (
+            (value < 0) or (value * 1000) > 18446744073709551615
+        ):  # max uint64_t
+            raise ValueError(
+                "Please specify a valid active_timeout parameter (positive integer in seconds)."
+            )
         self._active_timeout = value
 
     @property
@@ -210,7 +247,9 @@ class NFStreamer(object):
     @accounting_mode.setter
     def accounting_mode(self, value):
         if not isinstance(value, int) or (value not in [0, 1, 2, 3]):
-            raise ValueError("Please specify a valid accounting_mode parameter (possible values: 0, 1, 2, 3).")
+            raise ValueError(
+                "Please specify a valid accounting_mode parameter (possible values: 0, 1, 2, 3)."
+            )
         self._accounting_mode = value
 
     @property
@@ -225,7 +264,9 @@ class NFStreamer(object):
                 if isinstance(plugin, NFPlugin):
                     pass
                 else:
-                    raise ValueError("User defined plugins must inherit from NFPlugin type.")
+                    raise ValueError(
+                        "User defined plugins must inherit from NFPlugin type."
+                    )
             self._udps = value
         else:
             if isinstance(value, NFPlugin):
@@ -234,7 +275,9 @@ class NFStreamer(object):
                 if value is None:
                     self._udps = ()
                 else:
-                    raise ValueError("User defined plugins must inherit from NFPlugin type.")
+                    raise ValueError(
+                        "User defined plugins must inherit from NFPlugin type."
+                    )
 
     @property
     def n_dissections(self):
@@ -243,7 +286,9 @@ class NFStreamer(object):
     @n_dissections.setter
     def n_dissections(self, value):
         if not isinstance(value, int) or (value < 0 or value > 255):
-            raise ValueError("Please specify a valid n_dissections parameter (possible values in : [0,...,255]).")
+            raise ValueError(
+                "Please specify a valid n_dissections parameter (possible values in : [0,...,255])."
+            )
         self._n_dissections = value
 
     @property
@@ -253,7 +298,9 @@ class NFStreamer(object):
     @statistical_analysis.setter
     def statistical_analysis(self, value):
         if not isinstance(value, bool):
-            raise ValueError("Please specify a valid statistical_analysis parameter (possible values: True, False).")
+            raise ValueError(
+                "Please specify a valid statistical_analysis parameter (possible values: True, False)."
+            )
         self._statistical_analysis = value
 
     @property
@@ -262,8 +309,14 @@ class NFStreamer(object):
 
     @splt_analysis.setter
     def splt_analysis(self, value):
-        if not isinstance(value, int) or (value < 0 or value > 255):
-            raise ValueError("Please specify a valid splt_analysis parameter (possible values in : [0,...,255])")
+        if not isinstance(value, int) or (value < 0 or value > 65535):
+            raise ValueError(
+                "Please specify a valid splt_analysis parameter (possible values in : [0,...,65535])"
+            )
+        if value > 255:
+            print(
+                "[WARNING]: The specified splt_analysis parameter is higher than 255. High values can impact the performance of the tool."
+            )
         self._splt_analysis = value
 
     @property
@@ -275,17 +328,25 @@ class NFStreamer(object):
         if isinstance(value, int) and value >= 0:
             pass
         else:
-            raise ValueError("Please specify a valid n_meters parameter (>=1 or 0 for auto scaling).")
+            raise ValueError(
+                "Please specify a valid n_meters parameter (>=1 or 0 for auto scaling)."
+            )
         c_cpus, c_cores = available_cpus_count(), psutil.cpu_count(logical=False)
-        if c_cores is None:  # Patch for platforms returning None (https://github.com/giampaolo/psutil/issues/1078)
+        if (
+            c_cores is None
+        ):  # Patch for platforms returning None (https://github.com/giampaolo/psutil/issues/1078)
             c_cores = c_cpus
         if value == 0:
             if platform.system() == "Linux" and self._mode == NFMode.INTERFACE:
-                self._n_meters = c_cpus - 1  # We are in live capture mode and kernel fanout will be available
+                self._n_meters = (
+                    c_cpus - 1
+                )  # We are in live capture mode and kernel fanout will be available
                 #                              only on Linux, we set the n_meters to detected logical CPUs -1
             else:  # Windows, MacOS, offline capture
                 if c_cpus >= c_cores:
-                    if c_cpus == 2 * c_cores or c_cpus == c_cores:  # multi-thread or single threaded
+                    if (
+                        c_cpus == 2 * c_cores or c_cpus == c_cores
+                    ):  # multi-thread or single threaded
                         self._n_meters = c_cores - 1
                     else:
                         self._n_meters = int(divmod(c_cpus / 2, 1)[0]) - 1
@@ -295,7 +356,11 @@ class NFStreamer(object):
             if (value + 1) <= c_cpus:
                 self._n_meters = value
             else:  # avoid contention
-                print("WARNING: n_meters set to :{} in order to avoid contention.".format(c_cpus - 1))
+                print(
+                    "WARNING: n_meters set to :{} in order to avoid contention.".format(
+                        c_cpus - 1
+                    )
+                )
                 self._n_meters = c_cpus - 1
         if self._n_meters == 0:  # one CPU case
             self._n_meters = 1
@@ -320,8 +385,10 @@ class NFStreamer(object):
         if isinstance(value, int) and value >= 0:
             pass
         else:
-            raise ValueError("Please specify a valid performance_report parameter (>=1 for reporting interval (seconds)"
-                             " or 0 to disable). [Available only for Live capture]")
+            raise ValueError(
+                "Please specify a valid performance_report parameter (>=1 for reporting interval (seconds)"
+                " or 0 to disable). [Available only for Live capture]"
+            )
         self._performance_report = value
 
     @property
@@ -332,16 +399,20 @@ class NFStreamer(object):
     def system_visibility_mode(self, value):
         if isinstance(value, int) and value in [0, 1]:
             if self._mode == NFMode.SINGLE_FILE and value > 0:
-                print("WARNING: system_visibility_mode switched to 0 in offline capture "
-                      "(available only for live capture)")
+                print(
+                    "WARNING: system_visibility_mode switched to 0 in offline capture "
+                    "(available only for live capture)"
+                )
                 value = 0
             else:
                 pass
         else:
-            raise ValueError("Please specify a valid system_visibility_mode parameter\n"
-                             "0: disable\n"
-                             "1: process information\n"
-                             "[Available only for live capture on the system generating the traffic]")
+            raise ValueError(
+                "Please specify a valid system_visibility_mode parameter\n"
+                "0: disable\n"
+                "1: process information\n"
+                "[Available only for live capture on the system generating the traffic]"
+            )
         self._system_visibility_mode = value
 
     @property
@@ -353,8 +424,10 @@ class NFStreamer(object):
         if isinstance(value, int) and value >= 0:
             pass
         else:
-            raise ValueError("Please specify a valid system_visibility_poll_ms parameter "
-                             "(positive integer in milliseconds)")
+            raise ValueError(
+                "Please specify a valid system_visibility_poll_ms parameter "
+                "(positive integer in milliseconds)"
+            )
         self._system_visibility_poll_ms = value
 
     def __iter__(self):
@@ -372,50 +445,76 @@ class NFStreamer(object):
         # To avoid issues on PyPy on Windows (See https://foss.heptapod.net/pypy/pypy/-/issues/3488), All
         # multiprocessing Value invocation must be performed before the call to Queue.
         n_meters = self.n_meters
-        idx_generator = self._mp_context.Value('i', 0)
+        idx_generator = self._mp_context.Value("i", 0)
         for i in range(n_meters):
-            performances.append([self._mp_context.Value('I', 0),
-                                 self._mp_context.Value('I', 0),
-                                 self._mp_context.Value('I', 0)])
+            performances.append(
+                [
+                    self._mp_context.Value("I", 0),
+                    self._mp_context.Value("I", 0),
+                    self._mp_context.Value("I", 0),
+                ]
+            )
         channel = self._mp_context.Queue(maxsize=32767)  # Backpressure strategy.
         #                                                  We set it to (2^15-1) to cope with OSX max semaphore value.
         group_id = os.getpid() + self._idx  # Used for fanout on Linux systems
         try:
             for i in range(n_meters):
-                meters.append(self._mp_context.Process(target=meter_workflow,
-                                                       args=(self.source,
-                                                             self.snapshot_length,
-                                                             self.decode_tunnels,
-                                                             self.bpf_filter,
-                                                             self.promiscuous_mode,
-                                                             n_meters,
-                                                             i,
-                                                             self._mode,
-                                                             self.idle_timeout * 1000,
-                                                             self.active_timeout * 1000,
-                                                             self.accounting_mode,
-                                                             self.udps,
-                                                             self.n_dissections,
-                                                             self.statistical_analysis,
-                                                             self.splt_analysis,
-                                                             channel,
-                                                             performances[i],
-                                                             lock,
-                                                             group_id,
-                                                             self.system_visibility_mode,
-                                                             self.socket_buffer_size,)))
+                meters.append(
+                    self._mp_context.Process(
+                        target=meter_workflow,
+                        args=(
+                            self.source,
+                            self.snapshot_length,
+                            self.decode_tunnels,
+                            self.bpf_filter,
+                            self.promiscuous_mode,
+                            n_meters,
+                            i,
+                            self._mode,
+                            self.idle_timeout * 1000,
+                            self.active_timeout * 1000,
+                            self.accounting_mode,
+                            self.udps,
+                            self.n_dissections,
+                            self.statistical_analysis,
+                            self.splt_analysis,
+                            channel,
+                            performances[i],
+                            lock,
+                            group_id,
+                            self.system_visibility_mode,
+                            self.socket_buffer_size,
+                        ),
+                    )
+                )
                 meters[i].daemon = True  # demonize meter
                 meters[i].start()
             if self._mode == NFMode.INTERFACE and self.performance_report > 0:
                 if platform.system() == "Linux":
-                    rt = RepeatedTimer(self.performance_report, update_performances, performances, True, idx_generator)
+                    rt = RepeatedTimer(
+                        self.performance_report,
+                        update_performances,
+                        performances,
+                        True,
+                        idx_generator,
+                    )
                 else:
-                    rt = RepeatedTimer(self.performance_report, update_performances, performances, False, idx_generator)
+                    rt = RepeatedTimer(
+                        self.performance_report,
+                        update_performances,
+                        performances,
+                        False,
+                        idx_generator,
+                    )
             if self._mode == NFMode.INTERFACE and self.system_visibility_mode:
-                socket_listener = self._mp_context.Process(target=system_socket_worflow,
-                                                           args=(channel,
-                                                                 self.idle_timeout * 1000,
-                                                                 self.system_visibility_poll_ms / 1000,))
+                socket_listener = self._mp_context.Process(
+                    target=system_socket_worflow,
+                    args=(
+                        channel,
+                        self.idle_timeout * 1000,
+                        self.system_visibility_poll_ms / 1000,
+                    ),
+                )
                 socket_listener.daemon = True  # demonize socket_listener
                 socket_listener.start()
 
@@ -433,7 +532,9 @@ class NFStreamer(object):
                             child_error = recv.message
                             break
                         elif recv.id == NFEvent.ALL_AFFINITY_SET:
-                            set_affinity(0)  # we pin streamer to core 0 as it's the less intensive task and several services runs
+                            set_affinity(
+                                0
+                            )  # we pin streamer to core 0 as it's the less intensive task and several services runs
                             #                  by default on this core.
                         elif recv.id == NFEvent.SOCKET_CREATE:
                             conn_cache[recv.key] = [recv.process_name, recv.process_pid]
@@ -442,7 +543,10 @@ class NFStreamer(object):
                         else:  # NFEvent.FLOW
                             recv.id = idx_generator.value  # Unify ID
                             idx_generator.value = idx_generator.value + 1
-                            if self._mode == NFMode.INTERFACE and self.system_visibility_mode:
+                            if (
+                                self._mode == NFMode.INTERFACE
+                                and self.system_visibility_mode
+                            ):
                                 recv = match_flow_conn(conn_cache, recv)
                             yield recv
                             if recv.id == self.max_nflows:
@@ -462,10 +566,14 @@ class NFStreamer(object):
             channel.join_thread()  # and we join its thread
             if child_error is not None:
                 raise ValueError(child_error)
-        except ValueError as observer_error:  # job initiation failed due to some bad observer parameters.
+        except (
+            ValueError
+        ) as observer_error:  # job initiation failed due to some bad observer parameters.
             raise ValueError(observer_error)
 
-    def to_csv(self, path=None, columns_to_anonymize=(), flows_per_file=0, rotate_files=0):
+    def to_csv(
+        self, path=None, columns_to_anonymize=(), flows_per_file=0, rotate_files=0
+    ):
         validate_flows_per_file(flows_per_file)
         validate_rotate_files(rotate_files)
         chunked, chunk_idx = True, -1
@@ -477,18 +585,20 @@ class NFStreamer(object):
         f = None
         for flow in self:
             try:
-                if total_flows == 0 or (chunked and (chunk_flows > flows_per_file)):  # header creation
+                if total_flows == 0 or (
+                    chunked and (chunk_flows > flows_per_file)
+                ):  # header creation
                     if f is not None:
                         f.close()
                     chunk_flows = 1
                     chunk_idx += 1
                     f = open_file(output_path, chunked, chunk_idx, rotate_files)
-                    header = ','.join([str(i) for i in flow.keys()]) + "\n"
-                    f.write(header.encode('utf-8'))
+                    header = ",".join([str(i) for i in flow.keys()]) + "\n"
+                    f.write(header.encode("utf-8"))
                 values = anon.process(flow)
                 csv_converter(values)
-                to_export = ','.join([str(i) for i in values]) + "\n"
-                f.write(to_export.encode('utf-8'))
+                to_export = ",".join([str(i) for i in values]) + "\n"
+                f.write(to_export.encode("utf-8"))
                 total_flows = total_flows + 1
                 chunk_flows += 1
             except KeyboardInterrupt:
@@ -499,16 +609,26 @@ class NFStreamer(object):
         return total_flows
 
     def to_pandas(self, columns_to_anonymize=()):
-        """ streamer to pandas function """
-        temp_file_path = "nfstream-{pid}-{iid}-{ts}.csv".format(pid=os.getpid(),
-                                                                iid=NFStreamer.streamer_id,
-                                                                ts=tm.time())
-        total_flows = self.to_csv(path=temp_file_path, columns_to_anonymize=columns_to_anonymize, flows_per_file=0)
+        """streamer to pandas function"""
+        temp_file_path = "nfstream-{pid}-{iid}-{ts}.csv".format(
+            pid=os.getpid(), iid=NFStreamer.streamer_id, ts=tm.time()
+        )
+        total_flows = self.to_csv(
+            path=temp_file_path,
+            columns_to_anonymize=columns_to_anonymize,
+            flows_per_file=0,
+        )
         if total_flows > 0:  # If there is flows, return Dataframe else return None.
-            df = pd.read_csv(temp_file_path)
+            df = pd.read_csv(
+                temp_file_path, engine="c"
+            )  # Use C engine for superior performance (non-experimental)
             if total_flows != df.shape[0]:
-                print("WARNING: {} flows ignored by pandas type conversion. Consider using to_csv() "
-                      "method if drops are critical.".format(abs(df.shape[0] - total_flows)))
+                print(
+                    "WARNING: {} flows ignored by pandas type conversion. Consider using to_csv() "
+                    "method if drops are critical.".format(
+                        abs(df.shape[0] - total_flows)
+                    )
+                )
         else:
             df = None
         if os.path.exists(temp_file_path):

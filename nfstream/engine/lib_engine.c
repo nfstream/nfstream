@@ -985,7 +985,7 @@ static uint8_t flow_expiration_handler(struct nf_flow *flow, struct nf_packet *p
 /**
  * flow_init_splt: Flow SPLT structure initializer.
  */
-static uint8_t flow_init_splt(struct nf_flow *flow, uint8_t splt, uint16_t packet_size) {
+static uint8_t flow_init_splt(struct nf_flow *flow, uint16_t splt, uint16_t packet_size) {
   flow->splt_direction = (int8_t*)ndpi_malloc(sizeof(int8_t) * splt); // direction on int8 is more than sufficient.
   if (flow->splt_direction == NULL) {
     ndpi_free(flow);
@@ -1016,7 +1016,7 @@ static uint8_t flow_init_splt(struct nf_flow *flow, uint8_t splt, uint16_t packe
 /**
  * flow_update_splt: Flow SPLT structure updater.
  */
-static void flow_update_splt(uint8_t splt, struct nf_flow *flow, struct nf_packet *packet, uint16_t packet_size,
+static void flow_update_splt(uint16_t splt, struct nf_flow *flow, struct nf_packet *packet, uint16_t packet_size,
                              uint64_t bidirectional_piat_ms) {
   if ((flow->bidirectional_packets - 1) < splt) {
       flow->splt_direction[flow->bidirectional_packets - 1] = packet->direction;
@@ -1252,7 +1252,7 @@ static void flow_update_dst2src_piat_ms(struct nf_flow *flow, uint64_t dst2src_p
  * flow_init_bidirectional: Flow bidirectional initializer.
  */
 static uint8_t flow_init_bidirectional(struct ndpi_detection_module_struct *dissector, uint8_t n_dissections,
-                                       uint8_t splt, uint8_t statistics, uint16_t packet_size, struct nf_flow *flow,
+                                       uint16_t splt, uint8_t statistics, uint16_t packet_size, struct nf_flow *flow,
                                        struct nf_packet *packet, uint8_t sync) {
   if (splt) {
     uint8_t splt_init_success = flow_init_splt(flow, splt, packet_size);
@@ -1316,7 +1316,7 @@ static uint8_t flow_init_bidirectional(struct ndpi_detection_module_struct *diss
 /**
  * flow_update_bidirectional: Flow bidirectional updater.
  */
-static void flow_update_bidirectional(struct ndpi_detection_module_struct *dissector, uint8_t n_dissections, uint8_t splt,
+static void flow_update_bidirectional(struct ndpi_detection_module_struct *dissector, uint8_t n_dissections, uint16_t splt,
                                uint8_t statistics, uint16_t packet_size, struct nf_flow *flow,
                                struct nf_packet *packet, uint8_t sync) {
   uint64_t bidirectional_piat_ms = packet->time - flow->bidirectional_last_seen_ms;
@@ -1679,7 +1679,7 @@ void dissector_cleanup(struct ndpi_detection_module_struct *dissector) {
  * meter_initialize_flow: Initialize flow based on packet values and set packet direction.
  */
 struct nf_flow *meter_initialize_flow(struct nf_packet *packet, uint8_t accounting_mode, uint8_t statistics,
-                                      uint8_t splt, uint8_t n_dissections,
+                                      uint16_t splt, uint8_t n_dissections,
                                       struct ndpi_detection_module_struct *dissector, uint8_t sync) {
   struct nf_flow *flow = (struct nf_flow*)ndpi_malloc(sizeof(struct nf_flow));
   if (flow == NULL) return NULL; // not enough memory for flow.
@@ -1698,7 +1698,7 @@ struct nf_flow *meter_initialize_flow(struct nf_packet *packet, uint8_t accounti
  * meter_update_flow: Check expiration state, and update flow based on packet values if case of active one.
  */
 uint8_t meter_update_flow(struct nf_flow *flow, struct nf_packet *packet, uint64_t idle_timeout, uint64_t active_timeout,
-                          uint8_t accounting_mode, uint8_t statistics, uint8_t splt, uint8_t n_dissections,
+                          uint8_t accounting_mode, uint8_t statistics, uint16_t splt, uint8_t n_dissections,
                           struct ndpi_detection_module_struct *dissector, uint8_t sync) {
   uint8_t expired = flow_expiration_handler(flow, packet, idle_timeout, active_timeout);
   if (expired) return expired;
@@ -1726,7 +1726,7 @@ void meter_expire_flow(struct nf_flow *flow, uint8_t n_dissections, struct ndpi_
 /**
  * meter_free_flow: Flow structure freer.
  */
-void meter_free_flow(struct nf_flow *flow, uint8_t n_dissections, uint8_t splt, uint8_t full) {
+void meter_free_flow(struct nf_flow *flow, uint8_t n_dissections, uint16_t splt, uint8_t full) {
   if (full) {
     if (n_dissections) flow_free_ndpi_data(flow);
     if (splt) flow_free_splt_data(flow);

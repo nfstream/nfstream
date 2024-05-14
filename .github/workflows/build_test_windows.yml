@@ -2,74 +2,79 @@ name: build_test_windows
 on:
   push:
     branches:
-    - master
+      - master
   pull_request:
     branches:
-    - master
+      - master
 jobs:
   build_test_windows:
     name: ${{ matrix.python-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: ["windows-latest"]
-        python-version: ["pypy-3.9",
-                         "pypy-3.8",
-                         "pypy-3.7",
-                         "3.11",
-                         "3.9",
-                         "3.8",
-                         "3.7"]
+        python-version:
+          [
+            "pypy-3.10",
+            "pypy-3.9",
+            "pypy-3.8",
+            "pypy-3.7",
+            "3.12",
+            "3.11",
+            "3.9",
+            "3.8",
+            "3.7",
+          ]
 
     steps:
-    - uses: actions/checkout@v3
-      with:
-        submodules: recursive
-    - name: Setup py-${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Setup py-${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Setup msys2
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: MINGW64
-        update: true
-        install: git unzip mingw-w64-x86_64-toolchain automake1.16 automake-wrapper autoconf libtool make mingw-w64-x86_64-json-c mingw-w64-x86_64-crt-git
+      - name: Setup msys2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: git unzip mingw-w64-x86_64-toolchain automake1.16 automake-wrapper autoconf libtool make mingw-w64-x86_64-json-c mingw-w64-x86_64-crt-git
 
-    - name: Install requirements
-      run: |
-         python -m pip install --upgrade pip
-         python -m pip install -r dev_requirements.txt
+      - name: Install requirements
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r dev_requirements.txt
 
-    - name: Install NPCAP OEM
-      run: |
-         choco install wget --no-progress
-         wget --user ${{ secrets.NPCAP_OEM_USERNAME }} --password ${{ secrets.NPCAP_OEM_PASSWORD }} https://npcap.org/oem/dist/npcap-1.60-oem.exe
-         Start-Process npcap-1.60-oem.exe -ArgumentList "/loopback_support=yes /winpcap_mode=yes /dot11_support=yes /S" -wait
+      - name: Install NPCAP OEM
+        run: |
+          choco install wget --no-progress
+          wget --user ${{ secrets.NPCAP_OEM_USERNAME }} --password ${{ secrets.NPCAP_OEM_PASSWORD }} https://npcap.org/oem/dist/npcap-1.60-oem.exe
+          Start-Process npcap-1.60-oem.exe -ArgumentList "/loopback_support=yes /winpcap_mode=yes /dot11_support=yes /S" -wait
 
-    - name: Build
-      env:
-        MSYSTEM: MINGW64
-        MSYS2_PATH: D:/a/_temp/msys64
-      run: |
-        python -m pip install .
+      - name: Build
+        env:
+          MSYSTEM: MINGW64
+          MSYS2_PATH: D:/a/_temp/msys64
+        run: |
+          python -m pip install .
 
-    - name: Test
-      # On other versions then 3.9, we test only. (without coverage generation)
-      if: startsWith(matrix.os, 'windows') && !startsWith(matrix.python-version, '3.9') && !startsWith(github.ref, 'refs/tags/')
-      run: |
-        python tests.py
+      - name: Test
+        # On other versions then 3.9, we test only. (without coverage generation)
+        if: startsWith(matrix.os, 'windows') && !startsWith(matrix.python-version, '3.9') && !startsWith(github.ref, 'refs/tags/')
+        run: |
+          python tests.py
 
-    - name: Test and generate coverage report
-      # On version 3.9, we test and generate coverage report.
-      if: startsWith(matrix.python-version, '3.9') && !startsWith(github.ref, 'refs/tags/')
-      run: |
-        python -m pip install coverage
-        python -m coverage run tests.py
-        python -m coverage combine
+      - name: Test and generate coverage report
+        # On version 3.9, we test and generate coverage report.
+        if: startsWith(matrix.python-version, '3.9') && !startsWith(github.ref, 'refs/tags/')
+        run: |
+          python -m pip install coverage
+          python -m coverage run tests.py
+          python -m coverage combine
 
-    - name: Upload coverage to Codecov
-      if: startsWith(matrix.python-version, '3.9') && !startsWith(github.ref, 'refs/tags/')
-      uses: codecov/codecov-action@v1
+      - name: Upload coverage to Codecov
+        if: startsWith(matrix.python-version, '3.9') && !startsWith(github.ref, 'refs/tags/')
+        uses: codecov/codecov-action@v1
