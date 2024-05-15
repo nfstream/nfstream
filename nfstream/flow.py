@@ -107,35 +107,35 @@ def pythonize_packet(packet, ffi, flow):
 
 def convert_struct_field(s, fields, ffi):
     for field, fieldtype in fields:
-        if fieldtype.type.kind == 'primitive':
+        if fieldtype.type.kind == "primitive":
             yield (field, getattr(s, field))
         else:
             yield (field, convert_to_python(getattr(s, field), ffi))
 
 def convert_to_python(s, ffi):
     type = ffi.typeof(s)
-    if type.kind == 'struct':
+    if type.kind == "struct":
         return dict(convert_struct_field(s, type.fields, ffi))
-    elif type.kind == 'array':
-        if type.item.kind == 'primitive':
-            if type.item.cname == 'char':
-                return ffi.string(s).decode('utf-8', errors='ignore')
+    elif type.kind == "array":
+        if type.item.kind == "primitive":
+            if type.item.cname == "char":
+                return ffi.string(s).decode("utf-8", errors="ignore")
             else:
                 return [s[i] for i in range(type.length)]
         else:
             return [ convert_to_python(s[i], ffi) for i in range(type.length) ]
-    elif type.kind == 'primitive':
+    elif type.kind == "primitive":
         return int(s)
 
 def convert_risks(s, ffi):
     risks = {}
     type = ffi.typeof(s)
-    if type.kind == 'array':
+    if type.kind == "array":
         for i in range(type.length):
             risk = convert_to_python(s[i], ffi)
-            risk_type = risk['risk']
-            if risk_type != '':
-                del risk['risk'] 
+            risk_type = risk["risk"]
+            if risk_type != "":
+                del risk["risk"] 
                 risks[risk_type] = risk
     return risks
 
@@ -150,101 +150,6 @@ class NFlow(object):
     we pay the cost of flexibility with attributes access/update.
 
     """
-    __slots__ = ('id',
-                 'expiration_id',
-                 'src_ip',
-                 'src_mac',
-                 'src_oui',
-                 'src_port',
-                 'dst_ip',
-                 'dst_mac',
-                 'dst_oui',
-                 'dst_port',
-                 'protocol',
-                 'ip_version',
-                 'vlan_id',
-                 'tunnel_id',
-                 'bidirectional_first_seen_ms',
-                 'bidirectional_last_seen_ms',
-                 'bidirectional_duration_ms',
-                 'bidirectional_packets',
-                 'bidirectional_bytes',
-                 'src2dst_first_seen_ms',
-                 'src2dst_last_seen_ms',
-                 'src2dst_duration_ms',
-                 'src2dst_packets',
-                 'src2dst_bytes',
-                 'dst2src_first_seen_ms',
-                 'dst2src_last_seen_ms',
-                 'dst2src_duration_ms',
-                 'dst2src_packets',
-                 'dst2src_bytes',
-                 'bidirectional_min_ps',
-                 'bidirectional_mean_ps',
-                 'bidirectional_stddev_ps',
-                 'bidirectional_max_ps',
-                 'src2dst_min_ps',
-                 'src2dst_mean_ps',
-                 'src2dst_stddev_ps',
-                 'src2dst_max_ps',
-                 'dst2src_min_ps',
-                 'dst2src_mean_ps',
-                 'dst2src_stddev_ps',
-                 'dst2src_max_ps',
-                 'bidirectional_min_piat_ms',
-                 'bidirectional_mean_piat_ms',
-                 'bidirectional_stddev_piat_ms',
-                 'bidirectional_max_piat_ms',
-                 'src2dst_min_piat_ms',
-                 'src2dst_mean_piat_ms',
-                 'src2dst_stddev_piat_ms',
-                 'src2dst_max_piat_ms',
-                 'dst2src_min_piat_ms',
-                 'dst2src_mean_piat_ms',
-                 'dst2src_stddev_piat_ms',
-                 'dst2src_max_piat_ms',
-                 'bidirectional_syn_packets',
-                 'bidirectional_cwr_packets',
-                 'bidirectional_ece_packets',
-                 'bidirectional_urg_packets',
-                 'bidirectional_ack_packets',
-                 'bidirectional_psh_packets',
-                 'bidirectional_rst_packets',
-                 'bidirectional_fin_packets',
-                 'src2dst_syn_packets',
-                 'src2dst_cwr_packets',
-                 'src2dst_ece_packets',
-                 'src2dst_urg_packets',
-                 'src2dst_ack_packets',
-                 'src2dst_psh_packets',
-                 'src2dst_rst_packets',
-                 'src2dst_fin_packets',
-                 'dst2src_syn_packets',
-                 'dst2src_cwr_packets',
-                 'dst2src_ece_packets',
-                 'dst2src_urg_packets',
-                 'dst2src_ack_packets',
-                 'dst2src_psh_packets',
-                 'dst2src_rst_packets',
-                 'dst2src_fin_packets',
-                 'splt_direction',
-                 'splt_ps',
-                 'splt_piat_ms',
-                 'application_name',
-                 'application_category_name',
-                 'application_is_guessed',
-                 'application_confidence',
-                 'requested_server_name',
-                 'client_fingerprint',
-                 'server_fingerprint',
-                 'user_agent',
-                 'content_type',
-                 'flow_risk',
-                 '_C',
-                 'udps',
-                 'system_process_pid',
-                 'system_process_name',
-                 'system_browser_tab')
 
     __slots__ = (
         "id",
@@ -336,11 +241,7 @@ class NFlow(object):
         "server_fingerprint",
         "user_agent",
         "content_type",
-        "risk",
-        "risk_severity",
-        "risk_score_total",
-        "risk_score_client",
-        "risk_score_server",
+        "flow_risks",
         "_C",
         "udps",
         "system_process_pid",
@@ -461,12 +362,22 @@ class NFlow(object):
                 ).decode("utf-8", errors="ignore")
                 self.application_is_guessed = self._C.guessed
                 self.application_confidence = self._C.confidence
+                self.requested_server_name = ffi.string(
+                    self._C.requested_server_name
+                ).decode("utf-8", errors="ignore")
+                self.client_fingerprint = ffi.string(self._C.c_hash).decode(
+                    "utf-8", errors="ignore"
+                )
+                self.server_fingerprint = ffi.string(self._C.s_hash).decode(
+                    "utf-8", errors="ignore"
+                )
+                self.user_agent = ffi.string(self._C.user_agent).decode(
+                    "utf-8", errors="ignore"
+                )
+                self.content_type = ffi.string(self._C.content_type).decode(
+                    "utf-8", errors="ignore"
+                )
                 self.flow_risk = convert_risks(self._C.nf_risk_t, ffi)
-                self.requested_server_name = ffi.string(self._C.requested_server_name).decode('utf-8', errors='ignore')
-                self.client_fingerprint = ffi.string(self._C.c_hash).decode('utf-8', errors='ignore')
-                self.server_fingerprint = ffi.string(self._C.s_hash).decode('utf-8', errors='ignore')
-                self.user_agent = ffi.string(self._C.user_agent).decode('utf-8', errors='ignore')
-                self.content_type = ffi.string(self._C.content_type).decode('utf-8', errors='ignore')
             else:
                 self.application_name = None
                 self.application_category_name = None
@@ -670,8 +581,6 @@ class NFlow(object):
                 self.application_is_guessed = self._C.guessed
                 self.application_confidence = self._C.confidence
                 self.flow_risk = convert_risks(self._C.nf_risk_t, ffi)
-                
-
         if splt:
             if (
                 sync_mode
