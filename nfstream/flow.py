@@ -17,6 +17,7 @@ from collections import namedtuple
 from math import sqrt
 from .utils import NFEvent
 
+
 # When NFStream is extended with plugins, packer C structure is pythonized using the following namedtuple.
 nf_packet = namedtuple(
     "NFPacket",
@@ -103,6 +104,40 @@ def pythonize_packet(packet, ffi, flow):
         fin=packet.fin,
         tunnel_id=packet.tunnel_id,
     )
+
+def convert_struct_field(s, fields, ffi):
+    for field, fieldtype in fields:
+        if fieldtype.type.kind == "primitive":
+            yield (field, getattr(s, field))
+        else:
+            yield (field, convert_to_python(getattr(s, field), ffi))
+
+def convert_to_python(s, ffi):
+    type = ffi.typeof(s)
+    if type.kind == "struct":
+        return dict(convert_struct_field(s, type.fields, ffi))
+    elif type.kind == "array":
+        if type.item.kind == "primitive":
+            if type.item.cname == "char":
+                return ffi.string(s).decode("utf-8", errors="ignore")
+            else:
+                return [s[i] for i in range(type.length)]
+        else:
+            return [ convert_to_python(s[i], ffi) for i in range(type.length) ]
+    elif type.kind == "primitive":
+        return int(s)
+
+def convert_risks(s, ffi):
+    risks = {}
+    type = ffi.typeof(s)
+    if type.kind == "array":
+        for i in range(type.length):
+            risk = convert_to_python(s[i], ffi)
+            risk_type = risk["risk"]
+            if risk_type != "":
+                del risk["risk"] 
+                risks[risk_type] = risk
+    return risks
 
 
 class NFlow(object):
@@ -206,6 +241,7 @@ class NFlow(object):
         "server_fingerprint",
         "user_agent",
         "content_type",
+        "flow_risk",
         "_C",
         "udps",
         "system_process_pid",
@@ -341,11 +377,13 @@ class NFlow(object):
                 self.content_type = ffi.string(self._C.content_type).decode(
                     "utf-8", errors="ignore"
                 )
+                self.flow_risk = convert_risks(self._C.nf_risk_t, ffi)
             else:
                 self.application_name = None
                 self.application_category_name = None
                 self.application_is_guessed = None
                 self.application_confidence = None
+                self.flow_risk = {}
                 self.requested_server_name = None
                 self.client_fingerprint = None
                 self.server_fingerprint = None
@@ -542,6 +580,7 @@ class NFlow(object):
                 )
                 self.application_is_guessed = self._C.guessed
                 self.application_confidence = self._C.confidence
+                self.flow_risk = convert_risks(self._C.nf_risk_t, ffi)
         if splt:
             if (
                 sync_mode
