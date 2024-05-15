@@ -241,7 +241,7 @@ class NFlow(object):
         "server_fingerprint",
         "user_agent",
         "content_type",
-        "flow_risks",
+        "flow_risk",
         "_C",
         "udps",
         "system_process_pid",
