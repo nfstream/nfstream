@@ -4,4 +4,3 @@ numpy>=1.19.5
 pandas>=1.1.5; platform.python_implementation == 'CPython'
 pandas<=1.2.5; platform.python_implementation == 'PyPy'
 dpkt>=1.9.7
-scapy>=2.5.0
