@@ -1,6 +1,8 @@
 from nfstream import NFPlugin
-from scapy.all import IP, TCP, UDP
+from dpkt.ip import IP, IP_PROTO_TCP, IP_PROTO_UDP
+
 import hashlib
+
 
 # JA4 construction functions
 def get_protocol(packet):
@@ -15,15 +17,18 @@ def get_protocol(packet):
         payload (scapy.layers.inet.TCP or scapy.layers.inet.UDP): payload of the packet (at transport layer level)
     """
     # TCP detection and TCP payload extraction
-    if IP(packet.ip_packet).haslayer(TCP):
-        return ("t", IP(packet.ip_packet)[TCP])
+    ip_packet = IP(packet.ip_packet)
+    if ip_packet.p == IP_PROTO_TCP:
+        # TCP load is returned
+        return ("t", ip_packet.tcp.data)
     # QUIC detection and QUIC payload extraction
-    elif IP(packet.ip_packet).haslayer(UDP):
-        if (
-            IP(packet.ip_packet)[UDP].dport == 443
-            or IP(packet.ip_packet)[UDP].dport == 80
-        ):
-            return ("q", IP(packet.ip_packet)[UDP])
+    elif ip_packet.p == IP_PROTO_UDP:
+        udp_packet = ip_packet.udp
+        if udp_packet.dport == 443 or udp_packet.dport == 80:
+            # QUIC load is returned
+            return ("t", udp_packet.data)
+    else:
+        return None, None
 
 
 def make_entry(tls_dict, split_payload, entry_len):
@@ -524,36 +529,33 @@ def make_ja4_c(extensions_dict, hello_type):
         return "0" * 12
 
 
-# TODO: terminar de documentar
 def get_ja4(packet, pred_hello_type):
-    # Se detecta si es TLS o QUIC y se obtiene el payload (por ahora sólo importa TLS)
+    # Detect if the packet protocol is TLS or QUIC and get the payload
     protocol, raw_payload = get_protocol(packet)
-    # Se transforma el payload a hexadecimal
-    try:
-        # hex_payload = raw_payload["TLS"].load.hex()
-        hex_payload = raw_payload.load.hex()
-    except AttributeError:
+    if (not raw_payload) and protocol is None:
         return None, None
-    # Se construye el diccionario con los headers
+    else:
+        hex_payload = bytes(raw_payload).hex()
+    # Construct the dictionary with the headers of the packet
     headers_dict, split_payload = make_headers_dict(hex_payload)
     try:
-        # Se comprueba que el paquete seleccionado sea el CLIENT HELLO o el SERVER HELLO
+        # Check that the selected packet is a TLS HELLO (CLIENT or SERVER)
         hello_type = check_cs_hello(headers_dict)
-        # Se comprueba que el paquete seleccionado sea del tipo especificado al llamar a la función
+        # Check that the selected packet is of the specified type when calling the function
         assert hello_type == pred_hello_type
     except AssertionError:
-        # Si el paquete seleccionado no es un HELLO de TLS, se devuelve None
+        # If the selected packet is not a TLS HELLO, None is returned
         return None, None
-    # Se construye el diccionario con los campos de TLS y se actualiza con los campos de los headers
+    # TLS dictionary is constructed with the TLS fields and updated with the headers fields
     tls_dict = make_tls_dict(split_payload, pred_hello_type)
     tls_dict.update(headers_dict)
-    # Se obtiene la primera parte de la firma
+    # First part of the signature is obtained
     ja4_a, cipher_list, extensions_dict = make_ja4_a(protocol, tls_dict, hello_type)
-    # Se obiene la segunda parte de la firma
+    # Second part of the signature is obtained
     ja4_b = make_ja4_b(cipher_list, hello_type)
-    # Se obiene la tercera parte de la firma
+    # Third part of the signature is obtained
     ja4_c = make_ja4_c(extensions_dict, hello_type)
-    # Se unen las tres partes de la firma
+    # Join the three JA4 signature parts
     ja4 = (ja4_a + "_" + ja4_b + "_" + ja4_c).lower()
     packet_id = "".join(tls_dict["random"])
     return ja4, packet_id
@@ -589,31 +591,14 @@ class JA4(NFPlugin):
         if packet.syn and not packet.ack:
             flow.udps._ja4_eligible = True
 
-        # # TTL lists
-        # self.src_ttl_list = []
-        # self.dst_ttl_list = []
-        # # TCP window lists
-        # self.src_tcp_win_list = []
-        # self.dst_tcp_win_list = []
-
-        # # TCP handshake
-        # flow.udps.tcp_syn_time = 0
+        # TCP handshake
         flow.udps.tcp_syn_flag = False
-        # flow.udps.tcp_syn_synack_time = 0
         flow.udps.tcp_syn_synack_flag = False
-        # flow.udps.tcp_synack_ack_time = 0
         flow.udps.tcp_synack_ack_flag = False
-        # flow.udps.tcp_3_way_handshake_time = 0
-        # flow.udps.tcp_3_way_handshake_success = False
-        # flow.udps.src2dst_synack_packets = 0
-        # flow.udps.dst2src_synack_packets = 0
 
-        # TODO: only if the flow is TCP
         # Checking if first packet is a SYN packet
         if packet.syn and not packet.ack:  # SYN packet
             flow.udps.tcp_syn_flag = True
-
-        # self.direction = packet.direction
 
     def on_update(self, packet, flow):
         """Updates flow statistics with its belonging set of packets.
@@ -623,12 +608,12 @@ class JA4(NFPlugin):
             flow (nfs.NFlow): Flow representation within NFStream
         """
 
-        # Mientras sea susceptible de ser TLS, probar a generar la firma
+        # Checks if the flow is eligible for JA4 signature generation
         if flow.udps._ja4_eligible:
-            # Si no tiene firma de cliente, generarla para el cliente
+            # Generate client JA4 signature if it doesn't have one
             if not flow.udps.ja4:
                 flow.udps.ja4, flow.udps._client_random = get_ja4(packet, "01")
-            # Si tiene firma de cliente y la dirección es opuesta, generarla para el servidor
+            # If there exists a client JA4 signature and the packet flows in the opposite direction, generate server JA4 signature
             elif flow.udps.ja4:
                 flow.udps.ja4s, flow.udps._server_random = get_ja4(packet, "02")
                 if flow.udps.ja4s:
