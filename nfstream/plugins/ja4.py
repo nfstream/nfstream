@@ -616,10 +616,16 @@ class JA4(NFPlugin):
         if flow.udps._ja4_eligible:
             # Generate client JA4 signature if it doesn't have one
             if not flow.udps.ja4:
-                flow.udps.ja4, flow.udps._client_random = get_ja4(packet, "01")
+                try:
+                    flow.udps.ja4, flow.udps._client_random = get_ja4(packet, "01")
+                except Exception:
+                    flow.udps.ja4, flow.udps._client_random = None, None
             # If there exists a client JA4 signature and the packet flows in the opposite direction, generate server JA4 signature
             elif flow.udps.ja4:
-                flow.udps.ja4s, flow.udps._server_random = get_ja4(packet, "02")
+                try:
+                    flow.udps.ja4s, flow.udps._server_random = get_ja4(packet, "02")
+                except Exception:
+                    flow.udps.ja4, flow.udps._client_random = None, None
                 if flow.udps.ja4s:
                     flow.udps._ja4_eligible = False
 
