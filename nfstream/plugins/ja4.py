@@ -48,7 +48,10 @@ def make_entry(tls_dict, split_payload, entry_len):
         split_payload (list): updated list of payload bytes (without the entry)
     """
     if isinstance(entry_len, str):
-        entry_len = int("".join(tls_dict[entry_len]), 16)
+        if tls_dict[entry_len]:
+            entry_len = int("".join(tls_dict[entry_len]), 16)
+        else:
+            entry_len = 0
     if entry_len == 0:
         return None, split_payload
     else:
@@ -195,6 +198,8 @@ def make_extensions_dict(tls_dict):
     """
     extensions_payload = tls_dict["extensions"]
     extensions_dict = {}
+    if not extensions_payload:
+        return extensions_dict
     while len(extensions_payload) > 0:
         extension_type = extensions_payload[:2]
         del extensions_payload[:2]
@@ -379,6 +384,8 @@ def make_signaturealgs_list(extensions_dict):
     Returns:
         signaturealgs_list (list): List of supported signature algorithms
     """
+    if "000d" not in extensions_dict.keys():
+        return []
     # Signature algorithms extension (code 000d) is extracted from the extensions dictionary
     signaturealgs_payload = extensions_dict["000d"]
     # Signature algorithms extension length is extracted and deleted from the payload
