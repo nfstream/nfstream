@@ -16,6 +16,10 @@ def get_protocol(packet):
         protocol (str): detected protocol, "t" for TCP, "q" for QUIC
         payload (scapy.layers.inet.TCP or scapy.layers.inet.UDP): payload of the packet (at transport layer level)
     """
+    # If the packet is not IPv4, None is returned
+    # (only IPv4 packets are considered for JA4 fingerprint extraction)
+    if packet.ip_version != 4:
+        return None, None
     # TCP detection and TCP payload extraction
     ip_packet = IP(packet.ip_packet)
     if ip_packet.p == IP_PROTO_TCP:
