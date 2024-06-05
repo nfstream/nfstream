@@ -17,3 +17,4 @@ from .splt import SPLT
 from .slicer import FlowSlicer
 from .dhcp import DHCP
 from .mdns import MDNS
+from .ja4 import JA4

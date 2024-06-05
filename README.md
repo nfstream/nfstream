@@ -579,6 +579,7 @@ The following people contributed to NFStream:
 * [**Adrian Pekar**](mailto:adrian.pekar@gmail.com): Datasets generation and storage.
 * [**Romain Picard**](mailto:romain.picard@oakbits.com): MDNS and DHCP plugins implementation.
 * [**Radion Bikmukhamedov**](mailto:radion.bikmukhamedov@pm.me): Initial work on SPLT analysis NFPlugin.
+* [**Jorge Casajús-Setién**](mailto:jcasajus@titaniumindustrialsecurity.com): JA4 signature plugin implementation.
 
 ### Supporting organizations
 
