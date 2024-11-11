@@ -227,6 +227,7 @@ class NFlow(object):
         dissector,
         decode_tunnels,
         system_visibility_mode,
+        direction,
     ):
         self.id = (
             NFEvent.FLOW
@@ -234,7 +235,7 @@ class NFlow(object):
         self.expiration_id = 0
         # Initialize C structure.
         self._C = lib.meter_initialize_flow(
-            packet, accounting_mode, statistics, splt, n_dissections, dissector, sync
+            packet, accounting_mode, statistics, splt, n_dissections, dissector, sync, direction
         )
         if self._C == ffi.NULL:  # raise OSError in order to be handled by meter.
             raise OSError("Not enough memory for new flow creation.")

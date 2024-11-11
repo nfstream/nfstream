@@ -76,7 +76,7 @@ def meter_scan(
     remaining = True  # We suppose that there is something to expire
     scanned = 0
     while (
-        remaining and scanned < 1000
+        remaining and scanned < 100_000  # originally 1000 not 100_000
     ):  # idle scan budget (each 10ms we scan 1000 as maximum)
         try:
             flow_key = cache.get_lru_key()  # will return the LRU flow key.
@@ -191,6 +191,7 @@ def consume(
     """consume a packet and produce flow"""
     # We maintain state for active flows computation 1 for creation, 0 for update/cut, -1 for custom expire
     flow_key = get_flow_key_from_pkt(packet)
+    direction = 0  # by default, we assume that the flow should be updated src -> dst
     try:  # update flow
         flow = cache[flow_key].update(
             packet,
@@ -214,6 +215,7 @@ def consume(
                 state = -1
             else:  # active/inactive expiration
                 channel.put(flow)
+                direction = flow.expiration_id
                 del cache[flow_key]
                 del flow
                 try:
@@ -230,6 +232,7 @@ def consume(
                         dissector,
                         decode_tunnels,
                         system_visibility_mode,
+                        direction,
                     )
                     if (
                         cache[flow_key].expiration_id == -1
@@ -244,6 +247,7 @@ def consume(
                                 ffi,
                                 lib,
                                 dissector,
+                                direction,
                             )
                         )
                         del cache[flow_key]
@@ -271,6 +275,7 @@ def consume(
                     dissector,
                     decode_tunnels,
                     system_visibility_mode,
+                    direction,
                 )
                 if (
                     flow.expiration_id == -1
@@ -306,6 +311,7 @@ def consume(
                     dissector,
                     decode_tunnels,
                     system_visibility_mode,
+                    direction,
                 )
                 state = 1
         except OSError:
