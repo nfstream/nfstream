@@ -1409,15 +1409,24 @@ static void flow_init_dst2src(uint8_t statistics, uint16_t packet_size, struct n
  */
 static void flow_update_src2dst(uint8_t statistics, uint16_t packet_size, struct nf_flow *flow, struct nf_packet *packet) {
   flow->src2dst_packets++;
-  uint64_t src2dst_piat_ms = packet->time - flow->src2dst_last_seen_ms;
-  flow->src2dst_last_seen_ms = packet->time;
-  flow->src2dst_duration_ms = flow->src2dst_last_seen_ms - flow->src2dst_first_seen_ms;
   flow->src2dst_bytes += packet_size;
-  if (statistics == 1) {
-    flow_update_src2dst_ps(flow, packet_size);
-    flow_update_src2dst_tcp_flags(flow, packet);
-    if (flow->src2dst_packets == 2) flow_init_src2dst_piat_ms(flow, src2dst_piat_ms);
-    else flow_update_src2dst_piat_ms(flow, src2dst_piat_ms);
+  if (flow->src2dst_packets == 1) {
+    flow->src2dst_first_seen_ms = packet->time;
+    flow->src2dst_last_seen_ms = packet->time;
+    if (statistics == 1) {
+      flow_init_src2dst_ps(flow, packet_size);
+      flow_update_src2dst_tcp_flags(flow, packet);
+    }
+  } else {
+    uint64_t src2dst_piat_ms = packet->time - flow->src2dst_last_seen_ms;
+    flow->src2dst_last_seen_ms = packet->time;
+    flow->src2dst_duration_ms = flow->src2dst_last_seen_ms - flow->src2dst_first_seen_ms;
+    if (statistics == 1) {
+      flow_update_src2dst_ps(flow, packet_size);
+      flow_update_src2dst_tcp_flags(flow, packet);
+      if (flow->src2dst_packets == 2) flow_init_src2dst_piat_ms(flow, src2dst_piat_ms);
+      else flow_update_src2dst_piat_ms(flow, src2dst_piat_ms);
+    }
   }
 }
 
