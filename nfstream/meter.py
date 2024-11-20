@@ -175,6 +175,7 @@ def consume(
     cache,
     active_timeout,
     idle_timeout,
+    flow_id_generator,
     channel,
     ffi,
     lib,
@@ -192,6 +193,7 @@ def consume(
     # We maintain state for active flows computation 1 for creation, 0 for update/cut, -1 for custom expire
     flow_key = get_flow_key_from_pkt(packet)
     direction = 0  # by default, we assume that the flow should be updated src -> dst
+    sub_flow_id = 0
     try:  # update flow
         flow = cache[flow_key].update(
             packet,
@@ -216,11 +218,19 @@ def consume(
             else:  # active/inactive expiration
                 channel.put(flow)
                 direction = flow.expiration_id
+                if direction:
+                    flow_id = flow.flow_id
+                    sub_flow_id = flow.sub_flow_id + 1
+                else:
+                    flow_id_generator.value += 1
+                    flow_id = flow_id_generator.value
                 del cache[flow_key]
                 del flow
                 try:
                     cache[flow_key] = NFlow(
                         packet,
+                        flow_id,
+                        sub_flow_id,
                         ffi,
                         lib,
                         udps,
@@ -264,6 +274,8 @@ def consume(
             if sync:
                 flow = NFlow(
                     packet,
+                    flow_id,
+                    sub_flow_id,
                     ffi,
                     lib,
                     udps,
@@ -300,6 +312,8 @@ def consume(
             else:
                 cache[flow_key] = NFlow(
                     packet,
+                    flow_id,
+                    sub_flow_id,
                     ffi,
                     lib,
                     udps,
@@ -362,6 +376,7 @@ def meter_workflow(
     mode,
     idle_timeout,
     active_timeout,
+    flow_id_generator,
     accounting_mode,
     udps,
     n_dissections,
@@ -465,6 +480,7 @@ def meter_workflow(
                         cache,
                         active_timeout,
                         idle_timeout,
+                        flow_id_generator,
                         channel,
                         ffi,
                         lib,
