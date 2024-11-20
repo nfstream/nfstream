@@ -222,8 +222,8 @@ def consume(
                     flow_id = flow.flow_id
                     sub_flow_id = flow.sub_flow_id + 1
                 else:
-                    flow_id_generator.value += 1
                     flow_id = flow_id_generator.value
+                    flow_id_generator.value += 1
                 del cache[flow_key]
                 del flow
                 try:
@@ -272,6 +272,8 @@ def consume(
     except KeyError:  # create flow
         try:
             if sync:
+                flow_id = flow_id_generator.value
+                flow_id_generator.value += 1
                 flow = NFlow(
                     packet,
                     flow_id,
@@ -310,6 +312,8 @@ def consume(
                     cache[flow_key] = flow
                     state = 1
             else:
+                flow_id = flow_id_generator.value
+                flow_id_generator.value += 1
                 cache[flow_key] = NFlow(
                     packet,
                     flow_id,
