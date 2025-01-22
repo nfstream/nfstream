@@ -211,7 +211,7 @@ static void packet_get_tcp_info(const uint8_t *l4, uint16_t l4_packet_len, struc
   tcp_len = ndpi_min(4*(*tcph)->doff, l4_packet_len);
   *payload = (uint8_t*)&l4[tcp_len];
   *payload_len = ndpi_max(0, l4_packet_len-4*(*tcph)->doff);
-  *l4_data_len = l4_packet_len - sizeof(struct ndpi_tcphdr);
+  *l4_data_len = l4_packet_len;
   nf_pkt->fin = (*tcph)->fin;
   nf_pkt->syn = (*tcph)->syn;
   nf_pkt->rst = (*tcph)->rst;
@@ -232,7 +232,7 @@ static void packet_get_udp_info(const uint8_t *l4, uint16_t l4_packet_len, struc
   *sport = (*udph)->source, *dport = (*udph)->dest;
   *payload = (uint8_t*)&l4[sizeof(struct ndpi_udphdr)];
   *payload_len = (l4_packet_len > sizeof(struct ndpi_udphdr)) ? l4_packet_len-sizeof(struct ndpi_udphdr) : 0;
-  *l4_data_len = l4_packet_len - sizeof(struct ndpi_udphdr);
+  *l4_data_len = l4_packet_len;
   nf_pkt->fin = nf_pkt->syn = nf_pkt->rst = nf_pkt->psh = nf_pkt->ack = nf_pkt->urg = nf_pkt->ece = nf_pkt->cwr = 0;
 }
 
@@ -243,7 +243,7 @@ static void packet_get_icmp_info(const uint8_t *l4, uint16_t l4_packet_len, stru
                           uint16_t *dport, uint32_t *l4_data_len, uint8_t **payload, uint16_t *payload_len) {
   *payload = (uint8_t*)&l4[sizeof(struct ndpi_icmphdr )];
   *payload_len = (l4_packet_len > sizeof(struct ndpi_icmphdr)) ? l4_packet_len-sizeof(struct ndpi_icmphdr) : 0;
-  *l4_data_len = l4_packet_len - sizeof(struct ndpi_icmphdr);
+  *l4_data_len = l4_packet_len;
   *sport = *dport = 0;
   nf_pkt->fin = nf_pkt->syn = nf_pkt->rst = nf_pkt->psh = nf_pkt->ack = nf_pkt->urg = nf_pkt->ece = nf_pkt->cwr = 0;
 }
@@ -255,7 +255,7 @@ static void packet_get_icmp6_info(const uint8_t *l4, uint16_t l4_packet_len, str
                            uint16_t *dport, uint32_t *l4_data_len, uint8_t **payload, uint16_t *payload_len) {
   *payload = (uint8_t*)&l4[sizeof(struct ndpi_icmp6hdr)];
   *payload_len = (l4_packet_len > sizeof(struct ndpi_icmp6hdr)) ? l4_packet_len-sizeof(struct ndpi_icmp6hdr) : 0;
-  *l4_data_len = l4_packet_len - sizeof(struct ndpi_icmp6hdr);
+  *l4_data_len = l4_packet_len;
   *sport = *dport = 0;
   nf_pkt->fin = nf_pkt->syn = nf_pkt->rst = nf_pkt->psh = nf_pkt->ack = nf_pkt->urg = nf_pkt->ece = nf_pkt->cwr = 0;
 }
