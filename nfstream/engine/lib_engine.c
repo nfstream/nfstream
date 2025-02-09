@@ -604,6 +604,13 @@ static int packet_datalink_checker(uint32_t caplen, const uint8_t *packet, uint1
     break;
   case DLT_RAW:
     (*ip_offset) = eth_offset;
+    if (caplen > eth_offset) { // Raw IP (DLT_RAW) can carry either IPv4 or IPv6 packets, so let's check it 
+        uint8_t ver = packet[eth_offset] >> 4;
+        if (ver == 4)
+            *type = ETH_P_IP;
+        else if (ver == 6)
+            *type = ETH_P_IPV6;
+    }
     break;
   default:
     return 0;
