@@ -18,7 +18,6 @@ import json
 import os
 from nfstream import NFStreamer
 from nfstream.plugins import SPLT, DHCP, FlowSlicer, MDNS
-from termcolor import colored
 
 
 def get_files_list(path):
@@ -49,7 +48,7 @@ class NFStreamTest(object):
         assert n_exceptions == 3
         print(
             "{}\t: {}".format(
-                ".test_source_parameter".ljust(60, " "), colored("OK", "green")
+                ".test_source_parameter".ljust(60, " "), "OK"
             )
         )
 
@@ -71,7 +70,7 @@ class NFStreamTest(object):
         assert n_exceptions == 2
         print(
             "{}\t: {}".format(
-                ".test_decode_tunnels_parameter".ljust(60, " "), colored("OK", "green")
+                ".test_decode_tunnels_parameter".ljust(60, " "), "OK"
             )
         )
 
@@ -93,7 +92,7 @@ class NFStreamTest(object):
         assert n_exceptions == 2
         print(
             "{}\t: {}".format(
-                ".test_bpf_filter_parameter".ljust(60, " "), colored("OK", "green")
+                ".test_bpf_filter_parameter".ljust(60, " "), "OK"
             )
         )
 
@@ -116,7 +115,7 @@ class NFStreamTest(object):
         print(
             "{}\t: {}".format(
                 ".test_promiscuous_mode_parameter".ljust(60, " "),
-                colored("OK", "green"),
+                "OK",
             )
         )
 
@@ -138,7 +137,7 @@ class NFStreamTest(object):
         assert n_exceptions == 2
         print(
             "{}\t: {}".format(
-                ".test_snapshot_length_parameter".ljust(60, " "), colored("OK", "green")
+                ".test_snapshot_length_parameter".ljust(60, " "), "OK"
             )
         )
 
@@ -161,7 +160,7 @@ class NFStreamTest(object):
         print(
             "{}\t: {}".format(
                 ".test_socket_buffer_size_parameter".ljust(60, " "),
-                colored("OK", "green"),
+                "OK",
             )
         )
 
@@ -183,7 +182,7 @@ class NFStreamTest(object):
         assert n_exceptions == 2
         print(
             "{}\t: {}".format(
-                ".test_idle_timeout_parameter".ljust(60, " "), colored("OK", "green")
+                ".test_idle_timeout_parameter".ljust(60, " "), "OK"
             )
         )
 
@@ -205,7 +204,7 @@ class NFStreamTest(object):
         assert n_exceptions == 2
         print(
             "{}\t: {}".format(
-                ".test_active_timeout_parameter".ljust(60, " "), colored("OK", "green")
+                ".test_active_timeout_parameter".ljust(60, " "), "OK"
             )
         )
 
@@ -227,7 +226,7 @@ class NFStreamTest(object):
         assert n_exceptions == 3
         print(
             "{}\t: {}".format(
-                ".test_accounting_mode_parameter".ljust(60, " "), colored("OK", "green")
+                ".test_accounting_mode_parameter".ljust(60, " "), "OK"
             )
         )
 
@@ -248,7 +247,7 @@ class NFStreamTest(object):
         assert n_exceptions == 2
         print(
             "{}\t: {}".format(
-                ".test_udps_parameter".ljust(60, " "), colored("OK", "green")
+                ".test_udps_parameter".ljust(60, " "), "OK"
             )
         )
 
@@ -270,7 +269,7 @@ class NFStreamTest(object):
         assert n_exceptions == 3
         print(
             "{}\t: {}".format(
-                ".test_n_dissections_parameter".ljust(60, " "), colored("OK", "green")
+                ".test_n_dissections_parameter".ljust(60, " "), "OK"
             )
         )
 
@@ -293,7 +292,7 @@ class NFStreamTest(object):
         print(
             "{}\t: {}".format(
                 ".test_system_visibility_mode_parameter".ljust(60, " "),
-                colored("OK", "green"),
+                "OK",
             )
         )
 
@@ -315,7 +314,7 @@ class NFStreamTest(object):
         assert n_exceptions == 2
         print(
             "{}\t: {}".format(
-                ".test_system_visibility_poll_ms".ljust(60, " "), colored("OK", "green")
+                ".test_system_visibility_poll_ms".ljust(60, " "), "OK"
             )
         )
 
@@ -338,7 +337,7 @@ class NFStreamTest(object):
         print(
             "{}\t: {}".format(
                 ".test_statistical_analysis_parameter".ljust(60, " "),
-                colored("OK", "green"),
+                "OK",
             )
         )
 
@@ -360,7 +359,7 @@ class NFStreamTest(object):
         assert n_exceptions == 3
         print(
             "{}\t: {}".format(
-                ".test_splt_analysis_parameter".ljust(60, " "), colored("OK", "green")
+                ".test_splt_analysis_parameter".ljust(60, " "), "OK"
             )
         )
 
@@ -381,7 +380,7 @@ class NFStreamTest(object):
         assert n_exceptions == 2
         print(
             "{}\t: {}".format(
-                ".test_n_meters_parameter".ljust(60, " "), colored("OK", "green")
+                ".test_n_meters_parameter".ljust(60, " "), "OK"
             )
         )
 
@@ -403,7 +402,7 @@ class NFStreamTest(object):
         assert n_exceptions == 2
         print(
             "{}\t: {}".format(
-                ".test_max_nflows_parameter".ljust(60, " "), colored("OK", "green")
+                ".test_max_nflows_parameter".ljust(60, " "), "OK"
             )
         )
 
@@ -426,7 +425,7 @@ class NFStreamTest(object):
         print(
             "{}\t: {}".format(
                 ".test_performance_report_parameter".ljust(60, " "),
-                colored("OK", "green"),
+                "OK",
             )
         )
 
@@ -470,7 +469,7 @@ class NFStreamTest(object):
         assert last_id == 6
         print(
             "{}\t: {}".format(
-                ".test_expiration_management".ljust(60, " "), colored("OK", "green")
+                ".test_expiration_management".ljust(60, " "), "OK"
             )
         )
 
@@ -497,7 +496,7 @@ class NFStreamTest(object):
         del decode_streamer
         print(
             "{}\t: {}".format(
-                ".test_tunnel_decoding".ljust(60, " "), colored("OK", "green")
+                ".test_tunnel_decoding".ljust(60, " "), "OK"
             )
         )
 
@@ -592,7 +591,7 @@ class NFStreamTest(object):
             del statistical_streamer
         print(
             "{}\t: {}".format(
-                ".test_statistical".ljust(60, " "), colored("OK", "green")
+                ".test_statistical".ljust(60, " "), "OK"
             )
         )
 
@@ -629,7 +628,7 @@ class NFStreamTest(object):
         del fingerprint_streamer
         print(
             "{}\t: {}".format(
-                ".test_fingerprint_extraction".ljust(60, " "), colored("OK", "green")
+                ".test_fingerprint_extraction".ljust(60, " "), "OK"
             )
         )
 
@@ -670,7 +669,7 @@ class NFStreamTest(object):
         assert total_flows_anon == df_anon_from_csv.shape[0]
         assert total_flows == df.shape[0]
         assert total_flows_anon == df_anon.shape[0]
-        print("{}\t: {}".format(".test_export".ljust(60, " "), colored("OK", "green")))
+        print("{}\t: {}".format(".test_export".ljust(60, " "), "OK"))
 
     @staticmethod
     def test_bpf():
@@ -686,7 +685,7 @@ class NFStreamTest(object):
             last_id = flow.id
             assert flow.src_port == 52066
         assert last_id == 0
-        print("{}\t: {}".format(".test_bpf".ljust(60, " "), colored("OK", "green")))
+        print("{}\t: {}".format(".test_bpf".ljust(60, " "), "OK"))
 
     @staticmethod
     def test_ndpi_integration():
@@ -720,14 +719,14 @@ class NFStreamTest(object):
                 assert test == true
                 print(
                     "{}\t: {}".format(
-                        test_case_name.ljust(60, " "), colored("OK", "green")
+                        test_case_name.ljust(60, " "), "OK"
                     )
                 )
             except AssertionError:
                 failures += 1
                 print(
                     "{}\t: {}".format(
-                        test_case_name.ljust(60, " "), colored("KO", "red")
+                        test_case_name.ljust(60, " "), "KO"
                     )
                 )
         # Everything must be OK
@@ -755,7 +754,7 @@ class NFStreamTest(object):
         assert direction == ndirection
         assert ps == nps
         assert piat == npiat
-        print("{}\t: {}".format(".test_splt".ljust(60, " "), colored("OK", "green")))
+        print("{}\t: {}".format(".test_splt".ljust(60, " "), "OK"))
 
     @staticmethod
     def test_dhcp():
@@ -779,7 +778,7 @@ class NFStreamTest(object):
         assert dhcp_df["udps.dhcp_msg_type"][1] == "MsgType.REQUEST"
         assert dhcp_df["udps.dhcp_oui"][1] == "00:0b:82"
         assert dhcp_df.shape[0] == 3
-        print("{}\t: {}".format(".test_dhcp".ljust(60, " "), colored("OK", "green")))
+        print("{}\t: {}".format(".test_dhcp".ljust(60, " "), "OK"))
 
     @staticmethod
     def test_mdns():
@@ -803,7 +802,7 @@ class NFStreamTest(object):
             "'skynet._udisks-ssh._tcp.local', '_udisks-ssh._tcp.local', "
             "'_workstation._tcp.local']"
         )
-        print("{}\t: {}".format(".test_mdns".ljust(60, " "), colored("OK", "green")))
+        print("{}\t: {}".format(".test_mdns".ljust(60, " "), "OK"))
 
     @staticmethod
     def test_multi_files():
@@ -857,7 +856,7 @@ class NFStreamTest(object):
             assert flow.content_type == ""
         print(
             "{}\t: {}".format(
-                ".test_multi_files".ljust(60, " "), colored("OK", "green")
+                ".test_multi_files".ljust(60, " "), "OK"
             )
         )
 
@@ -877,7 +876,7 @@ class NFStreamTest(object):
         ).to_pandas()
         assert df.shape[0] == 294
         print(
-            "{}\t: {}".format(".test_max_nflows".ljust(60, " "), colored("OK", "green"))
+            "{}\t: {}".format(".test_max_nflows".ljust(60, " "), "OK")
         )
 
 

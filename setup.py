@@ -13,11 +13,11 @@ If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 """
 
-from setuptools import setup
-import platform
 import pathlib
 import sys
 import os
+from setuptools import setup
+
 
 THIS_DIRECTORY = str(pathlib.Path(__file__).parent.resolve())
 
