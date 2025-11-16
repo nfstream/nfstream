@@ -62,8 +62,8 @@ jobs:
       - name: Publish on Pypi
         # if: startsWith(github.ref, 'refs/tags/')
         env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: |
           python3 -m pip install --upgrade pip --break-system-packages
           python3 -m pip install twine --break-system-packages
