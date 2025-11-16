@@ -1,8 +1,10 @@
 name: build_wheel_publish
 
 on:
-  release:
-    types: [created]
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   build_wheels:
@@ -39,7 +41,7 @@ jobs:
           Start-Process npcap-1.60-oem.exe -ArgumentList "/loopback_support=yes /winpcap_mode=yes /dot11_support=yes /S" -wait
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.17.0
+        uses: pypa/cibuildwheel@v2.20.0
         env:
           MSYSTEM: MINGW64
           MSYS2_PATH: D:/a/_temp/msys64
