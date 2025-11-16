@@ -1,7 +1,6 @@
+import hashlib
 from nfstream import NFPlugin
 from dpkt.ip import IP, IP_PROTO_TCP, IP_PROTO_UDP
-
-import hashlib
 
 
 # JA4 construction functions
