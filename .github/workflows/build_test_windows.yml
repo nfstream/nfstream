@@ -17,6 +17,7 @@ jobs:
         python-version:
           [
             "pypy-3.11",
+            "pypy-3.10",
             "3.14",
             "3.13",
             "3.12",
