@@ -34,9 +34,13 @@ build_libndpi() {
   cd nDPI
   gcc --version
   ./autogen.sh
-  CFLAGS="-I/tmp/nfstream_build/usr/local/include"
-  LDFLAGS="-L/tmp/nfstream_build/usr/local/lib"
-  CFLAGS=${CFLAGS} LDFLAGS=${LDFLAGS} ./configure && CFLAGS=${CFLAGS} LDFLAGS=${LDFLAGS} make
+  CFLAGS='-I/tmp/nfstream_build/usr/local/include' \
+  LDFLAGS='-L/tmp/nfstream_build/usr/local/lib' \
+  ./configure \
+    --prefix=/tmp/nfstream_build/usr \
+    --libdir=/tmp/nfstream_build/usr/lib \
+    --enable-static --disable-shared
+  make
   make DESTDIR=/tmp/nfstream_build install
   make clean
   cd ..
