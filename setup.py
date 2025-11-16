@@ -13,28 +13,21 @@ If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 """
 
-from setuptools import setup
-import platform
 import pathlib
 import sys
 import os
+from setuptools import setup
+
 
 THIS_DIRECTORY = str(pathlib.Path(__file__).parent.resolve())
 
-if (not sys.version_info[0] == 3) and (not sys.version_info[1] >= 6):
-    sys.exit("Sorry, nfstream requires Python3.6+ versions.")
+if (not sys.version_info[0] == 3) and (not sys.version_info[1] >= 9):
+    sys.exit("Sorry, nfstream requires Python3.9+ versions.")
 
 with open(os.path.join(THIS_DIRECTORY, "README.md"), encoding="utf-8") as f:
     LONG_DESCRIPTION = f.read()
 
-INSTALL_REQUIRES = ["cffi>=1.15.0", "psutil>=5.8.0", "dpkt>=1.9.7", "numpy>=1.19.5"]
-
-if (
-    platform.python_implementation() == "PyPy"
-):  # This is mandatory to fix pandas issues with PyPy
-    INSTALL_REQUIRES.append("pandas<=1.2.5")
-else:
-    INSTALL_REQUIRES.append("pandas>=1.1.5")
+INSTALL_REQUIRES = ["cffi>=1.15.0", "psutil>=5.8.0", "dpkt>=1.9.7", "numpy>=1.19.5", "pandas>=1.1.5"]
 
 
 setup(
@@ -62,11 +55,12 @@ setup(
         "Intended Audience :: Science/Research",
         "Intended Audience :: Developers",
         "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14",
         "Topic :: Security",
         "Topic :: Internet :: Log Analysis",
         "Topic :: System :: Networking :: Monitoring",

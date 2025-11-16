@@ -1,13 +1,11 @@
 cffi>=1.15.0
 psutil>=5.8.0
 numpy>=1.19.5
-pandas>=1.1.5; platform.python_implementation == 'CPython'
-pandas<=1.2.5; platform.python_implementation == 'PyPy'
+pandas>=1.1.5
 dpkt>=1.9.7
 wheel>=0.37.0
 twine>=3.4.2
 setuptools>=57.4.0
 codecov>=2.1.12
-termcolor>=1.1.0
 tqdm>=4.63.0
-cibuildwheel==2.13.1
+cibuildwheel==2.20.0

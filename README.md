@@ -48,7 +48,7 @@ across experiments.
     <img src="https://img.shields.io/pypi/pyversions/nfstream?logo=python&style=for-the-badge" alt="python3" />
     </a>
     <a href="https://pypi.org/project/nfstream/">
-    <img src="https://img.shields.io/badge/pypy-3.7%20%7C%203.8%20%7C%203.9%20%7C%203.10-blue?logo=pypy&style=for-the-badge" alt="pypy3" />
+    <img src="https://img.shields.io/badge/pypy-3.11-blue?logo=pypy&style=for-the-badge" alt="pypy3" />
     </a>
   </td>
 </tr>
@@ -92,28 +92,29 @@ across experiments.
 
 ## Table of Contents
 
-* [**Main Features**](#main-features)
-* [**How to get it?**](#how-to-get-it)
-* [**How to use it?**](#how-to-use-it)
-  * [**Encrypted application identification and metadata extraction**](#encrypted-application-identification-and-metadata-extraction)
-  * [**System visibility**](#system-visibility)
-  * [**Post-mortem statistical flow features extraction**](#post-mortem-statistical-flow-features-extraction)
-  * [**Early statistical flow features extraction**](#early-statistical-flow-features-extraction)
-  * [**Pandas export interface**](#pandas-export-interface)
-  * [**CSV export interface**](#csv-export-interface)
-  * [**Extending NFStream**](#extending-nfstream)
-  * [**Machine Learning models training and deployment**](#machine-learning-models-training-and-deployment)
-    * [**Training the model**](#training-the-model)
-    * [**ML powered streamer on live traffic**](#ml-powered-streamer-on-live-traffic)
-* [**Building from sources**](#building-from-sources--)
-* [**Contributing**](#contributing)
-* [**Ethics**](#ethics)
-* [**Credits**](#credits)
-  * [**Citation**](#citation)
-  * [**Authors**](#authors)
-  * [**Supporting organizations**](#supporting-organizations)
-* [**Publications that use NFStream**](#publications-that-use-nfstream)
-* [**License**](#license)
+- [Table of Contents](#table-of-contents)
+- [Main Features](#main-features)
+- [How to get it?](#how-to-get-it)
+- [How to use it?](#how-to-use-it)
+  - [Encrypted application identification and metadata extraction](#encrypted-application-identification-and-metadata-extraction)
+  - [System visibility](#system-visibility)
+  - [Post-mortem statistical flow features extraction](#post-mortem-statistical-flow-features-extraction)
+  - [Early statistical flow features extraction](#early-statistical-flow-features-extraction)
+  - [Pandas export interface](#pandas-export-interface)
+  - [CSV export interface](#csv-export-interface)
+  - [Extending NFStream](#extending-nfstream)
+  - [Machine Learning models training and deployment](#machine-learning-models-training-and-deployment)
+    - [Training the model](#training-the-model)
+    - [ML powered streamer on live traffic](#ml-powered-streamer-on-live-traffic)
+- [Building from sources   ](#building-from-sources---)
+- [Contributing](#contributing)
+- [Ethics](#ethics)
+- [Credits](#credits)
+  - [Citation](#citation)
+  - [Authors](#authors)
+  - [Supporting organizations](#supporting-organizations)
+- [Publications that use NFStream](#publications-that-use-nfstream)
+- [License](#license)
 
 ## Main Features
 
@@ -598,24 +599,7 @@ testing support of NFStream project.
 
 ## Publications that use NFStream
 
-* [**A Hierarchical Architecture and Probabilistic Strategy for Collaborative Intrusion Detectionn**](https://ieeexplore.ieee.org/abstract/document/9705027)
-* [**Open-Source Framework for Encrypted Internet and Malicious Traffic Classification**](https://arxiv.org/pdf/2206.10144.pdf)
-* [**ConFlow: Contrast Network Flow Improving Class-Imbalanced Learning in Network Intrusion Detection**](https://www.researchsquare.com/article/rs-1572776/latest.pdf)
-* [**Continual Learning for Anomaly based Network Intrusion Detection**](https://ieeexplore.ieee.org/abstract/document/9668482)
-* [**A self-secure system based on software-defined network**](https://www.spiedigitallibrary.org/conference-proceedings-of-spie/12250/122500Z/A-self-secure-system-based-on-software-defined-network/10.1117/12.2639591.short?SSO=1)
-* [**Robust Variational Autoencoders and Normalizing Flows for Unsupervised Network Anomaly Detection**](https://hal.archives-ouvertes.fr/hal-03542451/document)
-* [**RADON: Robust Autoencoder for Unsupervised Anomaly Detection**](https://ieeexplore.ieee.org/document/9699174)
-* [**A Generic Machine Learning Approach for IoT Device Identification**](https://ieeexplore.ieee.org/document/9702983)
-* [**Ranking Network Devices for Alarm Prioritisation: Intrusion Detection Case Study**](https://ieeexplore.ieee.org/abstract/document/9559086)
-* [**Network Flows-Based Malware Detection Using A Combined Approach of Crawling And Deep Learning**](https://ieeexplore.ieee.org/document/9500920)
-* [**Network Intrusion Detection Based on Distributed Trustworthy Artificial Intelligence**](https://repository.dl.itc.u-tokyo.ac.jp/record/2002253/files/48196454.pdf)
-* [**Generative Transformer Framework For Network Traffic Generation And Classification**](https://cyberleninka.ru/article/n/generative-transformer-framework-for-network-traffic-generation-and-classification)
-* [**Multi-Class Network Traffic Generators and Classifiers Based on Neural Networks**](https://ieeexplore.ieee.org/document/9416067)
-* [**Using Embedded Feature Selection and CNN for Classification on CCD-INID-V1 A New IoT Dataset**](https://www.mdpi.com/1424-8220/21/14/4834)
-* [**An Approach Based on Knowledge-Defined Networking for Identifying Video Streaming Flows in 5G Networks**](https://latamt.ieeer9.org/index.php/transactions/article/view/5083/1116)
-* [**Knowledge Discovery: Can It Shed New Light on Threshold Definition for Heavy‑Hitter Detection?**](https://link.springer.com/content/pdf/10.1007/s10922-021-09593-w.pdf)
-* [**Collecting and analyzing Tor exit node traffic**](https://www.diva-portal.org/smash/get/diva2:1575255/FULLTEXT01.pdf)
-* [**Analysis and Collection Data from IP Network**](https://sciendo.com/article/10.2478/aei-2022-0013)
+More than [**100 research papers**](https://scholar.google.com/scholar?hl=en&as_sdt=2005&sciodt=0,5&cites=14084093141225707606&scipsc=) have already used NFStream as part of their processing pipelines.
 
 ## License
 

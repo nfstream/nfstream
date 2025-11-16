@@ -13,19 +13,16 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: ["macos-12"]
+        os: ["macos-latest"]
         python-version:
           [
-            "pypy-3.10",
-            "pypy-3.9",
-            "pypy-3.8",
-            "pypy-3.7",
+            "pypy-3.11",
+            "3.14",
+            "3.13",
             "3.12",
             "3.11",
             "3.10",
             "3.9",
-            "3.8",
-            "3.7",
           ]
 
     steps:

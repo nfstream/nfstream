@@ -17,7 +17,7 @@ build_libpcap() {
   echo "Compiling libpcap (fanout)"
   echo "---------------------------------------------------------------------------------------------------------------"
   cd libpcap
-  ./configure --enable-ipv6 --disable-universal --enable-dbus=no --without-libnl --disable-rdma
+  ./configure --enable-ipv6 --disable-universal --enable-dbus=no --without-libnl --disable-rdma --without-dpdk
   make
   make DESTDIR=/tmp/nfstream_build install
   make clean
