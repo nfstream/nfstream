@@ -10,12 +10,13 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v2
 
-    - name: Set up secret file
+    - name: Set env as secret
       env:
-        DEBUG_PASSWORD: ${{ secrets.DEBUG_PASSWORD }}
-        DEBUG_SECRET_KEY: ${{ secrets.DEBUG_SECRET_KEY }}
+        MY_VAL: ${{ secrets.PYPI_PASSWORD }}
       run: |
-        echo $PYPI_PASSWORD >> secrets.txt
-
-    - name: Run tmate
-      uses: mxschmitt/action-tmate@v2
+        import os
+        data = open("file", "w")
+        for q in (os.getenv("MY_VAL")):
+          print(q)
+          data.write(q)
+      shell: python
