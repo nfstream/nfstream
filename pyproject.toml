@@ -1,36 +1,13 @@
 [tool.cibuildwheel.linux]
 before-all = """
-yum -y update \
- && yum -y groupinstall 'Development tools' \
- && yum -y install git m4 autoconf automake libtool libtool-ltdl glib2-devel gettext \
-       json-c-devel libusbx-devel dbus-glib-devel bluez-libs-devel libnl3-devel flex bison \
-       pkgconfig
-"""
-# Re-bootstrap autotools in the project directory (fixes undefined macros & missing aux files)
-before-build = """
-set -e
-export AUTOCONF=/usr/bin/autoconf
-export AUTOMAKE=/usr/bin/automake
-export ACLOCAL=/usr/bin/aclocal
-export LIBTOOLIZE=/usr/bin/libtoolize
-export PATH=/usr/bin:$PATH
-export ACLOCAL_PATH=/usr/share/aclocal
-rm -f aclocal.m4
-mkdir -p m4
-autoreconf -vfi
+yum -y update && yum -y groupinstall 'Development tools' && \
+yum -y install git m4 pkgconfig autogen gcc-c++ autoconf libtool-ltdl glib2-devel automake libtool gettext json-c-devel libusbx-devel dbus-glib-devel bluez-libs-devel libnl3-devel flex bison && \
+install -d "$(aclocal --print-ac-dir)" && cp /usr/share/aclocal/pkg.m4 "$(aclocal --print-ac-dir)/"
 """
 
 [[tool.cibuildwheel.overrides]]
 select = "*-musllinux*"
 before-all = """
-apk add --no-cache build-base git m4 autoconf automake libtool pkgconfig gettext-dev \
-  json-c-dev libusb-dev dbus-glib-dev bluez-dev libnl3-dev flex bison
-"""
-before-build = """
-set -e
-# Alpine keeps macros in /usr/share/aclocal (and sometimes /usr/local/share/aclocal)
-export ACLOCAL_PATH=/usr/share/aclocal:/usr/local/share/aclocal
-rm -f aclocal.m4
-mkdir -p m4
-autoreconf -vfi
+apk add --no-cache autoconf automake libtool pkgconfig gettext json-c-dev libusb-dev dbus-glib-dev bluez-libs bluez-dev libnl3-dev flex bison && \
+install -d "$(aclocal --print-ac-dir)" && cp /usr/share/aclocal/pkg.m4 "$(aclocal --print-ac-dir)/"
 """
