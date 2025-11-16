@@ -4,7 +4,7 @@ yum -y update \
  && yum -y groupinstall 'Development tools' \
  && yum -y install git m4 autoconf automake libtool libtool-ltdl glib2-devel gettext \
        json-c-devel libusbx-devel dbus-glib-devel bluez-libs-devel libnl3-devel flex bison \
-       pkgconf-pkg-config
+       pkgconfig
 """
 # Re-bootstrap autotools in the project directory (fixes undefined macros & missing aux files)
 before-build = """
@@ -23,7 +23,7 @@ autoreconf -vfi
 [[tool.cibuildwheel.overrides]]
 select = "*-musllinux*"
 before-all = """
-apk add --no-cache build-base git m4 autoconf automake libtool pkgconf gettext-dev \
+apk add --no-cache build-base git m4 autoconf automake libtool pkgconfig gettext-dev \
   json-c-dev libusb-dev dbus-glib-dev bluez-dev libnl3-dev flex bison
 """
 before-build = """
