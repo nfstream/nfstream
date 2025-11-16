@@ -113,6 +113,7 @@ across experiments.
   - [Citation](#citation)
   - [Authors](#authors)
   - [Supporting organizations](#supporting-organizations)
+- [Publications that use NFStream](#publications-that-use-nfstream)
 - [License](#license)
 
 ## Main Features
@@ -595,7 +596,7 @@ testing support of NFStream project.
 
 [![sah]](https://www.softathome.com/) [![tuke]](https://www.tuke.sk/) [![ntop]](https://www.ntop.org/) [![nmap]](https://nmap.org/) [![google]](https://google.github.io/oss-fuzz/)
 
-Publications that use NFStream
+## Publications that use NFStream
 
 More than [**100 research papers**](https://scholar.google.com/scholar?hl=en&as_sdt=2005&sciodt=0,5&cites=14084093141225707606&scipsc=) have already used NFStream as part of their processing pipelines.
 
