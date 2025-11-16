@@ -32,7 +32,7 @@ INSTALL_REQUIRES = ["cffi>=1.15.0", "psutil>=5.8.0", "dpkt>=1.9.7", "numpy>=1.19
 
 setup(
     name="nfstream",
-    version="6.5.4",
+    version="6.5.5",
     url="https://www.nfstream.org/",
     license="LGPLv3",
     description="A Flexible Network Data Analysis Framework",
