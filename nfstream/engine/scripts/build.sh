@@ -24,7 +24,7 @@ build_libpcap() {
   cd ..
   echo "---------------------------------------------------------------------------------------------------------------"
   echo ""
-  }
+}
 
 build_libndpi() {
   echo ""
@@ -34,24 +34,40 @@ build_libndpi() {
   cd nDPI
   gcc --version
   ./autogen.sh
-  CFLAGS='-I/tmp/nfstream_build/usr/local/include' \
-  LDFLAGS='-L/tmp/nfstream_build/usr/local/lib' \
-  ./configure \
-    --prefix=/tmp/nfstream_build/usr \
-    --libdir=/tmp/nfstream_build/usr/lib \
-    --enable-static --disable-shared
-  make
+  CFLAGS="-I/tmp/nfstream_build/usr/local/include"
+  LDFLAGS="-L/tmp/nfstream_build/usr/local/lib -L/tmp/nfstream_build/usr/local/lib64"
+  CFLAGS=${CFLAGS} LDFLAGS=${LDFLAGS} ./configure && CFLAGS=${CFLAGS} LDFLAGS=${LDFLAGS} make
   make DESTDIR=/tmp/nfstream_build install
   make clean
   cd ..
   echo "---------------------------------------------------------------------------------------------------------------"
   echo ""
-  }
+}
 
 rm -rf /tmp/nfstream_build
 cd nfstream/engine/dependencies
 build_libpcap
 build_libndpi
+
+ARCH="$(uname -m)"
+if [ "$ARCH" = "aarch64" ]; then
+  echo "Applying aarch64 lib64→lib compatibility symlinks"
+  # nDPI under /usr
+  mkdir -p /tmp/nfstream_build/usr/lib
+  for name in libndpi.a libndpi.so; do
+    if [ -f "/tmp/nfstream_build/usr/lib64/$name" ] && [ ! -e "/tmp/nfstream_build/usr/lib/$name" ]; then
+      ln -s "../lib64/$name" "/tmp/nfstream_build/usr/lib/$name"
+    fi
+  done
+  # libpcap under /usr/local
+  mkdir -p /tmp/nfstream_build/usr/local/lib
+  for name in libpcap.a libpcap.so; do
+    if [ -f "/tmp/nfstream_build/usr/local/lib64/$name" ] && [ ! -e "/tmp/nfstream_build/usr/local/lib/$name" ]; then
+      ln -s "../lib64/$name" "/tmp/nfstream_build/usr/local/lib/$name"
+    fi
+  done
+fi
+
 echo ""
 echo "---------------------------------------------------------------------------------------------------------------"
 echo "Preprocessing engine_cc headers"
