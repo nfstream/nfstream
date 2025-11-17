@@ -207,7 +207,6 @@ class NFlow(object):
         "ndpi_fingerprint",
         "tcp_fingerprint",
         "tls_ja4_client",
-        "tls_ja4_client_raw",
         "tls_ja3_server",
         "ssh_hassh_client",
         "ssh_hassh_server",
@@ -347,9 +346,6 @@ class NFlow(object):
                 self.tls_ja4_client = ffi.string(self._C.tls_ja4_client).decode(
                     "utf-8", errors="ignore"
                 )
-                self.tls_ja4_client_raw = ffi.string(self._C.tls_ja4_client_raw).decode(
-                    "utf-8", errors="ignore"
-                )
                 self.tls_ja3_server = ffi.string(self._C.tls_ja3_server).decode(
                     "utf-8", errors="ignore"
                 )
@@ -377,7 +373,6 @@ class NFlow(object):
                 self.ndpi_fingerprint = None
                 self.tcp_fingerprint = None
                 self.tls_ja4_client = None
-                self.tls_ja4_client_raw = None
                 self.tls_ja3_server = None
                 self.ssh_hassh_client = None
                 self.ssh_hassh_server = None
@@ -569,9 +564,6 @@ class NFlow(object):
                     "utf-8", errors="ignore"
                 )
                 self.tls_ja4_client = ffi.string(self._C.tls_ja4_client).decode(
-                    "utf-8", errors="ignore"
-                )
-                self.tls_ja4_client_raw = ffi.string(self._C.tls_ja4_client_raw).decode(
                     "utf-8", errors="ignore"
                 )
                 self.tls_ja3_server = ffi.string(self._C.tls_ja3_server).decode(

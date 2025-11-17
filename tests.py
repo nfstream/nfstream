@@ -865,7 +865,6 @@ class NFStreamTest(object):
             assert flow.ndpi_fingerprint == "c41420c1305d5c372e9664cc95e355c6"
             assert flow.tcp_fingerprint == "2_64_29200_2e3cee914fc1"
             assert flow.tls_ja4_client == "t12d1310h2_27a29bd8d6e6_85173d161f9a"
-            assert flow.tls_ja4_client_raw == ""
             assert flow.tls_ja3_server == "2d1eb5817ece335c24904f516ad5da12"
             assert flow.ssh_hassh_client == ""
             assert flow.ssh_hassh_server == ""

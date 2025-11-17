@@ -166,7 +166,6 @@ typedef struct nf_flow {
   char ndpi_fingerprint[48];      // Unified nDPI fingerprint (SHA256 of TCP + JA4 + JA3S)
   char tcp_fingerprint[64];       // TCP/OS fingerprint
   char tls_ja4_client[48];        // TLS JA4 client fingerprint (replaces JA3 client in nDPI 5.0)
-  char tls_ja4_client_raw[512];   // TLS JA4 client raw fingerprint
   char tls_ja3_server[48];        // TLS JA3S server fingerprint (still available)
   char ssh_hassh_client[48];      // SSH HASSH client fingerprint
   char ssh_hassh_server[48];      // SSH HASSH server fingerprint
@@ -903,7 +902,6 @@ static void flow_bidirectional_dissection_collect_info(struct ndpi_detection_mod
   flow->ndpi_fingerprint[0] = '\0';
   flow->tcp_fingerprint[0] = '\0';
   flow->tls_ja4_client[0] = '\0';
-  flow->tls_ja4_client_raw[0] = '\0';
   flow->tls_ja3_server[0] = '\0';
   flow->ssh_hassh_client[0] = '\0';
   flow->ssh_hassh_server[0] = '\0';
@@ -936,11 +934,6 @@ static void flow_bidirectional_dissection_collect_info(struct ndpi_detection_mod
     // JA4 client fingerprint (hashed)
     if (flow->ndpi_flow->protos.tls_quic.ja4_client[0] != '\0') {
       memcpy(flow->tls_ja4_client, flow->ndpi_flow->protos.tls_quic.ja4_client, sizeof(flow->tls_ja4_client));
-    }
-
-    // JA4 client raw fingerprint
-    if (flow->ndpi_flow->protos.tls_quic.ja4_client_raw != NULL) {
-      ndpi_snprintf(flow->tls_ja4_client_raw, sizeof(flow->tls_ja4_client_raw), "%s", flow->ndpi_flow->protos.tls_quic.ja4_client_raw);
     }
 
     // JA3 server fingerprint (still available in nDPI 5.0)
