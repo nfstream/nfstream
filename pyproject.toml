@@ -1,3 +1,52 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel", "cffi>=1.15.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nfstream"
+version = "6.5.4"
+description = "A Flexible Network Data Analysis Framework"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "LGPL-3.0-or-later" }
+authors = [{ name = "Zied Aouini", email = "aouinizied@gmail.com" }]
+urls = { Homepage = "https://www.nfstream.org/", GitHub = "https://github.com/nfstream/nfstream" }
+
+dependencies = [
+  "cffi>=1.15.0",
+  "psutil>=5.8.0",
+  "dpkt>=1.9.7",
+  "numpy>=1.19.5",
+  "pandas>=1.1.5",
+]
+
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
+  "Intended Audience :: Telecommunications Industry",
+  "Intended Audience :: Information Technology",
+  "Intended Audience :: System Administrators",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Security",
+  "Topic :: Internet :: Log Analysis",
+  "Topic :: System :: Networking :: Monitoring",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["nfstream", "nfstream.*"]
+
 [tool.cibuildwheel.linux]
 before-all = """
 yum -y update && yum -y groupinstall 'Development tools' && \
