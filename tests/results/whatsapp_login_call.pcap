@@ -9,8 +9,8 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 7,3,162,TLS,Web,1,1
 8,3,162,TLS,Web,1,1
 9,3,162,TLS,Web,1,1
-10,2,330,DNS.Apple,Network,0,6
-11,2,280,DNS.WhatsApp,Network,0,6
+10,2,330,DNS,Network,0,6
+11,2,280,DNS,Network,0,6
 12,38,17220,TLS.Apple,Web,0,6
 13,180,24874,WhatsApp,Chat,0,6
 14,3,198,TLS,Web,1,1
@@ -27,7 +27,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 25,5,676,STUN.WhatsAppCall,VoIP,0,6
 26,5,676,STUN.WhatsAppCall,VoIP,0,6
 27,5,676,STUN.WhatsAppCall,VoIP,0,6
-28,24,4825,STUN.WhatsAppCall,VoIP,0,6
+28,24,4825,SRTP.WhatsAppCall,VoIP,0,6
 29,5,676,STUN.WhatsAppCall,VoIP,0,6
 30,3,162,TLS,Web,1,1
 31,3,162,TLS,Web,1,1
@@ -36,8 +36,8 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 34,3,198,TLS,Web,1,1
 35,3,162,TLS,Web,1,1
 36,3,162,TLS,Web,1,1
-37,15,1290,STUN.WhatsAppCall,VoIP,0,6
-38,464,52920,STUN.WhatsAppCall,VoIP,0,6
+37,15,1290,STUN.WhatsAppCall,VoIP,0,5
+38,464,52920,SRTP.WhatsAppCall,VoIP,0,6
 39,10,700,ICMP,Network,0,6
 40,10,3420,DHCP,Network,0,6
 41,2,218,MDNS,Network,0,6
@@ -52,7 +52,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 50,5,676,STUN.WhatsAppCall,VoIP,0,6
 51,5,676,STUN.WhatsAppCall,VoIP,0,6
 52,20,2993,STUN.WhatsAppCall,VoIP,0,6
-53,12,1032,STUN.WhatsAppCall,VoIP,0,6
-54,198,30418,STUN.WhatsAppCall,VoIP,0,6
+53,12,1032,STUN.WhatsAppCall,VoIP,0,5
+54,198,30418,SRTP.WhatsAppCall,VoIP,0,6
 55,3,162,TLS,Web,1,1
 56,32,9705,TLS.AppleStore,SoftwareUpdate,0,6

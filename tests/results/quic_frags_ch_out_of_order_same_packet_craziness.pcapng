@@ -72,7 +72,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 70,4,5568,QUIC.GoogleServices,Web,0,6
 71,1,1392,QUIC.PlayStore,SoftwareUpdate,0,6
 72,1,1392,QUIC.Google,Web,0,6
-73,1,1392,QUIC.Google,Web,0,6
+73,1,1392,QUIC.Google,Advertisement,0,6
 74,1,1392,QUIC.Google,Web,0,6
 75,1,1392,QUIC.Google,Advertisement,0,6
 76,1,1392,QUIC.Google,Advertisement,0,6
@@ -109,6 +109,6 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 107,2,2784,QUIC.Google,Web,0,6
 108,3,4176,QUIC.Google,Web,0,6
 109,1,1392,QUIC.PlayStore,SoftwareUpdate,0,6
-110,1,1392,QUIC.Google,Web,0,6
+110,1,1392,QUIC.Google,Advertisement,0,6
 111,1,1392,QUIC.Google,Web,0,6
 112,1,1392,QUIC.Google,Web,0,6

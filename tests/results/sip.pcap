@@ -4,4 +4,4 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 2,18,9512,SIP,VoIP,0,6
 3,34,16983,SIP,VoIP,0,6
 4,9,1926,RTP,Media,0,6
-5,1,146,RTCP,VoIP,0,6
+5,1,146,Unknown,Unspecified,0,0
