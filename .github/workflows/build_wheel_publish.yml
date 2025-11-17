@@ -57,5 +57,5 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: |
           python3 -m pip install --upgrade pip --break-system-packages
-          python3 -m pip install twine --break-system-packages
+          python3 -m pip install -r dev_requirements.txt --break-system-packages
           python3 -m twine upload --skip-existing ./wheelhouse/nfstream-*.whl

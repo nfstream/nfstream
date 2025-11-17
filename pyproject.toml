@@ -11,6 +11,3 @@ before-all = """
 apk add --no-cache autoconf automake libtool pkgconfig gettext json-c-dev libusb-dev dbus-glib-dev bluez-libs bluez-dev libnl3-dev flex bison && \
 install -d "$(aclocal --print-ac-dir)" && cp /usr/share/aclocal/pkg.m4 "$(aclocal --print-ac-dir)/"
 """
-
-[tool.setuptools]
-license-files = []
