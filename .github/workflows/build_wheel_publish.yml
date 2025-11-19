@@ -1,10 +1,8 @@
 name: build_wheel_publish
 
 on:
-  push:
-    branches: [ master ]
-    #tags:
-    #  - "v*"
+  release:
+    types: [created]
 
 jobs:
   build_linux_x86:
@@ -118,8 +116,6 @@ jobs:
       - build_linux_aarch64
       - build_windows
       - build_macos
-    # only publish on tag refs, e.g. refs/tags/v1.2.3
-    # if: startsWith(github.ref, 'refs/tags/')
 
     steps:
       - name: Download wheels artifacts
