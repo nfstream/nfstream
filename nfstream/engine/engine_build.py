@@ -164,7 +164,14 @@ with open(
     for to_replace in cdef_to_replace(NDPI_CDEF):
         NDPI_CDEF = NDPI_CDEF.replace(to_replace, "")
 
-    NDPI_MODULE_STRUCT_CDEF = NDPI_CDEF.split("//CFFI.NDPI_MODULE_STRUCT")[1]
+    # nDPI 5.0: CFFI.NDPI_MODULE_STRUCT markers were removed
+    # Try to extract the section if markers exist, otherwise use empty string
+    try:
+        NDPI_MODULE_STRUCT_CDEF = NDPI_CDEF.split("//CFFI.NDPI_MODULE_STRUCT")[1]
+    except IndexError:
+        # nDPI 5.0+: Markers don't exist, include full NDPI_CDEF
+        # The full typedef definitions are already in ndpi_typedefs.h via #include
+        NDPI_MODULE_STRUCT_CDEF = ""
 
 with open(
     convert_path(
@@ -175,7 +182,12 @@ with open(
     for to_replace in cdef_to_replace(NDPI_PACKED):
         NDPI_PACKED = NDPI_PACKED.replace(to_replace, "")
 
-NDPI_PACKED_STRUCTURES = NDPI_PACKED.split("//CFFI.NDPI_PACKED_STRUCTURES")[1]
+# Extract packed structures between markers (should exist in nDPI 5.0)
+try:
+    NDPI_PACKED_STRUCTURES = NDPI_PACKED.split("//CFFI.NDPI_PACKED_STRUCTURES")[1]
+except IndexError:
+    # Fallback if markers don't exist
+    NDPI_PACKED_STRUCTURES = NDPI_PACKED
 
 
 # --------------------------------Engine Library Magic Code Generator --------------------------------------------------

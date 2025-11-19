@@ -14,5 +14,5 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 12,2,330,CAPWAP,Network,0,6
 13,1,122,Unknown,Unspecified,0,0
 14,1,209,Unknown,Unspecified,0,0
-15,1,209,Unknown,Unspecified,0,0
+15,1,209,Azure,Cloud,1,7
 16,1,296,Unknown,Unspecified,0,0

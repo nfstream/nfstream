@@ -1,5 +1,5 @@
 id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
-0,1724,2198169,HTTP,Web,1,1
+0,1724,2198169,HTTP,Web,0,1
 1,3,193,TLS,Web,0,6
 2,4,1294,TLS,Web,0,6
 3,1,86,TLS,Web,0,6

@@ -615,16 +615,27 @@ class NFStreamTest(object):
                 "www.facebook.com",
             ]
             assert int(requested_server_name) == 1
-            client_fingerprint = flow.client_fingerprint in [
-                "bfcc1a3891601edb4f137ab7ab25b840",
-                "5c60e71f1b8cd40e4d40ed5b6d666e3f",
+            # nDPI 5.0: Test protocol-specific fingerprint fields
+            # TLS JA4 Client (replaces JA3 client)
+            tls_ja4_client = flow.tls_ja4_client in [
+                "t12d1311h2_27a29bd8d6e6_c4623e4f4474",
+                "t12d1310h2_27a29bd8d6e6_85173d161f9a",
             ]
-            assert int(client_fingerprint) == 1
-            server_fingerprint = flow.server_fingerprint in [
+            assert int(tls_ja4_client) == 1
+            # TLS JA3 Server (still JA3S)
+            tls_ja3_server = flow.tls_ja3_server in [
                 "2d1eb5817ece335c24904f516ad5da12",
                 "96681175a9547081bf3d417f1a572091",
             ]
-            assert int(server_fingerprint) == 1
+            assert int(tls_ja3_server) == 1
+            # nDPI unified fingerprint (SHA256 of TCP + JA4 + JA3S, truncated)
+            ndpi_fingerprint = flow.ndpi_fingerprint in [
+                "1aea32bf13533e4cbd2609c17c6be6bd",
+                "c41420c1305d5c372e9664cc95e355c6",
+            ]
+            assert int(ndpi_fingerprint) == 1
+            # TCP fingerprint for OS/device identification
+            assert flow.tcp_fingerprint == "2_64_29200_2e3cee914fc1"
         del fingerprint_streamer
         print(
             "{}\t: {}".format(
@@ -850,8 +861,14 @@ class NFStreamTest(object):
             assert flow.application_is_guessed == 0
             assert flow.application_confidence == 6
             assert flow.requested_server_name == "facebook.com"
-            assert flow.client_fingerprint == "bfcc1a3891601edb4f137ab7ab25b840"
-            assert flow.server_fingerprint == "2d1eb5817ece335c24904f516ad5da12"
+            # nDPI 5.0: Test all protocol-specific fingerprint fields
+            assert flow.ndpi_fingerprint == "c41420c1305d5c372e9664cc95e355c6"
+            assert flow.tcp_fingerprint == "2_64_29200_2e3cee914fc1"
+            assert flow.tls_ja4_client == "t12d1310h2_27a29bd8d6e6_85173d161f9a"
+            assert flow.tls_ja3_server == "2d1eb5817ece335c24904f516ad5da12"
+            assert flow.ssh_hassh_client == ""
+            assert flow.ssh_hassh_server == ""
+            assert flow.dhcp_fingerprint == ""
             assert flow.user_agent == ""
             assert flow.content_type == ""
         print(

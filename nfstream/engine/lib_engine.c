@@ -161,8 +161,15 @@ typedef struct nf_flow {
   char application_name[40];
   char category_name[40];
   char requested_server_name[80];
-  char c_hash[48];
-  char s_hash[48];
+  // NOTE: Removed client_fingerprint (c_hash) and server_fingerprint (s_hash)
+  //       in favor of protocol-specific fingerprint fields for nDPI 5.0 compatibility
+  char ndpi_fingerprint[48];      // Unified nDPI fingerprint (SHA256 of TCP + JA4 + JA3S)
+  char tcp_fingerprint[64];       // TCP/OS fingerprint
+  char tls_ja4_client[48];        // TLS JA4 client fingerprint (replaces JA3 client in nDPI 5.0)
+  char tls_ja3_server[48];        // TLS JA3S server fingerprint (still available)
+  char ssh_hassh_client[48];      // SSH HASSH client fingerprint
+  char ssh_hassh_server[48];      // SSH HASSH server fingerprint
+  char dhcp_fingerprint[48];      // DHCP fingerprint
   char content_type[64];
   char user_agent[256];
   struct ndpi_flow_struct *ndpi_flow;
@@ -871,7 +878,8 @@ static uint16_t flow_get_packet_size(struct nf_packet *packet, uint8_t accountin
  * flow_is_ndpi_proto: helper to check is flow protocol equal to an id.
  */
 static uint8_t flow_is_ndpi_proto(struct nf_flow *flow, uint16_t id) {
-  if ((flow->detected_protocol.master_protocol == id)|| (flow->detected_protocol.app_protocol == id)) return 1;
+  // nDPI 5.0: master_protocol and app_protocol are now inside proto struct
+  if ((flow->detected_protocol.proto.master_protocol == id)|| (flow->detected_protocol.proto.app_protocol == id)) return 1;
   else return 0;
 }
 
@@ -883,37 +891,65 @@ static void flow_bidirectional_dissection_collect_info(struct ndpi_detection_mod
   if (!flow->ndpi_flow) return;
   flow->confidence = flow->ndpi_flow->confidence;
   // Application name (STUN.WhatsApp, TLS.Netflix, etc.).
-  ndpi_protocol2name(dissector, flow->detected_protocol, flow->application_name, sizeof(flow->application_name));
+  // nDPI 5.0: ndpi_protocol2name now expects ndpi_master_app_protocol (proto field)
+  ndpi_protocol2name(dissector, flow->detected_protocol.proto, flow->application_name, sizeof(flow->application_name));
   // Application category name (Streaming, SocialNetwork, etc.).
   memcpy(flow->category_name, ndpi_category_get_name(dissector, flow->detected_protocol.category), 24);
   // Requested server name: HTTP server, DNS, etc.
   memcpy(flow->requested_server_name, flow->ndpi_flow->host_server_name, sizeof(flow->requested_server_name));
-  // DHCP: We put DHCP fingerprint in client side: this can be helpful for device identification approaches.
+
+  // Initialize all fingerprint fields to empty strings
+  flow->ndpi_fingerprint[0] = '\0';
+  flow->tcp_fingerprint[0] = '\0';
+  flow->tls_ja4_client[0] = '\0';
+  flow->tls_ja3_server[0] = '\0';
+  flow->ssh_hassh_client[0] = '\0';
+  flow->ssh_hassh_server[0] = '\0';
+  flow->dhcp_fingerprint[0] = '\0';
+
+  // DHCP: Extract DHCP fingerprint for device identification
   if (flow_is_ndpi_proto(flow, NDPI_PROTOCOL_DHCP)) {
-    memcpy(flow->c_hash, flow->ndpi_flow->protos.dhcp.fingerprint, sizeof(flow->c_hash));
+    memcpy(flow->dhcp_fingerprint, flow->ndpi_flow->protos.dhcp.fingerprint, sizeof(flow->dhcp_fingerprint));
   }
-  // HTTP: UserAgent and ContentType. With server name this is sufficient. (at least for now)
+  // HTTP: UserAgent and ContentType
   else if (flow_is_ndpi_proto(flow, NDPI_PROTOCOL_HTTP)) {
     ndpi_snprintf(flow->content_type, sizeof(flow->content_type), "%s", flow->ndpi_flow->http.content_type ? flow->ndpi_flow->http.content_type : "");
     ndpi_snprintf(flow->user_agent, sizeof(flow->user_agent), "%s", (flow->ndpi_flow->http.user_agent ? flow->ndpi_flow->http.user_agent : ""));
-  // SSH: https://github.com/salesforce/hassh
-  //      We extract both client and server fingerprints hassh fingerprints for SSH.
-  } else if (flow_is_ndpi_proto(flow, NDPI_PROTOCOL_SSH)) {
-    memcpy(flow->c_hash, flow->ndpi_flow->protos.ssh.hassh_client, sizeof(flow->c_hash));
-    memcpy(flow->s_hash, flow->ndpi_flow->protos.ssh.hassh_server, sizeof(flow->s_hash));
   }
-  // TLS: We populate requested server name with the server name identifier extracted in client hello.
-  //      Then we add JA3 fingerprints for both client and server: https://github.com/salesforce/ja3
-  // We also add QUIC user Agent ID in case of QUIC protocol.
-
-
+  // SSH: Extract HASSH fingerprints for both client and server
+  // Reference: https://github.com/salesforce/hassh
+  else if (flow_is_ndpi_proto(flow, NDPI_PROTOCOL_SSH)) {
+    memcpy(flow->ssh_hassh_client, flow->ndpi_flow->protos.ssh.hassh_client, sizeof(flow->ssh_hassh_client));
+    memcpy(flow->ssh_hassh_server, flow->ndpi_flow->protos.ssh.hassh_server, sizeof(flow->ssh_hassh_server));
+  }
+  // TLS/QUIC: Extract JA4 client (nDPI 5.0+) and JA3 server fingerprints
+  // NOTE: ja3_client was removed in nDPI 5.0, replaced by ja4_client
+  // Reference: https://github.com/FoxIO-LLC/ja4
   else if (flow_is_ndpi_proto(flow, NDPI_PROTOCOL_TLS) || flow_is_ndpi_proto(flow, NDPI_PROTOCOL_DTLS) ||
            flow_is_ndpi_proto(flow, NDPI_PROTOCOL_MAIL_SMTPS) || flow_is_ndpi_proto(flow, NDPI_PROTOCOL_MAIL_IMAPS) ||
            flow_is_ndpi_proto(flow, NDPI_PROTOCOL_MAIL_POPS) || flow_is_ndpi_proto(flow, NDPI_PROTOCOL_QUIC)) {
     memcpy(flow->requested_server_name, flow->ndpi_flow->host_server_name, sizeof(flow->requested_server_name));
     ndpi_snprintf(flow->user_agent, sizeof(flow->user_agent), "%s", (flow->ndpi_flow->http.user_agent ? flow->ndpi_flow->http.user_agent : ""));
-    memcpy(flow->c_hash, flow->ndpi_flow->protos.tls_quic.ja3_client, sizeof(flow->c_hash));
-    memcpy(flow->s_hash, flow->ndpi_flow->protos.tls_quic.ja3_server, sizeof(flow->s_hash));
+
+    // JA4 client fingerprint (hashed)
+    if (flow->ndpi_flow->protos.tls_quic.ja4_client[0] != '\0') {
+      memcpy(flow->tls_ja4_client, flow->ndpi_flow->protos.tls_quic.ja4_client, sizeof(flow->tls_ja4_client));
+    }
+
+    // JA3 server fingerprint (still available in nDPI 5.0)
+    memcpy(flow->tls_ja3_server, flow->ndpi_flow->protos.tls_quic.ja3_server, sizeof(flow->tls_ja3_server));
+  }
+
+  // Extract unified nDPI fingerprint (nDPI 5.0+)
+  // This is SHA256(TCP fingerprint + JA4 + JA3S) truncated to 16 bytes
+  if (flow->ndpi_flow->ndpi.fingerprint != NULL) {
+    ndpi_snprintf(flow->ndpi_fingerprint, sizeof(flow->ndpi_fingerprint), "%s", flow->ndpi_flow->ndpi.fingerprint);
+  }
+
+  // Extract TCP fingerprint for OS-level identification (nDPI 4.12+)
+  // Format: <version>_<ttl>_<window_size>_<options_hash>/<OS>
+  if (flow->ndpi_flow->tcp.fingerprint != NULL) {
+    ndpi_snprintf(flow->tcp_fingerprint, sizeof(flow->tcp_fingerprint), "%s", flow->ndpi_flow->tcp.fingerprint);
   }
 }
 
@@ -1085,13 +1121,20 @@ static uint8_t flow_init_bidirectional_dissection(struct ndpi_detection_module_s
   } else {
     memset(flow->ndpi_flow, 0, SIZEOF_FLOW_STRUCT);
   }
-  // First packet are dissected.
+  // nDPI 5.0: First packet dissection with input_info parameter
+  struct ndpi_flow_input_info input_info;
+  memset(&input_info, '\0', sizeof(input_info));
+  input_info.in_pkt_dir = NDPI_IN_PKT_DIR_UNKNOWN;
+  input_info.seen_flow_beginning = NDPI_FLOW_BEGINNING_SEEN; // First packet
+
   flow->detected_protocol = ndpi_detection_process_packet(dissector, flow->ndpi_flow, packet->ip_content,
-                                                          packet->ip_content_len, packet->time, NULL);
+                                                          packet->ip_content_len, packet->time, &input_info);
   if (sync) flow_bidirectional_dissection_collect_info(dissector, flow); // Then we collect possible infos.
-  if ((flow->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) && (n_dissections == 1)) {
+  if ((flow->detected_protocol.proto.app_protocol == NDPI_PROTOCOL_UNKNOWN) && (n_dissections == 1)) {
     // Not identified and we are limited to 1, we try to guess.
-    flow->detected_protocol = ndpi_detection_giveup(dissector, flow->ndpi_flow, 1, &flow->guessed);
+    // nDPI 5.0: ndpi_detection_giveup signature changed (removed enable_guess and guessed params)
+    flow->detected_protocol = ndpi_detection_giveup(dissector, flow->ndpi_flow);
+    flow->guessed = flow->ndpi_flow->protocol_was_guessed;
     if (sync) flow_bidirectional_dissection_collect_info(dissector, flow); // Collect potentially guessed infos.
     flow->detection_completed = 1; // Close it.
   }
@@ -1104,22 +1147,29 @@ static uint8_t flow_init_bidirectional_dissection(struct ndpi_detection_module_s
 static void flow_update_bidirectional_dissection(struct ndpi_detection_module_struct *dissector, uint8_t n_dissections,
                                           struct nf_flow *flow, struct nf_packet *packet, uint8_t sync) {
   if (flow->detection_completed == 0) { // application not detected yet.
-    // We dissect only if still unknown or known and we didn't dissect all possible information yet.
-    uint8_t still_dissect = (flow->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) ||
-                             ((flow->detected_protocol.app_protocol != NDPI_PROTOCOL_UNKNOWN)
-                               && ndpi_extra_dissection_possible(dissector, flow->ndpi_flow));
-    if (still_dissect) { // Go for it.
-      flow->detected_protocol = ndpi_detection_process_packet(dissector, flow->ndpi_flow, packet->ip_content,
-                                                              packet->ip_content_len, packet->time, NULL);
-      if (sync) flow_bidirectional_dissection_collect_info(dissector, flow); // Collect information to flow structure.
-    } else { // We are done -> Known and no extra dissection possible.
-      flow->detection_completed = 1; // Detection end. (detection_completed is used to trigger copy on sync mode)
-      // Note we didn't collect information as this is already done in previous loop.
+    // nDPI 5.0: Process packet and check state for classification completion
+    struct ndpi_flow_input_info input_info;
+    memset(&input_info, '\0', sizeof(input_info));
+    input_info.in_pkt_dir = NDPI_IN_PKT_DIR_UNKNOWN;
+    input_info.seen_flow_beginning = NDPI_FLOW_BEGINNING_UNKNOWN;
+
+    flow->detected_protocol = ndpi_detection_process_packet(dissector, flow->ndpi_flow, packet->ip_content,
+                                                            packet->ip_content_len, packet->time, &input_info);
+
+    // nDPI 5.0: Check if classification is complete using the new state field
+    if (flow->detected_protocol.state == NDPI_STATE_CLASSIFIED) {
+      flow->detection_completed = 1; // Detection complete
+    }
+
+    if (sync) {
+      flow_bidirectional_dissection_collect_info(dissector, flow); // Collect information to flow structure.
     }
 
     if (n_dissections == flow->bidirectional_packets) { // if we reach user defined limit and application is unknown
-      if (flow->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) {
-        flow->detected_protocol = ndpi_detection_giveup(dissector, flow->ndpi_flow, 1, &flow->guessed);
+      if (flow->detected_protocol.proto.app_protocol == NDPI_PROTOCOL_UNKNOWN) {
+        // nDPI 5.0: ndpi_detection_giveup signature changed
+        flow->detected_protocol = ndpi_detection_giveup(dissector, flow->ndpi_flow);
+        flow->guessed = flow->ndpi_flow->protocol_was_guessed;
         if (sync) flow_bidirectional_dissection_collect_info(dissector, flow); // copy guessed infos if present.
       } // We reach it.
       flow->detection_completed = 1;
@@ -1649,23 +1699,27 @@ void capture_close(pcap_t * pcap_handle) {
  */
 struct ndpi_detection_module_struct *dissector_init(struct dissector_checker *checker) {
   // Check if headers match the ffi declarations and initialize dissector.
-  ndpi_init_prefs init_prefs = ndpi_no_prefs;
+  // nDPI 5.0: ndpi_init_prefs and separate TCP/UDP struct size checks removed
+  // Only check the main flow struct size
   if (checker->flow_size != ndpi_detection_get_sizeof_ndpi_flow_struct()) return NULL;
-  if (checker->flow_tcp_size != ndpi_detection_get_sizeof_ndpi_flow_tcp_struct()) return NULL;
-  if (checker->flow_udp_size != ndpi_detection_get_sizeof_ndpi_flow_udp_struct()) return NULL;
-  return ndpi_init_detection_module(init_prefs);
+
+  // nDPI 5.0: ndpi_init_detection_module now requires ndpi_global_context*
+  // Pass NULL to use default global context
+  return ndpi_init_detection_module(NULL);
 }
 
 /**
  * dissector_configure: Dissector initializer.
+ * NOTE: nDPI 5.0 enables all protocols by default, no bitmask needed.
+ * Use ndpi_set_config() for selective protocol disabling if needed.
  */
 void dissector_configure(struct ndpi_detection_module_struct *dissector) {
     if (dissector == NULL) {
       return;
     } else {
-      NDPI_PROTOCOL_BITMASK protos;
-      NDPI_BITMASK_SET_ALL(protos); // Set bitmask for ALL protocols
-      ndpi_set_protocol_detection_bitmask2(dissector, &protos);
+      // nDPI 5.0: All protocols are enabled by default
+      // No need for NDPI_PROTOCOL_BITMASK or ndpi_set_protocol_detection_bitmask2
+      // Just finalize the initialization
       ndpi_finalize_initialization(dissector);
     }
 }
@@ -1720,8 +1774,11 @@ uint8_t meter_update_flow(struct nf_flow *flow, struct nf_packet *packet, uint64
  */
 void meter_expire_flow(struct nf_flow *flow, uint8_t n_dissections, struct ndpi_detection_module_struct *dissector) {
   if (n_dissections) {
-    if ((flow->detected_protocol.app_protocol == NDPI_PROTOCOL_UNKNOWN) && (flow->detection_completed == 0)) {
-      flow->detected_protocol = ndpi_detection_giveup(dissector, flow->ndpi_flow, 1, &flow->guessed);
+    // nDPI 5.0: app_protocol is now in proto struct
+    if ((flow->detected_protocol.proto.app_protocol == NDPI_PROTOCOL_UNKNOWN) && (flow->detection_completed == 0)) {
+      // nDPI 5.0: ndpi_detection_giveup signature changed
+      flow->detected_protocol = ndpi_detection_giveup(dissector, flow->ndpi_flow);
+      flow->guessed = flow->ndpi_flow->protocol_was_guessed;
     }
     flow_bidirectional_dissection_collect_info(dissector, flow);
     flow->detection_completed = 1; // IMPORTANT: This will force copy on non sync mode.

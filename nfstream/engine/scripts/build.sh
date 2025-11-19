@@ -36,7 +36,8 @@ build_libndpi() {
   ./autogen.sh
   CFLAGS="-I/tmp/nfstream_build/usr/local/include"
   LDFLAGS="-L/tmp/nfstream_build/usr/local/lib -L/tmp/nfstream_build/usr/local/lib64"
-  CFLAGS=${CFLAGS} LDFLAGS=${LDFLAGS} ./configure && CFLAGS=${CFLAGS} LDFLAGS=${LDFLAGS} make
+  # nDPI 5.0: Build only the library, skip examples/tests to avoid libpcap dependency issues
+  CFLAGS=${CFLAGS} LDFLAGS=${LDFLAGS} ./configure --with-only-libndpi && CFLAGS=${CFLAGS} LDFLAGS=${LDFLAGS} make
   make DESTDIR=/tmp/nfstream_build install
   make clean
   cd ..

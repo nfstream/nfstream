@@ -11,7 +11,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 9,2,1012,Dropbox,Cloud,0,6
 10,5,945,MDNS,Network,0,6
 11,1,320,MDNS,Network,0,6
-12,2,284,DNS.Microsoft,Network,0,6
+12,2,284,DNS,Network,0,6
 13,8,656,Spotify,Music,0,6
 14,3,501,SSDP,System,0,6
 15,2,186,DNS,Network,0,6
@@ -24,14 +24,14 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 22,20,2200,Telegram,Chat,0,6
 23,20,2200,Telegram,Chat,0,6
 24,301,72194,Unknown,Unspecified,0,0
-25,2,212,OpenVPN,VPN,0,6
-26,2,186,DNS.GoogleServices,Network,0,6
+25,2,212,Unknown,Unspecified,0,0
+26,2,186,DNS,Network,0,6
 27,1,397,DHCP,Network,0,6
 28,1,243,NetBIOS.SMBv1,System,0,6
 29,3,276,NetBIOS,System,0,6
-30,2,194,DNS.ntop,Network,0,6
+30,2,194,DNS,Network,0,6
 31,2,160,DNS,Network,0,6
-32,3,302,DNS.ntop,Network,0,6
+32,3,302,DNS,Network,0,6
 33,3,2854,QUIC.Google,Web,0,6
 34,3,2854,QUIC.Google,Web,0,6
 35,1,86,Spotify,Music,0,6
@@ -45,5 +45,5 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 43,3,302,Unknown,Unspecified,0,0
 44,2,336,SSDP,System,0,6
 45,4,672,SSDP,System,0,6
-46,2,204,DNS.Dropbox,Network,0,6
+46,2,204,DNS,Network,0,6
 47,2,186,DNS,Network,0,6

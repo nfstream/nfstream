@@ -202,8 +202,15 @@ class NFlow(object):
         "application_is_guessed",
         "application_confidence",
         "requested_server_name",
-        "client_fingerprint",
-        "server_fingerprint",
+        # NOTE: Removed client_fingerprint and server_fingerprint
+        # Replaced with protocol-specific fingerprint fields for nDPI 5.0
+        "ndpi_fingerprint",
+        "tcp_fingerprint",
+        "tls_ja4_client",
+        "tls_ja3_server",
+        "ssh_hassh_client",
+        "ssh_hassh_server",
+        "dhcp_fingerprint",
         "user_agent",
         "content_type",
         "_C",
@@ -329,10 +336,26 @@ class NFlow(object):
                 self.requested_server_name = ffi.string(
                     self._C.requested_server_name
                 ).decode("utf-8", errors="ignore")
-                self.client_fingerprint = ffi.string(self._C.c_hash).decode(
+                # Extract protocol-specific fingerprints
+                self.ndpi_fingerprint = ffi.string(self._C.ndpi_fingerprint).decode(
                     "utf-8", errors="ignore"
                 )
-                self.server_fingerprint = ffi.string(self._C.s_hash).decode(
+                self.tcp_fingerprint = ffi.string(self._C.tcp_fingerprint).decode(
+                    "utf-8", errors="ignore"
+                )
+                self.tls_ja4_client = ffi.string(self._C.tls_ja4_client).decode(
+                    "utf-8", errors="ignore"
+                )
+                self.tls_ja3_server = ffi.string(self._C.tls_ja3_server).decode(
+                    "utf-8", errors="ignore"
+                )
+                self.ssh_hassh_client = ffi.string(self._C.ssh_hassh_client).decode(
+                    "utf-8", errors="ignore"
+                )
+                self.ssh_hassh_server = ffi.string(self._C.ssh_hassh_server).decode(
+                    "utf-8", errors="ignore"
+                )
+                self.dhcp_fingerprint = ffi.string(self._C.dhcp_fingerprint).decode(
                     "utf-8", errors="ignore"
                 )
                 self.user_agent = ffi.string(self._C.user_agent).decode(
@@ -347,8 +370,13 @@ class NFlow(object):
                 self.application_is_guessed = None
                 self.application_confidence = None
                 self.requested_server_name = None
-                self.client_fingerprint = None
-                self.server_fingerprint = None
+                self.ndpi_fingerprint = None
+                self.tcp_fingerprint = None
+                self.tls_ja4_client = None
+                self.tls_ja3_server = None
+                self.ssh_hassh_client = None
+                self.ssh_hassh_server = None
+                self.dhcp_fingerprint = None
                 self.user_agent = None
                 self.content_type = None
         if splt:  # If splt_analysis set (>0), we unpack the arrays structures.
@@ -528,10 +556,26 @@ class NFlow(object):
                 self.requested_server_name = ffi.string(
                     self._C.requested_server_name
                 ).decode("utf-8", errors="ignore")
-                self.client_fingerprint = ffi.string(self._C.c_hash).decode(
+                # Extract protocol-specific fingerprints
+                self.ndpi_fingerprint = ffi.string(self._C.ndpi_fingerprint).decode(
                     "utf-8", errors="ignore"
                 )
-                self.server_fingerprint = ffi.string(self._C.s_hash).decode(
+                self.tcp_fingerprint = ffi.string(self._C.tcp_fingerprint).decode(
+                    "utf-8", errors="ignore"
+                )
+                self.tls_ja4_client = ffi.string(self._C.tls_ja4_client).decode(
+                    "utf-8", errors="ignore"
+                )
+                self.tls_ja3_server = ffi.string(self._C.tls_ja3_server).decode(
+                    "utf-8", errors="ignore"
+                )
+                self.ssh_hassh_client = ffi.string(self._C.ssh_hassh_client).decode(
+                    "utf-8", errors="ignore"
+                )
+                self.ssh_hassh_server = ffi.string(self._C.ssh_hassh_server).decode(
+                    "utf-8", errors="ignore"
+                )
+                self.dhcp_fingerprint = ffi.string(self._C.dhcp_fingerprint).decode(
                     "utf-8", errors="ignore"
                 )
                 self.user_agent = ffi.string(self._C.user_agent).decode(
