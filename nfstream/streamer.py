@@ -446,6 +446,7 @@ class NFStreamer(object):
         # multiprocessing Value invocation must be performed before the call to Queue.
         n_meters = self.n_meters
         idx_generator = self._mp_context.Value("i", 0)
+        flow_id_generator = self._mp_context.Value("i", 0)
         for i in range(n_meters):
             performances.append(
                 [
@@ -473,6 +474,7 @@ class NFStreamer(object):
                             self._mode,
                             self.idle_timeout * 1000,
                             self.active_timeout * 1000,
+                            flow_id_generator,
                             self.accounting_mode,
                             self.udps,
                             self.n_dissections,

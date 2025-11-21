@@ -118,6 +118,8 @@ class NFlow(object):
 
     __slots__ = (
         "id",
+        "flow_id",
+        "sub_flow_id",
         "expiration_id",
         "src_ip",
         "src_mac",
@@ -216,6 +218,8 @@ class NFlow(object):
     def __init__(
         self,
         packet,
+        flow_id,
+        sub_flow_id,
         ffi,
         lib,
         udps,
@@ -227,14 +231,17 @@ class NFlow(object):
         dissector,
         decode_tunnels,
         system_visibility_mode,
+        direction,
     ):
         self.id = (
             NFEvent.FLOW
         )  # id set to NFLOW for internal communications and handled (incremented) by NFStreamer.
+        self.flow_id = flow_id
+        self.sub_flow_id = sub_flow_id
         self.expiration_id = 0
         # Initialize C structure.
         self._C = lib.meter_initialize_flow(
-            packet, accounting_mode, statistics, splt, n_dissections, dissector, sync
+            packet, accounting_mode, statistics, splt, n_dissections, dissector, sync, direction
         )
         if self._C == ffi.NULL:  # raise OSError in order to be handled by meter.
             raise OSError("Not enough memory for new flow creation.")

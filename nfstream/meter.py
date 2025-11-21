@@ -76,7 +76,7 @@ def meter_scan(
     remaining = True  # We suppose that there is something to expire
     scanned = 0
     while (
-        remaining and scanned < 1000
+        remaining and scanned < 100_000  # originally 1000 not 100_000
     ):  # idle scan budget (each 10ms we scan 1000 as maximum)
         try:
             flow_key = cache.get_lru_key()  # will return the LRU flow key.
@@ -175,6 +175,7 @@ def consume(
     cache,
     active_timeout,
     idle_timeout,
+    flow_id_generator,
     channel,
     ffi,
     lib,
@@ -191,6 +192,8 @@ def consume(
     """consume a packet and produce flow"""
     # We maintain state for active flows computation 1 for creation, 0 for update/cut, -1 for custom expire
     flow_key = get_flow_key_from_pkt(packet)
+    direction = 0  # by default, we assume that the flow should be updated src -> dst
+    sub_flow_id = 0
     try:  # update flow
         flow = cache[flow_key].update(
             packet,
@@ -214,11 +217,20 @@ def consume(
                 state = -1
             else:  # active/inactive expiration
                 channel.put(flow)
+                direction = flow.expiration_id
+                if direction:
+                    flow_id = flow.flow_id
+                    sub_flow_id = flow.sub_flow_id + 1
+                else:
+                    flow_id = flow_id_generator.value
+                    flow_id_generator.value += 1
                 del cache[flow_key]
                 del flow
                 try:
                     cache[flow_key] = NFlow(
                         packet,
+                        flow_id,
+                        sub_flow_id,
                         ffi,
                         lib,
                         udps,
@@ -230,6 +242,7 @@ def consume(
                         dissector,
                         decode_tunnels,
                         system_visibility_mode,
+                        direction,
                     )
                     if (
                         cache[flow_key].expiration_id == -1
@@ -244,6 +257,7 @@ def consume(
                                 ffi,
                                 lib,
                                 dissector,
+                                direction,
                             )
                         )
                         del cache[flow_key]
@@ -258,8 +272,12 @@ def consume(
     except KeyError:  # create flow
         try:
             if sync:
+                flow_id = flow_id_generator.value
+                flow_id_generator.value += 1
                 flow = NFlow(
                     packet,
+                    flow_id,
+                    sub_flow_id,
                     ffi,
                     lib,
                     udps,
@@ -271,6 +289,7 @@ def consume(
                     dissector,
                     decode_tunnels,
                     system_visibility_mode,
+                    direction,
                 )
                 if (
                     flow.expiration_id == -1
@@ -293,8 +312,12 @@ def consume(
                     cache[flow_key] = flow
                     state = 1
             else:
+                flow_id = flow_id_generator.value
+                flow_id_generator.value += 1
                 cache[flow_key] = NFlow(
                     packet,
+                    flow_id,
+                    sub_flow_id,
                     ffi,
                     lib,
                     udps,
@@ -306,6 +329,7 @@ def consume(
                     dissector,
                     decode_tunnels,
                     system_visibility_mode,
+                    direction,
                 )
                 state = 1
         except OSError:
@@ -356,6 +380,7 @@ def meter_workflow(
     mode,
     idle_timeout,
     active_timeout,
+    flow_id_generator,
     accounting_mode,
     udps,
     n_dissections,
@@ -459,6 +484,7 @@ def meter_workflow(
                         cache,
                         active_timeout,
                         idle_timeout,
+                        flow_id_generator,
                         channel,
                         ffi,
                         lib,
