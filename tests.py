@@ -879,6 +879,27 @@ class NFStreamTest(object):
             "{}\t: {}".format(".test_max_nflows".ljust(60, " "), "OK")
         )
 
+    @staticmethod
+    def test_flow_risk():
+        print(
+            "\n----------------------------------------------------------------------"
+        )
+        for flow in NFStreamer(source=os.path.join("tests", "pcaps", "tls_alert.pcap")):
+            assert flow.flow_risk != {}
+            assert flow.flow_risk["Obsolete TLS (v1.1 or older)"]["risk_severity"] == "High"
+            assert flow.flow_risk["Obsolete TLS (v1.1 or older)"]["risk_score_total"] == 310
+            assert flow.flow_risk["Obsolete TLS (v1.1 or older)"]["risk_score_client"] == 275
+            assert flow.flow_risk["Obsolete TLS (v1.1 or older)"]["risk_score_server"] == 35
+
+            assert flow.flow_risk["TLS Fatal Alert"]["risk_severity"] == "Low"
+            assert flow.flow_risk["TLS Fatal Alert"]["risk_score_total"] == 200
+            assert flow.flow_risk["TLS Fatal Alert"]["risk_score_client"] == 160
+            assert flow.flow_risk["TLS Fatal Alert"]["risk_score_server"] == 40
+
+        print(
+            "{}\t: {}".format(".test_flow_risk".ljust(60, " "), colored("OK", "green"))
+        )
+
 
 if __name__ == "__main__":
     # IMPORTANT: As NFStream input is network bytes, we rely on fuzzing techniques to ensure robustness.
@@ -916,3 +937,4 @@ if __name__ == "__main__":
     NFStreamTest.test_mdns()
     NFStreamTest.test_multi_files()
     NFStreamTest.test_max_nflows()
+    NFStreamTest.test_flow_risk()
