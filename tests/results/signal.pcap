@@ -10,7 +10,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 8,8,538,TLS,Web,0,6
 9,25,6163,TLS.Signal,Chat,0,6
 10,45,15213,TLS.AppleiTunes,Streaming,0,6
-11,2,290,DNS.Signal,Network,0,6
+11,2,290,DNS,Network,0,6
 12,26,5611,TLS.Signal,Chat,0,6
 13,26,5829,TLS.Signal,Chat,0,6
 14,26,5568,TLS.Signal,Chat,0,6

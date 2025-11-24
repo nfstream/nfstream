@@ -37,7 +37,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 35,1,58,SMBv23,System,1,1
 36,1,58,Unknown,Unspecified,0,0
 37,1,58,RTSP,Media,1,1
-38,1,58,RPC,RPC,1,1
+38,1,58,DCERPC,RPC,1,1
 39,5,298,SSH,RemoteAccess,1,1
 40,1,58,Unknown,Unspecified,0,0
 41,1,58,AFP,DataTransfer,1,1
@@ -59,7 +59,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 57,1,58,Unknown,Unspecified,0,0
 58,1,58,AFP,DataTransfer,1,1
 59,1,58,Unknown,Unspecified,0,0
-60,1,58,RPC,RPC,1,1
+60,1,58,DCERPC,RPC,1,1
 61,1,58,RTSP,Media,1,1
 62,1,58,Unknown,Unspecified,0,0
 63,1,58,SMBv23,System,1,1
@@ -180,7 +180,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 178,1,58,Unknown,Unspecified,0,0
 179,1,58,Unknown,Unspecified,0,0
 180,1,58,MsSQL-TDS,Database,1,1
-181,1,58,Unknown,Unspecified,0,0
+181,1,58,NoMachine,RemoteAccess,1,1
 182,1,58,Unknown,Unspecified,0,0
 183,1,58,Unknown,Unspecified,0,0
 184,1,58,Unknown,Unspecified,0,0
@@ -231,7 +231,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 229,1,58,Unknown,Unspecified,0,0
 230,1,58,Unknown,Unspecified,0,0
 231,1,58,Unknown,Unspecified,0,0
-232,1,58,Unknown,Unspecified,0,0
+232,1,58,NoMachine,RemoteAccess,1,1
 233,1,58,MsSQL-TDS,Database,1,1
 234,1,58,Unknown,Unspecified,0,0
 235,1,58,Unknown,Unspecified,0,0
@@ -266,7 +266,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 264,1,58,Unknown,Unspecified,0,0
 265,1,58,Unknown,Unspecified,0,0
 266,1,58,Unknown,Unspecified,0,0
-267,1,58,Unknown,Unspecified,0,0
+267,1,58,Cassandra,Database,1,1
 268,1,58,Unknown,Unspecified,0,0
 269,1,58,Unknown,Unspecified,0,0
 270,1,58,Unknown,Unspecified,0,0
@@ -309,7 +309,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 307,1,58,Unknown,Unspecified,0,0
 308,1,58,Unknown,Unspecified,0,0
 309,1,58,Unknown,Unspecified,0,0
-310,1,58,Unknown,Unspecified,0,0
+310,1,58,Cassandra,Database,1,1
 311,1,58,Unknown,Unspecified,0,0
 312,1,58,Unknown,Unspecified,0,0
 313,1,58,Unknown,Unspecified,0,0
@@ -331,7 +331,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 329,1,58,Unknown,Unspecified,0,0
 330,1,58,Unknown,Unspecified,0,0
 331,1,58,Unknown,Unspecified,0,0
-332,1,58,Unknown,Unspecified,0,0
+332,1,58,Radmin,RemoteAccess,1,1
 333,1,58,Unknown,Unspecified,0,0
 334,1,58,Unknown,Unspecified,0,0
 335,1,58,Unknown,Unspecified,0,0
@@ -367,7 +367,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 365,1,58,Unknown,Unspecified,0,0
 366,1,58,Unknown,Unspecified,0,0
 367,1,58,Unknown,Unspecified,0,0
-368,1,58,Unknown,Unspecified,0,0
+368,1,58,Radmin,RemoteAccess,1,1
 369,1,58,Unknown,Unspecified,0,0
 370,1,58,Unknown,Unspecified,0,0
 371,1,58,Unknown,Unspecified,0,0
@@ -495,7 +495,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 493,1,58,Unknown,Unspecified,0,0
 494,1,58,Unknown,Unspecified,0,0
 495,1,58,Unknown,Unspecified,0,0
-496,1,58,Unknown,Unspecified,0,0
+496,1,58,LDP,Network,1,1
 497,1,58,Unknown,Unspecified,0,0
 498,1,58,Unknown,Unspecified,0,0
 499,1,58,Unknown,Unspecified,0,0
@@ -532,7 +532,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 530,1,58,Unknown,Unspecified,0,0
 531,1,58,Unknown,Unspecified,0,0
 532,1,58,Unknown,Unspecified,0,0
-533,1,58,Unknown,Unspecified,0,0
+533,1,58,LDP,Network,1,1
 534,1,58,Unknown,Unspecified,0,0
 535,1,58,Unknown,Unspecified,0,0
 536,1,58,H323,VoIP,1,1
@@ -868,7 +868,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 866,1,58,Unknown,Unspecified,0,0
 867,1,58,Unknown,Unspecified,0,0
 868,1,58,Unknown,Unspecified,0,0
-869,1,58,Starcraft,Game,1,1
+869,1,58,Blizzard,Game,1,1
 870,1,58,Unknown,Unspecified,0,0
 871,1,58,Unknown,Unspecified,0,0
 872,1,58,Unknown,Unspecified,0,0
@@ -882,7 +882,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 880,1,58,Unknown,Unspecified,0,0
 881,1,58,Unknown,Unspecified,0,0
 882,1,58,Unknown,Unspecified,0,0
-883,1,58,Unknown,Unspecified,0,0
+883,1,58,BitTorrent,Download,1,1
 884,1,58,Unknown,Unspecified,0,0
 885,1,58,IPSec,VPN,1,1
 886,1,58,Unknown,Unspecified,0,0
@@ -933,7 +933,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 931,1,58,Unknown,Unspecified,0,0
 932,1,58,Unknown,Unspecified,0,0
 933,1,58,Unknown,Unspecified,0,0
-934,1,58,Starcraft,Game,1,1
+934,1,58,Blizzard,Game,1,1
 935,1,58,Unknown,Unspecified,0,0
 936,1,58,Unknown,Unspecified,0,0
 937,1,58,Unknown,Unspecified,0,0
@@ -969,7 +969,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 967,1,58,Unknown,Unspecified,0,0
 968,1,58,IPSec,VPN,1,1
 969,1,58,Unknown,Unspecified,0,0
-970,1,58,Unknown,Unspecified,0,0
+970,1,58,BitTorrent,Download,1,1
 971,1,58,Unknown,Unspecified,0,0
 972,1,58,Unknown,Unspecified,0,0
 973,1,58,AJP,Web,1,1
@@ -1043,7 +1043,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 1041,1,58,Unknown,Unspecified,0,0
 1042,1,58,Unknown,Unspecified,0,0
 1043,1,58,Unknown,Unspecified,0,0
-1044,1,58,Unknown,Unspecified,0,0
+1044,1,58,JRMI,RPC,1,1
 1045,1,58,Unknown,Unspecified,0,0
 1046,1,58,Unknown,Unspecified,0,0
 1047,1,58,Unknown,Unspecified,0,0
@@ -1108,7 +1108,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 1106,1,58,Unknown,Unspecified,0,0
 1107,1,58,Unknown,Unspecified,0,0
 1108,1,58,Unknown,Unspecified,0,0
-1109,1,58,Unknown,Unspecified,0,0
+1109,1,58,JRMI,RPC,1,1
 1110,1,58,Unknown,Unspecified,0,0
 1111,1,58,Unknown,Unspecified,0,0
 1112,1,58,Unknown,Unspecified,0,0
@@ -1170,7 +1170,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 1168,1,58,Unknown,Unspecified,0,0
 1169,1,58,Unknown,Unspecified,0,0
 1170,1,58,Unknown,Unspecified,0,0
-1171,1,58,Unknown,Unspecified,0,0
+1171,1,58,GuildWars2,Game,1,1
 1172,1,58,Unknown,Unspecified,0,0
 1173,1,58,Unknown,Unspecified,0,0
 1174,1,58,Unknown,Unspecified,0,0
@@ -1189,7 +1189,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 1187,1,58,Unknown,Unspecified,0,0
 1188,1,58,Unknown,Unspecified,0,0
 1189,1,58,Unknown,Unspecified,0,0
-1190,1,58,Unknown,Unspecified,0,0
+1190,1,58,Ceph,DataTransfer,1,1
 1191,1,58,Unknown,Unspecified,0,0
 1192,1,58,Unknown,Unspecified,0,0
 1193,1,58,Unknown,Unspecified,0,0
@@ -1233,7 +1233,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 1231,1,58,Unknown,Unspecified,0,0
 1232,1,58,Unknown,Unspecified,0,0
 1233,1,58,Unknown,Unspecified,0,0
-1234,1,58,Unknown,Unspecified,0,0
+1234,1,58,GuildWars2,Game,1,1
 1235,1,58,Unknown,Unspecified,0,0
 1236,1,58,Unknown,Unspecified,0,0
 1237,1,58,Unknown,Unspecified,0,0
@@ -1263,7 +1263,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 1261,1,58,Unknown,Unspecified,0,0
 1262,1,58,Unknown,Unspecified,0,0
 1263,1,58,Unknown,Unspecified,0,0
-1264,1,58,Unknown,Unspecified,0,0
+1264,1,58,Ceph,DataTransfer,1,1
 1265,1,58,Unknown,Unspecified,0,0
 1266,1,58,Unknown,Unspecified,0,0
 1267,1,58,Unknown,Unspecified,0,0
@@ -1287,7 +1287,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 1285,1,58,Unknown,Unspecified,0,0
 1286,1,58,Unknown,Unspecified,0,0
 1287,1,58,Unknown,Unspecified,0,0
-1288,1,58,Unknown,Unspecified,0,0
+1288,1,58,Service_Location_Protocol,RPC,1,1
 1289,1,58,Unknown,Unspecified,0,0
 1290,1,58,Unknown,Unspecified,0,0
 1291,1,58,Unknown,Unspecified,0,0
@@ -1322,7 +1322,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 1320,1,58,Unknown,Unspecified,0,0
 1321,1,58,Unknown,Unspecified,0,0
 1322,1,58,Unknown,Unspecified,0,0
-1323,1,58,LotusNotes,Collaborative,1,1
+1323,1,58,HCL_Notes,Collaborative,1,1
 1324,1,58,Unknown,Unspecified,0,0
 1325,1,58,Unknown,Unspecified,0,0
 1326,1,58,Unknown,Unspecified,0,0
@@ -1359,7 +1359,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 1357,1,58,Unknown,Unspecified,0,0
 1358,1,58,Unknown,Unspecified,0,0
 1359,1,58,Unknown,Unspecified,0,0
-1360,1,58,Unknown,Unspecified,0,0
+1360,1,58,Service_Location_Protocol,RPC,1,1
 1361,1,58,Unknown,Unspecified,0,0
 1362,1,58,Unknown,Unspecified,0,0
 1363,1,58,Unknown,Unspecified,0,0
@@ -1419,7 +1419,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 1417,1,58,Unknown,Unspecified,0,0
 1418,1,58,Unknown,Unspecified,0,0
 1419,1,58,Unknown,Unspecified,0,0
-1420,1,58,LotusNotes,Collaborative,1,1
+1420,1,58,HCL_Notes,Collaborative,1,1
 1421,1,58,Unknown,Unspecified,0,0
 1422,1,58,Unknown,Unspecified,0,0
 1423,1,58,Unknown,Unspecified,0,0
@@ -1494,7 +1494,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 1492,1,58,Unknown,Unspecified,0,0
 1493,1,58,Unknown,Unspecified,0,0
 1494,1,58,Unknown,Unspecified,0,0
-1495,1,58,Unknown,Unspecified,0,0
+1495,1,58,Roughtime,System,1,1
 1496,1,58,Unknown,Unspecified,0,0
 1497,1,58,Unknown,Unspecified,0,0
 1498,1,58,Unknown,Unspecified,0,0
@@ -1551,7 +1551,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 1549,1,58,Unknown,Unspecified,0,0
 1550,1,58,Unknown,Unspecified,0,0
 1551,1,58,Unknown,Unspecified,0,0
-1552,1,58,Unknown,Unspecified,0,0
+1552,1,58,Roughtime,System,1,1
 1553,1,58,Unknown,Unspecified,0,0
 1554,1,58,Unknown,Unspecified,0,0
 1555,1,58,Unknown,Unspecified,0,0
@@ -1738,7 +1738,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 1736,1,58,Unknown,Unspecified,0,0
 1737,1,58,Unknown,Unspecified,0,0
 1738,1,58,Unknown,Unspecified,0,0
-1739,1,58,Unknown,Unspecified,0,0
+1739,1,58,Ceph,DataTransfer,1,1
 1740,1,58,Unknown,Unspecified,0,0
 1741,1,58,Unknown,Unspecified,0,0
 1742,1,58,Unknown,Unspecified,0,0
@@ -1786,7 +1786,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 1784,1,58,Unknown,Unspecified,0,0
 1785,1,58,Unknown,Unspecified,0,0
 1786,1,58,Unknown,Unspecified,0,0
-1787,1,58,Mining,Mining,1,1
+1787,1,58,BITCOIN,Crypto_Currency,1,1
 1788,1,58,Unknown,Unspecified,0,0
 1789,1,58,Unknown,Unspecified,0,0
 1790,1,58,Unknown,Unspecified,0,0
@@ -1812,7 +1812,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 1810,1,58,Unknown,Unspecified,0,0
 1811,1,58,Unknown,Unspecified,0,0
 1812,1,58,Unknown,Unspecified,0,0
-1813,1,58,Unknown,Unspecified,0,0
+1813,1,58,Ceph,DataTransfer,1,1
 1814,1,58,Unknown,Unspecified,0,0
 1815,1,58,Unknown,Unspecified,0,0
 1816,1,58,Unknown,Unspecified,0,0
@@ -1867,7 +1867,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 1865,1,58,Unknown,Unspecified,0,0
 1866,1,58,Unknown,Unspecified,0,0
 1867,1,58,Unknown,Unspecified,0,0
-1868,1,58,Mining,Mining,1,1
+1868,1,58,BITCOIN,Crypto_Currency,1,1
 1869,1,58,Unknown,Unspecified,0,0
 1870,1,58,Unknown,Unspecified,0,0
 1871,1,58,Unknown,Unspecified,0,0

@@ -51,7 +51,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 49,22,6555,TLS.Webex,VoIP,0,6
 50,13,1733,TLS,Web,0,6
 51,50,10360,TLS.Webex,VoIP,0,6
-52,16,1171,Unknown,Unspecified,0,0
+52,16,1171,Webex,VoIP,0,7
 53,3,182,TLS,Web,1,1
 54,11,717,TLS,Web,0,6
 55,24,35888,TLS.Webex,VoIP,0,6
