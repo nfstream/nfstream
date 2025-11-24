@@ -20,6 +20,7 @@ import time as tm
 import os
 import platform
 import psutil
+import csv
 from collections.abc import Iterable
 from os.path import isfile
 from .meter import meter_workflow
@@ -583,6 +584,8 @@ class NFStreamer(object):
         total_flows, chunk_flows = 0, 0
         anon = NFAnonymizer(cols_names=columns_to_anonymize)
         f = None
+        writer = None
+        
         for flow in self:
             try:
                 if total_flows == 0 or (
@@ -593,19 +596,19 @@ class NFStreamer(object):
                     chunk_flows = 1
                     chunk_idx += 1
                     f = open_file(output_path, chunked, chunk_idx, rotate_files)
-                    header = ",".join([str(i) for i in flow.keys()]) + "\n"
-                    f.write(header.encode("utf-8"))
+                    writer = csv.writer(f)
+                    writer.writerow(flow.keys())
+                
                 values = anon.process(flow)
-                csv_converter(values)
-                to_export = ",".join([str(i) for i in values]) + "\n"
-                f.write(to_export.encode("utf-8"))
-                total_flows = total_flows + 1
+                writer.writerow(values)
+                total_flows += 1
                 chunk_flows += 1
             except KeyboardInterrupt:
                 pass
         if f is not None:
             if not f.closed:
                 f.close()
+        
         return total_flows
 
     def to_pandas(self, columns_to_anonymize=()):

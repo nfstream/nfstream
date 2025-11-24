@@ -62,27 +62,25 @@ def create_csv_file_path(path, source):
 
 
 def csv_converter(values):
-    """Convert non numeric values to string using their __str__ method and ensure proper quoting"""
+    """Convert non numeric values to string using their __str__ method"""
     for idx, value in enumerate(values):
         if not isinstance(value, float) and not isinstance(value, int):
             if value is None:
                 values[idx] = ""
             else:
                 values[idx] = str(values[idx])
-                values[idx] = values[idx].replace('"', '\\"')
-                values[idx] = '"' + values[idx] + '"'
 
 
 def open_file(path, chunked, chunk_idx, rotate_files):
     """File opener taking chunk mode into consideration"""
     if not chunked:
-        return open(path, "wb")
+        return open(path, "w", newline='', encoding="utf-8")
     else:
         if rotate_files:
             return open(
-                path.replace("csv", "{}.csv".format(chunk_idx % rotate_files)), "wb"
+                path.replace("csv", "{}.csv".format(chunk_idx % rotate_files)), "w", newline='', encoding="utf-8"
             )
-        return open(path.replace("csv", "{}.csv".format(chunk_idx)), "wb")
+        return open(path.replace("csv", "{}.csv".format(chunk_idx)), "w", newline='', encoding="utf-8")
 
 
 def update_performances(performances, is_linux, flows_count):
