@@ -1,0 +1,8 @@
+id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
+0,6,924,Steam,Game,0,6
+1,10,1188,HTTP.Steam,Game,0,6
+2,10,2545,TLS.Dota2,Game,0,6
+3,2,284,SteamDatagramRelay,Game,0,6
+4,10,3243,TLS.Steam,Game,0,6
+5,4,2185,TLS.Steam,Game,0,6
+6,6,2357,TLS.Steam,Game,0,6

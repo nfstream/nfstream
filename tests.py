@@ -639,12 +639,12 @@ class NFStreamTest(object):
             "\n----------------------------------------------------------------------"
         )
         df = NFStreamer(
-            source=os.path.join("tests", "pcaps", "steam.pcap"),
+            source=os.path.join("tests", "pcaps", "steam.pcapng"),
             statistical_analysis=True,
             n_dissections=20,
         ).to_pandas()
         df_anon = NFStreamer(
-            source=os.path.join("tests", "pcaps", "steam.pcap"),
+            source=os.path.join("tests", "pcaps", "steam.pcapng"),
             statistical_analysis=True,
             n_dissections=20,
         ).to_pandas(columns_to_anonymize=["src_ip", "dst_ip"])
@@ -653,18 +653,18 @@ class NFStreamTest(object):
         assert df_anon["src_ip"].nunique() == df["src_ip"].nunique()
         assert df_anon["dst_ip"].nunique() == df["dst_ip"].nunique()
         total_flows = NFStreamer(
-            source=os.path.join("tests", "pcaps", "steam.pcap"),
+            source=os.path.join("tests", "pcaps", "steam.pcapng"),
             statistical_analysis=True,
             n_dissections=20,
         ).to_csv()
-        df_from_csv = pd.read_csv(os.path.join("tests", "pcaps", "steam.pcap.csv"))
+        df_from_csv = pd.read_csv(os.path.join("tests", "pcaps", "steam.pcapng.csv"))
         total_flows_anon = NFStreamer(
-            source=os.path.join("tests", "pcaps", "steam.pcap"),
+            source=os.path.join("tests", "pcaps", "steam.pcapng"),
             statistical_analysis=True,
             n_dissections=20,
         ).to_csv()
-        df_anon_from_csv = pd.read_csv(os.path.join("tests", "pcaps", "steam.pcap.csv"))
-        os.remove(os.path.join("tests", "pcaps", "steam.pcap.csv"))
+        df_anon_from_csv = pd.read_csv(os.path.join("tests", "pcaps", "steam.pcapng.csv"))
+        os.remove(os.path.join("tests", "pcaps", "steam.pcapng.csv"))
         assert total_flows == total_flows_anon
         assert total_flows == df_from_csv.shape[0]
         assert total_flows_anon == df_anon_from_csv.shape[0]
