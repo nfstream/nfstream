@@ -9,8 +9,8 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 7,3,162,TLS,Web,1,1
 8,3,162,TLS,Web,1,1
 9,3,162,TLS,Web,1,1
-10,2,330,DNS,Network,0,6
-11,2,280,DNS,Network,0,6
+10,2,330,DNS.Apple,Network,0,6
+11,2,280,DNS.WhatsApp,Network,0,6
 12,38,17220,TLS.Apple,Web,0,6
 13,180,24874,WhatsApp,Chat,0,6
 14,3,198,TLS,Web,1,1

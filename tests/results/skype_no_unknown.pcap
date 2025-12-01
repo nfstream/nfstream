@@ -1,11 +1,11 @@
 id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
 0,1,60,IGMP,Network,0,6
-1,7,546,DNS,Network,0,6
-2,7,546,DNS,Network,0,6
+1,7,546,DNS.Teams,Network,0,6
+2,7,546,DNS.Teams,Network,0,6
 3,8,648,DNS,Network,0,6
 4,8,648,DNS,Network,0,6
-5,7,511,DNS,Network,0,6
-6,7,511,DNS,Network,0,6
+5,7,511,DNS.Teams,Network,0,6
+6,7,511,DNS.Teams,Network,0,6
 7,1,80,DNS,Network,0,6
 8,2,267,DNS,Network,0,6
 9,16,1292,Unknown,Unspecified,0,0
@@ -14,7 +14,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 12,348,181687,TLS.Teams,Collaborative,0,6
 13,7,623,DNS,Network,0,6
 14,7,623,DNS,Network,0,6
-15,8,576,DNS,Network,0,6
+15,8,576,DNS.Teams,Network,0,6
 16,2,180,DNS,Network,0,6
 17,17,3535,TLS.Teams,Collaborative,0,6
 18,8,1118,TLS,Web,0,6
@@ -153,8 +153,8 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 151,1,72,Unknown,Unspecified,0,0
 152,1,79,Unknown,Unspecified,0,0
 153,1,70,Unknown,Unspecified,0,0
-154,7,546,DNS,Network,0,6
-155,7,546,DNS,Network,0,6
+154,7,546,DNS.Teams,Network,0,6
+155,7,546,DNS.Teams,Network,0,6
 156,14,1253,TLS,Web,1,1
 157,15,1514,TLS,Web,1,1
 158,15,1569,TLS,Web,1,1

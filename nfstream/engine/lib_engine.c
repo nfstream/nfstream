@@ -892,7 +892,7 @@ static void flow_bidirectional_dissection_collect_info(struct ndpi_detection_mod
   memcpy(flow->requested_server_name, flow->ndpi_flow->host_server_name, sizeof(flow->requested_server_name));
   // DHCP: We put DHCP fingerprint in client side: this can be helpful for device identification approaches.
   if (flow_is_ndpi_proto(flow, NDPI_PROTOCOL_DHCP)) {
-    memcpy(flow->c_hash, flow->ndpi_flow->protos.dhcp.fingerprint, sizeof(flow->c_hash));
+    memcpy(flow->c_hash, flow->ndpi_flow->protos.dhcp.fingerprint, sizeof(flow->ndpi_flow->protos.dhcp.fingerprint));
   }
   // HTTP: UserAgent and ContentType. With server name this is sufficient. (at least for now)
   else if (flow_is_ndpi_proto(flow, NDPI_PROTOCOL_HTTP)) {
@@ -901,8 +901,8 @@ static void flow_bidirectional_dissection_collect_info(struct ndpi_detection_mod
   // SSH: https://github.com/salesforce/hassh
   //      We extract both client and server fingerprints hassh fingerprints for SSH.
   } else if (flow_is_ndpi_proto(flow, NDPI_PROTOCOL_SSH)) {
-    memcpy(flow->c_hash, flow->ndpi_flow->protos.ssh.hassh_client, sizeof(flow->c_hash));
-    memcpy(flow->s_hash, flow->ndpi_flow->protos.ssh.hassh_server, sizeof(flow->s_hash));
+    memcpy(flow->c_hash, flow->ndpi_flow->protos.ssh.hassh_client, sizeof(flow->ndpi_flow->protos.ssh.hassh_client));
+    memcpy(flow->s_hash, flow->ndpi_flow->protos.ssh.hassh_server, sizeof(flow->ndpi_flow->protos.ssh.hassh_server));
   }
   // TLS/QUIC: Extract JA4 client (nDPI 5.0+) and JA3 server fingerprints
   // NOTE: ja3_client was removed in nDPI 5.0, replaced by ja4_client
@@ -917,8 +917,8 @@ static void flow_bidirectional_dissection_collect_info(struct ndpi_detection_mod
     memcpy(flow->requested_server_name, flow->ndpi_flow->host_server_name, sizeof(flow->requested_server_name));
     ndpi_snprintf(flow->user_agent, sizeof(flow->user_agent), "%s", (flow->ndpi_flow->http.user_agent ? flow->ndpi_flow->http.user_agent : ""));
     // nDPI 5.0: ja4_client replaces ja3_client (JA3S server fingerprint still available)
-    memcpy(flow->c_hash, flow->ndpi_flow->protos.tls_quic.ja4_client, sizeof(flow->c_hash));
-    memcpy(flow->s_hash, flow->ndpi_flow->protos.tls_quic.ja3_server, sizeof(flow->s_hash));
+    memcpy(flow->c_hash, flow->ndpi_flow->protos.tls_quic.ja4_client, sizeof(flow->ndpi_flow->protos.tls_quic.ja4_client));
+    memcpy(flow->s_hash, flow->ndpi_flow->protos.tls_quic.ja3_server, sizeof(flow->ndpi_flow->protos.tls_quic.ja3_server));
   }
 }
 
@@ -1675,7 +1675,10 @@ void dissector_configure(struct ndpi_detection_module_struct *dissector) {
       return;
     } else {
       // nDPI 5.0: Protocol bitmask removed, all protocols enabled by default
-      // Just finalize initialization
+      // Enable DNS subclassification (disabled by default in nDPI 5.0)
+      // This allows detection of DNS.Apple, DNS.Google, etc. instead of just DNS
+      ndpi_set_config(dissector, "dns", "subclassification", "enable");
+      // Finalize initialization
       ndpi_finalize_initialization(dissector);
     }
 }

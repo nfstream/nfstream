@@ -18,4 +18,4 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 16,1,56,TLS,Web,1,1
 17,2,124,TLS,Web,1,1
 18,29,4024,TLS,Web,0,6
-19,2,197,DNS,Network,0,6
+19,2,197,DNS.Facebook,Network,0,6

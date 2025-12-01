@@ -1,11 +1,11 @@
 id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
-0,7,546,DNS,Network,0,6
-1,7,546,DNS,Network,0,6
+0,7,546,DNS.Teams,Network,0,6
+1,7,546,DNS.Teams,Network,0,6
 2,1,46,IGMP,Network,0,6
 3,8,648,DNS,Network,0,6
 4,8,648,DNS,Network,0,6
-5,7,511,DNS,Network,0,6
-6,7,511,DNS,Network,0,6
+5,7,511,DNS.Teams,Network,0,6
+6,7,511,DNS.Teams,Network,0,6
 7,2,180,DNS,Network,0,6
 8,2,267,DNS,Network,0,6
 9,17,1370,Unknown,Unspecified,0,0
@@ -15,7 +15,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 13,7,616,DNS,Network,0,6
 14,7,616,DNS,Network,0,6
 15,387,198090,TLS.Teams,Collaborative,0,6
-16,9,648,DNS,Network,0,6
+16,9,648,DNS.Teams,Network,0,6
 17,2,180,DNS,Network,0,6
 18,17,3535,TLS.Teams,Collaborative,0,6
 19,15,1311,TLS,Web,1,1
@@ -147,8 +147,8 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 145,1,64,Unknown,Unspecified,0,0
 146,1,69,Unknown,Unspecified,0,0
 147,3,168,TLS,Web,1,1
-148,7,651,DNS,Network,0,6
-149,7,651,DNS,Network,0,6
+148,7,651,DNS.Azure,Network,0,6
+149,7,651,DNS.Azure,Network,0,6
 150,1,79,Unknown,Unspecified,0,0
 151,1,75,Unknown,Unspecified,0,0
 152,13,1287,TLS,Web,1,1
@@ -262,8 +262,8 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 260,10,599,Unknown,Unspecified,0,0
 261,7,616,DNS,Network,0,6
 262,7,616,DNS,Network,0,6
-263,7,546,DNS,Network,0,6
-264,7,546,DNS,Network,0,6
+263,7,546,DNS.Teams,Network,0,6
+264,7,546,DNS.Teams,Network,0,6
 265,17,1380,Unknown,Unspecified,0,0
 266,7,623,DNS,Network,0,6
 267,7,623,DNS,Network,0,6
@@ -292,4 +292,4 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 290,1,46,IGMP,Network,0,6
 291,8,608,Unknown,Unspecified,0,0
 292,8,608,TLS,Web,1,1
-293,5,360,DNS,Network,0,6
+293,5,360,DNS.Teams,Network,0,6

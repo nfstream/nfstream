@@ -12,9 +12,9 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 10,2,132,LLMNR,Network,0,6
 11,8,1432,SSDP,System,0,6
 12,4,256,LLMNR,Network,0,6
-13,3,272,DNS,Network,0,6
+13,3,272,DNS.1kxun,Network,0,6
 14,14,2858,HTTP.1kxun,Streaming,0,6
-15,3,260,DNS,Network,0,6
+15,3,260,DNS.1kxun,Network,0,6
 16,2,120,TLS,Web,1,1
 17,6,552,NetBIOS,System,0,6
 18,2,184,LLMNR,Network,0,6
@@ -22,9 +22,9 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 20,12,2100,SSDP,System,0,6
 21,2,718,Unknown,Unspecified,0,0
 22,2,782,Unknown,Unspecified,0,0
-23,3,260,DNS,Network,0,6
+23,3,260,DNS.1kxun,Network,0,6
 24,14,2386,HTTP.1kxun,Streaming,0,6
-25,3,283,DNS,Network,0,6
+25,3,283,DNS.1kxun,Network,0,6
 26,43,31191,HTTP.1kxun,Streaming,0,6
 27,69,63429,HTTP.1kxun,Streaming,0,6
 28,61,51677,HTTP.1kxun,Streaming,0,6
@@ -37,7 +37,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 35,13,3410,HTTP.1kxun,Streaming,0,6
 36,50,35747,HTTP.1kxun,Streaming,0,6
 37,13,1452,HTTP,Web,0,6
-38,3,266,DNS,Network,0,6
+38,3,266,DNS.QQ,Network,0,6
 39,25,4950,HTTP.QQ,Chat,0,6
 40,33,11721,HTTP,Web,0,6
 41,5,1795,Unknown,Unspecified,0,0
@@ -106,7 +106,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 104,1,342,DHCP,Network,0,6
 105,9,4347,TLS,Web,0,6
 106,19,3210,TLS,Web,0,6
-107,2,378,DNS,Network,0,6
+107,2,378,DNS.Line,Network,0,6
 108,14,9498,HTTP.Line,Chat,0,6
 109,14,9158,HTTP.Line,Chat,0,6
 110,2,138,LLMNR,Network,0,6
