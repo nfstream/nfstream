@@ -1000,6 +1000,7 @@ static uint8_t flow_init_splt(struct nf_flow *flow, uint16_t splt, uint16_t pack
   // ps array allocation.
   flow->splt_ps = (int32_t*)ndpi_malloc(sizeof(int32_t) * splt);
   if (flow->splt_ps == NULL) {
+    ndpi_free(flow->splt_direction);
     ndpi_free(flow);
     return 0;
   }
@@ -1007,6 +1008,8 @@ static uint8_t flow_init_splt(struct nf_flow *flow, uint16_t splt, uint16_t pack
   // piat_ms array allocation
   flow->splt_piat_ms = (int64_t*)ndpi_malloc(sizeof(int64_t) * splt); // int64 as time diff between two uint64.
   if (flow->splt_piat_ms == NULL) {
+    ndpi_free(flow->splt_direction);
+    ndpi_free(flow->splt_ps);
     ndpi_free(flow);
     return 0;
   }
@@ -1694,7 +1697,11 @@ struct nf_flow *meter_initialize_flow(struct nf_packet *packet, uint8_t accounti
   uint16_t packet_size = flow_get_packet_size(packet, accounting_mode);
   uint8_t flow_init_bidirectional_success = flow_init_bidirectional(dissector, n_dissections, splt, statistics,
                                                                     packet_size, flow, packet, sync);
-  if (!flow_init_bidirectional_success) return NULL;
+  if (!flow_init_bidirectional_success)
+  {
+    ndpi_free(flow);
+    return NULL;
+  }
   flow_init_src2dst(statistics, packet_size, flow, packet);
   return flow; // we return a pointer to the created flow in order to be cached by Python side.
 }
