@@ -17,6 +17,7 @@ from .engine import create_engine, setup_capture, setup_dissector, activate_capt
 from .utils import set_affinity, InternalError, InternalState, NFEvent, NFMode
 from collections import OrderedDict
 from .flow import NFlow
+import time  # For wall clock time during idle periods
 
 
 ENGINE_LOAD_ERR = "Error when loading engine library. This means that you are probably building nfstream from source \
@@ -509,8 +510,30 @@ def meter_workflow(
                         meter_scan_tick = meter_tick
             elif ret == 0:  # Ignored packet
                 ignored_packets += 1
-            elif ret == -1:  # Read error or empty buffer
-                pass
+            elif ret == -1:  # Timeout or empty buffer (live capture only)
+                # For live captures, use wall clock time to expire idle flows
+                # even when no packets are arriving
+                if mode == NFMode.INTERFACE:
+                    wall_clock_ms = int(time.time() * 1000)
+                    if wall_clock_ms > meter_tick:
+                        meter_tick = wall_clock_ms
+                    if meter_tick - meter_scan_tick >= meter_scan_interval:
+                        idles = meter_scan(
+                            meter_tick,
+                            cache,
+                            idle_timeout,
+                            channel,
+                            udps,
+                            sync,
+                            n_dissections,
+                            statistics,
+                            splt,
+                            ffi,
+                            lib,
+                            dissector,
+                        )
+                        active_flows -= idles
+                        meter_scan_tick = meter_tick
             else:  # End of file
                 remaining_packets = False  # end of loop
             if (
