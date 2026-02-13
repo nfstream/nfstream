@@ -1,5 +1,5 @@
 id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
-0,58,9345,Viber,Chat,0,1
+0,58,9345,Viber,VoIP,1,1
 1,2,281,DNS.Facebook,Network,0,6
 2,2,377,DNS,Network,0,6
 3,2,451,DNS,Network,0,6
@@ -17,11 +17,11 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 15,2,265,DNS,Network,0,6
 16,19,7773,TLS,Web,0,6
 17,6,412,TLS,Web,1,1
-18,46,7337,Viber,Chat,0,6
-19,2,138,Viber,Chat,0,6
+18,46,7337,Viber,VoIP,0,6
+19,2,138,Viber,VoIP,0,6
 20,27,9375,TLS,Web,0,6
 21,6,412,TLS,Web,1,1
-22,43,6216,Viber,Chat,0,6
-23,2,138,Viber,Chat,0,6
+22,43,6216,Viber,VoIP,0,6
+23,2,138,Viber,VoIP,0,6
 24,2,164,DNS.Google,Network,0,6
 25,2,3028,ICMP,Network,0,6
