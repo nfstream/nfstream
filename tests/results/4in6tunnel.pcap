@@ -1,2 +1,2 @@
 id,bidirectional_packets,bidirectional_bytes,application_name,application_category_name,application_is_guessed,application_confidence
-0,4,2188,TLS.Microsoft,Web,0,6
+0,4,2188,TLS.Microsoft365,Collaborative,0,6

@@ -21,7 +21,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 19,37,13118,TLS.Reddit,SocialNetwork,0,6
 20,112,50574,TLS.Reddit,SocialNetwork,0,6
 21,164,59490,TLS.GoogleServices,Web,0,6
-22,73,47534,TLS.Amazon,Web,0,6
+22,73,47534,TLS,Advertisement,0,6
 23,118,104300,TLS,Web,0,6
 24,146,134063,TLS.Google,Advertisement,0,6
 25,782,663556,TLS.Twitter,SocialNetwork,0,6
@@ -44,8 +44,8 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 42,19,5472,TLS.Google,Web,0,6
 43,45,12223,TLS.Reddit,SocialNetwork,0,6
 44,31,8366,TLS.Google,Web,0,6
-45,33,9496,TLS.Google,Web,0,6
-46,27,11651,TLS.Amazon,Web,0,6
+45,33,9496,TLS.Google,Advertisement,0,6
+46,27,11651,TLS,Advertisement,0,6
 47,35,11105,TLS.Google,Advertisement,0,6
 48,104,120085,TLS.Google,Web,0,6
 49,28,10944,TLS.Google,Web,0,6
