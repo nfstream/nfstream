@@ -18,7 +18,8 @@ dependencies = [
   "psutil>=5.8.0",
   "dpkt>=1.9.7",
   "numpy>=1.19.5",
-  "pandas>=1.1.5",
+  "pandas>=1.1.5; implementation_name != 'pypy'",
+  "pandas>=1.1.5,<3; implementation_name == 'pypy'",
 ]
 
 classifiers = [
