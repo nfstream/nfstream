@@ -29,7 +29,8 @@ build_libndpi() {
   echo "---------------------------------------------------------------------------------------------------------------"
   cd nDPI
   ./autogen.sh
-  make
+  # nDPI 5.0: Build only the library, not example applications (--with-only-libndpi)
+  ./configure --with-only-libndpi && make
   make DESTDIR=/tmp/nfstream_build install
   cd ..
   echo "---------------------------------------------------------------------------------------------------------------"
