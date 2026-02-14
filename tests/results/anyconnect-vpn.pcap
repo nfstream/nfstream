@@ -39,7 +39,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 37,92,27776,TLS,Web,0,6
 38,3,198,CiscoVPN,VPN,1,1
 39,9,594,Unknown,Unspecified,0,0
-40,2,158,DNS.Mozilla,Network,0,6
+40,2,158,DNS,Network,0,6
 41,2,326,DNS,Network,0,6
 42,6,544,TLS,Web,0,6
 43,5,359,TLS,Web,0,6
@@ -48,9 +48,9 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 46,2,415,DNS.ApplePush,Network,0,6
 47,2,277,DNS.ApplePush,Network,0,6
 48,2,166,DNS,Network,0,6
-49,2,186,DNS.Apple,Network,0,6
+49,2,186,DNS,Network,0,6
 50,6,396,TLS,Web,1,1
-51,2,305,DNS.Microsoft365,Network,0,6
+51,2,305,DNS.Outlook,Network,0,6
 52,2,132,TLS,Web,1,1
 53,1,216,SSDP,System,0,6
 54,1,556,SSDP,System,0,6

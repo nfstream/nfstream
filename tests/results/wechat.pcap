@@ -10,7 +10,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 8,13,6836,QUIC.Google,Web,0,6
 9,2,302,DNS.GoogleDocs,Network,0,6
 10,13,4812,QUIC.GoogleDocs,Collaborative,0,6
-11,6,396,Google,Web,1,7
+11,6,396,Unknown,Unspecified,0,0
 12,86,37554,TLS,Web,0,6
 13,4,216,TLS,Web,1,1
 14,3,198,TLS,Web,1,1
@@ -45,7 +45,7 @@ id,bidirectional_packets,bidirectional_bytes,application_name,application_catego
 43,1,254,NetBIOS.SMBv1,System,0,6
 44,93,39402,TLS,Web,0,6
 45,2,132,TLS,Web,1,1
-46,14,924,Google,Web,1,7
+46,14,924,Unknown,Unspecified,0,0
 47,73,44045,TLS.WeChat,Chat,0,6
 48,9,618,TLS,Web,1,1
 49,20,1640,MDNS,Network,0,6

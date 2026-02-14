@@ -615,15 +615,14 @@ class NFStreamTest(object):
                 "www.facebook.com",
             ]
             assert int(requested_server_name) == 1
-            # nDPI 5.0: client_fingerprint now contains JA4 (not JA3), server_fingerprint still JA3S
             client_fingerprint = flow.client_fingerprint in [
-                "t12d1311h2_27a29bd8d6e6_c4623e4f4474",  # JA4 for www.facebook.com
-                "t12d1310h2_27a29bd8d6e6_85173d161f9a",  # JA4 for facebook.com
+                "bfcc1a3891601edb4f137ab7ab25b840",
+                "5c60e71f1b8cd40e4d40ed5b6d666e3f",
             ]
             assert int(client_fingerprint) == 1
             server_fingerprint = flow.server_fingerprint in [
-                "2d1eb5817ece335c24904f516ad5da12",  # JA3S unchanged
-                "96681175a9547081bf3d417f1a572091",  # JA3S unchanged
+                "2d1eb5817ece335c24904f516ad5da12",
+                "96681175a9547081bf3d417f1a572091",
             ]
             assert int(server_fingerprint) == 1
         del fingerprint_streamer
@@ -639,12 +638,12 @@ class NFStreamTest(object):
             "\n----------------------------------------------------------------------"
         )
         df = NFStreamer(
-            source=os.path.join("tests", "pcaps", "steam.pcapng"),
+            source=os.path.join("tests", "pcaps", "steam.pcap"),
             statistical_analysis=True,
             n_dissections=20,
         ).to_pandas()
         df_anon = NFStreamer(
-            source=os.path.join("tests", "pcaps", "steam.pcapng"),
+            source=os.path.join("tests", "pcaps", "steam.pcap"),
             statistical_analysis=True,
             n_dissections=20,
         ).to_pandas(columns_to_anonymize=["src_ip", "dst_ip"])
@@ -653,18 +652,18 @@ class NFStreamTest(object):
         assert df_anon["src_ip"].nunique() == df["src_ip"].nunique()
         assert df_anon["dst_ip"].nunique() == df["dst_ip"].nunique()
         total_flows = NFStreamer(
-            source=os.path.join("tests", "pcaps", "steam.pcapng"),
+            source=os.path.join("tests", "pcaps", "steam.pcap"),
             statistical_analysis=True,
             n_dissections=20,
         ).to_csv()
-        df_from_csv = pd.read_csv(os.path.join("tests", "pcaps", "steam.pcapng.csv"))
+        df_from_csv = pd.read_csv(os.path.join("tests", "pcaps", "steam.pcap.csv"))
         total_flows_anon = NFStreamer(
-            source=os.path.join("tests", "pcaps", "steam.pcapng"),
+            source=os.path.join("tests", "pcaps", "steam.pcap"),
             statistical_analysis=True,
             n_dissections=20,
         ).to_csv()
-        df_anon_from_csv = pd.read_csv(os.path.join("tests", "pcaps", "steam.pcapng.csv"))
-        os.remove(os.path.join("tests", "pcaps", "steam.pcapng.csv"))
+        df_anon_from_csv = pd.read_csv(os.path.join("tests", "pcaps", "steam.pcap.csv"))
+        os.remove(os.path.join("tests", "pcaps", "steam.pcap.csv"))
         assert total_flows == total_flows_anon
         assert total_flows == df_from_csv.shape[0]
         assert total_flows_anon == df_anon_from_csv.shape[0]
@@ -851,8 +850,7 @@ class NFStreamTest(object):
             assert flow.application_is_guessed == 0
             assert flow.application_confidence == 6
             assert flow.requested_server_name == "facebook.com"
-            # nDPI 5.0: client_fingerprint is now JA4 instead of JA3
-            assert flow.client_fingerprint == "t12d1310h2_27a29bd8d6e6_85173d161f9a"
+            assert flow.client_fingerprint == "bfcc1a3891601edb4f137ab7ab25b840"
             assert flow.server_fingerprint == "2d1eb5817ece335c24904f516ad5da12"
             assert flow.user_agent == ""
             assert flow.content_type == ""

@@ -164,11 +164,7 @@ with open(
     for to_replace in cdef_to_replace(NDPI_CDEF):
         NDPI_CDEF = NDPI_CDEF.replace(to_replace, "")
 
-    # nDPI 5.0: CFFI markers may not exist, handle gracefully
-    try:
-        NDPI_MODULE_STRUCT_CDEF = NDPI_CDEF.split("//CFFI.NDPI_MODULE_STRUCT")[1]
-    except IndexError:
-        NDPI_MODULE_STRUCT_CDEF = ""  # nDPI 5.0 doesn't have this marker
+    NDPI_MODULE_STRUCT_CDEF = NDPI_CDEF.split("//CFFI.NDPI_MODULE_STRUCT")[1]
 
 with open(
     convert_path(
