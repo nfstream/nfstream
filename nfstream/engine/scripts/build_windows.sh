@@ -27,6 +27,8 @@ build_libndpi() {
   echo "---------------------------------------------------------------------------------------------------------------"
   echo "Compiling libndpi"
   echo "---------------------------------------------------------------------------------------------------------------"
+  # nDPI 5.0 configure requires libpcap-dev when using --with-only-libndpi on MinGW
+  pacman -S --noconfirm mingw-w64-x86_64-libpcap
   cd nDPI
   ./autogen.sh
   # nDPI 5.0: Build only the library, not example applications (--with-only-libndpi)
