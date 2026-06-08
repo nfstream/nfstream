@@ -533,6 +533,10 @@ def meter_workflow(
     meter_cleanup(
         cache, channel, udps, sync, n_dissections, statistics, splt, ffi, lib, dissector
     )
+    # All on_expire hooks have run; plugins can now release resources and
+    # persist state accumulated across flows.
+    for udp in udps:
+        udp.cleanup()
     # Clean dissector
     lib.dissector_cleanup(dissector)
     # Release engine library

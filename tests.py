@@ -16,8 +16,22 @@ If not, see <http://www.gnu.org/licenses/>.
 import pandas as pd
 import json
 import os
-from nfstream import NFStreamer
+import tempfile
+from nfstream import NFPlugin, NFStreamer
 from nfstream.plugins import SPLT, DHCP, FlowSlicer, MDNS
+
+
+class CleanupPlugin(NFPlugin):
+    def __init__(self, marker_path):
+        self.marker_path = marker_path
+        self.expired = 0
+
+    def on_expire(self, flow):
+        self.expired += 1
+
+    def cleanup(self):
+        with open(self.marker_path, "w") as marker:
+            marker.write(str(self.expired))
 
 
 def get_files_list(path):
@@ -33,6 +47,27 @@ def get_files_list(path):
 
 
 class NFStreamTest(object):
+    @staticmethod
+    def test_plugin_cleanup():
+        print(
+            "\n----------------------------------------------------------------------"
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            marker_path = os.path.join(directory, "cleanup")
+            flows = list(
+                NFStreamer(
+                    source=os.path.join("tests", "pcaps", "google_ssl.pcap"),
+                    udps=CleanupPlugin(marker_path),
+                    n_meters=1,
+                )
+            )
+            with open(marker_path) as marker:
+                expired = int(marker.read())
+            assert expired == len(flows)
+        print(
+            "{}\t: {}".format(".test_plugin_cleanup".ljust(60, " "), "OK")
+        )
+
     @staticmethod
     def test_source_parameter():
         print(
@@ -898,6 +933,7 @@ if __name__ == "__main__":
     NFStreamTest.test_active_timeout_parameter()
     NFStreamTest.test_accounting_mode_parameter()
     NFStreamTest.test_udps_parameter()
+    NFStreamTest.test_plugin_cleanup()
     NFStreamTest.test_n_dissections_parameter()
     NFStreamTest.test_system_visibility_mode_parameter()
     NFStreamTest.test_system_visibility_poll_ms()
