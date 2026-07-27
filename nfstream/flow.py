@@ -39,7 +39,6 @@ nf_packet = namedtuple(
         "protocol",
         "vlan_id",
         "ip_version",
-        "ip_tos",
         "ip_packet",
         "syn",
         "cwr",
@@ -50,6 +49,7 @@ nf_packet = namedtuple(
         "rst",
         "fin",
         "tunnel_id",
+        "ip_tos",  # appended: keeps existing positional indices stable
     ],
 )
 
@@ -93,7 +93,6 @@ def pythonize_packet(packet, ffi, flow):
         protocol=packet.protocol,
         vlan_id=packet.vlan_id,
         ip_version=packet.ip_version,
-        ip_tos=packet.ip_tos,
         ip_packet=bytes(ffi.buffer(packet.ip_content, packet.ip_content_len)),
         syn=packet.syn,
         cwr=packet.cwr,
@@ -104,6 +103,7 @@ def pythonize_packet(packet, ffi, flow):
         rst=packet.rst,
         fin=packet.fin,
         tunnel_id=packet.tunnel_id,
+        ip_tos=packet.ip_tos,
     )
 
 
