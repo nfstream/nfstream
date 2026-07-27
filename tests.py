@@ -16,8 +16,16 @@ If not, see <http://www.gnu.org/licenses/>.
 import pandas as pd
 import json
 import os
-from nfstream import NFStreamer
+from nfstream import NFPlugin, NFStreamer
 from nfstream.plugins import SPLT, DHCP, FlowSlicer, MDNS
+
+
+class ToSCollector(NFPlugin):
+    def on_init(self, packet, flow):
+        flow.udps.tos_values = {packet.ip_tos}
+
+    def on_update(self, packet, flow):
+        flow.udps.tos_values.add(packet.ip_tos)
 
 
 def get_files_list(path):
@@ -881,6 +889,31 @@ class NFStreamTest(object):
             "{}\t: {}".format(".test_max_nflows".ljust(60, " "), "OK")
         )
 
+    @staticmethod
+    def test_packet_ip_tos():
+        print(
+            "\n----------------------------------------------------------------------"
+        )
+        # IPv4: every packet in this trace carries ToS 0xc0 (DSCP CS6).
+        observed = set()
+        for flow in NFStreamer(
+            source=os.path.join("tests", "pcaps", "BGP_Cisco_hdlc_slarp.pcap"),
+            udps=ToSCollector(),
+        ):
+            observed |= flow.udps.tos_values
+        assert observed == {0xC0}
+        # IPv6: the same attribute exposes the Traffic Class byte.
+        observed = set()
+        for flow in NFStreamer(
+            source=os.path.join("tests", "pcaps", "http_ipv6.pcap"),
+            udps=ToSCollector(),
+        ):
+            observed |= flow.udps.tos_values
+        assert observed == {0x00, 0x0C}
+        print(
+            "{}\t: {}".format(".test_packet_ip_tos".ljust(60, " "), "OK")
+        )
+
 
 if __name__ == "__main__":
     # IMPORTANT: As NFStream input is network bytes, we rely on fuzzing techniques to ensure robustness.
@@ -918,3 +951,4 @@ if __name__ == "__main__":
     NFStreamTest.test_mdns()
     NFStreamTest.test_multi_files()
     NFStreamTest.test_max_nflows()
+    NFStreamTest.test_packet_ip_tos()

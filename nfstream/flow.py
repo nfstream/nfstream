@@ -49,6 +49,7 @@ nf_packet = namedtuple(
         "rst",
         "fin",
         "tunnel_id",
+        "ip_tos",  # appended: keeps existing positional indices stable
     ],
 )
 
@@ -102,6 +103,7 @@ def pythonize_packet(packet, ffi, flow):
         rst=packet.rst,
         fin=packet.fin,
         tunnel_id=packet.tunnel_id,
+        ip_tos=packet.ip_tos,
     )
 
 

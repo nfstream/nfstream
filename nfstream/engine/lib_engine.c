@@ -185,6 +185,7 @@ typedef struct nf_packet {
   uint16_t dst_port;
   uint8_t ip_version;
   uint8_t protocol;
+  uint8_t ip_tos; // IPv4 ToS/DS byte (IPv6 traffic class)
   uint16_t vlan_id;
   uint16_t fin:1, syn:1, rst:1, psh:1, ack:1, urg:1, ece:1, cwr:1; // TCP Flags
   uint16_t raw_size;
@@ -287,10 +288,12 @@ static void packet_get_info(struct nf_packet *nf_pkt, uint16_t *sport, uint16_t 
   nf_pkt->delta_time = 0; // This will be filled by meter.
   nf_pkt->ip_size = ntohs(iph->tot_len);
   if (version == IPVERSION) {
+	nf_pkt->ip_tos = iph->tos;
 	nf_pkt->ip_content = (uint8_t *)iph;
 	nf_pkt->src_ip[0] = iph->saddr;
 	nf_pkt->dst_ip[0] = iph->daddr;
   } else {
+	nf_pkt->ip_tos = (ntohl(iph6->ip6_hdr.ip6_un1_flow) >> 20) & 0xFF;
 	nf_pkt->ip_content = (uint8_t *)iph6;
 	nf_pkt->src_ip[0] = iph6->ip6_src.u6_addr.u6_addr64[0];
 	nf_pkt->src_ip[1] = iph6->ip6_src.u6_addr.u6_addr64[1];
