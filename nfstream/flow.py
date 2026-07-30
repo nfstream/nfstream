@@ -318,16 +318,12 @@ class NFlow(object):
             self.dst2src_fin_packets = self._C.dst2src_fin_packets
         if n_dissections:  # Same for dissection when > 0
             if sync:
-                self.application_name = (
-                    ffi.string(self._C.application_name).decode(
-                        "utf-8", errors="ignore"
-                    )
-                    or None
+                self.application_name = ffi.string(self._C.application_name).decode(
+                    "utf-8", errors="ignore"
                 )
-                self.application_category_name = (
-                    ffi.string(self._C.category_name).decode("utf-8", errors="ignore")
-                    or None
-                )
+                self.application_category_name = ffi.string(
+                    self._C.category_name
+                ).decode("utf-8", errors="ignore")
                 self.application_is_guessed = self._C.guessed
                 self.application_confidence = self._C.confidence
                 self.requested_server_name = (
@@ -370,10 +366,9 @@ class NFlow(object):
                 udp.on_init(pythonize_packet(packet, ffi, self), self)
         if system_visibility_mode > 0:
             self.system_process_pid = -1
-            # Same
-            self.system_process_name = None
+            self.system_process_name = ""
             if system_visibility_mode == 2:
-                self.system_browser_tab = None
+                self.system_browser_tab = ""
 
     def update(
         self,
@@ -529,16 +524,12 @@ class NFlow(object):
         if n_dissections:  # If dissection set (>0)
             # We minimize updates to a single one, when detection completed.
             if self._C.detection_completed < 2:
-                self.application_name = (
-                    ffi.string(self._C.application_name).decode(
-                        "utf-8", errors="ignore"
-                    )
-                    or None
+                self.application_name = ffi.string(self._C.application_name).decode(
+                    "utf-8", errors="ignore"
                 )
-                self.application_category_name = (
-                    ffi.string(self._C.category_name).decode("utf-8", errors="ignore")
-                    or None
-                )
+                self.application_category_name = ffi.string(
+                    self._C.category_name
+                ).decode("utf-8", errors="ignore")
                 self.requested_server_name = (
                     ffi.string(self._C.requested_server_name).decode(
                         "utf-8", errors="ignore"

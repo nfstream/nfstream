@@ -854,11 +854,60 @@ class NFStreamTest(object):
             # nDPI 5.0: client_fingerprint is now JA4 instead of JA3
             assert flow.client_fingerprint == "t12d1310h2_27a29bd8d6e6_85173d161f9a"
             assert flow.server_fingerprint == "2d1eb5817ece335c24904f516ad5da12"
-            assert flow.user_agent == ""
-            assert flow.content_type == ""
+            assert flow.user_agent is None
+            assert flow.content_type is None
         print(
             "{}\t: {}".format(
                 ".test_multi_files".ljust(60, " "), "OK"
+            )
+        )
+
+    @staticmethod
+    def test_optional_string_fields():
+        print(
+            "\n----------------------------------------------------------------------"
+        )
+        optional_fields = [
+            "requested_server_name",
+            "client_fingerprint",
+            "server_fingerprint",
+            "user_agent",
+            "content_type",
+        ]
+
+        def collect(**kwargs):
+            # n_meters=1 keeps flow ordering deterministic across both runs.
+            streamer = NFStreamer(
+                source=os.path.join("tests", "pcaps", "facebook.pcap"),
+                n_meters=1,
+                **kwargs
+            )
+            collected = [
+                {name: getattr(flow, name) for name in optional_fields}
+                for flow in streamer
+            ]
+            del streamer
+            return collected
+
+        # Plugins switch the meter to sync mode, no plugin means non sync mode.
+        non_plugin_flows = collect()
+        plugin_flows = collect(udps=SPLT(sequence_length=5, accounting_mode=0))
+        assert len(non_plugin_flows) > 0
+        assert non_plugin_flows == plugin_flows
+        for flow_values in non_plugin_flows:
+            for name in optional_fields:
+                value = flow_values[name]
+                # Absent values are None, populated ones are non empty strings.
+                assert value is None or (isinstance(value, str) and value != "")
+            # facebook.pcap carries TLS metadata but no HTTP metadata.
+            assert flow_values["requested_server_name"] is not None
+            assert flow_values["client_fingerprint"] is not None
+            assert flow_values["server_fingerprint"] is not None
+            assert flow_values["user_agent"] is None
+            assert flow_values["content_type"] is None
+        print(
+            "{}\t: {}".format(
+                ".test_optional_string_fields".ljust(60, " "), "OK"
             )
         )
 
@@ -917,4 +966,5 @@ if __name__ == "__main__":
     NFStreamTest.test_dhcp()
     NFStreamTest.test_mdns()
     NFStreamTest.test_multi_files()
+    NFStreamTest.test_optional_string_fields()
     NFStreamTest.test_max_nflows()
