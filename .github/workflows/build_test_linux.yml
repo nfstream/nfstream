@@ -6,6 +6,12 @@ on:
   pull_request:
     branches:
       - master
+# A newer commit on the same ref supersedes this run, so cancel the older one
+# instead of letting both compete for runners.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build_test_linux:
     name: ${{ matrix.python-version }} on ${{ matrix.os }}
