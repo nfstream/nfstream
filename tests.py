@@ -14,9 +14,10 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 import pandas as pd
+import numpy as np
 import json
 import os
-from nfstream import NFStreamer
+from nfstream import NFPlugin, NFStreamer
 from nfstream.plugins import SPLT, DHCP, FlowSlicer, MDNS
 
 
@@ -912,6 +913,60 @@ class NFStreamTest(object):
         )
 
     @staticmethod
+    def test_anonymize_absent_values():
+        print(
+            "\n----------------------------------------------------------------------"
+        )
+
+        class MixedValues(NFPlugin):
+            """Produces an absent value alongside values that only look absent."""
+
+            def on_init(self, packet, flow):
+                flow.udps.absent = ""
+                flow.udps.populated = "value"
+                flow.udps.zero = 0
+                flow.udps.false = False
+                flow.udps.array = np.zeros(3)
+
+        df = NFStreamer(
+            source=os.path.join("tests", "pcaps", "google_ssl.pcap"),
+            n_meters=1,
+            udps=MixedValues(),
+        ).to_pandas(
+            columns_to_anonymize=[
+                "udps.absent",
+                "udps.populated",
+                "udps.zero",
+                "udps.false",
+                "udps.array",
+            ]
+        )
+        assert df.shape[0] > 0
+        for _, row in df.iterrows():
+            # An absent value must not be replaced by the digest of "", which would be
+            # constant across the export and indistinguishable from a real value.
+            assert pd.isna(row["udps.absent"])
+            # A populated value is anonymized.
+            assert isinstance(row["udps.populated"], str)
+            assert len(row["udps.populated"]) == 128
+            assert row["udps.populated"] != "value"
+            # 0 and False are legitimate values, not absent ones, so they are still
+            # anonymized: the guard must not degrade into a truthiness test.
+            assert isinstance(row["udps.zero"], str)
+            assert len(row["udps.zero"]) == 128
+            assert isinstance(row["udps.false"], str)
+            assert len(row["udps.false"]) == 128
+            # A plugin may store a numpy array, whose comparison does not yield a
+            # bool; the guard must not raise on it.
+            assert isinstance(row["udps.array"], str)
+            assert len(row["udps.array"]) == 128
+        print(
+            "{}\t: {}".format(
+                ".test_anonymize_absent_values".ljust(60, " "), "OK"
+            )
+        )
+
+    @staticmethod
     def test_max_nflows():
         print(
             "\n----------------------------------------------------------------------"
@@ -967,4 +1022,5 @@ if __name__ == "__main__":
     NFStreamTest.test_mdns()
     NFStreamTest.test_multi_files()
     NFStreamTest.test_optional_string_fields()
+    NFStreamTest.test_anonymize_absent_values()
     NFStreamTest.test_max_nflows()

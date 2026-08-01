@@ -50,9 +50,18 @@ class NFAnonymizer(object):
                         )
             values = flow.values()
             for col_idx in self._cols_index:
-                if values[col_idx] is not None:
+                value = values[col_idx]
+                # Absent values must stay absent. Hashing "" yields a digest that is
+                # constant for the whole export and indistinguishable from a real one,
+                # so consumers would see a large cohort apparently sharing a value.
+                # Only str is compared against "": this is deliberately neither a
+                # truthiness test, since 0 and False are legitimate values that must
+                # still be anonymized, nor an unguarded equality, since a plugin may
+                # store a numpy array whose comparison would not yield a bool.
+                is_absent = value is None or (isinstance(value, str) and value == "")
+                if not is_absent:
                     values[col_idx] = blake2b(
-                        str(values[col_idx]).encode(), digest_size=64, key=self._secret
+                        str(value).encode(), digest_size=64, key=self._secret
                     ).hexdigest()
             return values
         return flow.values()
