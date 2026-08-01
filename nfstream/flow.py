@@ -326,20 +326,25 @@ class NFlow(object):
                 ).decode("utf-8", errors="ignore")
                 self.application_is_guessed = self._C.guessed
                 self.application_confidence = self._C.confidence
-                self.requested_server_name = ffi.string(
-                    self._C.requested_server_name
-                ).decode("utf-8", errors="ignore")
-                self.client_fingerprint = ffi.string(self._C.c_hash).decode(
-                    "utf-8", errors="ignore"
+                self.requested_server_name = (
+                    ffi.string(self._C.requested_server_name).decode(
+                        "utf-8", errors="ignore"
+                    )
+                    or None
                 )
-                self.server_fingerprint = ffi.string(self._C.s_hash).decode(
-                    "utf-8", errors="ignore"
+                self.client_fingerprint = (
+                    ffi.string(self._C.c_hash).decode("utf-8", errors="ignore") or None
                 )
-                self.user_agent = ffi.string(self._C.user_agent).decode(
-                    "utf-8", errors="ignore"
+                self.server_fingerprint = (
+                    ffi.string(self._C.s_hash).decode("utf-8", errors="ignore") or None
                 )
-                self.content_type = ffi.string(self._C.content_type).decode(
-                    "utf-8", errors="ignore"
+                self.user_agent = (
+                    ffi.string(self._C.user_agent).decode("utf-8", errors="ignore")
+                    or None
+                )
+                self.content_type = (
+                    ffi.string(self._C.content_type).decode("utf-8", errors="ignore")
+                    or None
                 )
             else:
                 self.application_name = None
@@ -525,20 +530,25 @@ class NFlow(object):
                 self.application_category_name = ffi.string(
                     self._C.category_name
                 ).decode("utf-8", errors="ignore")
-                self.requested_server_name = ffi.string(
-                    self._C.requested_server_name
-                ).decode("utf-8", errors="ignore")
-                self.client_fingerprint = ffi.string(self._C.c_hash).decode(
-                    "utf-8", errors="ignore"
+                self.requested_server_name = (
+                    ffi.string(self._C.requested_server_name).decode(
+                        "utf-8", errors="ignore"
+                    )
+                    or None
                 )
-                self.server_fingerprint = ffi.string(self._C.s_hash).decode(
-                    "utf-8", errors="ignore"
+                self.client_fingerprint = (
+                    ffi.string(self._C.c_hash).decode("utf-8", errors="ignore") or None
                 )
-                self.user_agent = ffi.string(self._C.user_agent).decode(
-                    "utf-8", errors="ignore"
+                self.server_fingerprint = (
+                    ffi.string(self._C.s_hash).decode("utf-8", errors="ignore") or None
                 )
-                self.content_type = ffi.string(self._C.content_type).decode(
-                    "utf-8", errors="ignore"
+                self.user_agent = (
+                    ffi.string(self._C.user_agent).decode("utf-8", errors="ignore")
+                    or None
+                )
+                self.content_type = (
+                    ffi.string(self._C.content_type).decode("utf-8", errors="ignore")
+                    or None
                 )
                 self.application_is_guessed = self._C.guessed
                 self.application_confidence = self._C.confidence

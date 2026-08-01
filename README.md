@@ -221,8 +221,8 @@ NFlow(id=0,
       requested_server_name='facebook.com',
       client_fingerprint='t12d1310h2_27a29bd8d6e6_85173d161f9a',
       server_fingerprint='2d1eb5817ece335c24904f516ad5da12',
-      user_agent='',
-      content_type='')
+      user_agent=None,
+      content_type=None)
  ```
 
 ### System visibility
