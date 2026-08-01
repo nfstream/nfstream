@@ -9,3 +9,7 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
+    ignore:
+      # Twine 7 drops Python 3.9; remove when NFStream drops Python 3.9.
+      - dependency-name: "twine"
+        update-types: ["version-update:semver-major"]
