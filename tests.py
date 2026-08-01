@@ -21,6 +21,17 @@ from nfstream import NFPlugin, NFStreamer
 from nfstream.plugins import SPLT, DHCP, FlowSlicer, MDNS
 
 
+class AnonymizerMixedValues(NFPlugin):
+    """Must remain module-level because Windows spawn pickles plugins."""
+
+    def on_init(self, packet, flow):
+        flow.udps.absent = ""
+        flow.udps.populated = "value"
+        flow.udps.zero = 0
+        flow.udps.false = False
+        flow.udps.array = np.zeros(3)
+
+
 def get_files_list(path):
     files = []
     for r, d, f in os.walk(path):
@@ -918,20 +929,10 @@ class NFStreamTest(object):
             "\n----------------------------------------------------------------------"
         )
 
-        class MixedValues(NFPlugin):
-            """Produces an absent value alongside values that only look absent."""
-
-            def on_init(self, packet, flow):
-                flow.udps.absent = ""
-                flow.udps.populated = "value"
-                flow.udps.zero = 0
-                flow.udps.false = False
-                flow.udps.array = np.zeros(3)
-
         df = NFStreamer(
             source=os.path.join("tests", "pcaps", "google_ssl.pcap"),
             n_meters=1,
-            udps=MixedValues(),
+            udps=AnonymizerMixedValues(),
         ).to_pandas(
             columns_to_anonymize=[
                 "udps.absent",
