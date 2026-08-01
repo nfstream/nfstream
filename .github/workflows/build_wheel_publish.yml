@@ -67,11 +67,39 @@ jobs:
 
       - name: Install NPCAP OEM on Windows
         shell: pwsh
+        env:
+          NPCAP_OEM_USERNAME: ${{ secrets.NPCAP_OEM_USERNAME }}
+          NPCAP_OEM_PASSWORD: ${{ secrets.NPCAP_OEM_PASSWORD }}
         run: |
           choco install wget --no-progress
-          wget --user ${{ secrets.NPCAP_OEM_USERNAME }} --password ${{ secrets.NPCAP_OEM_PASSWORD }} https://npcap.org/oem/dist/npcap-1.60-oem.exe
-          Start-Process npcap-1.60-oem.exe -ArgumentList "/loopback_support=yes /winpcap_mode=yes /dot11_support=yes /S" -Wait
-
+          # npcap.com is periodically unreachable or refuses the TLS handshake. Retry, and
+          # fail with an explicit message rather than letting Start-Process report a missing
+          # file. -O keeps a failed attempt from being left behind under a .1 suffix.
+          $installer = "npcap-1.60-oem.exe"
+          $downloaded = $false
+          for ($attempt = 1; $attempt -le 5; $attempt++) {
+            Remove-Item -Force -ErrorAction SilentlyContinue $installer
+            wget --tries=3 --timeout=30 `
+              "--user=$env:NPCAP_OEM_USERNAME" `
+              "--password=$env:NPCAP_OEM_PASSWORD" `
+              -O $installer https://npcap.com/oem/dist/npcap-1.60-oem.exe
+            if ($LASTEXITCODE -eq 0) { $downloaded = $true; break }
+            if ($attempt -lt 5) {
+              Write-Host "Npcap OEM download attempt $attempt failed; retrying in 15 seconds"
+              Start-Sleep -Seconds 15
+            }
+          }
+          if (-not $downloaded) {
+            Write-Error "ERROR: unable to download the Npcap OEM installer"
+            exit 1
+          }
+          $process = Start-Process $installer `
+            -ArgumentList "/loopback_support=yes /winpcap_mode=yes /dot11_support=yes /S" `
+            -Wait -PassThru
+          if ($process.ExitCode -ne 0) {
+            Write-Error "ERROR: Npcap installation failed with exit code $($process.ExitCode)"
+            exit 1
+          }
       - name: Build wheels (Windows)
         uses: pypa/cibuildwheel@v3.3.0
         env:

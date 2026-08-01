@@ -16,8 +16,46 @@ setup_npcap() {
   echo "---------------------------------------------------------------------------------------------------------------"
   echo "Setup npcap SDK"
   echo "---------------------------------------------------------------------------------------------------------------"
-  wget https://npcap.com/dist/npcap-sdk-1.12.zip -P /tmp/nfstream_build/
-  unzip /tmp/nfstream_build/npcap-sdk-1.12.zip -d /tmp/nfstream_build/npcap/
+  sdk=/tmp/nfstream_build/npcap-sdk-1.12.zip
+  mkdir -p /tmp/nfstream_build
+
+  # npcap.com is periodically unreachable or refuses the TLS handshake. Retry, write to a
+  # fixed path so a partial download cannot be left behind under a .1 suffix, and fail
+  # loudly here rather than hundreds of lines later in the compiler.
+  downloaded=false
+  for attempt in 1 2 3 4 5; do
+    rm -f "$sdk"
+
+    if wget --tries=3 --timeout=30 -O "$sdk" https://npcap.com/dist/npcap-sdk-1.12.zip; then
+      downloaded=true
+      break
+    fi
+
+    if [ "$attempt" -lt 5 ]; then
+      echo "Npcap SDK download attempt $attempt failed; retrying in 15 seconds"
+      sleep 15
+    fi
+  done
+
+  [ "$downloaded" = true ] || {
+    echo "ERROR: unable to download the Npcap SDK" >&2
+    return 1
+  }
+
+  unzip -o "$sdk" -d /tmp/nfstream_build/npcap/ || {
+    echo "ERROR: unable to extract the Npcap SDK" >&2
+    return 1
+  }
+
+  [ -f /tmp/nfstream_build/npcap/Include/pcap.h ] || {
+    echo "ERROR: Npcap SDK is missing Include/pcap.h" >&2
+    return 1
+  }
+
+  [ -f /tmp/nfstream_build/npcap/Lib/x64/wpcap.lib ] || {
+    echo "ERROR: Npcap SDK is missing Lib/x64/wpcap.lib" >&2
+    return 1
+  }
   echo "---------------------------------------------------------------------------------------------------------------"
   echo ""
   }
@@ -42,7 +80,7 @@ build_libndpi() {
 
 rm -rf /tmp/nfstream_build
 cd $1/dependencies
-setup_npcap
+setup_npcap || exit 1
 build_libndpi
 echo ""
 echo "---------------------------------------------------------------------------------------------------------------"
