@@ -13,7 +13,7 @@ If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------------------------------------------------
 */
 
-#define TICK_RESOLUTION          1000
+#define TICK_RESOLUTION          1000000
 #define	IPVERSION	4
 #ifndef ETH_P_IP
 #define ETH_P_IP               0x0800 	// IPv4

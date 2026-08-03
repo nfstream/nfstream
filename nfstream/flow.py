@@ -14,6 +14,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from collections import namedtuple
+from decimal import Decimal
 from math import sqrt
 from .utils import NFEvent
 
@@ -250,19 +251,19 @@ class NFlow(object):
         self.protocol = self._C.protocol
         self.ip_version = self._C.ip_version
         self.vlan_id = self._C.vlan_id
-        self.bidirectional_first_seen_ms = self._C.bidirectional_first_seen_ms
-        self.bidirectional_last_seen_ms = self._C.bidirectional_last_seen_ms
-        self.bidirectional_duration_ms = self._C.bidirectional_duration_ms
+        self.bidirectional_first_seen_ms = Decimal(self._C.bidirectional_first_seen_ms) / 1000
+        self.bidirectional_last_seen_ms = Decimal(self._C.bidirectional_last_seen_ms) / 1000
+        self.bidirectional_duration_ms = Decimal(self._C.bidirectional_duration_ms) / 1000
         self.bidirectional_packets = self._C.bidirectional_packets
         self.bidirectional_bytes = self._C.bidirectional_bytes
-        self.src2dst_first_seen_ms = self._C.src2dst_first_seen_ms
-        self.src2dst_last_seen_ms = self._C.src2dst_last_seen_ms
-        self.src2dst_duration_ms = self._C.src2dst_duration_ms
+        self.src2dst_first_seen_ms = Decimal(self._C.src2dst_first_seen_ms) / 1000
+        self.src2dst_last_seen_ms = Decimal(self._C.src2dst_last_seen_ms) / 1000
+        self.src2dst_duration_ms = Decimal(self._C.src2dst_duration_ms) / 1000
         self.src2dst_packets = self._C.src2dst_packets
         self.src2dst_bytes = self._C.src2dst_bytes
-        self.dst2src_first_seen_ms = self._C.dst2src_first_seen_ms
-        self.dst2src_last_seen_ms = self._C.dst2src_last_seen_ms
-        self.dst2src_duration_ms = self._C.dst2src_duration_ms
+        self.dst2src_first_seen_ms = Decimal(self._C.dst2src_first_seen_ms) / 1000
+        self.dst2src_last_seen_ms = Decimal(self._C.dst2src_last_seen_ms) / 1000
+        self.dst2src_duration_ms = Decimal(self._C.dst2src_duration_ms) / 1000
         self.dst2src_packets = self._C.dst2src_packets
         self.dst2src_bytes = self._C.dst2src_bytes
         if decode_tunnels:
@@ -280,18 +281,18 @@ class NFlow(object):
             self.dst2src_mean_ps = self._C.dst2src_mean_ps
             self.dst2src_stddev_ps = self._C.dst2src_stddev_ps
             self.dst2src_max_ps = self._C.dst2src_max_ps
-            self.bidirectional_min_piat_ms = self._C.bidirectional_min_piat_ms
-            self.bidirectional_mean_piat_ms = self._C.bidirectional_mean_piat_ms
-            self.bidirectional_stddev_piat_ms = self._C.bidirectional_stddev_piat_ms
-            self.bidirectional_max_piat_ms = self._C.bidirectional_max_piat_ms
-            self.src2dst_min_piat_ms = self._C.src2dst_min_piat_ms
-            self.src2dst_mean_piat_ms = self._C.src2dst_mean_piat_ms
-            self.src2dst_stddev_piat_ms = self._C.src2dst_stddev_piat_ms
-            self.src2dst_max_piat_ms = self._C.src2dst_max_piat_ms
-            self.dst2src_min_piat_ms = self._C.dst2src_min_piat_ms
-            self.dst2src_mean_piat_ms = self._C.dst2src_mean_piat_ms
-            self.dst2src_stddev_piat_ms = self._C.dst2src_stddev_piat_ms
-            self.dst2src_max_piat_ms = self._C.dst2src_max_piat_ms
+            self.bidirectional_min_piat_ms = Decimal(self._C.bidirectional_min_piat_ms) / 1000
+            self.bidirectional_mean_piat_ms = Decimal(self._C.bidirectional_mean_piat_ms) / 1000
+            self.bidirectional_stddev_piat_ms = Decimal(self._C.bidirectional_stddev_piat_ms) / 1000
+            self.bidirectional_max_piat_ms = Decimal(self._C.bidirectional_max_piat_ms) / 1000
+            self.src2dst_min_piat_ms = Decimal(self._C.src2dst_min_piat_ms) / 1000
+            self.src2dst_mean_piat_ms = Decimal(self._C.src2dst_mean_piat_ms) / 1000
+            self.src2dst_stddev_piat_ms = Decimal(self._C.src2dst_stddev_piat_ms) / 1000
+            self.src2dst_max_piat_ms = Decimal(self._C.src2dst_max_piat_ms) / 1000
+            self.dst2src_min_piat_ms = Decimal(self._C.dst2src_min_piat_ms) / 1000
+            self.dst2src_mean_piat_ms = Decimal(self._C.dst2src_mean_piat_ms) / 1000
+            self.dst2src_stddev_piat_ms = Decimal(self._C.dst2src_stddev_piat_ms) / 1000
+            self.dst2src_max_piat_ms = Decimal(self._C.dst2src_max_piat_ms) / 1000
             self.bidirectional_syn_packets = self._C.bidirectional_syn_packets
             self.bidirectional_cwr_packets = self._C.bidirectional_cwr_packets
             self.bidirectional_ece_packets = self._C.bidirectional_ece_packets
@@ -359,7 +360,7 @@ class NFlow(object):
         if splt:  # If splt_analysis set (>0), we unpack the arrays structures.
             self.splt_direction = ffi.unpack(self._C.splt_direction, splt)
             self.splt_ps = ffi.unpack(self._C.splt_ps, splt)
-            self.splt_piat_ms = ffi.unpack(self._C.splt_piat_ms, splt)
+            self.splt_piat_ms = Decimal(ffi.unpack(self._C.splt_piat_ms, splt)) / 1000
         if sync:  # NFStream running with Plugins
             self.udps = UDPS()
             for udp in udps:  # on_init entrypoint
@@ -437,17 +438,17 @@ class NFlow(object):
            Will be called only twice when running without Plugins
            Will be called at each update when running with Plugins
         """
-        self.bidirectional_last_seen_ms = self._C.bidirectional_last_seen_ms
-        self.bidirectional_duration_ms = self._C.bidirectional_duration_ms
+        self.bidirectional_last_seen_ms = Decimal(self._C.bidirectional_last_seen_ms) / 1000
+        self.bidirectional_duration_ms = Decimal(self._C.bidirectional_duration_ms) / 1000
         self.bidirectional_packets = self._C.bidirectional_packets
         self.bidirectional_bytes = self._C.bidirectional_bytes
-        self.src2dst_last_seen_ms = self._C.src2dst_last_seen_ms
-        self.src2dst_duration_ms = self._C.src2dst_duration_ms
+        self.src2dst_last_seen_ms = Decimal(self._C.src2dst_last_seen_ms) / 1000
+        self.src2dst_duration_ms = Decimal(self._C.src2dst_duration_ms) / 1000
         self.src2dst_packets = self._C.src2dst_packets
         self.src2dst_bytes = self._C.src2dst_bytes
-        self.dst2src_first_seen_ms = self._C.dst2src_first_seen_ms
-        self.dst2src_last_seen_ms = self._C.dst2src_last_seen_ms
-        self.dst2src_duration_ms = self._C.dst2src_duration_ms
+        self.dst2src_first_seen_ms = Decimal(self._C.dst2src_first_seen_ms) / 1000
+        self.dst2src_last_seen_ms = Decimal(self._C.dst2src_last_seen_ms) / 1000
+        self.dst2src_duration_ms = Decimal(self._C.dst2src_duration_ms) / 1000
         self.dst2src_packets = self._C.dst2src_packets
         self.dst2src_bytes = self._C.dst2src_bytes
         if statistics:  # Statistical analysis activated
@@ -476,27 +477,27 @@ class NFlow(object):
                     self._C.dst2src_stddev_ps / (dst2src_packets - 1)
                 )
             self.dst2src_max_ps = self._C.dst2src_max_ps
-            self.bidirectional_min_piat_ms = self._C.bidirectional_min_piat_ms
-            self.bidirectional_mean_piat_ms = self._C.bidirectional_mean_piat_ms
+            self.bidirectional_min_piat_ms = Decimal(self._C.bidirectional_min_piat_ms) / 1000
+            self.bidirectional_mean_piat_ms = Decimal(self._C.bidirectional_mean_piat_ms) / 1000
             if bidirectional_packets > 2:
                 self.bidirectional_stddev_piat_ms = sqrt(
-                    self._C.bidirectional_stddev_piat_ms / (bidirectional_packets - 2)
+                    Decimal(self._C.bidirectional_stddev_piat_ms) / 1000 / (bidirectional_packets - 2)
                 )
-            self.bidirectional_max_piat_ms = self._C.bidirectional_max_piat_ms
-            self.src2dst_min_piat_ms = self._C.src2dst_min_piat_ms
-            self.src2dst_mean_piat_ms = self._C.src2dst_mean_piat_ms
+            self.bidirectional_max_piat_ms = Decimal(self._C.bidirectional_max_piat_ms) / 1000
+            self.src2dst_min_piat_ms = Decimal(self._C.src2dst_min_piat_ms) / 1000
+            self.src2dst_mean_piat_ms = Decimal(self._C.src2dst_mean_piat_ms) / 1000
             if src2dst_packets > 2:
                 self.src2dst_stddev_piat_ms = sqrt(
-                    self._C.src2dst_stddev_piat_ms / (src2dst_packets - 2)
+                    Decimal(self._C.src2dst_stddev_piat_ms) / 1000 / (src2dst_packets - 2)
                 )
-            self.src2dst_max_piat_ms = self._C.src2dst_max_piat_ms
-            self.dst2src_min_piat_ms = self._C.dst2src_min_piat_ms
-            self.dst2src_mean_piat_ms = self._C.dst2src_mean_piat_ms
+            self.src2dst_max_piat_ms = Decimal(self._C.src2dst_max_piat_ms) / 1000
+            self.dst2src_min_piat_ms = Decimal(self._C.dst2src_min_piat_ms) / 1000
+            self.dst2src_mean_piat_ms = Decimal(self._C.dst2src_mean_piat_ms) / 1000
             if dst2src_packets > 2:
                 self.dst2src_stddev_piat_ms = sqrt(
-                    self._C.dst2src_stddev_piat_ms / (dst2src_packets - 2)
+                    Decimal(self._C.dst2src_stddev_piat_ms) / 1000 / (dst2src_packets - 2)
                 )
-            self.dst2src_max_piat_ms = self._C.dst2src_max_piat_ms
+            self.dst2src_max_piat_ms = Decimal(self._C.dst2src_max_piat_ms) / 1000
             self.bidirectional_syn_packets = self._C.bidirectional_syn_packets
             self.bidirectional_cwr_packets = self._C.bidirectional_cwr_packets
             self.bidirectional_ece_packets = self._C.bidirectional_ece_packets
@@ -559,7 +560,7 @@ class NFlow(object):
                 if self._C.bidirectional_packets <= splt:
                     self.splt_direction = ffi.unpack(self._C.splt_direction, splt)
                     self.splt_ps = ffi.unpack(self._C.splt_ps, splt)
-                    self.splt_piat_ms = ffi.unpack(self._C.splt_piat_ms, splt)
+                    self.splt_piat_ms = Decimal(ffi.unpack(self._C.splt_piat_ms, splt)) / 1000
                 else:
                     if (
                         self._C.splt_closed == 0
@@ -570,7 +571,7 @@ class NFlow(object):
             else:
                 self.splt_direction = ffi.unpack(self._C.splt_direction, splt)
                 self.splt_ps = ffi.unpack(self._C.splt_ps, splt)
-                self.splt_piat_ms = ffi.unpack(self._C.splt_piat_ms, splt)
+                self.splt_piat_ms = Decimal(ffi.unpack(self._C.splt_piat_ms, splt)) / 1000
                 # Memory will be released by freer.
 
     def is_idle(self, tick, idle_timeout):
