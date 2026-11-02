@@ -486,6 +486,52 @@ class NFStreamTest(object):
         )
 
     @staticmethod
+    def test_idle_expiration_order():
+        print(
+            "\n----------------------------------------------------------------------"
+        )
+        # An idle flow must be exported once its idle timeout passes, even while an older flow
+        # stays active (regression test for issue #262). Flow A (UDP 1000->2000) sends one packet
+        # per second for 200 s; flow B (UDP 3000->4000) sends two packets at t=10 s and t=11 s.
+        # With idle_timeout=15 and active_timeout=120, B expires at about t=26 s, so it must be
+        # exported before A's first segment, which is cut by the active timeout at t=120 s.
+        import struct
+        import tempfile
+
+        def udp_packet(src, dst, sport, dport):
+            udp = struct.pack("!HHHH", sport, dport, 28, 0) + b"x" * 20
+            ip = struct.pack(
+                "!BBHHHBBH4s4s", 0x45, 0, 48, 0, 0, 64, 17, 0,
+                bytes(map(int, src.split("."))), bytes(map(int, dst.split("."))),
+            )
+            return b"\x02\x00\x00\x00\x00\x01\x02\x00\x00\x00\x00\x02\x08\x00" + ip + udp
+
+        t0 = 1700000000
+        packets = [(t0 + s, udp_packet("10.0.0.1", "10.0.0.2", 1000, 2000)) for s in range(200)]
+        packets += [(t0 + s, udp_packet("10.0.0.3", "10.0.0.4", 3000, 4000)) for s in (10, 11)]
+        packets.sort(key=lambda p: p[0])
+        with tempfile.NamedTemporaryFile(suffix=".pcap", delete=False) as f:
+            f.write(struct.pack("<IHHiIII", 0xA1B2C3D4, 2, 4, 0, 0, 65535, 1))
+            for ts, pkt in packets:
+                f.write(struct.pack("<IIII", ts, 0, len(pkt), len(pkt)) + pkt)
+            path = f.name
+        try:
+            order = [
+                "A" if flow.src_port == 1000 else "B"
+                for flow in NFStreamer(
+                    source=path, idle_timeout=15, active_timeout=120, n_meters=1
+                )
+            ]
+        finally:
+            os.remove(path)
+        assert order == ["B", "A", "A"], order
+        print(
+            "{}\t: {}".format(
+                ".test_idle_expiration_order".ljust(60, " "), "OK"
+            )
+        )
+
+    @staticmethod
     def test_tunnel_decoding():
         print(
             "\n----------------------------------------------------------------------"
@@ -1012,6 +1058,7 @@ if __name__ == "__main__":
     NFStreamTest.test_max_nflows_parameter()
     NFStreamTest.test_performance_report_parameter()
     NFStreamTest.test_expiration_management()
+    NFStreamTest.test_idle_expiration_order()
     NFStreamTest.test_tunnel_decoding()
     NFStreamTest.test_statistical()
     NFStreamTest.test_fingerprint_extraction()
