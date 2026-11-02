@@ -254,6 +254,9 @@ def consume(
                     )
                 state = 0
         else:
+            # Keep the LRU order by last activity: meter_scan() stops at the first non-idle
+            # LRU entry, so an active flow left at the head would block idle expiry of all others.
+            cache.move_to_end(flow_key)
             state = 0
     except KeyError:  # create flow
         try:
