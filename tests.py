@@ -18,7 +18,7 @@ import numpy as np
 import json
 import os
 from nfstream import NFPlugin, NFStreamer
-from nfstream.plugins import SPLT, DHCP, FlowSlicer, MDNS
+from nfstream.plugins import SPLT, DHCP, BurstSequence, FlowSlicer, MDNS
 
 
 class AnonymizerMixedValues(NFPlugin):
@@ -746,6 +746,43 @@ class NFStreamTest(object):
         assert failures == 0
 
     @staticmethod
+    def test_burst_sequence():
+        from types import SimpleNamespace
+
+        stream = [(0, 0), (1, 7), (0, 0), (1, 3), (0, 4), (1, 5), (0, 9)]
+        flow = SimpleNamespace(udps=SimpleNamespace())
+        plugin = BurstSequence(sequence_length=2)
+        for i, (direction, size) in enumerate(stream):
+            packet = SimpleNamespace(direction=direction, payload_size=size)
+            (plugin.on_init if i == 0 else plugin.on_update)(packet, flow)
+        plugin.on_expire(flow)
+        assert vars(flow.udps) == {"burst_bytes": [-10, 4], "burst_packets": [2, 1]}
+
+        # Check the exported features against individual packet directions and sizes.
+        for flow in NFStreamer(
+            source=os.path.join("tests", "pcaps", "google_ssl.pcap"),
+            udps=BurstSequence(sequence_length=2),
+            splt_analysis=255,
+            accounting_mode=3,
+            n_dissections=0,
+            n_meters=1,
+        ):
+            assert flow.bidirectional_packets <= 255
+            sizes, counts = [], []
+            for direction, size in zip(flow.splt_direction, flow.splt_ps):
+                if size <= 0:
+                    continue
+                signed = -size if direction else size
+                if sizes and (sizes[-1] < 0) == (signed < 0):
+                    sizes[-1] += signed
+                    counts[-1] += 1
+                else:
+                    sizes.append(signed)
+                    counts.append(1)
+            assert flow.udps.burst_bytes == (sizes + [0, 0])[:2]
+            assert flow.udps.burst_packets == (counts + [0, 0])[:2]
+
+    @staticmethod
     def test_splt():
         print(
             "\n----------------------------------------------------------------------"
@@ -1018,6 +1055,7 @@ if __name__ == "__main__":
     NFStreamTest.test_export()
     NFStreamTest.test_bpf()
     NFStreamTest.test_ndpi_integration()
+    NFStreamTest.test_burst_sequence()
     NFStreamTest.test_splt()
     NFStreamTest.test_dhcp()
     NFStreamTest.test_mdns()
